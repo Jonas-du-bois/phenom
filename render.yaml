@@ -75,11 +75,13 @@ services:
     
     healthCheckPath: /health
     
-    # Persistent Disk pour les uploads (optionnel)
-    disk:
-      name: phenom-uploads
-      mountPath: /opt/render/project/src/backend/uploads
-      sizeGB: 1
+    # NOTE: Persistent Disk non disponible en plan free
+    # Pour activer les uploads persistants, passer au plan Starter ($7/mois)
+    # et décommenter les lignes suivantes :
+    # disk:
+    #   name: phenom-uploads
+    #   mountPath: /opt/render/project/src/backend/uploads
+    #   sizeGB: 1
 
   # ============================================================================
   # Frontend (Vue.js + Vite)
@@ -87,7 +89,6 @@ services:
   - type: web
     name: phenom-frontend
     runtime: static
-    region: frankfurt
     plan: free
     branch: main
     buildCommand: cd frontend && npm install && npm run build
@@ -112,6 +113,4 @@ services:
 # ============================================================================
 # Databases
 # ============================================================================
-# Note: Render ne fournit pas MongoDB managé
-# Vous devez utiliser MongoDB Atlas (gratuit)
-# Configuration dans le Render Dashboard après déploiement
+# MongoDB Atlas est utilisé pour la base de données, donc aucune configuration de base de données locale n'est nécessaire ici.
