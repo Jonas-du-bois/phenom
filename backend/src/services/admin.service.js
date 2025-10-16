@@ -165,6 +165,232 @@ class AdminService {
 
     return comment;
   }
+
+  /**
+   * Récupère toutes les observations avec filtres admin
+   * @param {Object} filters - Filtres de recherche
+   * @returns {Object} Liste paginée d'observations
+   */
+  async getAllObservations(filters = {}) {
+    const { page, limit, skip } = getPaginationParams(filters);
+    const query = {};
+
+    // Filtre par statut
+    if (filters.status) {
+      query.status = filters.status;
+    }
+
+    // Filtre par signalement
+    if (filters.flagged === 'true') {
+      query.flagged = true;
+    }
+
+    // Filtre par utilisateur
+    if (filters.userId) {
+      query.userId = filters.userId;
+    }
+
+    const [observations, total] = await Promise.all([
+      Observation.find(query)
+        .populate('userId', 'name email')
+        .populate('moderatedBy', 'name email')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Observation.countDocuments(query)
+    ]);
+
+    return {
+      data: observations,
+      pagination: createPaginationMeta(total, page, limit)
+    };
+  }
+
+  /**
+   * Approuve une observation
+   * @param {string} observationId - ID de l'observation
+   * @param {string} adminId - ID de l'admin
+   * @param {string} note - Note de modération
+   * @returns {Object} Observation approuvée
+   */
+  async approveObservation(observationId, adminId, note) {
+    const observation = await Observation.findByIdAndUpdate(
+      observationId,
+      {
+        status: 'approved',
+        moderatedAt: Date.now(),
+        moderatedBy: adminId,
+        moderationNote: note,
+        flagged: false
+      },
+      { new: true }
+    ).populate('userId', 'name email').populate('moderatedBy', 'name email');
+
+    if (!observation) {
+      throw new Error('OBSERVATION_NOT_FOUND');
+    }
+
+    return observation;
+  }
+
+  /**
+   * Rejette une observation
+   * @param {string} observationId - ID de l'observation
+   * @param {string} adminId - ID de l'admin
+   * @param {string} reason - Raison du rejet
+   * @returns {Object} Observation rejetée
+   */
+  async rejectObservation(observationId, adminId, reason) {
+    const observation = await Observation.findByIdAndUpdate(
+      observationId,
+      {
+        status: 'rejected',
+        moderatedAt: Date.now(),
+        moderatedBy: adminId,
+        moderationNote: reason,
+        flagged: false
+      },
+      { new: true }
+    ).populate('userId', 'name email').populate('moderatedBy', 'name email');
+
+    if (!observation) {
+      throw new Error('OBSERVATION_NOT_FOUND');
+    }
+
+    return observation;
+  }
+
+  /**
+   * Suspend un utilisateur
+   * @param {string} userId - ID de l'utilisateur
+   * @param {Object} suspendData - Données de suspension
+   * @returns {Object} Utilisateur suspendu
+   */
+  async suspendUser(userId, suspendData) {
+    const { reason, duration, notify } = suspendData;
+    
+    const suspendedUntil = duration 
+      ? new Date(Date.now() + duration * 24 * 60 * 60 * 1000) 
+      : null;
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      {
+        status: 'suspended',
+        suspendedUntil,
+        suspendedReason: reason
+      },
+      { new: true }
+    ).select('-password');
+
+    if (!user) {
+      throw new Error('USER_NOT_FOUND');
+    }
+
+    // TODO: Envoyer une notification si notify === true
+
+    return user;
+  }
+
+  /**
+   * Réactive un utilisateur suspendu
+   * @param {string} userId - ID de l'utilisateur
+   * @returns {Object} Utilisateur réactivé
+   */
+  async activateUser(userId) {
+    const user = await User.findByIdAndUpdate(
+      userId,
+      {
+        status: 'active',
+        suspendedUntil: null,
+        suspendedReason: null
+      },
+      { new: true }
+    ).select('-password');
+
+    if (!user) {
+      throw new Error('USER_NOT_FOUND');
+    }
+
+    return user;
+  }
+
+  /**
+   * Récupère tous les commentaires avec filtres admin
+   * @param {Object} filters - Filtres de recherche
+   * @returns {Object} Liste paginée de commentaires
+   */
+  async getAllComments(filters = {}) {
+    const { page, limit, skip } = getPaginationParams(filters);
+    const query = {};
+
+    // Filtre par signalement
+    if (filters.flagged === 'true') {
+      query.flagged = true;
+    }
+
+    // Filtre par utilisateur
+    if (filters.userId) {
+      query.userId = filters.userId;
+    }
+
+    // Filtre par observation
+    if (filters.observationId) {
+      query.observationId = filters.observationId;
+    }
+
+    const [comments, total] = await Promise.all([
+      Comment.find(query)
+        .populate('userId', 'name email')
+        .populate('observationId', 'title')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Comment.countDocuments(query)
+    ]);
+
+    return {
+      data: comments,
+      pagination: createPaginationMeta(total, page, limit)
+    };
+  }
+
+  /**
+   * Récupère les détails d'un utilisateur (admin)
+   * @param {string} userId - ID de l'utilisateur
+   * @returns {Object} Détails complets de l'utilisateur
+   */
+  async getUserDetails(userId) {
+    const user = await User.findById(userId).select('-password');
+    if (!user) {
+      throw new Error('USER_NOT_FOUND');
+    }
+
+    // Récupérer les statistiques détaillées
+    const [observationsCount, commentsCount, observations, comments] = await Promise.all([
+      Observation.countDocuments({ userId }),
+      Comment.countDocuments({ userId }),
+      Observation.find({ userId })
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .lean(),
+      Comment.find({ userId })
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .populate('observationId', 'title')
+        .lean()
+    ]);
+
+    return {
+      ...user.toObject(),
+      observationsCount,
+      commentsCount,
+      recentObservations: observations,
+      recentComments: comments
+    };
+  }
 }
 
 export default new AdminService();

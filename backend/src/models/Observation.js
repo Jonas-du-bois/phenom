@@ -19,6 +19,54 @@ const observationSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  images: [{
+    imageId: {
+      type: String,
+      required: true
+    },
+    imageUrl: {
+      type: String,
+      required: true
+    },
+    size: {
+      type: Number,
+      required: true
+    },
+    format: {
+      type: String,
+      required: true
+    },
+    uploadedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  status: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: 'approved'
+  },
+  moderatedAt: {
+    type: Date,
+    default: null
+  },
+  moderatedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
+  moderationNote: {
+    type: String,
+    default: null
+  },
+  flagged: {
+    type: Boolean,
+    default: false
+  },
+  flagReason: {
+    type: String,
+    default: null
+  },
   location: {
     type: {
       type: String,

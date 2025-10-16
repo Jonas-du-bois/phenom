@@ -79,6 +79,105 @@ class AuthService {
 
     return user.toSafeObject();
   }
+
+  /**
+   * Rafraîchit le token JWT
+   * @param {string} refreshToken - Token de rafraîchissement
+   * @returns {Object} Nouveaux tokens
+   */
+  async refreshToken(refreshToken) {
+    if (!refreshToken) {
+      throw new Error('REFRESH_TOKEN_REQUIRED');
+    }
+
+    // Vérifier le refresh token
+    const { verifyToken } = await import('../config/jwt.js');
+    let decoded;
+    try {
+      decoded = verifyToken(refreshToken, true);
+    } catch (error) {
+      throw new Error('INVALID_REFRESH_TOKEN');
+    }
+
+    // Vérifier que l'utilisateur existe toujours
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      throw new Error('USER_NOT_FOUND');
+    }
+
+    // Générer de nouveaux tokens
+    const payload = createTokenPayload(user);
+    const newAccessToken = generateAccessToken(payload);
+    const newRefreshToken = generateRefreshToken(payload);
+
+    return {
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken
+    };
+  }
+
+  /**
+   * Demande de réinitialisation du mot de passe
+   * @param {string} email - Email de l'utilisateur
+   * @returns {Object} Message de succès
+   */
+  async forgotPassword(email) {
+    const user = await User.findOne({ email });
+    if (!user) {
+      // Pour des raisons de sécurité, on ne révèle pas si l'email existe
+      return { message: 'Si cet email existe, un lien de réinitialisation a été envoyé' };
+    }
+
+    // Générer un token de réinitialisation (valide 1h)
+    const resetToken = generateAccessToken({ 
+      userId: user._id.toString(),
+      type: 'reset-password' 
+    });
+
+    // TODO: Envoyer l'email avec le token
+    // Pour l'instant, on retourne le token dans la réponse (pour le développement uniquement)
+    console.log(`🔐 Token de réinitialisation pour ${email}: ${resetToken}`);
+
+    return { 
+      message: 'Si cet email existe, un lien de réinitialisation a été envoyé',
+      // En développement uniquement
+      ...(process.env.NODE_ENV === 'development' && { resetToken })
+    };
+  }
+
+  /**
+   * Réinitialise le mot de passe avec un token
+   * @param {string} token - Token de réinitialisation
+   * @param {string} newPassword - Nouveau mot de passe
+   * @returns {boolean} true si succès
+   */
+  async resetPassword(token, newPassword) {
+    const { verifyToken } = await import('../config/jwt.js');
+    let decoded;
+    
+    try {
+      decoded = verifyToken(token, false);
+    } catch (error) {
+      throw new Error('INVALID_RESET_TOKEN');
+    }
+
+    // Vérifier que c'est bien un token de type reset-password
+    if (decoded.type !== 'reset-password') {
+      throw new Error('INVALID_RESET_TOKEN');
+    }
+
+    // Récupérer l'utilisateur
+    const user = await User.findById(decoded.userId).select('+password');
+    if (!user) {
+      throw new Error('USER_NOT_FOUND');
+    }
+
+    // Mettre à jour le mot de passe
+    user.password = newPassword;
+    await user.save();
+
+    return true;
+  }
 }
 
 export default new AuthService();

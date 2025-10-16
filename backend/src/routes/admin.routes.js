@@ -73,4 +73,86 @@ router.delete(
   adminController.deleteComment
 );
 
+/**
+ * @route   GET /api/v1/admin/observations
+ * @desc    Récupère toutes les observations avec filtres
+ * @access  Admin
+ */
+router.get(
+  '/observations',
+  validate,
+  adminController.getAllObservations
+);
+
+/**
+ * @route   POST /api/v1/admin/observations/:id/approve
+ * @desc    Approuve une observation signalée
+ * @access  Admin
+ */
+router.post(
+  '/observations/:id/approve',
+  idParamValidation,
+  validate,
+  adminController.approveObservation
+);
+
+/**
+ * @route   POST /api/v1/admin/observations/:id/reject
+ * @desc    Rejette une observation avec motif
+ * @access  Admin
+ */
+router.post(
+  '/observations/:id/reject',
+  idParamValidation,
+  validate,
+  adminController.rejectObservation
+);
+
+/**
+ * @route   POST /api/v1/admin/users/:id/suspend
+ * @desc    Suspend un utilisateur
+ * @access  Admin
+ */
+router.post(
+  '/users/:id/suspend',
+  idParamValidation,
+  validate,
+  adminController.suspendUser
+);
+
+/**
+ * @route   POST /api/v1/admin/users/:id/activate
+ * @desc    Réactive un utilisateur suspendu
+ * @access  Admin
+ */
+router.post(
+  '/users/:id/activate',
+  idParamValidation,
+  validate,
+  adminController.activateUser
+);
+
+/**
+ * @route   GET /api/v1/admin/comments
+ * @desc    Récupère tous les commentaires
+ * @access  Admin
+ */
+router.get(
+  '/comments',
+  validate,
+  adminController.getAllComments
+);
+
+/**
+ * @route   GET /api/v1/admin/users/:id
+ * @desc    Récupère les détails d'un utilisateur
+ * @access  Admin
+ */
+router.get(
+  '/users/:id',
+  idParamValidation,
+  validate,
+  adminController.getUserDetails
+);
+
 export default router;
