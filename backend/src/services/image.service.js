@@ -1,13 +1,14 @@
 import { Readable } from 'stream';
 import { getGridFSBucket } from '../config/gridfs.js';
 import { ObjectId } from 'mongodb';
+import imageCompressor from '../utils/compress-image.js';
 
 /**
  * Service de gestion des images avec GridFS
  */
 class ImageService {
   /**
-   * Upload une image dans GridFS
+   * Upload une image dans GridFS (avec compression automatique)
    * @param {Buffer} buffer - Buffer de l'image
    * @param {string} filename - Nom du fichier
    * @param {string} mimetype - Type MIME
@@ -18,17 +19,29 @@ class ImageService {
     try {
       const bucket = getGridFSBucket();
       
-      // Créer un stream depuis le buffer
+      // 🗜️ COMPRESSION DE L'IMAGE (délégué au compressor)
+      const compressed = await imageCompressor.compress(buffer, mimetype);
+      
+      // Créer un stream depuis le buffer compressé
       const readableStream = new Readable();
-      readableStream.push(buffer);
+      readableStream.push(compressed.buffer);
       readableStream.push(null);
 
-      // Upload dans GridFS
+      // Upload dans GridFS avec les métadonnées de compression
       const uploadStream = bucket.openUploadStream(filename, {
-        contentType: mimetype,
+        contentType: compressed.mimetype,
         metadata: {
           observationId,
-          uploadedAt: new Date()
+          uploadedAt: new Date(),
+          // Métadonnées de compression
+          compression: {
+            originalSize: compressed.metadata.originalSize,
+            compressedSize: compressed.metadata.compressedSize,
+            compressionRatio: compressed.metadata.compressionRatio,
+            savedBytes: compressed.metadata.savedBytes,
+            processingTime: compressed.metadata.processingTime,
+            originalDimensions: compressed.metadata.originalDimensions
+          }
         }
       });
 
@@ -40,9 +53,15 @@ class ImageService {
             resolve({
               id: uploadStream.id.toString(),
               filename: uploadStream.filename,
-              contentType: mimetype,
-              size: uploadStream.length,
-              observationId
+              contentType: compressed.mimetype,
+              size: compressed.metadata.compressedSize,
+              url: `/api/v1/images/${uploadStream.id.toString()}`,
+              observationId,
+              compression: {
+                originalSize: compressed.metadata.originalSize,
+                savedBytes: compressed.metadata.savedBytes,
+                ratio: compressed.metadata.compressionRatio
+              }
             });
           });
       });
