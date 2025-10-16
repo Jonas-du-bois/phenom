@@ -55,4 +55,14 @@ router.get(
   authController.getProfile
 );
 
+/**
+ * @route   POST /api/v1/auth/refresh-token
+ * @desc    Rafraîchit le token JWT avec un refresh token valide
+ * @access  Public
+ */
+router.post(
+  '/refresh-token',
+  authController.refreshToken
+);
+
 export default router;

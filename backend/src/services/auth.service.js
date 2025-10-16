@@ -79,6 +79,42 @@ class AuthService {
 
     return user.toSafeObject();
   }
+
+  /**
+   * Rafraîchit le token JWT
+   * @param {string} refreshToken - Token de rafraîchissement
+   * @returns {Object} Nouveaux tokens
+   */
+  async refreshToken(refreshToken) {
+    if (!refreshToken) {
+      throw new Error('REFRESH_TOKEN_REQUIRED');
+    }
+
+    // Vérifier le refresh token
+    const { verifyToken } = await import('../config/jwt.js');
+    let decoded;
+    try {
+      decoded = verifyToken(refreshToken, true);
+    } catch (error) {
+      throw new Error('INVALID_REFRESH_TOKEN');
+    }
+
+    // Vérifier que l'utilisateur existe toujours
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      throw new Error('USER_NOT_FOUND');
+    }
+
+    // Générer de nouveaux tokens
+    const payload = createTokenPayload(user);
+    const newAccessToken = generateAccessToken(payload);
+    const newRefreshToken = generateRefreshToken(payload);
+
+    return {
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken
+    };
+  }
 }
 
 export default new AuthService();

@@ -87,3 +87,45 @@ export const idParamValidation = [
   param('id')
     .isMongoId().withMessage('ID invalide')
 ];
+
+/**
+ * Validation pour la recherche d'observations à proximité
+ */
+export const nearbyObservationsValidation = [
+  query('latitude')
+    .notEmpty().withMessage('La latitude est requise')
+    .isFloat({ min: -90, max: 90 }).withMessage('La latitude doit être entre -90 et 90')
+    .toFloat(),
+  
+  query('longitude')
+    .notEmpty().withMessage('La longitude est requise')
+    .isFloat({ min: -180, max: 180 }).withMessage('La longitude doit être entre -180 et 180')
+    .toFloat(),
+  
+  query('radius')
+    .optional()
+    .isFloat({ min: 0.1, max: 1000 }).withMessage('Le rayon doit être entre 0.1 et 1000 km')
+    .toFloat(),
+  
+  query('page')
+    .optional()
+    .isInt({ min: 1 }).withMessage('La page doit être un entier positif')
+    .toInt(),
+  
+  query('limit')
+    .optional()
+    .isInt({ min: 1, max: 100 }).withMessage('La limite doit être entre 1 et 100')
+    .toInt()
+];
+
+/**
+ * Validation pour l'ID d'image de paramètre
+ */
+export const imageIdParamValidation = [
+  param('id')
+    .isMongoId().withMessage('ID d\'observation invalide'),
+  param('imageId')
+    .notEmpty().withMessage('ID d\'image requis')
+    .matches(/^img_[0-9]+_[a-z0-9]+$/).withMessage('ID d\'image invalide')
+];
+

@@ -86,6 +86,137 @@ class AdminController {
       next(error);
     }
   }
+
+  /**
+   * Récupère toutes les observations (admin)
+   * GET /admin/observations
+   */
+  async getAllObservations(req, res, next) {
+    try {
+      const result = await adminService.getAllObservations(req.query);
+      
+      return res.json({
+        success: true,
+        data: result.data,
+        pagination: result.pagination
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Approuve une observation
+   * POST /admin/observations/:id/approve
+   */
+  async approveObservation(req, res, next) {
+    try {
+      const observationId = req.params.id;
+      const adminId = req.user._id;
+      const { note } = req.body;
+      
+      const observation = await adminService.approveObservation(observationId, adminId, note);
+      
+      return successResponse(res, observation, 'Observation approuvée avec succès');
+    } catch (error) {
+      if (error.message === 'OBSERVATION_NOT_FOUND') {
+        return notFoundResponse(res, 'Observation non trouvée');
+      }
+      next(error);
+    }
+  }
+
+  /**
+   * Rejette une observation
+   * POST /admin/observations/:id/reject
+   */
+  async rejectObservation(req, res, next) {
+    try {
+      const observationId = req.params.id;
+      const adminId = req.user._id;
+      const { reason } = req.body;
+      
+      const observation = await adminService.rejectObservation(observationId, adminId, reason);
+      
+      return successResponse(res, observation, 'Observation rejetée avec succès');
+    } catch (error) {
+      if (error.message === 'OBSERVATION_NOT_FOUND') {
+        return notFoundResponse(res, 'Observation non trouvée');
+      }
+      next(error);
+    }
+  }
+
+  /**
+   * Suspend un utilisateur
+   * POST /admin/users/:id/suspend
+   */
+  async suspendUser(req, res, next) {
+    try {
+      const userId = req.params.id;
+      const user = await adminService.suspendUser(userId, req.body);
+      
+      return successResponse(res, user, 'Utilisateur suspendu avec succès');
+    } catch (error) {
+      if (error.message === 'USER_NOT_FOUND') {
+        return notFoundResponse(res, 'Utilisateur non trouvé');
+      }
+      next(error);
+    }
+  }
+
+  /**
+   * Réactive un utilisateur suspendu
+   * POST /admin/users/:id/activate
+   */
+  async activateUser(req, res, next) {
+    try {
+      const userId = req.params.id;
+      const user = await adminService.activateUser(userId);
+      
+      return successResponse(res, user, 'Utilisateur réactivé avec succès');
+    } catch (error) {
+      if (error.message === 'USER_NOT_FOUND') {
+        return notFoundResponse(res, 'Utilisateur non trouvé');
+      }
+      next(error);
+    }
+  }
+
+  /**
+   * Récupère tous les commentaires (admin)
+   * GET /admin/comments
+   */
+  async getAllComments(req, res, next) {
+    try {
+      const result = await adminService.getAllComments(req.query);
+      
+      return res.json({
+        success: true,
+        data: result.data,
+        pagination: result.pagination
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Récupère les détails d'un utilisateur (admin)
+   * GET /admin/users/:id
+   */
+  async getUserDetails(req, res, next) {
+    try {
+      const user = await adminService.getUserDetails(req.params.id);
+      
+      return successResponse(res, user);
+    } catch (error) {
+      if (error.message === 'USER_NOT_FOUND') {
+        return notFoundResponse(res, 'Utilisateur non trouvé');
+      }
+      next(error);
+    }
+  }
 }
 
 export default new AdminController();

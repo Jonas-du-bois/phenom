@@ -63,6 +63,30 @@ class AuthController {
   async logout(req, res) {
     return successResponse(res, null, 'Déconnexion réussie');
   }
+
+  /**
+   * Rafraîchit le token JWT
+   * POST /auth/refresh-token
+   */
+  async refreshToken(req, res, next) {
+    try {
+      const { refreshToken } = req.body;
+      const tokens = await authService.refreshToken(refreshToken);
+      
+      return successResponse(res, tokens, 'Token rafraîchi avec succès');
+    } catch (error) {
+      if (error.message === 'REFRESH_TOKEN_REQUIRED') {
+        return errorResponse(res, 'Le refresh token est requis', 400);
+      }
+      if (error.message === 'INVALID_REFRESH_TOKEN') {
+        return unauthorizedResponse(res, 'Refresh token invalide ou expiré');
+      }
+      if (error.message === 'USER_NOT_FOUND') {
+        return unauthorizedResponse(res, 'Utilisateur non trouvé');
+      }
+      next(error);
+    }
+  }
 }
 
 export default new AuthController();
