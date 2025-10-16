@@ -203,10 +203,15 @@ docker-compose up -d mongodb
 
 ## 📚 Documentation
 
-- [Architecture Backend](docs/phenom-backend-architecture-v2.md)
-- [Architecture Frontend](docs/phenom-frontend-architecture.md)
-- [Design System](docs/phenom-design-system.md)
-- [Guide Docker](docs/phenom-docker-deployment-guide.md)
+Consultez la [documentation complète](docs/README.md) organisée en wiki :
+
+- **[Guide de Démarrage Rapide](docs/guides/quickstart.md)** - Démarrer en 5 minutes
+- **[Architecture Backend](docs/architecture/backend.md)** - Structure Node.js/Express
+- **[Architecture Frontend](docs/architecture/frontend.md)** - Structure Vue.js 3
+- **[Base de Données](docs/architecture/database.md)** - Modèles et schémas MongoDB
+- **[Documentation API](docs/api/endpoints.md)** - Tous les endpoints REST
+- **[Design System](docs/design/design-system.md)** - Composants et styles
+- **[Guide Docker](docs/guides/deployment.md)** - Déploiement complet
 
 ## 🤝 Contribution
 
