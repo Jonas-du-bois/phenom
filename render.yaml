@@ -89,7 +89,6 @@ services:
   - type: web
     name: phenom-frontend
     runtime: static
-    plan: free
     branch: main
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: ./frontend/dist
