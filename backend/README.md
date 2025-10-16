@@ -212,8 +212,9 @@ docker-compose down
 ## 📚 Documentation
 
 - Documentation Swagger interactive disponible sur `/api-docs`
-- Documentation architecture dans `/docs/phenom-backend-architecture-v2.md`
-- Documentation endpoints dans `/docs/api-endpoints-phenom.md`
+- Documentation architecture dans `/docs/architecture/backend.md`
+- Documentation base de données dans `/docs/architecture/database.md`
+- Documentation endpoints dans `/docs/api/endpoints.md`
 
 ## 🤝 Contribution
 
