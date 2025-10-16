@@ -67,9 +67,18 @@ class CommentService {
    * @returns {Object} Commentaire mis à jour
    */
   async updateComment(commentId, updateData) {
+    // Whitelist des champs modifiables
+    const allowedFields = ['text'];
+    const filteredData = Object.keys(updateData)
+      .filter(key => allowedFields.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = updateData[key];
+        return obj;
+      }, {});
+
     const comment = await Comment.findByIdAndUpdate(
       commentId,
-      { $set: updateData },
+      { $set: filteredData },
       { new: true, runValidators: true }
     ).populate('userId', 'name email');
 

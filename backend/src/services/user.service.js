@@ -89,6 +89,12 @@ class UserService {
       throw new Error('INVALID_CURRENT_PASSWORD');
     }
 
+    // Vérifier que le nouveau mot de passe est différent de l'ancien
+    const isSamePassword = await user.comparePassword(newPassword);
+    if (isSamePassword) {
+      throw new Error('NEW_PASSWORD_SAME_AS_CURRENT');
+    }
+
     // Mettre à jour le mot de passe
     user.password = newPassword;
     await user.save();

@@ -9,6 +9,7 @@ export const createCommentValidation = [
   
   body('text')
     .trim()
+    .escape()
     .notEmpty().withMessage('Le texte du commentaire est requis')
     .isLength({ min: 1, max: 500 }).withMessage('Le commentaire doit contenir entre 1 et 500 caractères')
 ];
@@ -22,6 +23,7 @@ export const updateCommentValidation = [
   
   body('text')
     .trim()
+    .escape()
     .notEmpty().withMessage('Le texte du commentaire est requis')
     .isLength({ min: 1, max: 500 }).withMessage('Le commentaire doit contenir entre 1 et 500 caractères')
 ];

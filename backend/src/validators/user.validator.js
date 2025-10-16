@@ -7,6 +7,7 @@ export const updateProfileValidation = [
   body('name')
     .optional()
     .trim()
+    .escape() // Échapper les caractères HTML pour prévenir XSS
     .isLength({ min: 2, max: 50 })
     .withMessage('Le nom doit contenir entre 2 et 50 caractères'),
   body('email')
@@ -18,6 +19,7 @@ export const updateProfileValidation = [
   body('bio')
     .optional()
     .trim()
+    .escape() // Échapper les caractères HTML pour prévenir XSS
     .isLength({ max: 500 })
     .withMessage('La bio ne peut pas dépasser 500 caractères')
 ];
@@ -35,7 +37,13 @@ export const changePasswordValidation = [
     .isLength({ min: 6 })
     .withMessage('Le nouveau mot de passe doit contenir au moins 6 caractères')
     .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-    .withMessage('Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre'),
+    .withMessage('Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre')
+    .custom((value, { req }) => {
+      if (value === req.body.currentPassword) {
+        throw new Error('Le nouveau mot de passe doit être différent de l\'ancien');
+      }
+      return true;
+    }),
   body('confirmPassword')
     .trim()
     .notEmpty()

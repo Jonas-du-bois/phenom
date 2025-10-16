@@ -4,6 +4,7 @@ import userRoutes from './user.routes.js';
 import observationRoutes from './observation.routes.js';
 import commentRoutes from './comment.routes.js';
 import adminRoutes from './admin.routes.js';
+import imageRoutes from './image.routes.js';
 
 const router = express.Router();
 
@@ -21,5 +22,8 @@ router.use('/', commentRoutes);
 
 // Routes d'administration
 router.use('/admin', adminRoutes);
+
+// Routes des images
+router.use('/', imageRoutes);
 
 export default router;

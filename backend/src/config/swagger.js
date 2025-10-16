@@ -158,12 +158,20 @@ const options = {
         description: 'Opérations d\'authentification et gestion de compte'
       },
       {
+        name: 'Utilisateurs',
+        description: 'Gestion du profil utilisateur'
+      },
+      {
         name: 'Observations',
         description: 'Gestion des observations OVNI'
       },
       {
         name: 'Commentaires',
         description: 'Gestion des commentaires sur les observations'
+      },
+      {
+        name: 'Images',
+        description: 'Gestion des images avec GridFS'
       },
       {
         name: 'Administration',

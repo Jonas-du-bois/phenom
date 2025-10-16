@@ -26,6 +26,3 @@ afterEach(async () => {
 afterAll(async () => {
   await disconnectDB();
 });
-
-// Augmenter le timeout pour les tests d'intégration
-jest.setTimeout(10000);

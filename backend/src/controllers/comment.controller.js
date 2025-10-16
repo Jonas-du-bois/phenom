@@ -74,7 +74,7 @@ class CommentController {
     try {
       await commentService.deleteComment(req.params.id);
       
-      return successResponse(res, null, 'Commentaire supprimé avec succès');
+      return res.status(204).send();
     } catch (error) {
       if (error.message === 'COMMENT_NOT_FOUND') {
         return notFoundResponse(res, 'Commentaire non trouvé');

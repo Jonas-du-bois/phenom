@@ -59,7 +59,16 @@ class ObservationController {
    */
   async updateObservation(req, res, next) {
     try {
-      const observation = await observationService.updateObservation(req.params.id, req.body);
+      // Whitelist des champs modifiables (userId ne doit pas être modifiable)
+      const allowedFields = ['title', 'description', 'date', 'location', 'status', 'type', 'images'];
+      const updateData = {};
+      allowedFields.forEach(field => {
+        if (req.body[field] !== undefined) {
+          updateData[field] = req.body[field];
+        }
+      });
+
+      const observation = await observationService.updateObservation(req.params.id, updateData);
       
       return successResponse(res, observation, 'Observation mise à jour avec succès');
     } catch (error) {
@@ -78,7 +87,7 @@ class ObservationController {
     try {
       await observationService.deleteObservation(req.params.id);
       
-      return successResponse(res, null, 'Observation supprimée avec succès');
+      return res.status(204).send();
     } catch (error) {
       if (error.message === 'OBSERVATION_NOT_FOUND') {
         return notFoundResponse(res, 'Observation non trouvée');

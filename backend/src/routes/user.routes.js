@@ -11,9 +11,32 @@ import {
 const router = express.Router();
 
 /**
- * @route   GET /api/v1/users/me
- * @desc    Récupère le profil complet de l'utilisateur connecté
- * @access  Private
+ * @swagger
+ * /api/v1/users/me:
+ *   get:
+ *     summary: Récupère le profil complet de l'utilisateur connecté
+ *     tags: [Utilisateurs]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Profil récupéré avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Non authentifié
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.get(
   '/me',
@@ -22,9 +45,63 @@ router.get(
 );
 
 /**
- * @route   PUT /api/v1/users/me
- * @desc    Met à jour le profil de l'utilisateur connecté
- * @access  Private
+ * @swagger
+ * /api/v1/users/me:
+ *   put:
+ *     summary: Met à jour le profil de l'utilisateur connecté
+ *     tags: [Utilisateurs]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 minLength: 3
+ *                 maxLength: 50
+ *                 example: Jean Dupont
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: jean.dupont@example.com
+ *     responses:
+ *       200:
+ *         description: Profil mis à jour avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Profil mis à jour avec succès
+ *                 data:
+ *                   $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Données invalides
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Non authentifié
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       409:
+ *         description: Email déjà utilisé
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.put(
   '/me',
@@ -35,9 +112,56 @@ router.put(
 );
 
 /**
- * @route   PATCH /api/v1/users/me/password
- * @desc    Change le mot de passe de l'utilisateur connecté
- * @access  Private
+ * @swagger
+ * /api/v1/users/me/password:
+ *   patch:
+ *     summary: Change le mot de passe de l'utilisateur connecté
+ *     tags: [Utilisateurs]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - currentPassword
+ *               - newPassword
+ *             properties:
+ *               currentPassword:
+ *                 type: string
+ *                 example: ancien_mot_de_passe
+ *               newPassword:
+ *                 type: string
+ *                 minLength: 6
+ *                 example: nouveau_mot_de_passe
+ *     responses:
+ *       200:
+ *         description: Mot de passe changé avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Mot de passe changé avec succès
+ *       400:
+ *         description: Données invalides
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Mot de passe actuel incorrect
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.patch(
   '/me/password',
@@ -48,9 +172,33 @@ router.patch(
 );
 
 /**
- * @route   DELETE /api/v1/users/me
- * @desc    Supprime le compte de l'utilisateur connecté
- * @access  Private
+ * @swagger
+ * /api/v1/users/me:
+ *   delete:
+ *     summary: Supprime le compte de l'utilisateur connecté
+ *     tags: [Utilisateurs]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Compte supprimé avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Compte supprimé avec succès
+ *       401:
+ *         description: Non authentifié
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.delete(
   '/me',
@@ -59,9 +207,82 @@ router.delete(
 );
 
 /**
- * @route   GET /api/v1/users/me/observations
- * @desc    Récupère les observations de l'utilisateur connecté
- * @access  Private
+ * @swagger
+ * /api/v1/users/me/observations:
+ *   get:
+ *     summary: Récupère les observations de l'utilisateur connecté
+ *     tags: [Utilisateurs]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Numéro de page
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *         description: Nombre d'observations par page
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [createdAt, updatedAt, title]
+ *           default: createdAt
+ *         description: Champ de tri
+ *       - in: query
+ *         name: order
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: desc
+ *         description: Ordre de tri
+ *     responses:
+ *       200:
+ *         description: Observations récupérées avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     observations:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Observation'
+ *                     pagination:
+ *                       type: object
+ *                       properties:
+ *                         page:
+ *                           type: integer
+ *                           example: 1
+ *                         limit:
+ *                           type: integer
+ *                           example: 10
+ *                         total:
+ *                           type: integer
+ *                           example: 45
+ *                         pages:
+ *                           type: integer
+ *                           example: 5
+ *       401:
+ *         description: Non authentifié
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.get(
   '/me/observations',

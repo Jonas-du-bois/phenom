@@ -30,7 +30,17 @@ class UserController {
   async updateProfile(req, res, next) {
     try {
       const userId = req.user._id;
-      const user = await userService.updateProfile(userId, req.body);
+      
+      // Filtrer les champs autorisés (whitelist)
+      const allowedFields = ['name', 'email', 'bio'];
+      const updates = {};
+      allowedFields.forEach(field => {
+        if (req.body[field] !== undefined) {
+          updates[field] = req.body[field];
+        }
+      });
+      
+      const user = await userService.updateProfile(userId, updates);
       
       return successResponse(res, user, 'Profil mis à jour avec succès');
     } catch (error) {
@@ -63,6 +73,9 @@ class UserController {
       if (error.message === 'INVALID_CURRENT_PASSWORD') {
         return errorResponse(res, 'Mot de passe actuel incorrect', 400);
       }
+      if (error.message === 'NEW_PASSWORD_SAME_AS_CURRENT') {
+        return errorResponse(res, 'Le nouveau mot de passe doit être différent de l\'ancien', 400);
+      }
       next(error);
     }
   }
@@ -76,7 +89,7 @@ class UserController {
       const userId = req.user._id;
       await userService.deleteAccount(userId);
       
-      return successResponse(res, null, 'Compte supprimé avec succès');
+      return res.status(204).send();
     } catch (error) {
       if (error.message === 'USER_NOT_FOUND') {
         return notFoundResponse(res, 'Utilisateur non trouvé');

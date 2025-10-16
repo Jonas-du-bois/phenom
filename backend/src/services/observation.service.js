@@ -113,6 +113,14 @@ class ObservationService {
       throw new Error('OBSERVATION_NOT_FOUND');
     }
 
+    // Supprimer toutes les images associées
+    try {
+      const imageService = (await import('./image.service.js')).default;
+      await imageService.deleteAllImagesForObservation(observationId);
+    } catch (error) {
+      console.error(`Erreur lors de la suppression des images: ${error.message}`);
+    }
+
     return observation;
   }
 
@@ -204,35 +212,26 @@ class ObservationService {
     const { page, limit, skip } = getPaginationParams(query);
     const radiusInMeters = parseFloat(radius) * 1000;
 
+    // Utiliser $geoWithin au lieu de $near pour permettre skip/limit
+    const geoQuery = {
+      location: {
+        $geoWithin: {
+          $centerSphere: [
+            [parseFloat(longitude), parseFloat(latitude)],
+            radiusInMeters / 6378100 // Rayon de la Terre en mètres
+          ]
+        }
+      },
+      status: 'approved'
+    };
+
     const [observations, total] = await Promise.all([
-      Observation.find({
-        location: {
-          $near: {
-            $geometry: {
-              type: 'Point',
-              coordinates: [parseFloat(longitude), parseFloat(latitude)]
-            },
-            $maxDistance: radiusInMeters
-          }
-        },
-        status: 'approved'
-      })
+      Observation.find(geoQuery)
         .populate('userId', 'name email')
         .skip(skip)
         .limit(limit)
         .lean(),
-      Observation.countDocuments({
-        location: {
-          $near: {
-            $geometry: {
-              type: 'Point',
-              coordinates: [parseFloat(longitude), parseFloat(latitude)]
-            },
-            $maxDistance: radiusInMeters
-          }
-        },
-        status: 'approved'
-      })
+      Observation.countDocuments(geoQuery)
     ]);
 
     return {

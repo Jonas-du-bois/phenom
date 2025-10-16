@@ -6,11 +6,13 @@ import { body, query, param } from 'express-validator';
 export const createObservationValidation = [
   body('title')
     .trim()
+    .escape() // Échapper HTML pour prévenir XSS
     .notEmpty().withMessage('Le titre est requis')
     .isLength({ min: 3, max: 100 }).withMessage('Le titre doit contenir entre 3 et 100 caractères'),
   
   body('description')
     .trim()
+    .escape() // Échapper HTML pour prévenir XSS
     .notEmpty().withMessage('La description est requise')
     .isLength({ min: 10, max: 2000 }).withMessage('La description doit contenir entre 10 et 2000 caractères'),
   
@@ -38,11 +40,13 @@ export const updateObservationValidation = [
   body('title')
     .optional()
     .trim()
+    .escape() // Échapper HTML pour prévenir XSS
     .isLength({ min: 3, max: 100 }).withMessage('Le titre doit contenir entre 3 et 100 caractères'),
   
   body('description')
     .optional()
     .trim()
+    .escape() // Échapper HTML pour prévenir XSS
     .isLength({ min: 10, max: 2000 }).withMessage('La description doit contenir entre 10 et 2000 caractères'),
   
   body('imageUrl')
