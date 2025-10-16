@@ -12,6 +12,11 @@ yarn.lock
 .env.development.local
 .env.test.local
 .env.production.local
+.env.production
+.env.atlas
+# Mais pas les templates
+!.env.example
+!.env.production.template
 
 # Testing
 coverage/

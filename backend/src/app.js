@@ -4,6 +4,8 @@ import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './config/swagger.js';
 import { connectDB } from './config/database.js';
@@ -11,8 +13,13 @@ import routes from './routes/index.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 import { generalLimiter } from './middleware/rateLimiter.js';
 
-// Charger les variables d'environnement
-dotenv.config();
+// Obtenir le chemin du fichier actuel (équivalent de __dirname en ESM)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Charger les variables d'environnement depuis la RACINE du projet
+const envPath = resolve(__dirname, '../../.env');
+dotenv.config({ path: envPath });
 
 const app = express();
 const PORT = process.env.PORT || 3000;

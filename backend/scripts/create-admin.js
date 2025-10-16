@@ -1,9 +1,15 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
 import User from '../src/models/User.js';
 import { connectDB, disconnectDB } from '../src/config/database.js';
 
-dotenv.config();
+// Charger les variables d'environnement depuis la RACINE
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const envPath = resolve(__dirname, '../../.env');
+dotenv.config({ path: envPath });
 
 /**
  * Script pour créer un utilisateur administrateur par défaut

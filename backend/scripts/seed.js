@@ -1,11 +1,17 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
 import { connectDB, disconnectDB } from '../src/config/database.js';
 import User from '../src/models/User.js';
 import Observation from '../src/models/Observation.js';
 import Comment from '../src/models/Comment.js';
 
-dotenv.config();
+// Charger les variables d'environnement depuis la RACINE
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const envPath = resolve(__dirname, '../../.env');
+dotenv.config({ path: envPath });
 
 /**
  * Script pour peupler la base de données avec des données de test

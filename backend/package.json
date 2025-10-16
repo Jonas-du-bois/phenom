@@ -13,7 +13,9 @@
     "lint": "eslint src/**/*.js",
     "lint:fix": "eslint src/**/*.js --fix",
     "seed": "node scripts/seed.js",
-    "create-admin": "node scripts/create-admin.js"
+    "create-admin": "node scripts/create-admin.js",
+    "check-db": "node scripts/check-db-connection.js",
+    "migrate-to-atlas": "node scripts/migrate-to-atlas.js"
   },
   "keywords": [
     "ufo",
