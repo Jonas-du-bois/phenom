@@ -11,7 +11,7 @@ services:
     region: frankfurt # ou oregon, singapore selon votre localisation
     plan: free # ou starter ($7/mois) pour plus de ressources
     branch: main
-    buildCommand: cd backend && npm install && npm run build
+    buildCommand: cd backend && npm ci --only=production
     startCommand: cd backend && npm start
     envVars:
       # Environnement
@@ -90,7 +90,7 @@ services:
     name: phenom-frontend
     runtime: static
     branch: main
-    buildCommand: cd frontend && npm install && npm run build
+    buildCommand: cd frontend && npm ci && npm run build
     staticPublishPath: ./frontend/dist
     envVars:
       # URL de l'API Backend
