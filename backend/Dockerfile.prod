@@ -1,0 +1,68 @@
+# ============================================================================
+# Dockerfile Production - Backend Node.js
+# Multi-stage build optimisé pour Render
+# ============================================================================
+
+# Stage 1: Builder
+FROM node:18-alpine AS builder
+
+# Métadonnées
+LABEL maintainer="Phenom Team"
+LABEL description="Backend Node.js + Express + MongoDB Atlas"
+
+# Variables d'environnement de build
+ENV NODE_ENV=production
+
+# Créer user non-root
+RUN addgroup -g 1001 nodejs && adduser -S -u 1001 -G nodejs nodejs
+
+# Répertoire de travail
+WORKDIR /app
+
+# Copier les fichiers de dépendances
+COPY package*.json ./
+
+# Installer UNIQUEMENT les dépendances de production
+RUN npm ci --only=production --ignore-scripts && \
+    npm cache clean --force
+
+# Stage 2: Runner
+FROM node:18-alpine AS runner
+
+# Métadonnées
+LABEL stage="production"
+
+# Variables d'environnement runtime
+ENV NODE_ENV=production \
+    PORT=10000
+
+# Créer user non-root
+RUN addgroup -g 1001 nodejs && adduser -S -u 1001 -G nodejs nodejs
+
+# Répertoire de travail
+WORKDIR /app
+
+# Copier les dépendances depuis le builder
+COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
+
+# Copier le code source
+COPY --chown=nodejs:nodejs ./src ./src
+COPY --chown=nodejs:nodejs ./scripts ./scripts
+COPY --chown=nodejs:nodejs package*.json ./
+
+# Créer le dossier uploads avec permissions
+RUN mkdir -p /app/uploads && \
+    chown -R nodejs:nodejs /app/uploads
+
+# Changer vers user non-root
+USER nodejs
+
+# Exposer le port
+EXPOSE 10000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:10000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+
+# Démarrer l'application
+CMD ["node", "src/app.js"]

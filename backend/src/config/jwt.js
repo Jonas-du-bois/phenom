@@ -1,6 +1,30 @@
 import jwt from 'jsonwebtoken';
 
 /**
+ * Vérifie que les secrets JWT sont configurés
+ * À appeler APRÈS le chargement de .env
+ * @throws {Error} Si les secrets ne sont pas définis
+ */
+export const validateJwtConfig = () => {
+  if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET non défini dans .env');
+  }
+  if (!process.env.JWT_REFRESH_SECRET) {
+    throw new Error('JWT_REFRESH_SECRET non défini dans .env');
+  }
+  
+  // Avertissement si secrets trop courts en production
+  if (process.env.NODE_ENV === 'production') {
+    if (process.env.JWT_SECRET.length < 32) {
+      console.warn('⚠️  JWT_SECRET devrait avoir au moins 32 caractères en production');
+    }
+    if (process.env.JWT_REFRESH_SECRET.length < 32) {
+      console.warn('⚠️  JWT_REFRESH_SECRET devrait avoir au moins 32 caractères en production');
+    }
+  }
+};
+
+/**
  * Génère un access token JWT
  * @param {Object} payload - Données à encoder dans le token
  * @returns {string} Token JWT

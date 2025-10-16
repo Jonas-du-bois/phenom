@@ -1,0 +1,63 @@
+# ============================================================================
+# Dockerfile Production - Frontend Vue.js
+# Multi-stage build: Vite build + Nginx serve
+# ============================================================================
+
+# Stage 1: Builder
+FROM node:18-alpine AS builder
+
+# Métadonnées
+LABEL maintainer="Phenom Team"
+LABEL description="Frontend Vue.js + Vite"
+
+# Variables d'environnement de build
+ARG VITE_API_BASE_URL
+ARG VITE_APP_NAME=Phenom
+ARG VITE_MAP_TILES_URL=https://tile.openstreetmap.org/{z}/{x}/{y}.png
+
+ENV NODE_ENV=production \
+    VITE_API_BASE_URL=$VITE_API_BASE_URL \
+    VITE_APP_NAME=$VITE_APP_NAME \
+    VITE_MAP_TILES_URL=$VITE_MAP_TILES_URL
+
+# Répertoire de travail
+WORKDIR /app
+
+# Copier les fichiers de dépendances
+COPY package*.json ./
+
+# Installer les dépendances
+RUN npm ci --ignore-scripts && \
+    npm cache clean --force
+
+# Copier le code source
+COPY . .
+
+# Build Vite
+RUN npm run build
+
+# Stage 2: Runner avec Nginx
+FROM nginx:alpine AS runner
+
+# Métadonnées
+LABEL stage="production"
+
+# Copier la configuration Nginx
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Copier les fichiers buildés depuis le builder
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Créer user non-root
+RUN chown -R nginx:nginx /usr/share/nginx/html && \
+    chmod -R 755 /usr/share/nginx/html
+
+# Exposer le port (Render utilise le port défini dans le service)
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+  CMD wget --quiet --tries=1 --spider http://localhost:80/ || exit 1
+
+# Démarrer Nginx
+CMD ["nginx", "-g", "daemon off;"]

@@ -1,0 +1,117 @@
+# Render Blueprint Configuration
+# https://render.com/docs/blueprint-spec
+
+services:
+  # ============================================================================
+  # Backend API (Node.js + Express + MongoDB Atlas)
+  # ============================================================================
+  - type: web
+    name: phenom-backend
+    runtime: node
+    region: frankfurt # ou oregon, singapore selon votre localisation
+    plan: free # ou starter ($7/mois) pour plus de ressources
+    branch: main
+    buildCommand: cd backend && npm install && npm run build
+    startCommand: cd backend && npm start
+    envVars:
+      # Environnement
+      - key: NODE_ENV
+        value: production
+      
+      - key: PORT
+        value: 10000
+      
+      # MongoDB Atlas (À configurer dans Render Dashboard)
+      - key: MONGODB_URI
+        sync: false # Secret - à définir manuellement
+      
+      - key: MONGODB_TEST_URI
+        sync: false # Secret - à définir manuellement
+      
+      # JWT (À générer et configurer dans Render Dashboard)
+      - key: JWT_SECRET
+        generateValue: true # Render génère automatiquement
+      
+      - key: JWT_EXPIRE
+        value: 1h
+      
+      - key: JWT_REFRESH_SECRET
+        generateValue: true # Render génère automatiquement
+      
+      - key: JWT_REFRESH_EXPIRE
+        value: 7d
+      
+      # CORS (URL du frontend Render)
+      - key: CORS_ORIGIN
+        value: https://phenom-frontend.onrender.com
+      
+      # Rate Limiting
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 900000
+      
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: 1000
+      
+      # File Upload
+      - key: MAX_FILE_SIZE
+        value: 10485760
+      
+      - key: ALLOWED_IMAGE_TYPES
+        value: image/jpeg,image/png,image/webp
+      
+      - key: UPLOAD_DIR
+        value: /opt/render/project/src/backend/uploads
+      
+      # Pagination
+      - key: DEFAULT_PAGE_SIZE
+        value: 10
+      
+      - key: MAX_PAGE_SIZE
+        value: 100
+      
+      # API
+      - key: API_PREFIX
+        value: /api/v1
+    
+    healthCheckPath: /health
+    
+    # Persistent Disk pour les uploads (optionnel)
+    disk:
+      name: phenom-uploads
+      mountPath: /opt/render/project/src/backend/uploads
+      sizeGB: 1
+
+  # ============================================================================
+  # Frontend (Vue.js + Vite)
+  # ============================================================================
+  - type: web
+    name: phenom-frontend
+    runtime: static
+    region: frankfurt
+    plan: free
+    branch: main
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist
+    envVars:
+      # URL de l'API Backend
+      - key: VITE_API_BASE_URL
+        value: https://phenom-backend.onrender.com
+      
+      - key: VITE_APP_NAME
+        value: Phenom
+      
+      - key: VITE_MAP_TILES_URL
+        value: https://tile.openstreetmap.org/{z}/{x}/{y}.png
+    
+    # Routes SPA (pour Vue Router)
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+# ============================================================================
+# Databases
+# ============================================================================
+# Note: Render ne fournit pas MongoDB managé
+# Vous devez utiliser MongoDB Atlas (gratuit)
+# Configuration dans le Render Dashboard après déploiement

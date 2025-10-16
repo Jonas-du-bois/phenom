@@ -1,18 +1,72 @@
-# backend/.dockerignore
-node_modules
+# ============================================================================
+# .dockerignore - Backend
+# Exclure les fichiers inutiles du contexte Docker
+# ============================================================================
+
+# Node
+node_modules/
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+pnpm-lock.yaml
 .npm
-tests
-coverage
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Tests
+tests/
+coverage/
+*.test.js
+*.spec.js
 .nyc_output
-.env.local
-.env.development
-.env.test
-.git
-.gitignore
-README.md
-Dockerfile
-.dockerignore
-docs
+
+# Documentation
 *.md
+!README.md
+docs/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
 .DS_Store
+
+# Logs
+logs/
+*.log
+
+# Uploads (géré par volume)
+uploads/*
+!uploads/.gitkeep
+
+# Temp
+tmp/
+temp/
+*.tmp
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.circleci/
+
+# Docker
+Dockerfile
+Dockerfile.*
+docker-compose*.yml
+.dockerignore
+
+# Scripts de développement
+scripts/seed.js
+scripts/create-admin.js
+mongo-init.js
