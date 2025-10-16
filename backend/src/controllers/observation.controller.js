@@ -158,6 +158,20 @@ class ObservationController {
       next(error);
     }
   }
+
+  /**
+   * Récupère les statistiques publiques des observations
+   * GET /observations/stats
+   */
+  async getObservationStats(req, res, next) {
+    try {
+      const stats = await observationService.getObservationStats();
+      
+      return successResponse(res, stats);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default new ObservationController();

@@ -30,6 +30,16 @@ router.get(
 );
 
 /**
+ * @route   GET /api/v1/observations/stats
+ * @desc    Récupère les statistiques publiques des observations
+ * @access  Public
+ */
+router.get(
+  '/stats',
+  observationController.getObservationStats
+);
+
+/**
  * @route   GET /api/v1/observations
  * @desc    Récupère la liste des observations avec filtres
  * @access  Public

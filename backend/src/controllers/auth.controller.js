@@ -87,6 +87,42 @@ class AuthController {
       next(error);
     }
   }
+
+  /**
+   * Demande de réinitialisation du mot de passe
+   * POST /auth/forgot-password
+   */
+  async forgotPassword(req, res, next) {
+    try {
+      const { email } = req.body;
+      const result = await authService.forgotPassword(email);
+      
+      return successResponse(res, result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Réinitialise le mot de passe
+   * POST /auth/reset-password
+   */
+  async resetPassword(req, res, next) {
+    try {
+      const { token, newPassword } = req.body;
+      await authService.resetPassword(token, newPassword);
+      
+      return successResponse(res, null, 'Mot de passe réinitialisé avec succès');
+    } catch (error) {
+      if (error.message === 'INVALID_RESET_TOKEN') {
+        return unauthorizedResponse(res, 'Token de réinitialisation invalide ou expiré');
+      }
+      if (error.message === 'USER_NOT_FOUND') {
+        return unauthorizedResponse(res, 'Utilisateur non trouvé');
+      }
+      next(error);
+    }
+  }
 }
 
 export default new AuthController();

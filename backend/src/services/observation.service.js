@@ -240,6 +240,50 @@ class ObservationService {
       pagination: createPaginationMeta(total, page, limit)
     };
   }
+
+  /**
+   * Récupère les statistiques publiques des observations
+   * @returns {Object} Statistiques
+   */
+  async getObservationStats() {
+    const [
+      totalObservations,
+      totalApproved,
+      totalPending,
+      totalRejected,
+      observationsByMonth
+    ] = await Promise.all([
+      Observation.countDocuments(),
+      Observation.countDocuments({ status: 'approved' }),
+      Observation.countDocuments({ status: 'pending' }),
+      Observation.countDocuments({ status: 'rejected' }),
+      Observation.aggregate([
+        {
+          $group: {
+            _id: {
+              year: { $year: '$createdAt' },
+              month: { $month: '$createdAt' }
+            },
+            count: { $sum: 1 }
+          }
+        },
+        {
+          $sort: { '_id.year': -1, '_id.month': -1 }
+        },
+        {
+          $limit: 12
+        }
+      ])
+    ]);
+
+    return {
+      totalObservations,
+      totalApproved,
+      totalPending,
+      totalRejected,
+      observationsByMonth
+    };
+  }
 }
 
 export default new ObservationService();
