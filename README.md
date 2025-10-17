@@ -227,9 +227,9 @@ MIT License - voir le fichier LICENSE
 
 ## 👥 Équipe
 
-Équipe Phenom - [contact@phenom.com](mailto:contact@phenom.com)
+Équipe Phenom - [jonas.dubois@heig-vd.ch](mailto:jonas.dubois@heig-vd.ch)
 
 ---
 
-**Version** : 1.0.0  
+**Version** : Zone.5.1  
 **Dernière mise à jour** : 15 octobre 2025
