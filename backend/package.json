@@ -14,6 +14,7 @@
     "lint:fix": "eslint src/**/*.js --fix",
     "seed": "node scripts/seed.js",
     "seed:images": "node scripts/seed/download-placeholder-images.js",
+  "export:swagger": "node scripts/export-swagger.js",
     "create-admin": "node scripts/create-admin.js",
     "check-db": "node scripts/check-db-connection.js",
     "migrate-to-atlas": "node scripts/migrate-to-atlas.js"

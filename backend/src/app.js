@@ -95,6 +95,17 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
   customfavIcon: '/favicon.ico'
 }));
 
+// Endpoint pour exporter le spec OpenAPI en JSON
+app.get('/openapi.json', (req, res) => {
+  try {
+    res.setHeader('Content-Type', 'application/json');
+    // swaggerSpec est l'objet retourné par swagger-jsdoc
+    res.status(200).send(swaggerSpec);
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Impossible de générer le spec OpenAPI', error: err.message });
+  }
+});
+
 // Routes API
 app.use(API_PREFIX, routes);
 
