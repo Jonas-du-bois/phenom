@@ -158,11 +158,6 @@ class ObservationService {
 
     // Ajouter l'image au tableau
     observation.images.push(imageData);
-    
-    // Si c'est la première image, mettre à jour imageUrl aussi
-    if (!observation.imageUrl) {
-      observation.imageUrl = imageData.imageUrl;
-    }
 
     await observation.save();
 
@@ -188,12 +183,6 @@ class ObservationService {
 
     // Supprimer l'image du tableau
     observation.images.splice(imageIndex, 1);
-
-    // Si on supprime l'image principale, mettre à jour imageUrl
-    const deletedImageUrl = observation.images[imageIndex]?.imageUrl;
-    if (observation.imageUrl === deletedImageUrl) {
-      observation.imageUrl = observation.images.length > 0 ? observation.images[0].imageUrl : null;
-    }
 
     await observation.save();
 

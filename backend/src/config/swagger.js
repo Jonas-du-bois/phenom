@@ -5,8 +5,8 @@ const options = {
     openapi: '3.0.0',
     info: {
       title: 'Phenom API',
-      version: '1.0.0',
-      description: 'API pour l\'application d\'observations OVNI Phenom',
+      version: '1.2.4',
+      description: 'API pour l\'application d\'observations OVNI de l\'app Phenom',
       contact: {
         name: 'Équipe Phenom',
         email: 'contact@phenom.app'
@@ -16,7 +16,7 @@ const options = {
         url: 'https://opensource.org/licenses/MIT'
       }
     },
-    servers: [
+    /* servers: [
       {
         url: process.env.API_BASE_URL || 'http://localhost:3000',
         description: 'Serveur de développement'
@@ -25,7 +25,7 @@ const options = {
         url: 'https://phenom-api.onrender.com',
         description: 'Serveur de production'
       }
-    ],
+    ], */
     components: {
       securitySchemes: {
         bearerAuth: {
@@ -95,9 +95,33 @@ const options = {
               type: 'string',
               example: 'Observation d\'un objet triangulaire lumineux'
             },
-            imageUrl: {
-              type: 'string',
-              example: 'https://example.com/image.jpg'
+            images: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  imageId: {
+                    type: 'string',
+                    example: '67890abcdef'
+                  },
+                  imageUrl: {
+                    type: 'string',
+                    example: '/api/v1/images/67890abcdef'
+                  },
+                  size: {
+                    type: 'number',
+                    example: 524288
+                  },
+                  format: {
+                    type: 'string',
+                    example: 'image/jpeg'
+                  },
+                  uploadedAt: {
+                    type: 'string',
+                    format: 'date-time'
+                  }
+                }
+              }
             },
             location: {
               type: 'object',

@@ -23,11 +23,7 @@ export const createObservationValidation = [
     .isFloat({ min: -180, max: 180 }).withMessage('La longitude doit être entre -180 et 180'),
   
   body('location.coordinates.1')
-    .isFloat({ min: -90, max: 90 }).withMessage('La latitude doit être entre -90 et 90'),
-  
-  body('imageUrl')
-    .optional()
-    .isURL().withMessage('URL d\'image invalide')
+    .isFloat({ min: -90, max: 90 }).withMessage('La latitude doit être entre -90 et 90')
 ];
 
 /**
@@ -47,11 +43,7 @@ export const updateObservationValidation = [
     .optional()
     .trim()
     .escape() // Échapper HTML pour prévenir XSS
-    .isLength({ min: 10, max: 2000 }).withMessage('La description doit contenir entre 10 et 2000 caractères'),
-  
-  body('imageUrl')
-    .optional()
-    .isURL().withMessage('URL d\'image invalide')
+    .isLength({ min: 10, max: 2000 }).withMessage('La description doit contenir entre 10 et 2000 caractères')
 ];
 
 /**

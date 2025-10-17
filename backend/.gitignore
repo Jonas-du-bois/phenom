@@ -42,6 +42,7 @@ build/
 # Uploads
 uploads/*
 !uploads/.gitkeep
+scripts/seed/images
 
 # Temporary files
 tmp/

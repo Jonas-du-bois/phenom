@@ -15,10 +15,6 @@ const observationSchema = new mongoose.Schema({
     minlength: [10, 'La description doit contenir au moins 10 caractères'],
     maxlength: [2000, 'La description ne peut pas dépasser 2000 caractères']
   },
-  imageUrl: {
-    type: String,
-    default: null
-  },
   images: [{
     imageId: {
       type: String,
