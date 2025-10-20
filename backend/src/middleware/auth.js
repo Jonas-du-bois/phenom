@@ -9,7 +9,7 @@ export const authenticate = async (req, res, next) => {
   try {
     // Récupérer le token depuis le header Authorization
     const authHeader = req.headers.authorization;
-    
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({
         success: false,
@@ -43,7 +43,7 @@ export const authenticate = async (req, res, next) => {
         error: 'Token invalide'
       });
     }
-    
+
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({
         success: false,
@@ -65,7 +65,7 @@ export const authenticate = async (req, res, next) => {
 export const optionalAuth = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
-    
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return next();
     }

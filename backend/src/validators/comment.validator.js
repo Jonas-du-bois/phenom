@@ -6,7 +6,7 @@ import { body, param, query } from 'express-validator';
 export const createCommentValidation = [
   param('id')
     .isMongoId().withMessage('ID d\'observation invalide'),
-  
+
   body('text')
     .trim()
     .escape()
@@ -20,7 +20,7 @@ export const createCommentValidation = [
 export const updateCommentValidation = [
   param('id')
     .isMongoId().withMessage('ID de commentaire invalide'),
-  
+
   body('text')
     .trim()
     .escape()
@@ -34,11 +34,11 @@ export const updateCommentValidation = [
 export const getCommentsValidation = [
   param('id')
     .isMongoId().withMessage('ID d\'observation invalide'),
-  
+
   query('page')
     .optional()
     .isInt({ min: 1 }).withMessage('La page doit être un entier positif'),
-  
+
   query('limit')
     .optional()
     .isInt({ min: 1, max: 100 }).withMessage('La limite doit être entre 1 et 100')

@@ -17,17 +17,22 @@ ENV PORT=$PORT
 # Working directory
 WORKDIR /app
 
-# Installer les dépendances système
+# Installer les dépendances système 
 RUN apk add --no-cache \
     dumb-init \
+    vips-dev \
+    fftw-dev \
+    build-base \
+    python3 \
+    libc6-compat \
     && rm -rf /var/cache/apk/*
 
 # Copier les fichiers de dépendances
 COPY package*.json ./
 
-# Installer les dépendances
-RUN npm ci --only=production --silent && \
-    npm cache clean --force --silent
+# Installer les dépendances (sans --silent pour voir les erreurs)
+RUN npm ci && \
+    npm cache clean --force
 
 # Créer un utilisateur non-root
 RUN addgroup -g 1001 -S nodejs && \

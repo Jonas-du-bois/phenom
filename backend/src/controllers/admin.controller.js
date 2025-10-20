@@ -13,7 +13,7 @@ class AdminController {
   async getUsers(req, res, next) {
     try {
       const { users, pagination } = await adminService.getUsers(req.query);
-      
+
       return res.status(200).json(
         paginatedResponse(users, pagination.total, pagination.page, pagination.limit)
       );
@@ -29,7 +29,7 @@ class AdminController {
   async updateUserRole(req, res, next) {
     try {
       const user = await adminService.updateUserRole(req.params.id, req.body.role);
-      
+
       return successResponse(res, user, 'Rôle utilisateur mis à jour avec succès');
     } catch (error) {
       if (error.message === 'USER_NOT_FOUND') {
@@ -46,7 +46,7 @@ class AdminController {
   async getStats(req, res, next) {
     try {
       const stats = await adminService.getStats();
-      
+
       return successResponse(res, stats);
     } catch (error) {
       next(error);
@@ -60,7 +60,7 @@ class AdminController {
   async deleteObservation(req, res, next) {
     try {
       await adminService.deleteObservation(req.params.id);
-      
+
       return res.status(204).send();
     } catch (error) {
       if (error.message === 'OBSERVATION_NOT_FOUND') {
@@ -77,7 +77,7 @@ class AdminController {
   async deleteComment(req, res, next) {
     try {
       await adminService.deleteComment(req.params.id);
-      
+
       return res.status(204).send();
     } catch (error) {
       if (error.message === 'COMMENT_NOT_FOUND') {
@@ -94,7 +94,7 @@ class AdminController {
   async getAllObservations(req, res, next) {
     try {
       const result = await adminService.getAllObservations(req.query);
-      
+
       return res.json({
         success: true,
         data: result.data,
@@ -114,9 +114,9 @@ class AdminController {
       const observationId = req.params.id;
       const adminId = req.user._id;
       const { note } = req.body;
-      
+
       const observation = await adminService.approveObservation(observationId, adminId, note);
-      
+
       return successResponse(res, observation, 'Observation approuvée avec succès');
     } catch (error) {
       if (error.message === 'OBSERVATION_NOT_FOUND') {
@@ -135,9 +135,9 @@ class AdminController {
       const observationId = req.params.id;
       const adminId = req.user._id;
       const { reason } = req.body;
-      
+
       const observation = await adminService.rejectObservation(observationId, adminId, reason);
-      
+
       return successResponse(res, observation, 'Observation rejetée avec succès');
     } catch (error) {
       if (error.message === 'OBSERVATION_NOT_FOUND') {
@@ -155,7 +155,7 @@ class AdminController {
     try {
       const userId = req.params.id;
       const user = await adminService.suspendUser(userId, req.body);
-      
+
       return successResponse(res, user, 'Utilisateur suspendu avec succès');
     } catch (error) {
       if (error.message === 'USER_NOT_FOUND') {
@@ -173,7 +173,7 @@ class AdminController {
     try {
       const userId = req.params.id;
       const user = await adminService.activateUser(userId);
-      
+
       return successResponse(res, user, 'Utilisateur réactivé avec succès');
     } catch (error) {
       if (error.message === 'USER_NOT_FOUND') {
@@ -190,7 +190,7 @@ class AdminController {
   async getAllComments(req, res, next) {
     try {
       const result = await adminService.getAllComments(req.query);
-      
+
       return res.json({
         success: true,
         data: result.data,
@@ -208,7 +208,7 @@ class AdminController {
   async getUserDetails(req, res, next) {
     try {
       const user = await adminService.getUserDetails(req.params.id);
-      
+
       return successResponse(res, user);
     } catch (error) {
       if (error.message === 'USER_NOT_FOUND') {

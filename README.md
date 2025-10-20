@@ -99,22 +99,52 @@ VITE_API_BASE_URL=http://localhost:3000
 
 #### 4. Démarrer l'application avec Docker
 
-**Option 1 : Avec Make (recommandé)**
-```bash
-# Afficher toutes les commandes disponibles
-make help
+**⚡ Méthode recommandée : Scripts de gestion**
 
-# Démarrer l'application complète
-make start
+Nous fournissons des scripts optimisés pour chaque plateforme :
+
+**Sur Linux/Mac :**
+```bash
+# Donner les permissions d'exécution (une seule fois)
+chmod +x phenom.sh
+
+# Démarrer l'application
+./phenom.sh start
 
 # Voir les logs en temps réel
-make logs
+./phenom.sh logs
 
-# Arrêter l'application
-make stop
+# Afficher toutes les commandes
+./phenom.sh help
 ```
 
-**Option 2 : Avec Docker Compose**
+**Sur Windows (PowerShell) :**
+```powershell
+# Autoriser l'exécution de scripts (une seule fois, en Admin)
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+
+# Démarrer l'application
+.\phenom.ps1 start
+
+# Voir les logs en temps réel
+.\phenom.ps1 logs
+
+# Afficher toutes les commandes
+.\phenom.ps1 help
+```
+
+**Sur Windows (Git Bash) :**
+```bash
+# Utiliser directement le script bash
+./phenom.sh start
+./phenom.sh logs
+```
+
+**📖 Documentation complète des scripts : [SCRIPTS_README.md](SCRIPTS_README.md)**
+
+---
+
+**Alternative : Docker Compose directement**
 ```bash
 # Démarrer tous les services
 docker-compose up -d
@@ -128,16 +158,24 @@ docker-compose down
 
 #### 5. Initialiser les données (optionnel)
 
+**Avec les scripts :**
 ```bash
-# Créer un compte administrateur
-make create-admin
-# ou
-docker-compose exec backend npm run create-admin
+# Linux/Mac
+./phenom.sh create-admin    # Créer un compte administrateur
+./phenom.sh seed             # Peupler la base de données
+./phenom.sh check-db         # Vérifier la connexion
 
-# Peupler la base avec des données de test
-make seed
-# ou
+# Windows
+.\phenom.ps1 create-admin
+.\phenom.ps1 seed
+.\phenom.ps1 check-db
+```
+
+**Avec Docker Compose directement :**
+```bash
+docker-compose exec backend npm run create-admin
 docker-compose exec backend npm run seed
+docker-compose exec backend npm run check-db
 ```
 
 ### 🌐 Accès aux services
@@ -227,7 +265,7 @@ phenom/
 ├── render.yaml           # Config déploiement Render
 ├── .env.example
 ├── .gitignore
-└── Makefile
+└── Readme.md
 ```
 
 ## 🛠️ Développement

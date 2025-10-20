@@ -13,7 +13,7 @@ class ObservationController {
   async getObservations(req, res, next) {
     try {
       const { observations, pagination } = await observationService.getObservations(req.query);
-      
+
       return res.status(200).json(
         paginatedResponse(observations, pagination.total, pagination.page, pagination.limit)
       );
@@ -29,7 +29,7 @@ class ObservationController {
   async getObservationById(req, res, next) {
     try {
       const observation = await observationService.getObservationById(req.params.id);
-      
+
       return successResponse(res, observation);
     } catch (error) {
       if (error.message === 'OBSERVATION_NOT_FOUND') {
@@ -46,7 +46,7 @@ class ObservationController {
   async createObservation(req, res, next) {
     try {
       const observation = await observationService.createObservation(req.body, req.user._id);
-      
+
       return createdResponse(res, observation, 'Observation créée avec succès');
     } catch (error) {
       next(error);
@@ -69,7 +69,7 @@ class ObservationController {
       });
 
       const observation = await observationService.updateObservation(req.params.id, updateData);
-      
+
       return successResponse(res, observation, 'Observation mise à jour avec succès');
     } catch (error) {
       if (error.message === 'OBSERVATION_NOT_FOUND') {
@@ -86,7 +86,7 @@ class ObservationController {
   async deleteObservation(req, res, next) {
     try {
       await observationService.deleteObservation(req.params.id);
-      
+
       return res.status(204).send();
     } catch (error) {
       if (error.message === 'OBSERVATION_NOT_FOUND') {
@@ -108,7 +108,7 @@ class ObservationController {
 
       const observationId = req.params.id;
       const imageData = await observationService.addImage(observationId, req.file);
-      
+
       return createdResponse(res, imageData, 'Image ajoutée avec succès');
     } catch (error) {
       if (error.message === 'OBSERVATION_NOT_FOUND') {
@@ -126,7 +126,7 @@ class ObservationController {
     try {
       const { id: observationId, imageId } = req.params;
       await observationService.deleteImage(observationId, imageId);
-      
+
       return successResponse(res, null, 'Image supprimée avec succès');
     } catch (error) {
       if (error.message === 'OBSERVATION_NOT_FOUND') {
@@ -157,7 +157,7 @@ class ObservationController {
         radius,
         req.query
       );
-      
+
       return res.json({
         success: true,
         data: result.data,
@@ -175,7 +175,7 @@ class ObservationController {
   async getObservationStats(req, res, next) {
     try {
       const stats = await observationService.getObservationStats();
-      
+
       return successResponse(res, stats);
     } catch (error) {
       next(error);

@@ -18,10 +18,10 @@ class ImageService {
   async uploadImage(buffer, filename, mimetype, observationId) {
     try {
       const bucket = getGridFSBucket();
-      
+
       // 🗜️ COMPRESSION DE L'IMAGE (délégué au compressor)
       const compressed = await imageCompressor.compress(buffer, mimetype);
-      
+
       // Créer un stream depuis le buffer compressé
       const readableStream = new Readable();
       readableStream.push(compressed.buffer);
@@ -78,10 +78,10 @@ class ImageService {
   async getImage(imageId) {
     try {
       const bucket = getGridFSBucket();
-      
+
       // Vérifier que l'image existe
       const files = await bucket.find({ _id: new ObjectId(imageId) }).toArray();
-      
+
       if (!files || files.length === 0) {
         throw new Error('IMAGE_NOT_FOUND');
       }
@@ -111,13 +111,13 @@ class ImageService {
   async deleteImage(imageId, observationId) {
     try {
       const bucket = getGridFSBucket();
-      
+
       // Vérifier que l'image existe et appartient à l'observation
-      const files = await bucket.find({ 
+      const files = await bucket.find({
         _id: new ObjectId(imageId),
         'metadata.observationId': observationId
       }).toArray();
-      
+
       if (!files || files.length === 0) {
         throw new Error('IMAGE_NOT_FOUND');
       }
@@ -139,10 +139,10 @@ class ImageService {
   async deleteAllImagesForObservation(observationId) {
     try {
       const bucket = getGridFSBucket();
-      
+
       // Trouver toutes les images de l'observation
-      const files = await bucket.find({ 
-        'metadata.observationId': observationId 
+      const files = await bucket.find({
+        'metadata.observationId': observationId
       }).toArray();
 
       // Supprimer chaque image
@@ -164,9 +164,9 @@ class ImageService {
   async listImagesForObservation(observationId) {
     try {
       const bucket = getGridFSBucket();
-      
-      const files = await bucket.find({ 
-        'metadata.observationId': observationId 
+
+      const files = await bucket.find({
+        'metadata.observationId': observationId
       }).toArray();
 
       return files.map(file => ({

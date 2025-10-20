@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: [true, "L'email est requis"],
+    required: [true, 'L\'email est requis'],
     unique: true,
     lowercase: true,
     trim: true,
@@ -63,7 +63,7 @@ const userSchema = new mongoose.Schema({
 userSchema.index({ createdAt: -1 });
 
 // Hash le mot de passe avant de sauvegarder
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
     return next();
   }
@@ -78,12 +78,12 @@ userSchema.pre('save', async function(next) {
 });
 
 // Méthode pour comparer les mots de passe
-userSchema.methods.comparePassword = async function(candidatePassword) {
+userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
 // Méthode pour retourner l'objet user sans le password
-userSchema.methods.toSafeObject = function() {
+userSchema.methods.toSafeObject = function () {
   const obj = this.toObject();
   delete obj.password;
   return obj;

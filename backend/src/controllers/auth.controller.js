@@ -12,7 +12,7 @@ class AuthController {
   async signup(req, res, next) {
     try {
       const result = await authService.signup(req.body);
-      
+
       return createdResponse(res, result, 'Inscription réussie');
     } catch (error) {
       if (error.message === 'EMAIL_ALREADY_EXISTS') {
@@ -29,7 +29,7 @@ class AuthController {
   async login(req, res, next) {
     try {
       const result = await authService.login(req.body);
-      
+
       return successResponse(res, result, 'Connexion réussie');
     } catch (error) {
       if (error.message === 'INVALID_CREDENTIALS') {
@@ -46,7 +46,7 @@ class AuthController {
   async getProfile(req, res, next) {
     try {
       const user = await authService.getProfile(req.user._id);
-      
+
       return successResponse(res, user);
     } catch (error) {
       if (error.message === 'USER_NOT_FOUND') {
@@ -72,7 +72,7 @@ class AuthController {
     try {
       const { refreshToken } = req.body;
       const tokens = await authService.refreshToken(refreshToken);
-      
+
       return successResponse(res, tokens, 'Token rafraîchi avec succès');
     } catch (error) {
       if (error.message === 'REFRESH_TOKEN_REQUIRED') {
@@ -96,7 +96,7 @@ class AuthController {
     try {
       const { email } = req.body;
       const result = await authService.forgotPassword(email);
-      
+
       return successResponse(res, result);
     } catch (error) {
       next(error);
@@ -111,7 +111,7 @@ class AuthController {
     try {
       const { token, newPassword } = req.body;
       await authService.resetPassword(token, newPassword);
-      
+
       return successResponse(res, null, 'Mot de passe réinitialisé avec succès');
     } catch (error) {
       if (error.message === 'INVALID_RESET_TOKEN') {

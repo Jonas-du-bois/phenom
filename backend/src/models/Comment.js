@@ -11,12 +11,12 @@ const commentSchema = new mongoose.Schema({
   observationId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Observation',
-    required: [true, "L'ID de l'observation est requis"]
+    required: [true, 'L\'ID de l\'observation est requis']
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: [true, "L'ID utilisateur est requis"]
+    required: [true, 'L\'ID utilisateur est requis']
   },
   createdAt: {
     type: Date,

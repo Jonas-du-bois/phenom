@@ -23,7 +23,7 @@ export const getPaginationParams = (query) => {
  */
 export const createPaginationMeta = (total, page, limit) => {
   const totalPages = Math.ceil(total / limit);
-  
+
   return {
     page,
     limit,

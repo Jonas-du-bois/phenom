@@ -77,5 +77,5 @@ export const getUserObservationsValidation = [
   query('order')
     .optional()
     .isIn(['asc', 'desc'])
-    .withMessage("L'ordre doit être asc ou desc")
+    .withMessage('L\'ordre doit être asc ou desc')
 ];

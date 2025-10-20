@@ -13,7 +13,7 @@ class UserController {
     try {
       const userId = req.user._id;
       const profile = await userService.getProfile(userId);
-      
+
       return successResponse(res, profile);
     } catch (error) {
       if (error.message === 'USER_NOT_FOUND') {
@@ -30,7 +30,7 @@ class UserController {
   async updateProfile(req, res, next) {
     try {
       const userId = req.user._id;
-      
+
       // Filtrer les champs autorisés (whitelist)
       const allowedFields = ['name', 'email', 'bio'];
       const updates = {};
@@ -39,9 +39,9 @@ class UserController {
           updates[field] = req.body[field];
         }
       });
-      
+
       const user = await userService.updateProfile(userId, updates);
-      
+
       return successResponse(res, user, 'Profil mis à jour avec succès');
     } catch (error) {
       if (error.message === 'USER_NOT_FOUND') {
@@ -62,9 +62,9 @@ class UserController {
     try {
       const userId = req.user._id;
       const { currentPassword, newPassword } = req.body;
-      
+
       await userService.changePassword(userId, currentPassword, newPassword);
-      
+
       return successResponse(res, null, 'Mot de passe modifié avec succès');
     } catch (error) {
       if (error.message === 'USER_NOT_FOUND') {
@@ -88,7 +88,7 @@ class UserController {
     try {
       const userId = req.user._id;
       await userService.deleteAccount(userId);
-      
+
       return res.status(204).send();
     } catch (error) {
       if (error.message === 'USER_NOT_FOUND') {
@@ -106,7 +106,7 @@ class UserController {
     try {
       const userId = req.user._id;
       const result = await userService.getUserObservations(userId, req.query);
-      
+
       return res.json({
         success: true,
         data: result.data,

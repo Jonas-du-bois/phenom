@@ -7,6 +7,12 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: () => import('../views/HomeView.vue')
+    },
+    // Route 404 - DOIT être en dernier
+    {
+      path: '/:pathMatch(.*)*',
+      name: '404-not-found',
+      component: () => import('../views/NotFoundView.vue')
     }
   ]
 })

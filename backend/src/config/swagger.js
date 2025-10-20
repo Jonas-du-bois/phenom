@@ -203,7 +203,7 @@ const options = {
       }
     ]
   },
-  apis: ['./src/routes/*.js', './src/app.js'], // Chemins vers les fichiers contenant les annotations OpenAPI
+  apis: ['./src/routes/*.js', './src/app.js'] // Chemins vers les fichiers contenant les annotations OpenAPI
 };
 
 export default swaggerJsdoc(options);

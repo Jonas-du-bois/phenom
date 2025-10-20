@@ -268,10 +268,10 @@ class AdminService {
    * @returns {Object} Utilisateur suspendu
    */
   async suspendUser(userId, suspendData) {
-    const { reason, duration, notify } = suspendData;
-    
-    const suspendedUntil = duration 
-      ? new Date(Date.now() + duration * 24 * 60 * 60 * 1000) 
+    const { reason, duration, notify: _notify } = suspendData;
+
+    const suspendedUntil = duration
+      ? new Date(Date.now() + duration * 24 * 60 * 60 * 1000)
       : null;
 
     const user = await User.findByIdAndUpdate(

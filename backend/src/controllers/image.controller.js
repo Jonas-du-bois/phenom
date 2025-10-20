@@ -64,7 +64,7 @@ class ImageController {
 
       res.setHeader('Content-Type', contentType);
       res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
-      
+
       stream.pipe(res);
     } catch (error) {
       if (error.message === 'IMAGE_NOT_FOUND') {

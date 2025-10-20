@@ -129,16 +129,16 @@ class AuthService {
     }
 
     // Générer un token de réinitialisation (valide 1h)
-    const resetToken = generateAccessToken({ 
+    const resetToken = generateAccessToken({
       userId: user._id.toString(),
-      type: 'reset-password' 
+      type: 'reset-password'
     });
 
     // TODO: Envoyer l'email avec le token
     // Pour l'instant, on retourne le token dans la réponse (pour le développement uniquement)
     console.log(`🔐 Token de réinitialisation pour ${email}: ${resetToken}`);
 
-    return { 
+    return {
       message: 'Si cet email existe, un lien de réinitialisation a été envoyé',
       // En développement uniquement
       ...(process.env.NODE_ENV === 'development' && { resetToken })
@@ -154,7 +154,7 @@ class AuthService {
   async resetPassword(token, newPassword) {
     const { verifyToken } = await import('../config/jwt.js');
     let decoded;
-    
+
     try {
       decoded = verifyToken(token, false);
     } catch (error) {

@@ -14,7 +14,7 @@
     "lint:fix": "eslint src/**/*.js --fix",
     "seed": "node scripts/seed.js",
     "seed:images": "node scripts/seed/download-placeholder-images.js",
-  "export:swagger": "node scripts/export-swagger.js",
+    "export:swagger": "node scripts/export-swagger.js",
     "create-admin": "node scripts/create-admin.js",
     "check-db": "node scripts/check-db-connection.js",
     "migrate-to-atlas": "node scripts/migrate-to-atlas.js"
@@ -43,7 +43,8 @@
     "multer": "^1.4.5-lts.1",
     "sharp": "^0.34.4",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "wsmini": "^1.1.3"
   },
   "devDependencies": {
     "cross-env": "^10.1.0",

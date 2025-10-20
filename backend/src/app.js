@@ -42,7 +42,7 @@ if (process.env.NODE_ENV === 'development') {
 
 // Middleware de sécurité
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }
+  crossOriginResourcePolicy: { policy: 'cross-origin' }
 }));
 
 app.use(cors({
@@ -120,7 +120,7 @@ const startServer = async () => {
   try {
     // Connexion à MongoDB
     await connectDB();
-    
+
     // Démarrage du serveur
     app.listen(PORT, '0.0.0.0', () => {
       console.log('='.repeat(50));

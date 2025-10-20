@@ -12,7 +12,7 @@ export const validateJwtConfig = () => {
   if (!process.env.JWT_REFRESH_SECRET) {
     throw new Error('JWT_REFRESH_SECRET non défini dans .env');
   }
-  
+
   // Avertissement si secrets trop courts en production
   if (process.env.NODE_ENV === 'production') {
     if (process.env.JWT_SECRET.length < 32) {

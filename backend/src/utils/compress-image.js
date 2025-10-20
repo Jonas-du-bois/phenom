@@ -6,7 +6,7 @@ import imageConfig from '../config/image.config.js';
  * Responsabilité unique : transformer et optimiser les images
  */
 class ImageCompressor {
-  
+
   /**
    * Compresse une image selon son type MIME
    * @param {Buffer} buffer - Buffer de l'image originale
@@ -17,16 +17,16 @@ class ImageCompressor {
     try {
       const startTime = Date.now();
       const originalSize = buffer.length;
-      
+
       // Initialiser Sharp avec le buffer
       let sharpInstance = sharp(buffer);
-      
+
       // Obtenir les métadonnées de l'image
       const metadata = await sharpInstance.metadata();
-      
+
       // 1. Rotation automatique selon EXIF (photos smartphones)
       sharpInstance = sharpInstance.rotate();
-      
+
       // 2. Redimensionnement si nécessaire
       if (this._needsResize(metadata)) {
         sharpInstance = sharpInstance.resize(
@@ -35,23 +35,23 @@ class ImageCompressor {
           imageConfig.resize
         );
       }
-      
+
       // 3. Compression selon le format
-      const { buffer: compressedBuffer, mimetype: outputMimetype } = 
+      const { buffer: compressedBuffer, mimetype: outputMimetype } =
         await this._compressByFormat(sharpInstance, mimetype);
-      
+
       // 4. Calculer les statistiques
       const compressionStats = this._calculateStats(
         originalSize,
         compressedBuffer.length,
         startTime
       );
-      
+
       // 5. Logger si verbose
       if (imageConfig.verbose) {
         this._logCompression(compressionStats);
       }
-      
+
       return {
         buffer: compressedBuffer,
         mimetype: outputMimetype,
@@ -71,7 +71,7 @@ class ImageCompressor {
       throw new Error(`Erreur lors de la compression de l'image: ${error.message}`);
     }
   }
-  
+
   /**
    * Vérifie si l'image doit être redimensionnée
    * @private
@@ -82,7 +82,7 @@ class ImageCompressor {
       metadata.height > imageConfig.maxHeight
     );
   }
-  
+
   /**
    * Compresse l'image selon son format
    * @private
@@ -90,42 +90,42 @@ class ImageCompressor {
   async _compressByFormat(sharpInstance, mimetype) {
     let compressedBuffer;
     let outputMimetype;
-    
+
     switch (mimetype.toLowerCase()) {
-      case 'image/jpeg':
-      case 'image/jpg':
-        compressedBuffer = await sharpInstance
-          .jpeg(imageConfig.jpeg)
-          .toBuffer();
-        outputMimetype = 'image/jpeg';
-        break;
-        
-      case 'image/png':
-        compressedBuffer = await sharpInstance
-          .png(imageConfig.png)
-          .toBuffer();
-        outputMimetype = 'image/png';
-        break;
-        
-      case 'image/webp':
-        compressedBuffer = await sharpInstance
-          .webp(imageConfig.webp)
-          .toBuffer();
-        outputMimetype = 'image/webp';
-        break;
-        
-      default:
-        // Si format inconnu, convertir en JPEG par défaut
-        console.warn(`Format ${mimetype} non supporté, conversion en JPEG`);
-        compressedBuffer = await sharpInstance
-          .jpeg(imageConfig.jpeg)
-          .toBuffer();
-        outputMimetype = 'image/jpeg';
+    case 'image/jpeg':
+    case 'image/jpg':
+      compressedBuffer = await sharpInstance
+        .jpeg(imageConfig.jpeg)
+        .toBuffer();
+      outputMimetype = 'image/jpeg';
+      break;
+
+    case 'image/png':
+      compressedBuffer = await sharpInstance
+        .png(imageConfig.png)
+        .toBuffer();
+      outputMimetype = 'image/png';
+      break;
+
+    case 'image/webp':
+      compressedBuffer = await sharpInstance
+        .webp(imageConfig.webp)
+        .toBuffer();
+      outputMimetype = 'image/webp';
+      break;
+
+    default:
+      // Si format inconnu, convertir en JPEG par défaut
+      console.warn(`Format ${mimetype} non supporté, conversion en JPEG`);
+      compressedBuffer = await sharpInstance
+        .jpeg(imageConfig.jpeg)
+        .toBuffer();
+      outputMimetype = 'image/jpeg';
     }
-    
+
     return { buffer: compressedBuffer, mimetype: outputMimetype };
   }
-  
+
   /**
    * Calcule les statistiques de compression
    * @private
@@ -134,7 +134,7 @@ class ImageCompressor {
     const savedBytes = originalSize - compressedSize;
     const compressionRatio = ((savedBytes / originalSize) * 100).toFixed(1);
     const processingTime = Date.now() - startTime;
-    
+
     return {
       originalSize,
       compressedSize,
@@ -143,7 +143,7 @@ class ImageCompressor {
       processingTime: `${processingTime}ms`
     };
   }
-  
+
   /**
    * Log les informations de compression
    * @private
@@ -155,7 +155,7 @@ class ImageCompressor {
     console.log(`   📉 Économie:          ${stats.compressionRatio} (${this._formatBytes(stats.savedBytes)})`);
     console.log(`   ⏱️  Temps:             ${stats.processingTime}\n`);
   }
-  
+
   /**
    * Formate les bytes en format lisible
    * @private
@@ -165,7 +165,7 @@ class ImageCompressor {
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
   }
-  
+
   /**
    * Valide qu'un buffer est une image valide
    * @param {Buffer} buffer - Buffer à valider
@@ -179,7 +179,7 @@ class ImageCompressor {
       return false;
     }
   }
-  
+
   /**
    * Génère une miniature
    * @param {Buffer} buffer - Buffer de l'image originale

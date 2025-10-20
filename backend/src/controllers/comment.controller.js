@@ -16,7 +16,7 @@ class CommentController {
         req.params.id,
         req.query
       );
-      
+
       return res.status(200).json(
         paginatedResponse(comments, pagination.total, pagination.page, pagination.limit)
       );
@@ -39,7 +39,7 @@ class CommentController {
         req.body,
         req.user._id
       );
-      
+
       return createdResponse(res, comment, 'Commentaire ajouté avec succès');
     } catch (error) {
       if (error.message === 'OBSERVATION_NOT_FOUND') {
@@ -56,7 +56,7 @@ class CommentController {
   async updateComment(req, res, next) {
     try {
       const comment = await commentService.updateComment(req.params.id, req.body);
-      
+
       return successResponse(res, comment, 'Commentaire mis à jour avec succès');
     } catch (error) {
       if (error.message === 'COMMENT_NOT_FOUND') {
@@ -73,7 +73,7 @@ class CommentController {
   async deleteComment(req, res, next) {
     try {
       await commentService.deleteComment(req.params.id);
-      
+
       return res.status(204).send();
     } catch (error) {
       if (error.message === 'COMMENT_NOT_FOUND') {

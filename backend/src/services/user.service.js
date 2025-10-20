@@ -42,9 +42,9 @@ class UserService {
 
     // Vérifier si l'email est déjà utilisé par un autre utilisateur
     if (email) {
-      const existingUser = await User.findOne({ 
-        email, 
-        _id: { $ne: userId } 
+      const existingUser = await User.findOne({
+        email,
+        _id: { $ne: userId }
       });
       if (existingUser) {
         throw new Error('EMAIL_ALREADY_EXISTS');
@@ -54,7 +54,7 @@ class UserService {
     // Mettre à jour l'utilisateur
     const user = await User.findByIdAndUpdate(
       userId,
-      { 
+      {
         ...(name && { name }),
         ...(email && { email }),
         ...(bio !== undefined && { bio }),

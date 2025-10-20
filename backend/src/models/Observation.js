@@ -74,8 +74,8 @@ const observationSchema = new mongoose.Schema({
       type: [Number],
       required: [true, 'Les coordonnées sont requises'],
       validate: {
-        validator: function(v) {
-          return v.length === 2 && 
+        validator: function (v) {
+          return v.length === 2 &&
                  v[0] >= -180 && v[0] <= 180 && // longitude
                  v[1] >= -90 && v[1] <= 90;     // latitude
         },
@@ -86,7 +86,7 @@ const observationSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: [true, "L'ID utilisateur est requis"]
+    required: [true, 'L\'ID utilisateur est requis']
   },
   createdAt: {
     type: Date,
@@ -108,9 +108,9 @@ observationSchema.index({ userId: 1, createdAt: -1 });
 observationSchema.index({ createdAt: -1 });
 
 // Index de recherche textuelle
-observationSchema.index({ 
-  title: 'text', 
-  description: 'text' 
+observationSchema.index({
+  title: 'text',
+  description: 'text'
 }, {
   weights: {
     title: 10,

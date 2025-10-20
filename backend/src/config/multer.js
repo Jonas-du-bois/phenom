@@ -57,7 +57,7 @@ const upload = multer({
 });
 
 // Log de la configuration au démarrage
-console.log(`📤 Upload configuré:`);
+console.log('📤 Upload configuré:');
 console.log(`   Dossier: ${uploadDir}`);
 console.log(`   Taille max: ${(parseInt(process.env.MAX_FILE_SIZE) || 10485760) / 1048576}MB`);
 console.log(`   Types autorisés: ${process.env.ALLOWED_IMAGE_TYPES || 'image/jpeg,image/png,image/webp'}`);
