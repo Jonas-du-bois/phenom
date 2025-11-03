@@ -128,7 +128,23 @@ router.get(
  *                 example: Très intéressante cette observation !
  *     responses:
  *       201:
- *         description: Commentaire créé avec succès
+ *         description: |
+ *           Commentaire créé avec succès
+ *
+ *           **🔌 WebSocket**: Un événement `comment:created` est automatiquement diffusé
+ *           sur le canal WebSocket `comments` à tous les clients connectés.
+ *
+ *           Format du message WebSocket:
+ *           ```json
+ *           {
+ *             "type": "comment:created",
+ *             "data": {
+ *               "comment": { "commentaire complet avec tous les champs" },
+ *               "observationId": "507f1f77bcf86cd799439011"
+ *             },
+ *             "timestamp": "2025-11-03T12:34:56.789Z"
+ *           }
+ *           ```
  *         content:
  *           application/json:
  *             schema:
@@ -208,7 +224,23 @@ router.post(
  *                 example: Commentaire mis à jour
  *     responses:
  *       200:
- *         description: Commentaire mis à jour avec succès
+ *         description: |
+ *           Commentaire mis à jour avec succès
+ *
+ *           **🔌 WebSocket**: Un événement `comment:updated` est automatiquement diffusé
+ *           sur le canal WebSocket `comments` à tous les clients connectés.
+ *
+ *           Format du message WebSocket:
+ *           ```json
+ *           {
+ *             "type": "comment:updated",
+ *             "data": {
+ *               "comment": { "commentaire mis à jour avec tous les champs" },
+ *               "observationId": "507f1f77bcf86cd799439011"
+ *             },
+ *             "timestamp": "2025-11-03T12:34:56.789Z"
+ *           }
+ *           ```
  *         content:
  *           application/json:
  *             schema:
@@ -276,7 +308,23 @@ router.put(
  *         example: 507f1f77bcf86cd799439011
  *     responses:
  *       200:
- *         description: Commentaire supprimé avec succès
+ *         description: |
+ *           Commentaire supprimé avec succès
+ *
+ *           **🔌 WebSocket**: Un événement `comment:deleted` est automatiquement diffusé
+ *           sur le canal WebSocket `comments` à tous les clients connectés.
+ *
+ *           Format du message WebSocket:
+ *           ```json
+ *           {
+ *             "type": "comment:deleted",
+ *             "data": {
+ *               "commentId": "507f1f77bcf86cd799439011",
+ *               "observationId": "507f1f77bcf86cd799439011"
+ *             },
+ *             "timestamp": "2025-11-03T12:34:56.789Z"
+ *           }
+ *           ```
  *         content:
  *           application/json:
  *             schema:

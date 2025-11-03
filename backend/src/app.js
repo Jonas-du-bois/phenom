@@ -25,6 +25,10 @@ import { validateJwtConfig } from './config/jwt.js';
 import routes from './routes/index.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 import { generalLimiter } from './middleware/rateLimiter.js';
+import {
+  createWebSocketServer,
+  startWebSocketServer
+} from './config/websocket.js';
 
 // Valider la configuration JWT
 validateJwtConfig();
@@ -121,8 +125,8 @@ const startServer = async () => {
     // Connexion à MongoDB
     await connectDB();
 
-    // Démarrage du serveur
-    app.listen(PORT, '0.0.0.0', () => {
+    // Démarrage du serveur HTTP
+    const server = app.listen(PORT, '0.0.0.0', () => {
       console.log('='.repeat(50));
       console.log('🚀 Serveur Phenom API démarré avec succès');
       console.log('='.repeat(50));
@@ -133,6 +137,11 @@ const startServer = async () => {
       console.log(`🔌 API Endpoints: http://localhost:${PORT}${API_PREFIX}`);
       console.log('='.repeat(50));
     });
+
+    // Créer le serveur WebSocket sur le MÊME serveur HTTP
+    createWebSocketServer(server);
+    startWebSocketServer();
+    console.log(`🔌 WebSocket opérationnel sur le même port (${PORT})`);
 
   } catch (error) {
     console.error('❌ Erreur lors du démarrage du serveur:', error.message);

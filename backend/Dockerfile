@@ -41,6 +41,10 @@ RUN addgroup -g 1001 -S nodejs && \
 # Copier le code source
 COPY --chown=phenom:nodejs src ./src
 COPY --chown=phenom:nodejs scripts ./scripts
+COPY --chown=phenom:nodejs tests ./tests
+
+# Créer les dossiers nécessaires pour les tests avec les bonnes permissions
+RUN mkdir -p coverage && chown -R phenom:nodejs coverage
 
 # Changer vers l'utilisateur non-root
 USER phenom

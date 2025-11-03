@@ -276,7 +276,20 @@ router.get(
  *                 example: https://example.com/image.jpg
  *     responses:
  *       201:
- *         description: Observation créée avec succès
+ *         description: |
+ *           Observation créée avec succès
+ *
+ *           **🔌 WebSocket**: Un événement `observation:created` est automatiquement diffusé
+ *           sur le canal WebSocket `observations` à tous les clients connectés.
+ *
+ *           Format du message WebSocket:
+ *           ```json
+ *           {
+ *             "type": "observation:created",
+ *             "data": { "observation complète avec tous les champs" },
+ *             "timestamp": "2025-11-03T12:34:56.789Z"
+ *           }
+ *           ```
  *         content:
  *           application/json:
  *             schema:
@@ -415,7 +428,20 @@ router.get(
  *                 format: uri
  *     responses:
  *       200:
- *         description: Observation mise à jour avec succès
+ *         description: |
+ *           Observation mise à jour avec succès
+ *
+ *           **🔌 WebSocket**: Un événement `observation:updated` est automatiquement diffusé
+ *           sur le canal WebSocket `observations` à tous les clients connectés.
+ *
+ *           Format du message WebSocket:
+ *           ```json
+ *           {
+ *             "type": "observation:updated",
+ *             "data": { "observation mise à jour avec tous les champs" },
+ *             "timestamp": "2025-11-03T12:34:56.789Z"
+ *           }
+ *           ```
  *         content:
  *           application/json:
  *             schema:
@@ -483,7 +509,20 @@ router.put(
  *         example: 507f1f77bcf86cd799439011
  *     responses:
  *       200:
- *         description: Observation supprimée avec succès
+ *         description: |
+ *           Observation supprimée avec succès
+ *
+ *           **🔌 WebSocket**: Un événement `observation:deleted` est automatiquement diffusé
+ *           sur le canal WebSocket `observations` à tous les clients connectés.
+ *
+ *           Format du message WebSocket:
+ *           ```json
+ *           {
+ *             "type": "observation:deleted",
+ *             "data": { "observationId": "507f1f77bcf86cd799439011" },
+ *             "timestamp": "2025-11-03T12:34:56.789Z"
+ *           }
+ *           ```
  *         content:
  *           application/json:
  *             schema:

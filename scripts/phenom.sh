@@ -34,7 +34,7 @@ PROJECT_NAME="phenom"
 print_header() {
     echo -e "${CYAN}${BOLD}"
     echo "╔════════════════════════════════════════════════════════════════╗"
-    echo "║                    🛸 Phenom App Manager 🛸                   ║"
+    echo "║                    🛸 Phenom App Manager 🛸                    ║"
     echo "╚════════════════════════════════════════════════════════════════╝"
     echo -e "${NC}"
 }

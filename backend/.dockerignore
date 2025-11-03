@@ -18,10 +18,10 @@ pnpm-lock.yaml
 !.env.example
 
 # Tests
-tests/
+# tests/  → Commenté car nécessaire pour npm test dans Docker
 coverage/
-*.test.js
-*.spec.js
+# *.test.js  → Commenté car nécessaire pour npm test dans Docker
+# *.spec.js  → Commenté car nécessaire pour npm test dans Docker
 .nyc_output
 
 # Documentation

@@ -1,10 +1,12 @@
 export default {
   testEnvironment: 'node',
+  transform: {},
+  extensionsToTreatAsEsm: ['.js'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1'
   },
   testMatch: [
-    '**/tests/**/*.test.js',
+    '<rootDir>/tests/**/*.test.js',
     '**/?(*.)+(spec|test).js'
   ],
   collectCoverageFrom: [
@@ -23,6 +25,6 @@ export default {
     }
   },
   setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
-  testTimeout: 10000,
+  testTimeout: 30000,  // Augmenté à 30s pour MongoDB Atlas
   verbose: true
 };

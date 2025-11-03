@@ -19,7 +19,8 @@
     "leaflet": "^1.9.4",
     "pinia": "^2.3.1",
     "vue": "^3.4.15",
-    "vue-router": "^4.6.2"
+    "vue-router": "^4.6.2",
+    "wsmini": "^1.2.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.3",

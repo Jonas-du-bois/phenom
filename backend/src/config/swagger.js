@@ -5,8 +5,72 @@ const options = {
     openapi: '3.0.0',
     info: {
       title: 'Phenom API',
-      version: '1.2.4',
-      description: 'API pour l\'application d\'observations OVNI de l\'app Phenom',
+      version: '3.0.0',
+      description: `API REST et WebSocket pour l'application d'observations OVNI Phenom
+
+## 🔌 WebSocket en temps réel
+
+L'API Phenom intègre maintenant un serveur WebSocket utilisant **WsMini** pour les mises à jour en temps réel.
+
+### Connexion WebSocket
+
+**URL du serveur WebSocket** : \`ws://localhost:8888\` (développement)
+
+Pour vous connecter depuis le frontend :
+
+\`\`\`javascript
+import { WSClient } from 'wsmini';
+
+const ws = new WSClient('ws://localhost:8888');
+await ws.connect();
+\`\`\`
+
+### Canaux disponibles
+
+#### 📡 Canal \`observations\`
+Recevez les mises à jour en temps réel sur les observations :
+
+\`\`\`javascript
+await ws.sub('observations', (message) => {
+  console.log('Événement reçu:', message);
+  // message.type peut être :
+  // - 'observation:created' : Nouvelle observation
+  // - 'observation:updated' : Observation modifiée
+  // - 'observation:deleted' : Observation supprimée
+});
+\`\`\`
+
+#### 💬 Canal \`comments\`
+Recevez les mises à jour en temps réel sur les commentaires :
+
+\`\`\`javascript
+await ws.sub('comments', (message) => {
+  console.log('Événement reçu:', message);
+  // message.type peut être :
+  // - 'comment:created' : Nouveau commentaire
+  // - 'comment:updated' : Commentaire modifié
+  // - 'comment:deleted' : Commentaire supprimé
+});
+\`\`\`
+
+### Format des messages
+
+Tous les messages WebSocket suivent ce format :
+
+\`\`\`json
+{
+  "type": "observation:created|updated|deleted",
+  "data": { /* Données de l'observation ou commentaire */ },
+  "timestamp": "2025-11-03T12:34:56.789Z"
+}
+\`\`\`
+
+### Documentation complète
+
+Pour plus d'informations sur l'implémentation WebSocket, consultez :
+- \`backend/src/config/WEBSOCKET_README.md\`
+- [Documentation WsMini](https://github.com/Chabloz/WsMini)
+`,
       contact: {
         name: 'Équipe Phenom',
         email: 'contact@phenom.app'
@@ -173,6 +237,105 @@ const options = {
               format: 'date-time'
             }
           }
+        },
+        WebSocketMessage: {
+          type: 'object',
+          description: 'Format des messages WebSocket reçus en temps réel',
+          properties: {
+            type: {
+              type: 'string',
+              enum: [
+                'observation:created',
+                'observation:updated',
+                'observation:deleted',
+                'comment:created',
+                'comment:updated',
+                'comment:deleted'
+              ],
+              example: 'observation:created',
+              description: 'Type d\'événement WebSocket'
+            },
+            data: {
+              type: 'object',
+              description: 'Données de l\'événement (observation ou commentaire)'
+            },
+            timestamp: {
+              type: 'string',
+              format: 'date-time',
+              example: '2025-11-03T12:34:56.789Z',
+              description: 'Horodatage de l\'événement'
+            }
+          },
+          required: ['type', 'data', 'timestamp']
+        },
+        WebSocketObservationCreated: {
+          type: 'object',
+          description: 'Message WebSocket pour une observation créée',
+          properties: {
+            type: {
+              type: 'string',
+              enum: ['observation:created'],
+              example: 'observation:created'
+            },
+            data: {
+              $ref: '#/components/schemas/Observation'
+            },
+            timestamp: {
+              type: 'string',
+              format: 'date-time'
+            }
+          }
+        },
+        WebSocketObservationDeleted: {
+          type: 'object',
+          description: 'Message WebSocket pour une observation supprimée',
+          properties: {
+            type: {
+              type: 'string',
+              enum: ['observation:deleted'],
+              example: 'observation:deleted'
+            },
+            data: {
+              type: 'object',
+              properties: {
+                observationId: {
+                  type: 'string',
+                  example: '507f1f77bcf86cd799439011'
+                }
+              }
+            },
+            timestamp: {
+              type: 'string',
+              format: 'date-time'
+            }
+          }
+        },
+        WebSocketCommentCreated: {
+          type: 'object',
+          description: 'Message WebSocket pour un commentaire créé',
+          properties: {
+            type: {
+              type: 'string',
+              enum: ['comment:created'],
+              example: 'comment:created'
+            },
+            data: {
+              type: 'object',
+              properties: {
+                comment: {
+                  $ref: '#/components/schemas/Comment'
+                },
+                observationId: {
+                  type: 'string',
+                  example: '507f1f77bcf86cd799439011'
+                }
+              }
+            },
+            timestamp: {
+              type: 'string',
+              format: 'date-time'
+            }
+          }
         }
       }
     },
@@ -200,6 +363,18 @@ const options = {
       {
         name: 'Administration',
         description: 'Opérations administratives (admins uniquement)'
+      },
+      {
+        name: 'WebSocket',
+        description: `Mises à jour en temps réel via WebSocket (WsMini)
+        
+**Serveur WebSocket** : ws://localhost:8888
+
+**Canaux disponibles** :
+- \`observations\` : Événements sur les observations (créer, modifier, supprimer)
+- \`comments\` : Événements sur les commentaires (créer, modifier, supprimer)
+
+**Note** : Les clients peuvent uniquement s'abonner (subscribe) aux canaux. Seul le serveur peut publier des événements.`
       }
     ]
   },

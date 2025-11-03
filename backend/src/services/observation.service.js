@@ -1,5 +1,6 @@
 import Observation from '../models/Observation.js';
 import { getPaginationParams, createPaginationMeta } from '../utils/pagination.js';
+import { publishToChannel } from '../config/websocket.js';
 
 /**
  * Service de gestion des observations
@@ -78,7 +79,16 @@ class ObservationService {
       userId
     });
 
-    return await observation.populate('userId', 'name email');
+    const populatedObservation = await observation.populate('userId', 'name email');
+
+    // Publier l'événement via WebSocket
+    publishToChannel('observations', {
+      type: 'observation:created',
+      data: populatedObservation.toObject(),
+      timestamp: new Date().toISOString()
+    });
+
+    return populatedObservation;
   }
 
   /**
@@ -97,6 +107,13 @@ class ObservationService {
     if (!observation) {
       throw new Error('OBSERVATION_NOT_FOUND');
     }
+
+    // Publier l'événement via WebSocket
+    publishToChannel('observations', {
+      type: 'observation:updated',
+      data: observation.toObject(),
+      timestamp: new Date().toISOString()
+    });
 
     return observation;
   }
@@ -120,6 +137,13 @@ class ObservationService {
     } catch (error) {
       console.error(`Erreur lors de la suppression des images: ${error.message}`);
     }
+
+    // Publier l'événement via WebSocket
+    publishToChannel('observations', {
+      type: 'observation:deleted',
+      data: { observationId },
+      timestamp: new Date().toISOString()
+    });
 
     return observation;
   }
