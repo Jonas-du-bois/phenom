@@ -176,4 +176,179 @@ describe('Authentication Endpoints', () => {
       expect(response.body.success).toBe(false);
     });
   });
+
+  describe('POST /api/v1/auth/refresh-token', () => {
+    let refreshToken;
+
+    beforeEach(async () => {
+      // Créer un utilisateur et obtenir un refresh token
+      const userData = {
+        name: 'Test User',
+        email: `refresh${Date.now()}@example.com`,
+        password: 'password123'
+      };
+
+      const response = await request(app)
+        .post('/api/v1/auth/signup')
+        .send(userData);
+
+      refreshToken = response.body.data.refreshToken;
+    });
+
+    it('should refresh token successfully', async () => {
+      const response = await request(app)
+        .post('/api/v1/auth/refresh-token')
+        .send({ refreshToken })
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data).toHaveProperty('accessToken');
+      expect(response.body.data).toHaveProperty('refreshToken');
+    });
+
+    it('should fail without refresh token', async () => {
+      const response = await request(app)
+        .post('/api/v1/auth/refresh-token')
+        .send({})
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+    });
+
+    it('should fail with invalid refresh token', async () => {
+      const response = await request(app)
+        .post('/api/v1/auth/refresh-token')
+        .send({ refreshToken: 'invalid-token' })
+        .expect(401);
+
+      expect(response.body.success).toBe(false);
+    });
+  });
+
+  describe('POST /api/v1/auth/forgot-password', () => {
+    beforeEach(async () => {
+      // Créer un utilisateur
+      await User.create({
+        name: 'Test User',
+        email: 'forgot@example.com',
+        password: 'password123'
+      });
+    });
+
+    it('should send reset password email for existing user', async () => {
+      const response = await request(app)
+        .post('/api/v1/auth/forgot-password')
+        .send({ email: 'forgot@example.com' })
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.message).toContain('réinitialisation');
+    });
+
+    it('should return generic message for non-existent email', async () => {
+      const response = await request(app)
+        .post('/api/v1/auth/forgot-password')
+        .send({ email: 'nonexistent@example.com' })
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.message).toContain('réinitialisation');
+    });
+  });
+
+  describe('POST /api/v1/auth/reset-password', () => {
+    let resetToken;
+    let userId;
+
+    beforeEach(async () => {
+      // Créer un utilisateur
+      const user = await User.create({
+        name: 'Test User',
+        email: `reset${Date.now()}@example.com`,
+        password: 'password123'
+      });
+      userId = user._id;
+
+      // Générer un token de réinitialisation
+      const { generateAccessToken } = await import('../src/config/jwt.js');
+      resetToken = generateAccessToken({
+        userId: userId.toString(),
+        type: 'reset-password'
+      });
+    });
+
+    it('should reset password with valid token', async () => {
+      const response = await request(app)
+        .post('/api/v1/auth/reset-password')
+        .send({
+          token: resetToken,
+          newPassword: 'newpassword123'
+        })
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+
+      // Vérifier que le nouveau mot de passe fonctionne
+      const user = await User.findById(userId).select('+password');
+      const isValid = await user.comparePassword('newpassword123');
+      expect(isValid).toBe(true);
+    });
+
+    it('should fail with invalid token', async () => {
+      const response = await request(app)
+        .post('/api/v1/auth/reset-password')
+        .send({
+          token: 'invalid-token',
+          newPassword: 'newpassword123'
+        })
+        .expect(401);
+
+      expect(response.body.success).toBe(false);
+    });
+
+    it('should fail with wrong token type', async () => {
+      const { generateAccessToken } = await import('../src/config/jwt.js');
+      const wrongToken = generateAccessToken({
+        userId: userId.toString(),
+        type: 'access'
+      });
+
+      const response = await request(app)
+        .post('/api/v1/auth/reset-password')
+        .send({
+          token: wrongToken,
+          newPassword: 'newpassword123'
+        })
+        .expect(401);
+
+      expect(response.body.success).toBe(false);
+    });
+  });
+
+  describe('POST /api/v1/auth/logout', () => {
+    let authToken;
+
+    beforeEach(async () => {
+      const userData = {
+        name: 'Test User',
+        email: `logout${Date.now()}@example.com`,
+        password: 'password123'
+      };
+
+      const response = await request(app)
+        .post('/api/v1/auth/signup')
+        .send(userData);
+
+      authToken = response.body.data.accessToken;
+    });
+
+    it('should logout successfully', async () => {
+      const response = await request(app)
+        .post('/api/v1/auth/logout')
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+    });
+  });
 });

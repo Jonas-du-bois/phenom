@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { connectDB, disconnectDB } from '../src/config/database.js';
 
-// Configuration avant tous les tests
+// Nettoyage avant tous les tests d'un fichier
 beforeAll(async () => {
   // Déconnecter si déjà connecté
   if (mongoose.connection.readyState !== 0) {
@@ -28,10 +28,16 @@ beforeAll(async () => {
   // Connexion à la base de test
   await connectDB();
   console.log(`✅ Tests connectés à MongoDB (state: ${mongoose.connection.readyState})`);
+
+  // Nettoyage initial
+  const collections = mongoose.connection.collections;
+  for (const key in collections) {
+    await collections[key].deleteMany({});
+  }
 }, 30000); // Timeout de 30s pour la connexion MongoDB Atlas
 
-// Nettoyage après chaque test
-afterEach(async () => {
+// Nettoyage avant chaque test (plus sûr que afterEach)
+beforeEach(async () => {
   const collections = mongoose.connection.collections;
 
   for (const key in collections) {

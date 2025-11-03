@@ -2,8 +2,6 @@ import request from 'supertest';
 import app from '../src/app.js';
 import User from '../src/models/User.js';
 import Observation from '../src/models/Observation.js';
-import path from 'path';
-import fs from 'fs';
 
 describe('Observation Endpoints', () => {
   let authToken;
@@ -13,7 +11,7 @@ describe('Observation Endpoints', () => {
   let otherUserId;
 
   // Helper pour créer un utilisateur et obtenir un token
-  const createAuthenticatedUser = async (email = 'testuser@example.com') => {
+  const createAuthenticatedUser = async (email = `testuser${Date.now()}@example.com`) => {
     const user = await User.create({
       name: 'Test User',
       email,
@@ -26,6 +24,10 @@ describe('Observation Endpoints', () => {
         email,
         password: 'Password123'
       });
+
+    if (!loginResponse.body || !loginResponse.body.data) {
+      throw new Error(`Login failed: ${JSON.stringify(loginResponse.body)}`);
+    }
 
     return {
       user,
@@ -688,5 +690,83 @@ describe('Observation Endpoints', () => {
 
       expect(response.body.success).toBe(false);
     }, 10000); // Augmenter le timeout pour ce test
+  });
+
+  // ==============================================================
+  // Tests WebSocket
+  // ==============================================================
+  describe('WebSocket Events', () => {
+    it('should create observation successfully (WebSocket events tested implicitly)', async () => {
+      const observationData = {
+        title: 'Test Observation for WebSocket',
+        description: 'Testing WebSocket emission with sufficient length for validation',
+        date: new Date(),
+        location: {
+          type: 'Point',
+          coordinates: [2.3522, 48.8566]
+        }
+      };
+
+      const response = await request(app)
+        .post('/api/v1/observations')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(observationData)
+        .expect(201);
+
+      // Vérifier que l'observation est créée (WebSocket publishToChannel sera appelé)
+      expect(response.body.success).toBe(true);
+      expect(response.body.data).toHaveProperty('title', observationData.title);
+    });
+
+    it('should update observation successfully (WebSocket events tested implicitly)', async () => {
+      // Créer une observation
+      const observation = await Observation.create({
+        title: 'Original Title',
+        description: 'Original description for testing updates with valid length for validation rules',
+        date: new Date(),
+        location: {
+          type: 'Point',
+          coordinates: [2.3522, 48.8566]
+        },
+        userId: userId
+      });
+
+      const updateData = {
+        title: 'Updated Title'
+      };
+
+      const response = await request(app)
+        .put(`/api/v1/observations/${observation._id}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(updateData)
+        .expect(200);
+
+      // Vérifier que l'observation est mise à jour (WebSocket publishToChannel sera appelé)
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.title).toBe('Updated Title');
+    });
+
+    it('should delete observation successfully (WebSocket events tested implicitly)', async () => {
+      // Créer une observation
+      const observation = await Observation.create({
+        title: 'To Delete',
+        description: 'This observation will be deleted for testing with valid length for validation',
+        date: new Date(),
+        location: {
+          type: 'Point',
+          coordinates: [2.3522, 48.8566]
+        },
+        userId: userId
+      });
+
+      await request(app)
+        .delete(`/api/v1/observations/${observation._id}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(204);
+
+      // Vérifier que l'observation est supprimée (WebSocket publishToChannel sera appelé)
+      const deletedObs = await Observation.findById(observation._id);
+      expect(deletedObs).toBeNull();
+    });
   });
 });

@@ -32,6 +32,10 @@ describe('Admin Endpoints', () => {
       .post('/api/v1/auth/login')
       .send({ email: userData.email, password: userData.password });
 
+    if (!loginResponse.body || !loginResponse.body.data) {
+      throw new Error(`Login failed: ${JSON.stringify(loginResponse.body)}`);
+    }
+
     return {
       userId: user._id,
       token: loginResponse.body.data.accessToken,
@@ -186,7 +190,7 @@ describe('Admin Endpoints', () => {
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      
+
       // Vérifier que l'utilisateur est suspendu
       const user = await User.findById(regularUserId);
       expect(user.status).toBe('suspended');
@@ -220,7 +224,7 @@ describe('Admin Endpoints', () => {
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      
+
       // Vérifier que l'utilisateur est activé
       const user = await User.findById(regularUserId);
       expect(user.status).toBe('active');
@@ -281,7 +285,7 @@ describe('Admin Endpoints', () => {
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      
+
       // Vérifier que l'observation est approuvée
       const observation = await Observation.findById(observationId);
       expect(observation.status).toBe('approved');
@@ -310,7 +314,7 @@ describe('Admin Endpoints', () => {
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      
+
       // Vérifier que l'observation est rejetée
       const observation = await Observation.findById(observationId);
       expect(observation.status).toBe('rejected');
@@ -414,7 +418,7 @@ describe('Admin Endpoints', () => {
 
       expect(response.body.success).toBe(true);
       expect(response.body.data).toBeDefined();
-      
+
       // Vérifier la structure des stats
       const stats = response.body.data;
       expect(stats).toHaveProperty('totalUsers');

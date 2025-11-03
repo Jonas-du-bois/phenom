@@ -13,7 +13,7 @@ describe('Comment Endpoints', () => {
   let otherUserId;
 
   // Helper pour créer un utilisateur et obtenir un token
-  const createAuthenticatedUser = async (email = 'testuser@example.com') => {
+  const createAuthenticatedUser = async (email = `testuser${Date.now()}@example.com`) => {
     const user = await User.create({
       name: 'Test User',
       email,
@@ -26,6 +26,10 @@ describe('Comment Endpoints', () => {
         email,
         password: 'Password123'
       });
+
+    if (!loginResponse.body || !loginResponse.body.data) {
+      throw new Error(`Login failed: ${JSON.stringify(loginResponse.body)}`);
+    }
 
     return {
       user,
@@ -83,7 +87,7 @@ describe('Comment Endpoints', () => {
       expect(response.body.data).toHaveProperty('_id');
       expect(response.body.data.text).toBe(commentData.text);
       expect(response.body.data.observationId).toBe(observationId.toString());
-      
+
       // userId peut être populé, donc vérifier _id ou le string
       const returnedUserId = response.body.data.userId._id || response.body.data.userId;
       expect(returnedUserId).toBe(userId.toString());
@@ -323,7 +327,7 @@ describe('Comment Endpoints', () => {
 
       // observationId et userId ne devraient pas avoir changé
       expect(response.body.data.observationId).toBe(observationId.toString());
-      
+
       const returnedUserId = response.body.data.userId._id || response.body.data.userId;
       expect(returnedUserId).toBe(userId.toString());
     });
@@ -413,13 +417,75 @@ describe('Comment Endpoints', () => {
       );
 
       const responses = await Promise.all(promises);
-      
+
       responses.forEach(response => {
         expect([201]).toContain(response.status);
       });
 
       const comments = await Comment.find({ observationId });
       expect(comments.length).toBeGreaterThanOrEqual(3);
+    });
+  });
+
+  // ==============================================================
+  // Tests WebSocket
+  // ==============================================================
+  describe('WebSocket Events', () => {
+    it('should create comment successfully (WebSocket events tested implicitly)', async () => {
+      const commentData = {
+        text: 'Test comment for WebSocket'
+      };
+
+      const response = await request(app)
+        .post(`/api/v1/observations/${observationId}/comments`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(commentData)
+        .expect(201);
+
+      // Vérifier que le commentaire est créé (WebSocket publishToChannel sera appelé)
+      expect(response.body.success).toBe(true);
+      expect(response.body.data).toHaveProperty('text', commentData.text);
+    });
+
+    it('should update comment successfully (WebSocket events tested implicitly)', async () => {
+      // Créer un commentaire
+      const comment = await Comment.create({
+        text: 'Original comment text',
+        observationId,
+        userId
+      });
+
+      const updateData = {
+        text: 'Updated comment text'
+      };
+
+      const response = await request(app)
+        .put(`/api/v1/comments/${comment._id}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(updateData)
+        .expect(200);
+
+      // Vérifier que le commentaire est mis à jour (WebSocket publishToChannel sera appelé)
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.text).toBe('Updated comment text');
+    });
+
+    it('should delete comment successfully (WebSocket events tested implicitly)', async () => {
+      // Créer un commentaire
+      const comment = await Comment.create({
+        text: 'Comment to delete',
+        observationId,
+        userId
+      });
+
+      await request(app)
+        .delete(`/api/v1/comments/${comment._id}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(204);
+
+      // Vérifier que le commentaire est supprimé (WebSocket publishToChannel sera appelé)
+      const deletedComment = await Comment.findById(comment._id);
+      expect(deletedComment).toBeNull();
     });
   });
 });

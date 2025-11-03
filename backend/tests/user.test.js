@@ -12,18 +12,23 @@ describe('User Endpoints', () => {
   const createAuthenticatedUser = async (userData = {}) => {
     const defaultUserData = {
       name: 'Test User',
-      email: 'testuser@example.com',
+      email: `testuser${Date.now()}@example.com`,
       password: 'password123'
     };
 
-    const user = await User.create({ ...defaultUserData, ...userData });
-    
+    const mergedData = { ...defaultUserData, ...userData };
+    const user = await User.create(mergedData);
+
     const loginResponse = await request(app)
       .post('/api/v1/auth/login')
       .send({
-        email: user.email,
-        password: defaultUserData.password
+        email: mergedData.email,
+        password: mergedData.password
       });
+
+    if (!loginResponse.body || !loginResponse.body.data) {
+      throw new Error(`Login failed: ${JSON.stringify(loginResponse.body)}`);
+    }
 
     return {
       user,
@@ -53,7 +58,7 @@ describe('User Endpoints', () => {
       expect(response.body.success).toBe(true);
       expect(response.body.data).toHaveProperty('_id'); // MongoDB utilise _id
       expect(response.body.data).toHaveProperty('name', 'Test User');
-      expect(response.body.data).toHaveProperty('email', 'testuser@example.com');
+      expect(response.body.data).toHaveProperty('email', testUser.email);
       expect(response.body.data).toHaveProperty('role', 'viewer'); // Rôle par défaut est 'viewer'
       expect(response.body.data).toHaveProperty('createdAt');
       expect(response.body.data).not.toHaveProperty('password');
@@ -155,7 +160,7 @@ describe('User Endpoints', () => {
 
       expect(response.body.success).toBe(true);
       expect(response.body.data.name).toBe('New Name Only');
-      expect(response.body.data.email).toBe('testuser@example.com'); // Email inchangé
+      expect(response.body.data.email).toBe(testUser.email); // Email inchangé
     });
 
     it('should update only email', async () => {
@@ -291,7 +296,7 @@ describe('User Endpoints', () => {
       const loginResponse = await request(app)
         .post('/api/v1/auth/login')
         .send({
-          email: 'testuser@example.com',
+          email: testUser.email,
           password: 'newPassword456'
         })
         .expect(200);
@@ -610,7 +615,7 @@ describe('User Endpoints', () => {
 
       expect(response.body.success).toBe(true);
       expect(response.body.data.length).toBe(3); // Seulement les 3 observations du testUser
-      
+
       // Vérifier qu'aucune observation ne vient d'un autre utilisateur
       const hasOtherUserObservation = response.body.data.some(
         obs => obs.title === 'Other User Observation'
@@ -642,7 +647,7 @@ describe('User Endpoints', () => {
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      
+
       // Vérifier les liens HATEOAS sur chaque observation
       response.body.data.forEach(observation => {
         if (observation._links) {
@@ -741,7 +746,7 @@ describe('User Endpoints', () => {
 
       // Vérifier que le rate limiting fonctionne
       const rateLimitedResponse = responses.find(r => r.status === 429);
-      
+
       // Si le rate limiting est implémenté, au moins une requête devrait être bloquée
       if (rateLimitedResponse) {
         expect(rateLimitedResponse.status).toBe(429);
