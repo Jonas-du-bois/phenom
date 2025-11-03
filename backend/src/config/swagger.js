@@ -14,44 +14,54 @@ L'API Phenom intègre maintenant un serveur WebSocket utilisant **WsMini** pour 
 
 ### Connexion WebSocket
 
-**URL du serveur WebSocket** : \`ws://localhost:8888\` (développement)
+**URLs du serveur WebSocket** :
+- **Développement** : \`ws://localhost:3000\`
+- **Production** : \`wss://phenom-backend.onrender.com\`
+
+⚠️ **Important** : Le serveur WebSocket utilise le **même port** que l'API REST.
 
 Pour vous connecter depuis le frontend :
 
 \`\`\`javascript
-import { WSClient } from 'wsmini';
+// Détecter automatiquement l'environnement
+const wsUrl = import.meta.env.PROD 
+  ? 'wss://phenom-backend.onrender.com'
+  : 'ws://localhost:3000';
 
-const ws = new WSClient('ws://localhost:8888');
-await ws.connect();
+const ws = new WebSocket(wsUrl);
+
+ws.onopen = () => {
+  console.log('✅ Connecté au WebSocket');
+  
+  // S'abonner aux canaux (selon protocole WsMini)
+  ws.send(JSON.stringify({ action: 'subscribe', channel: 'observations' }));
+  ws.send(JSON.stringify({ action: 'subscribe', channel: 'comments' }));
+};
+
+ws.onmessage = (event) => {
+  const message = JSON.parse(event.data);
+  console.log('📨 Message reçu:', message);
+  // Gérer selon message.type
+};
 \`\`\`
 
 ### Canaux disponibles
 
 #### 📡 Canal \`observations\`
-Recevez les mises à jour en temps réel sur les observations :
+Recevez les mises à jour en temps réel sur les observations.
 
-\`\`\`javascript
-await ws.sub('observations', (message) => {
-  console.log('Événement reçu:', message);
-  // message.type peut être :
-  // - 'observation:created' : Nouvelle observation
-  // - 'observation:updated' : Observation modifiée
-  // - 'observation:deleted' : Observation supprimée
-});
-\`\`\`
+**Événements** :
+- \`observation:created\` : Nouvelle observation créée
+- \`observation:updated\` : Observation modifiée
+- \`observation:deleted\` : Observation supprimée
 
 #### 💬 Canal \`comments\`
-Recevez les mises à jour en temps réel sur les commentaires :
+Recevez les mises à jour en temps réel sur les commentaires.
 
-\`\`\`javascript
-await ws.sub('comments', (message) => {
-  console.log('Événement reçu:', message);
-  // message.type peut être :
-  // - 'comment:created' : Nouveau commentaire
-  // - 'comment:updated' : Commentaire modifié
-  // - 'comment:deleted' : Commentaire supprimé
-});
-\`\`\`
+**Événements** :
+- \`comment:created\` : Nouveau commentaire créé
+- \`comment:updated\` : Commentaire modifié
+- \`comment:deleted\` : Commentaire supprimé
 
 ### Format des messages
 
@@ -368,7 +378,9 @@ Pour plus d'informations sur l'implémentation WebSocket, consultez :
         name: 'WebSocket',
         description: `Mises à jour en temps réel via WebSocket (WsMini)
         
-**Serveur WebSocket** : ws://localhost:8888
+**URLs du serveur WebSocket** :
+- Développement : \`ws://localhost:3000\`
+- Production : \`wss://phenom-backend.onrender.com\`
 
 **Canaux disponibles** :
 - \`observations\` : Événements sur les observations (créer, modifier, supprimer)
