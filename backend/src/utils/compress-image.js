@@ -165,41 +165,6 @@ class ImageCompressor {
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
   }
-
-  /**
-   * Valide qu'un buffer est une image valide
-   * @param {Buffer} buffer - Buffer à valider
-   * @returns {Promise<boolean>}
-   */
-  async validate(buffer) {
-    try {
-      const metadata = await sharp(buffer).metadata();
-      return metadata.format !== undefined;
-    } catch (error) {
-      return false;
-    }
-  }
-
-  /**
-   * Génère une miniature
-   * @param {Buffer} buffer - Buffer de l'image originale
-   * @param {number} width - Largeur de la miniature
-   * @param {number} height - Hauteur de la miniature
-   * @returns {Promise<Buffer>}
-   */
-  async generateThumbnail(buffer, width = 300, height = 300) {
-    try {
-      return await sharp(buffer)
-        .resize(width, height, {
-          fit: 'cover',
-          position: 'center'
-        })
-        .jpeg({ quality: 80 })
-        .toBuffer();
-    } catch (error) {
-      throw new Error(`Erreur lors de la génération de la miniature: ${error.message}`);
-    }
-  }
 }
 
 // Export singleton

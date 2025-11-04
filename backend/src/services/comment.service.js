@@ -8,6 +8,20 @@ import { publishCommentEvent } from '../config/websocket.js';
  */
 class CommentService {
   /**
+   * Valide qu'une observation existe
+   * @param {string} observationId - ID de l'observation
+   * @throws {Error} Si l'observation n'existe pas
+   * @private
+   */
+  async _validateObservationExists(observationId) {
+    const observation = await Observation.findById(observationId);
+    if (!observation) {
+      throw new Error('OBSERVATION_NOT_FOUND');
+    }
+    return observation;
+  }
+
+  /**
    * Récupère les commentaires d'une observation
    * @param {string} observationId - ID de l'observation
    * @param {Object} filters - Filtres de pagination
@@ -15,10 +29,7 @@ class CommentService {
    */
   async getCommentsByObservation(observationId, filters = {}) {
     // Vérifier que l'observation existe
-    const observation = await Observation.findById(observationId);
-    if (!observation) {
-      throw new Error('OBSERVATION_NOT_FOUND');
-    }
+    await this._validateObservationExists(observationId);
 
     const { page, limit, skip } = getPaginationParams(filters);
 
@@ -47,10 +58,7 @@ class CommentService {
    */
   async createComment(observationId, commentData, userId) {
     // Vérifier que l'observation existe
-    const observation = await Observation.findById(observationId);
-    if (!observation) {
-      throw new Error('OBSERVATION_NOT_FOUND');
-    }
+    await this._validateObservationExists(observationId);
 
     const comment = await Comment.create({
       ...commentData,
