@@ -71,4 +71,22 @@ export const publishToChannel = (channel, type, data) => {
   }
 };
 
+/**
+ * Helper pour publier des événements d'observation
+ * @param {string} type - Type d'événement (observation:created, observation:updated, observation:deleted)
+ * @param {Object} data - Données de l'observation
+ */
+export const publishObservationEvent = (type, data) => {
+  publishToChannel('observations', type, data);
+};
+
+/**
+ * Helper pour publier des événements de commentaire
+ * @param {string} type - Type d'événement (comment:created, comment:updated, comment:deleted)
+ * @param {Object} data - Données du commentaire
+ */
+export const publishCommentEvent = (type, data) => {
+  publishToChannel('comments', type, data);
+};
+
 export default createWebSocketServer;

@@ -1,7 +1,7 @@
 import Comment from '../models/Comment.js';
 import Observation from '../models/Observation.js';
 import { getPaginationParams, createPaginationMeta } from '../utils/pagination.js';
-import { publishToChannel } from '../config/websocket.js';
+import { publishCommentEvent } from '../config/websocket.js';
 
 /**
  * Service de gestion des commentaires
@@ -61,13 +61,9 @@ class CommentService {
     const populatedComment = await comment.populate('userId', 'name email');
 
     // Publier l'événement via WebSocket
-    publishToChannel('comments', {
-      type: 'comment:created',
-      data: {
-        comment: populatedComment.toObject(),
-        observationId
-      },
-      timestamp: new Date().toISOString()
+    publishCommentEvent('comment:created', {
+      comment: populatedComment.toObject(),
+      observationId
     });
 
     return populatedComment;
@@ -100,13 +96,9 @@ class CommentService {
     }
 
     // Publier l'événement via WebSocket
-    publishToChannel('comments', {
-      type: 'comment:updated',
-      data: {
-        comment: comment.toObject(),
-        observationId: comment.observationId
-      },
-      timestamp: new Date().toISOString()
+    publishCommentEvent('comment:updated', {
+      comment: comment.toObject(),
+      observationId: comment.observationId
     });
 
     return comment;
@@ -125,13 +117,9 @@ class CommentService {
     }
 
     // Publier l'événement via WebSocket
-    publishToChannel('comments', {
-      type: 'comment:deleted',
-      data: {
-        commentId,
-        observationId: comment.observationId
-      },
-      timestamp: new Date().toISOString()
+    publishCommentEvent('comment:deleted', {
+      commentId,
+      observationId: comment.observationId
     });
 
     return comment;

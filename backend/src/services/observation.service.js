@@ -1,6 +1,6 @@
 import Observation from '../models/Observation.js';
 import { getPaginationParams, createPaginationMeta } from '../utils/pagination.js';
-import { publishToChannel } from '../config/websocket.js';
+import { publishObservationEvent } from '../config/websocket.js';
 
 /**
  * Service de gestion des observations
@@ -82,11 +82,7 @@ class ObservationService {
     const populatedObservation = await observation.populate('userId', 'name email');
 
     // Publier l'événement via WebSocket
-    publishToChannel('observations', {
-      type: 'observation:created',
-      data: populatedObservation.toObject(),
-      timestamp: new Date().toISOString()
-    });
+    publishObservationEvent('observation:created', populatedObservation.toObject());
 
     return populatedObservation;
   }
@@ -109,11 +105,7 @@ class ObservationService {
     }
 
     // Publier l'événement via WebSocket
-    publishToChannel('observations', {
-      type: 'observation:updated',
-      data: observation.toObject(),
-      timestamp: new Date().toISOString()
-    });
+    publishObservationEvent('observation:updated', observation.toObject());
 
     return observation;
   }
@@ -139,11 +131,7 @@ class ObservationService {
     }
 
     // Publier l'événement via WebSocket
-    publishToChannel('observations', {
-      type: 'observation:deleted',
-      data: { observationId },
-      timestamp: new Date().toISOString()
-    });
+    publishObservationEvent('observation:deleted', { observationId });
 
     return observation;
   }
@@ -156,61 +144,6 @@ class ObservationService {
   async getObservationOwnerId(observationId) {
     const observation = await Observation.findById(observationId).select('userId');
     return observation?.userId;
-  }
-
-  /**
-   * Ajoute une image à une observation
-   * @param {string} observationId - ID de l'observation
-   * @param {Object} file - Fichier uploadé (multer)
-   * @returns {Object} Données de l'image ajoutée
-   */
-  async addImage(observationId, file) {
-    const observation = await Observation.findById(observationId);
-    if (!observation) {
-      throw new Error('OBSERVATION_NOT_FOUND');
-    }
-
-    // Créer l'objet image
-    const imageId = `img_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-    const imageData = {
-      imageId,
-      imageUrl: `/uploads/${file.filename}`,
-      size: file.size,
-      format: file.mimetype.split('/')[1],
-      uploadedAt: new Date()
-    };
-
-    // Ajouter l'image au tableau
-    observation.images.push(imageData);
-
-    await observation.save();
-
-    return imageData;
-  }
-
-  /**
-   * Supprime une image d'une observation
-   * @param {string} observationId - ID de l'observation
-   * @param {string} imageId - ID de l'image
-   * @returns {boolean} true si supprimé
-   */
-  async deleteImage(observationId, imageId) {
-    const observation = await Observation.findById(observationId);
-    if (!observation) {
-      throw new Error('OBSERVATION_NOT_FOUND');
-    }
-
-    const imageIndex = observation.images.findIndex(img => img.imageId === imageId);
-    if (imageIndex === -1) {
-      throw new Error('IMAGE_NOT_FOUND');
-    }
-
-    // Supprimer l'image du tableau
-    observation.images.splice(imageIndex, 1);
-
-    await observation.save();
-
-    return true;
   }
 
   /**

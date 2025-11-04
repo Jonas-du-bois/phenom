@@ -90,16 +90,6 @@ Pour plus d'informations sur l'implémentation WebSocket, consultez :
         url: 'https://opensource.org/licenses/MIT'
       }
     },
-    /* servers: [
-      {
-        url: process.env.API_BASE_URL || 'http://localhost:3000',
-        description: 'Serveur de développement'
-      },
-      {
-        url: 'https://phenom-api.onrender.com',
-        description: 'Serveur de production'
-      }
-    ], */
     components: {
       securitySchemes: {
         bearerAuth: {

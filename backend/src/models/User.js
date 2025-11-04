@@ -34,19 +34,6 @@ const userSchema = new mongoose.Schema({
     maxlength: [500, 'La bio ne peut pas dépasser 500 caractères'],
     default: ''
   },
-  status: {
-    type: String,
-    enum: ['active', 'suspended'],
-    default: 'active'
-  },
-  suspendedUntil: {
-    type: Date,
-    default: null
-  },
-  suspendedReason: {
-    type: String,
-    default: null
-  },
   createdAt: {
     type: Date,
     default: Date.now

@@ -1,4 +1,5 @@
 import authService from '../services/auth.service.js';
+import userService from '../services/user.service.js';
 import { successResponse, createdResponse, errorResponse, unauthorizedResponse } from '../utils/response.js';
 
 /**
@@ -45,7 +46,7 @@ class AuthController {
    */
   async getProfile(req, res, next) {
     try {
-      const user = await authService.getProfile(req.user._id);
+      const user = await userService.getProfile(req.user._id);
 
       return successResponse(res, user);
     } catch (error) {

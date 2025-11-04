@@ -57,30 +57,3 @@ export const authenticate = async (req, res, next) => {
     });
   }
 };
-
-/**
- * Middleware optionnel d'authentification
- * Ajoute l'utilisateur si le token est valide, sinon continue sans erreur
- */
-export const optionalAuth = async (req, res, next) => {
-  try {
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return next();
-    }
-
-    const token = authHeader.substring(7);
-    const decoded = verifyToken(token);
-    const user = await User.findById(decoded.userId).select('-password');
-
-    if (user) {
-      req.user = user;
-    }
-
-    next();
-  } catch (error) {
-    // En cas d'erreur, on continue sans utilisateur authentifié
-    next();
-  }
-};

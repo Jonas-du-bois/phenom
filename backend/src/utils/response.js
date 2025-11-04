@@ -62,15 +62,6 @@ export const unauthorizedResponse = (res, message = 'Non autorisé') => {
 };
 
 /**
- * Réponse interdit
- * @param {Object} res - Objet response Express
- * @param {string} message - Message d'erreur
- */
-export const forbiddenResponse = (res, message = 'Accès interdit') => {
-  return errorResponse(res, message, 403);
-};
-
-/**
  * Réponse non trouvé
  * @param {Object} res - Objet response Express
  * @param {string} message - Message d'erreur

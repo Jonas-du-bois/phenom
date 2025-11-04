@@ -37,32 +37,6 @@ const observationSchema = new mongoose.Schema({
       default: Date.now
     }
   }],
-  status: {
-    type: String,
-    enum: ['pending', 'approved', 'rejected'],
-    default: 'approved'
-  },
-  moderatedAt: {
-    type: Date,
-    default: null
-  },
-  moderatedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    default: null
-  },
-  moderationNote: {
-    type: String,
-    default: null
-  },
-  flagged: {
-    type: Boolean,
-    default: false
-  },
-  flagReason: {
-    type: String,
-    default: null
-  },
   location: {
     type: {
       type: String,

@@ -67,20 +67,6 @@ class AuthService {
   }
 
   /**
-   * Récupère le profil de l'utilisateur connecté
-   * @param {string} userId - ID de l'utilisateur
-   * @returns {Object} Utilisateur
-   */
-  async getProfile(userId) {
-    const user = await User.findById(userId);
-    if (!user) {
-      throw new Error('USER_NOT_FOUND');
-    }
-
-    return user.toSafeObject();
-  }
-
-  /**
    * Rafraîchit le token JWT
    * @param {string} refreshToken - Token de rafraîchissement
    * @returns {Object} Nouveaux tokens
