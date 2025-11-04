@@ -97,49 +97,6 @@ class ObservationController {
   }
 
   /**
-   * Ajoute une image à une observation
-   * POST /observations/:id/images
-   */
-  async addImage(req, res, next) {
-    try {
-      if (!req.file) {
-        return errorResponse(res, 'Aucun fichier fourni', 400);
-      }
-
-      const observationId = req.params.id;
-      const imageData = await observationService.addImage(observationId, req.file);
-
-      return createdResponse(res, imageData, 'Image ajoutée avec succès');
-    } catch (error) {
-      if (error.message === 'OBSERVATION_NOT_FOUND') {
-        return notFoundResponse(res, 'Observation non trouvée');
-      }
-      next(error);
-    }
-  }
-
-  /**
-   * Supprime une image d'une observation
-   * DELETE /observations/:id/images/:imageId
-   */
-  async deleteImage(req, res, next) {
-    try {
-      const { id: observationId, imageId } = req.params;
-      await observationService.deleteImage(observationId, imageId);
-
-      return successResponse(res, null, 'Image supprimée avec succès');
-    } catch (error) {
-      if (error.message === 'OBSERVATION_NOT_FOUND') {
-        return notFoundResponse(res, 'Observation non trouvée');
-      }
-      if (error.message === 'IMAGE_NOT_FOUND') {
-        return notFoundResponse(res, 'Image non trouvée');
-      }
-      next(error);
-    }
-  }
-
-  /**
    * Recherche d'observations à proximité
    * GET /observations/nearby
    */

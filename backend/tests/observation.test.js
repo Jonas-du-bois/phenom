@@ -769,4 +769,68 @@ describe('Observation Endpoints', () => {
       expect(deletedObs).toBeNull();
     });
   });
+
+  // ==============================================================
+  // Méthodes addImage et deleteImage du controller (Legacy)
+  // ==============================================================
+  describe('Legacy Image Methods (observation.controller)', () => {
+    let testObservationId;
+
+    beforeEach(async () => {
+      const observation = await Observation.create({
+        title: 'Observation with images',
+        description: 'Test observation for image operations with valid description length',
+        date: new Date(),
+        location: {
+          type: 'Point',
+          coordinates: [2.3522, 48.8566]
+        },
+        userId: userId
+      });
+      testObservationId = observation._id;
+    });
+
+    describe('POST /api/v1/observations/:id/images', () => {
+      it('should fail without file', async () => {
+        const response = await request(app)
+          .post(`/api/v1/observations/${testObservationId}/images`)
+          .set('Authorization', `Bearer ${authToken}`)
+          .expect(400);
+
+        // La route est interceptée par imageController depuis le refactoring
+        expect(response.body.error).toBe('Aucune image fournie');
+      });
+
+      it('should fail for non-existent observation', async () => {
+        const fakeId = '507f1f77bcf86cd799439011';
+
+        await request(app)
+          .post(`/api/v1/observations/${fakeId}/images`)
+          .set('Authorization', `Bearer ${authToken}`)
+          .attach('image', Buffer.from('fake-image'), 'test.png')
+          .expect(404);
+      });
+    });
+
+    describe('DELETE /api/v1/observations/:id/images/:imageId', () => {
+      it('should fail for non-existent observation', async () => {
+        const fakeObsId = '507f1f77bcf86cd799439011';
+        const fakeImageId = '507f1f77bcf86cd799439012';
+
+        await request(app)
+          .delete(`/api/v1/observations/${fakeObsId}/images/${fakeImageId}`)
+          .set('Authorization', `Bearer ${authToken}`)
+          .expect(404);
+      });
+
+      it('should fail for non-existent image', async () => {
+        const fakeImageId = '507f1f77bcf86cd799439012';
+
+        await request(app)
+          .delete(`/api/v1/observations/${testObservationId}/images/${fakeImageId}`)
+          .set('Authorization', `Bearer ${authToken}`)
+          .expect(404);
+      });
+    });
+  });
 });

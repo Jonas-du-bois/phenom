@@ -39,8 +39,13 @@ class ImageController {
         observationId
       );
 
-      // Ajouter l'ID de l'image à l'observation
-      observation.images.push(imageData.id);
+      // Ajouter les métadonnées de l'image à l'observation
+      observation.images.push({
+        imageId: imageData.id,
+        imageUrl: `/api/v1/images/${imageData.id}`,
+        size: imageData.size,
+        format: imageData.contentType
+      });
       await observation.save();
 
       return successResponse(res, {
@@ -70,6 +75,10 @@ class ImageController {
       if (error.message === 'IMAGE_NOT_FOUND') {
         return notFoundResponse(res, 'Image non trouvée');
       }
+      // Gérer les erreurs d'ID invalide (ObjectId MongoDB)
+      if (error.message && (error.message.includes('24 character hex string') || error.message.includes('BSONError'))) {
+        return errorResponse(res, 'ID invalide', 400);
+      }
       next(error);
     }
   }
@@ -82,8 +91,9 @@ class ImageController {
     try {
       const { observationId, imageId } = req.params;
       const userId = req.user._id;
+      const userRole = req.user.role;
 
-      // Vérifier que l'observation existe et appartient à l'utilisateur
+      // Vérifier que l'observation existe et appartient à l'utilisateur (sauf admin)
       const Observation = (await import('../models/Observation.js')).default;
       const observation = await Observation.findById(observationId);
 
@@ -91,18 +101,19 @@ class ImageController {
         return notFoundResponse(res, 'Observation non trouvée');
       }
 
-      if (observation.userId.toString() !== userId.toString()) {
+      // Les admins peuvent supprimer n'importe quelle image
+      if (observation.userId.toString() !== userId.toString() && userRole !== 'admin') {
         return errorResponse(res, 'Non autorisé', 403);
       }
 
       // Supprimer l'image
       await imageService.deleteImage(imageId, observationId);
 
-      // Retirer l'ID de l'image de l'observation
-      observation.images = observation.images.filter(id => id !== imageId);
+      // Retirer l'image de l'observation (comparer par imageId)
+      observation.images = observation.images.filter(img => img.imageId !== imageId);
       await observation.save();
 
-      return res.status(204).send();
+      return successResponse(res, {}, 'Image supprimée avec succès');
     } catch (error) {
       if (error.message === 'IMAGE_NOT_FOUND') {
         return notFoundResponse(res, 'Image non trouvée');

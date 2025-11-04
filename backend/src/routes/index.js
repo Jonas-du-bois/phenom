@@ -14,6 +14,9 @@ router.use('/auth', authRoutes);
 // Routes des utilisateurs
 router.use('/users', userRoutes);
 
+// Routes des images (AVANT observations pour éviter les conflits de routes)
+router.use('/', imageRoutes);
+
 // Routes des observations
 router.use('/observations', observationRoutes);
 
@@ -22,8 +25,5 @@ router.use('/', commentRoutes);
 
 // Routes d'administration
 router.use('/admin', adminRoutes);
-
-// Routes des images
-router.use('/', imageRoutes);
 
 export default router;
