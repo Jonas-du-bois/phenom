@@ -1,5 +1,6 @@
 import User from '../src/models/User.js';
 import authService from '../src/services/auth.service.js';
+import userService from '../src/services/user.service.js';
 
 describe('Auth Service Direct Tests', () => {
   describe('getProfile', () => {
@@ -14,7 +15,7 @@ describe('Auth Service Direct Tests', () => {
     });
 
     it('should get user profile by ID', async () => {
-      const profile = await authService.getProfile(user._id);
+      const profile = await userService.getProfile(user._id);
 
       expect(profile).toBeDefined();
       expect(profile.email).toBe(user.email);
@@ -24,7 +25,7 @@ describe('Auth Service Direct Tests', () => {
 
     it('should throw error for non-existent user', async () => {
       await expect(
-        authService.getProfile('507f1f77bcf86cd799439011')
+        userService.getProfile('507f1f77bcf86cd799439011')
       ).rejects.toThrow('USER_NOT_FOUND');
     });
   });

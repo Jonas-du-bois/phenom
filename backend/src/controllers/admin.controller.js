@@ -106,25 +106,9 @@ class AdminController {
   }
 
   /**
-   * Approuve une observation
-   * POST /admin/observations/:id/approve
+   * Récupère les statistiques globales
+   * GET /admin/stats
    */
-  async approveObservation(req, res, next) {
-    try {
-      const observationId = req.params.id;
-      const adminId = req.user._id;
-      const { note } = req.body;
-
-      const observation = await adminService.approveObservation(observationId, adminId, note);
-
-      return successResponse(res, observation, 'Observation approuvée avec succès');
-    } catch (error) {
-      if (error.message === 'OBSERVATION_NOT_FOUND') {
-        return notFoundResponse(res, 'Observation non trouvée');
-      }
-      next(error);
-    }
-  }
 
   /**
    * Rejette une observation

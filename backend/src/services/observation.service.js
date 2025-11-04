@@ -167,8 +167,7 @@ class ObservationService {
             radiusInMeters / 6378100 // Rayon de la Terre en mètres
           ]
         }
-      },
-      status: 'approved'
+      }
     };
 
     const [observations, total] = await Promise.all([
@@ -193,15 +192,9 @@ class ObservationService {
   async getObservationStats() {
     const [
       totalObservations,
-      totalApproved,
-      totalPending,
-      totalRejected,
       observationsByMonth
     ] = await Promise.all([
       Observation.countDocuments(),
-      Observation.countDocuments({ status: 'approved' }),
-      Observation.countDocuments({ status: 'pending' }),
-      Observation.countDocuments({ status: 'rejected' }),
       Observation.aggregate([
         {
           $group: {
@@ -223,9 +216,6 @@ class ObservationService {
 
     return {
       totalObservations,
-      totalApproved,
-      totalPending,
-      totalRejected,
       observationsByMonth
     };
   }

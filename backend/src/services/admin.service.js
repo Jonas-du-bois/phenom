@@ -193,7 +193,6 @@ class AdminService {
     const [observations, total] = await Promise.all([
       Observation.find(query)
         .populate('userId', 'name email')
-        .populate('moderatedBy', 'name email')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
@@ -205,115 +204,6 @@ class AdminService {
       data: observations,
       pagination: createPaginationMeta(total, page, limit)
     };
-  }
-
-  /**
-   * Approuve une observation
-   * @param {string} observationId - ID de l'observation
-   * @param {string} adminId - ID de l'admin
-   * @param {string} note - Note de modération
-   * @returns {Object} Observation approuvée
-   */
-  async approveObservation(observationId, adminId, note) {
-    const observation = await Observation.findByIdAndUpdate(
-      observationId,
-      {
-        status: 'approved',
-        moderatedAt: Date.now(),
-        moderatedBy: adminId,
-        moderationNote: note,
-        flagged: false
-      },
-      { new: true }
-    ).populate('userId', 'name email').populate('moderatedBy', 'name email');
-
-    if (!observation) {
-      throw new Error('OBSERVATION_NOT_FOUND');
-    }
-
-    return observation;
-  }
-
-  /**
-   * Rejette une observation
-   * @param {string} observationId - ID de l'observation
-   * @param {string} adminId - ID de l'admin
-   * @param {string} reason - Raison du rejet
-   * @returns {Object} Observation rejetée
-   */
-  async rejectObservation(observationId, adminId, reason) {
-    const observation = await Observation.findByIdAndUpdate(
-      observationId,
-      {
-        status: 'rejected',
-        moderatedAt: Date.now(),
-        moderatedBy: adminId,
-        moderationNote: reason,
-        flagged: false
-      },
-      { new: true }
-    ).populate('userId', 'name email').populate('moderatedBy', 'name email');
-
-    if (!observation) {
-      throw new Error('OBSERVATION_NOT_FOUND');
-    }
-
-    return observation;
-  }
-
-  /**
-   * Suspend un utilisateur
-   * @param {string} userId - ID de l'utilisateur
-   * @param {Object} suspendData - Données de suspension
-   * @returns {Object} Utilisateur suspendu
-   */
-  async suspendUser(userId, suspendData) {
-    const { reason, duration, notify: _notify } = suspendData;
-
-    const suspendedUntil = duration
-      ? new Date(Date.now() + duration * 24 * 60 * 60 * 1000)
-      : null;
-
-    const user = await User.findByIdAndUpdate(
-      userId,
-      {
-        status: 'suspended',
-        suspendedUntil,
-        suspendedReason: reason
-      },
-      { new: true }
-    ).select('-password');
-
-    if (!user) {
-      throw new Error('USER_NOT_FOUND');
-    }
-
-    // TODO: Envoyer une notification si notify === true
-
-    return user;
-  }
-
-  /**
-   * Réactive un utilisateur suspendu
-   * @param {string} userId - ID de l'utilisateur
-   * @returns {Object} Utilisateur réactivé
-   */
-  async activateUser(userId) {
-    const user = await User.findByIdAndUpdate(
-      userId,
-      {
-        status: 'active',
-        suspendedUntil: null,
-        suspendedReason: null
-      },
-      { new: true }
-    ).select('-password');
-
-    if (!user) {
-      throw new Error('USER_NOT_FOUND');
-    }
-
-    return user;
   }
 
   /**
