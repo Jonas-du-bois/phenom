@@ -6,21 +6,34 @@ const options = {
     info: {
       title: 'Phenom API',
       version: '3.0.0',
-      description: `API REST et WebSocket pour l'application d'observations OVNI Phenom
+      description: `API REST et WebSocket pour l'application d'observations OVNI Phenom.
 
-## 🔌 WebSocket en temps réel
+---
 
-L'API Phenom intègre maintenant un serveur WebSocket utilisant **WsMini** pour les mises à jour en temps réel.
+## � Démarrage rapide
 
-### Connexion WebSocket
+### API REST
+Tous les endpoints REST sont documentés ci-dessous avec leurs schémas de requête/réponse.
 
-**URLs du serveur WebSocket** :
-- **Développement** : \`ws://localhost:3000\`
-- **Production** : \`wss://phenom-backend.onrender.com\`
+**Base URL** : \`/api/v1\`
 
-⚠️ **Important** : Le serveur WebSocket utilise le **même port** que l'API REST.
+**Authentification** : Bearer Token JWT (voir section "Authentification")
 
-Pour vous connecter depuis le frontend :
+### WebSocket Temps Réel
+
+L'API Phenom intègre un serveur WebSocket utilisant **WsMini** pour les mises à jour en temps réel.
+
+**URLs WebSocket** :
+- 🔧 **Développement** : \`ws://localhost:3000\`
+- 🌐 **Production** : \`wss://phenom-backend.onrender.com\`
+
+⚠️ **Important** : Le WebSocket utilise le **même port** que l'API REST.
+
+---
+
+## 🔌 Guide WebSocket
+
+### 1️⃣ Connexion
 
 \`\`\`javascript
 // Détecter automatiquement l'environnement
@@ -31,55 +44,95 @@ const wsUrl = import.meta.env.PROD
 const ws = new WebSocket(wsUrl);
 
 ws.onopen = () => {
-  console.log('✅ Connecté au WebSocket');
-  
-  // S'abonner aux canaux (selon protocole WsMini)
-  ws.send(JSON.stringify({ action: 'subscribe', channel: 'observations' }));
-  ws.send(JSON.stringify({ action: 'subscribe', channel: 'comments' }));
-};
-
-ws.onmessage = (event) => {
-  const message = JSON.parse(event.data);
-  console.log('📨 Message reçu:', message);
-  // Gérer selon message.type
+  console.log('✅ Connecté au WebSocket Phenom');
 };
 \`\`\`
 
-### Canaux disponibles
+### 2️⃣ Abonnement aux canaux
 
-#### 📡 Canal \`observations\`
-Recevez les mises à jour en temps réel sur les observations.
+**Canal \`observations\`** - Mises à jour des observations OVNI
+\`\`\`javascript
+ws.send(JSON.stringify({ 
+  action: 'subscribe', 
+  channel: 'observations' 
+}));
+\`\`\`
 
-**Événements** :
-- \`observation:created\` : Nouvelle observation créée
-- \`observation:updated\` : Observation modifiée
-- \`observation:deleted\` : Observation supprimée
+**Événements disponibles** :
+- 🆕 \`observation:created\` - Nouvelle observation publiée
+- ✏️ \`observation:updated\` - Observation modifiée
+- 🗑️ \`observation:deleted\` - Observation supprimée
 
-#### 💬 Canal \`comments\`
-Recevez les mises à jour en temps réel sur les commentaires.
+**Canal \`comments\`** - Mises à jour des commentaires
+\`\`\`javascript
+ws.send(JSON.stringify({ 
+  action: 'subscribe', 
+  channel: 'comments' 
+}));
+\`\`\`
 
-**Événements** :
-- \`comment:created\` : Nouveau commentaire créé
-- \`comment:updated\` : Commentaire modifié
-- \`comment:deleted\` : Commentaire supprimé
+**Événements disponibles** :
+- 🆕 \`comment:created\` - Nouveau commentaire posté
+- ✏️ \`comment:updated\` - Commentaire modifié
+- 🗑️ \`comment:deleted\` - Commentaire supprimé
 
-### Format des messages
+### 3️⃣ Réception des messages
 
-Tous les messages WebSocket suivent ce format :
+\`\`\`javascript
+ws.onmessage = (event) => {
+  const message = JSON.parse(event.data);
+  
+  switch(message.type) {
+    case 'observation:created':
+      console.log('Nouvelle observation:', message.data);
+      break;
+    case 'comment:created':
+      console.log('Nouveau commentaire:', message.data);
+      break;
+    // ... autres événements
+  }
+};
+\`\`\`
+
+### 4️⃣ Format des messages
+
+Tous les messages WebSocket suivent ce format standardisé :
 
 \`\`\`json
 {
-  "type": "observation:created|updated|deleted",
-  "data": { /* Données de l'observation ou commentaire */ },
+  "type": "observation:created",
+  "data": {
+    "_id": "507f1f77bcf86cd799439011",
+    "title": "OVNI triangulaire",
+    "description": "...",
+    "location": { "type": "Point", "coordinates": [6.6323, 46.5197] },
+    "userId": "507f191e810c19729de860ea",
+    "createdAt": "2025-11-03T12:34:56.789Z"
+  },
   "timestamp": "2025-11-03T12:34:56.789Z"
 }
 \`\`\`
 
-### Documentation complète
+### 5️⃣ Gestion des erreurs
 
-Pour plus d'informations sur l'implémentation WebSocket, consultez :
-- \`backend/src/config/WEBSOCKET_README.md\`
-- [Documentation WsMini](https://github.com/Chabloz/WsMini)
+\`\`\`javascript
+ws.onerror = (error) => {
+  console.error('❌ Erreur WebSocket:', error);
+};
+
+ws.onclose = (event) => {
+  console.log('🔌 Connexion WebSocket fermée', event.code);
+  // Implémenter reconnexion automatique si nécessaire
+};
+\`\`\`
+
+---
+
+## 📚 Ressources
+
+- 📖 [Documentation technique complète](backend/src/config/WEBSOCKET_README.md)
+- 🔗 [WsMini - Librairie utilisée](https://github.com/Chabloz/WsMini)
+- 🔐 Note : Les clients peuvent **uniquement s'abonner** aux canaux. Seul le serveur publie des événements.
 `,
       contact: {
         name: 'Équipe Phenom',
@@ -240,7 +293,7 @@ Pour plus d'informations sur l'implémentation WebSocket, consultez :
         },
         WebSocketMessage: {
           type: 'object',
-          description: 'Format des messages WebSocket reçus en temps réel',
+          description: '**Message générique WebSocket** - Format standard pour tous les événements temps réel',
           properties: {
             type: {
               type: 'string',
@@ -257,20 +310,35 @@ Pour plus d'informations sur l'implémentation WebSocket, consultez :
             },
             data: {
               type: 'object',
-              description: 'Données de l\'événement (observation ou commentaire)'
+              description: 'Données de l\'événement (observation ou commentaire complet)'
             },
             timestamp: {
               type: 'string',
               format: 'date-time',
               example: '2025-11-03T12:34:56.789Z',
-              description: 'Horodatage de l\'événement'
+              description: 'Horodatage de l\'événement (ISO 8601)'
             }
           },
-          required: ['type', 'data', 'timestamp']
+          required: ['type', 'data', 'timestamp'],
+          example: {
+            type: 'observation:created',
+            data: {
+              _id: '507f1f77bcf86cd799439011',
+              title: 'OVNI triangulaire',
+              description: 'Observation d\'un objet triangulaire lumineux',
+              location: {
+                type: 'Point',
+                coordinates: [6.6323, 46.5197]
+              },
+              userId: '507f191e810c19729de860ea',
+              createdAt: '2025-11-03T12:34:56.789Z'
+            },
+            timestamp: '2025-11-03T12:34:56.789Z'
+          }
         },
         WebSocketObservationCreated: {
           type: 'object',
-          description: 'Message WebSocket pour une observation créée',
+          description: '**WebSocket : Observation créée** - Émis lorsqu\'une nouvelle observation est publiée',
           properties: {
             type: {
               type: 'string',
@@ -282,13 +350,38 @@ Pour plus d'informations sur l'implémentation WebSocket, consultez :
             },
             timestamp: {
               type: 'string',
-              format: 'date-time'
+              format: 'date-time',
+              example: '2025-11-03T12:34:56.789Z'
             }
+          },
+          example: {
+            type: 'observation:created',
+            data: {
+              _id: '507f1f77bcf86cd799439011',
+              title: 'OVNI triangulaire au-dessus de Genève',
+              description: 'Trois lumières formant un triangle parfait',
+              images: [
+                {
+                  imageId: '67890abcdef12345',
+                  imageUrl: '/api/v1/images/67890abcdef12345',
+                  size: 524288,
+                  format: 'image/jpeg'
+                }
+              ],
+              location: {
+                type: 'Point',
+                coordinates: [6.1432, 46.2044]
+              },
+              userId: '507f191e810c19729de860ea',
+              createdAt: '2025-11-03T12:34:56.789Z',
+              updatedAt: '2025-11-03T12:34:56.789Z'
+            },
+            timestamp: '2025-11-03T12:34:56.789Z'
           }
         },
         WebSocketObservationDeleted: {
           type: 'object',
-          description: 'Message WebSocket pour une observation supprimée',
+          description: '**WebSocket : Observation supprimée** - Émis lorsqu\'une observation est supprimée (par l\'utilisateur ou un admin)',
           properties: {
             type: {
               type: 'string',
@@ -300,19 +393,28 @@ Pour plus d'informations sur l'implémentation WebSocket, consultez :
               properties: {
                 observationId: {
                   type: 'string',
-                  example: '507f1f77bcf86cd799439011'
+                  example: '507f1f77bcf86cd799439011',
+                  description: 'ID de l\'observation supprimée'
                 }
               }
             },
             timestamp: {
               type: 'string',
-              format: 'date-time'
+              format: 'date-time',
+              example: '2025-11-03T12:34:56.789Z'
             }
+          },
+          example: {
+            type: 'observation:deleted',
+            data: {
+              observationId: '507f1f77bcf86cd799439011'
+            },
+            timestamp: '2025-11-03T12:34:56.789Z'
           }
         },
         WebSocketCommentCreated: {
           type: 'object',
-          description: 'Message WebSocket pour un commentaire créé',
+          description: '**WebSocket : Commentaire créé** - Émis lorsqu\'un nouveau commentaire est posté sur une observation',
           properties: {
             type: {
               type: 'string',
@@ -327,14 +429,30 @@ Pour plus d'informations sur l'implémentation WebSocket, consultez :
                 },
                 observationId: {
                   type: 'string',
-                  example: '507f1f77bcf86cd799439011'
+                  example: '507f1f77bcf86cd799439011',
+                  description: 'ID de l\'observation commentée'
                 }
               }
             },
             timestamp: {
               type: 'string',
-              format: 'date-time'
+              format: 'date-time',
+              example: '2025-11-03T12:34:56.789Z'
             }
+          },
+          example: {
+            type: 'comment:created',
+            data: {
+              comment: {
+                _id: '507f1f77bcf86cd799439012',
+                text: 'J\'ai vu exactement la même chose hier soir!',
+                observationId: '507f1f77bcf86cd799439011',
+                userId: '507f191e810c19729de860eb',
+                createdAt: '2025-11-03T12:35:00.000Z'
+              },
+              observationId: '507f1f77bcf86cd799439011'
+            },
+            timestamp: '2025-11-03T12:35:00.000Z'
           }
         }
       }
@@ -366,17 +484,43 @@ Pour plus d'informations sur l'implémentation WebSocket, consultez :
       },
       {
         name: 'WebSocket',
-        description: `Mises à jour en temps réel via WebSocket (WsMini)
-        
-**URLs du serveur WebSocket** :
-- Développement : \`ws://localhost:3000\`
-- Production : \`wss://phenom-backend.onrender.com\`
+        description: `**Mises à jour en temps réel via WebSocket (WsMini)**
 
-**Canaux disponibles** :
-- \`observations\` : Événements sur les observations (créer, modifier, supprimer)
-- \`comments\` : Événements sur les commentaires (créer, modifier, supprimer)
+---
 
-**Note** : Les clients peuvent uniquement s'abonner (subscribe) aux canaux. Seul le serveur peut publier des événements.`
+### 🔗 Connexion
+
+**URLs** :
+- Dev : \`ws://localhost:3000\`
+- Prod : \`wss://phenom-backend.onrender.com\`
+
+### 📡 Canaux disponibles
+
+| Canal | Description | Événements |
+|-------|-------------|------------|
+| \`observations\` | Mises à jour des observations OVNI | \`created\`, \`updated\`, \`deleted\` |
+| \`comments\` | Mises à jour des commentaires | \`created\`, \`updated\`, \`deleted\` |
+
+### 📝 Format des messages
+
+\`\`\`json
+{
+  "type": "observation:created",
+  "data": { /* Observation complète */ },
+  "timestamp": "2025-11-03T12:34:56.789Z"
+}
+\`\`\`
+
+### 🔐 Notes importantes
+
+- ✅ Les clients peuvent **s'abonner** (subscribe) aux canaux
+- ❌ Les clients **ne peuvent pas publier** (seul le serveur publie)
+- 🔄 Reconnexion automatique recommandée en cas de déconnexion
+
+### 📚 Documentation
+
+Consultez le guide complet dans \`backend/src/config/WEBSOCKET_README.md\`
+`
       }
     ]
   },

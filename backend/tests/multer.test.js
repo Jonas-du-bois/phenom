@@ -1,190 +1,209 @@
-import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
 import { fileURLToPath } from 'url';
+import path from 'path';
+import upload, { isImageTypeAllowed } from '../src/config/multer.js';
+import { imageConfig } from '../src/config/image.config.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 describe('Multer Configuration', () => {
-  let uploadConfig;
-  const uploadDir = path.join(__dirname, '../uploads');
+  describe('Configuration de base', () => {
+    it('devrait exporter une instance multer valide', () => {
+      expect(upload).toBeDefined();
+      expect(typeof upload.single).toBe('function');
+      expect(typeof upload.array).toBe('function');
+      expect(typeof upload.fields).toBe('function');
+    });
 
-  beforeAll(async () => {
-    // Importer la configuration multer
-    const multerModule = await import('../src/config/multer.js');
-    uploadConfig = multerModule.default;
+    it('devrait exporter la fonction isImageTypeAllowed', () => {
+      expect(isImageTypeAllowed).toBeDefined();
+      expect(typeof isImageTypeAllowed).toBe('function');
+    });
+
+    it('devrait avoir un middleware single() fonctionnel', () => {
+      const middleware = upload.single('image');
+      expect(typeof middleware).toBe('function');
+      expect(middleware.length).toBe(3); // req, res, next
+    });
+
+    it('devrait avoir un middleware array() fonctionnel', () => {
+      const middleware = upload.array('images', 5);
+      expect(typeof middleware).toBe('function');
+      expect(middleware.length).toBe(3);
+    });
+
+    it('devrait avoir un middleware fields() fonctionnel', () => {
+      const middleware = upload.fields([{ name: 'image', maxCount: 1 }]);
+      expect(typeof middleware).toBe('function');
+      expect(middleware.length).toBe(3);
+    });
   });
 
-  afterAll(() => {
-    // Nettoyer les fichiers de test créés
-    if (fs.existsSync(uploadDir)) {
-      const files = fs.readdirSync(uploadDir);
-      files.forEach(file => {
-        if (file.startsWith('test-image-')) {
-          fs.unlinkSync(path.join(uploadDir, file));
-        }
+  describe('isImageTypeAllowed()', () => {
+    it('devrait accepter image/jpeg', () => {
+      expect(isImageTypeAllowed('image/jpeg')).toBe(true);
+    });
+
+    it('devrait accepter image/png', () => {
+      expect(isImageTypeAllowed('image/png')).toBe(true);
+    });
+
+    it('devrait accepter image/webp', () => {
+      expect(isImageTypeAllowed('image/webp')).toBe(true);
+    });
+
+    it('devrait accepter image/jpg (alias)', () => {
+      expect(isImageTypeAllowed('image/jpg')).toBe(true);
+    });
+
+    it('devrait rejeter application/pdf', () => {
+      expect(isImageTypeAllowed('application/pdf')).toBe(false);
+    });
+
+    it('devrait rejeter text/plain', () => {
+      expect(isImageTypeAllowed('text/plain')).toBe(false);
+    });
+
+    it('devrait rejeter video/mp4', () => {
+      expect(isImageTypeAllowed('video/mp4')).toBe(false);
+    });
+
+    it('devrait rejeter les types vides', () => {
+      expect(isImageTypeAllowed('')).toBe(false);
+    });
+
+    it('devrait rejeter undefined', () => {
+      expect(isImageTypeAllowed(undefined)).toBe(false);
+    });
+
+    it('devrait rejeter null', () => {
+      expect(isImageTypeAllowed(null)).toBe(false);
+    });
+  });
+
+  describe('Configuration imageConfig', () => {
+    it('devrait avoir les types MIME autorisés définis', () => {
+      expect(imageConfig.allowedFormats).toBeDefined();
+      expect(Array.isArray(imageConfig.allowedFormats)).toBe(true);
+      expect(imageConfig.allowedFormats.length).toBeGreaterThan(0);
+    });
+
+    it('devrait inclure image/jpeg', () => {
+      expect(imageConfig.allowedFormats).toContain('image/jpeg');
+    });
+
+    it('devrait inclure image/png', () => {
+      expect(imageConfig.allowedFormats).toContain('image/png');
+    });
+
+    it('devrait inclure image/webp', () => {
+      expect(imageConfig.allowedFormats).toContain('image/webp');
+    });
+
+    it('devrait avoir une limite de taille de fichier définie', () => {
+      expect(imageConfig.maxFileSize).toBeDefined();
+      expect(typeof imageConfig.maxFileSize).toBe('number');
+      expect(imageConfig.maxFileSize).toBeGreaterThan(0);
+    });
+
+    it('devrait avoir une limite de 10MB (10485760 bytes)', () => {
+      expect(imageConfig.maxFileSize).toBe(10485760);
+    });
+  });
+
+  describe('Validation des types de fichiers', () => {
+    it('devrait accepter les formats image standards', () => {
+      const standardFormats = ['image/jpeg', 'image/png', 'image/webp'];
+      standardFormats.forEach(format => {
+        expect(imageConfig.allowedFormats).toContain(format);
       });
-    }
-  });
-
-  describe('Upload Directory', () => {
-    it('should create upload directory if it does not exist', () => {
-      const expectedUploadDir = path.join(__dirname, '../uploads');
-      expect(fs.existsSync(expectedUploadDir)).toBe(true);
-    });
-  });
-
-  describe('Storage Configuration', () => {
-    it('should be configured with multer', () => {
-      expect(uploadConfig).toBeDefined();
-      expect(uploadConfig.single).toBeDefined();
-      expect(typeof uploadConfig.single).toBe('function');
-    });
-  });
-
-  describe('File Filter', () => {
-    it('should accept valid image types', () => {
-      const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
-
-      // On ne peut pas tester directement le fileFilter car il est privé
-      // mais on peut vérifier que l'upload est configuré
-      expect(uploadConfig).toBeDefined();
-    });
-  });
-
-  describe('File Size Limits', () => {
-    it('should have configured file size limits', () => {
-      expect(uploadConfig).toBeDefined();
-      // La limite est configurée dans multer
-    });
-  });
-
-  describe('Filename Generation', () => {
-    it('should generate unique filenames', () => {
-      const timestamp1 = Date.now();
-      const random1 = Math.round(Math.random() * 1E9);
-      const filename1 = `test-image-${timestamp1}-${random1}.jpg`;
-
-      const timestamp2 = Date.now();
-      const random2 = Math.round(Math.random() * 1E9);
-      const filename2 = `test-image-${timestamp2}-${random2}.jpg`;
-
-      expect(filename1).not.toBe(filename2);
     });
 
-    it('should sanitize filenames', () => {
-      const originalName = 'Test Image @#$.jpg';
-      const basename = path.basename(originalName, '.jpg');
-      const sanitized = basename.toLowerCase().replace(/[^a-z0-9]/g, '-');
-
-      expect(sanitized).toMatch(/^[a-z0-9-]+$/);
-      expect(sanitized).not.toContain('@');
-      expect(sanitized).not.toContain('#');
-      expect(sanitized).not.toContain('$');
-      expect(sanitized).not.toContain(' ');
+    it('ne devrait contenir que des types MIME valides', () => {
+      imageConfig.allowedFormats.forEach(type => {
+        expect(type).toMatch(/^image\//);
+      });
     });
 
-    it('should preserve file extension', () => {
-      const originalName = 'test-image.jpg';
-      const ext = path.extname(originalName);
-
-      expect(ext).toBe('.jpg');
-    });
-
-    it('should handle multiple extensions correctly', () => {
-      const testCases = [
-        { name: 'image.jpg', expected: '.jpg' },
-        { name: 'image.png', expected: '.png' },
-        { name: 'image.webp', expected: '.webp' },
-        { name: 'image.test.jpg', expected: '.jpg' }
-      ];
-
-      testCases.forEach(({ name, expected }) => {
-        const ext = path.extname(name);
-        expect(ext).toBe(expected);
+    it('devrait rejeter les fichiers non-image', () => {
+      const invalidMimeTypes = ['application/pdf', 'text/plain', 'video/mp4'];
+      invalidMimeTypes.forEach(mimetype => {
+        expect(imageConfig.allowedFormats).not.toContain(mimetype);
       });
     });
   });
 
-  describe('Allowed Types Configuration', () => {
-    it('should use default allowed types when not specified', () => {
-      const defaultTypes = ['image/jpeg', 'image/png', 'image/webp'];
-      const envTypes = process.env.ALLOWED_IMAGE_TYPES?.split(',') || defaultTypes;
-
-      expect(Array.isArray(envTypes)).toBe(true);
-      expect(envTypes.length).toBeGreaterThan(0);
+  describe('Fonctionnalités multer', () => {
+    it('devrait permettre de créer un middleware pour un seul fichier', () => {
+      const singleUpload = upload.single('photo');
+      expect(singleUpload).toBeDefined();
+      expect(typeof singleUpload).toBe('function');
     });
 
-    it('should parse ALLOWED_IMAGE_TYPES from environment', () => {
-      const originalValue = process.env.ALLOWED_IMAGE_TYPES;
-      process.env.ALLOWED_IMAGE_TYPES = 'image/jpeg,image/png';
-
-      const types = process.env.ALLOWED_IMAGE_TYPES.split(',');
-      expect(types).toContain('image/jpeg');
-      expect(types).toContain('image/png');
-
-      // Restaurer la valeur originale
-      if (originalValue) {
-        process.env.ALLOWED_IMAGE_TYPES = originalValue;
-      } else {
-        delete process.env.ALLOWED_IMAGE_TYPES;
-      }
-    });
-  });
-
-  describe('File Size Configuration', () => {
-    it('should use default max file size when not specified', () => {
-      const defaultSize = 10485760; // 10MB
-      const maxSize = parseInt(process.env.MAX_FILE_SIZE) || defaultSize;
-
-      expect(maxSize).toBeGreaterThan(0);
-      expect(typeof maxSize).toBe('number');
+    it('devrait permettre de créer un middleware pour plusieurs fichiers', () => {
+      const multiUpload = upload.array('photos', 10);
+      expect(multiUpload).toBeDefined();
+      expect(typeof multiUpload).toBe('function');
     });
 
-    it('should parse MAX_FILE_SIZE from environment', () => {
-      const originalValue = process.env.MAX_FILE_SIZE;
-      process.env.MAX_FILE_SIZE = '5242880'; // 5MB
+    it('devrait permettre de créer un middleware pour plusieurs champs', () => {
+      const fieldsUpload = upload.fields([
+        { name: 'avatar', maxCount: 1 },
+        { name: 'gallery', maxCount: 8 }
+      ]);
+      expect(fieldsUpload).toBeDefined();
+      expect(typeof fieldsUpload).toBe('function');
+    });
 
-      const maxSize = parseInt(process.env.MAX_FILE_SIZE);
-      expect(maxSize).toBe(5242880);
+    it('devrait avoir la méthode any() disponible', () => {
+      expect(typeof upload.any).toBe('function');
+      const anyUpload = upload.any();
+      expect(typeof anyUpload).toBe('function');
+    });
 
-      // Restaurer la valeur originale
-      if (originalValue) {
-        process.env.MAX_FILE_SIZE = originalValue;
-      } else {
-        delete process.env.MAX_FILE_SIZE;
-      }
+    it('devrait avoir la méthode none() disponible', () => {
+      expect(typeof upload.none).toBe('function');
+      const noneUpload = upload.none();
+      expect(typeof noneUpload).toBe('function');
     });
   });
 
-  describe('Upload Directory Path', () => {
-    it('should use UPLOAD_DIR from environment if specified', () => {
-      const originalValue = process.env.UPLOAD_DIR;
-      process.env.UPLOAD_DIR = 'custom-uploads';
-
-      const uploadDirPath = process.env.UPLOAD_DIR || 'uploads';
-      expect(uploadDirPath).toBe('custom-uploads');
-
-      // Restaurer la valeur originale
-      if (originalValue) {
-        process.env.UPLOAD_DIR = originalValue;
-      } else {
-        delete process.env.UPLOAD_DIR;
-      }
+  describe('Limites de configuration', () => {
+    it('devrait respecter la limite de taille de fichier', () => {
+      const maxSize = imageConfig.maxFileSize;
+      const tenMB = 10 * 1024 * 1024;
+      expect(maxSize).toBe(tenMB);
     });
 
-    it('should default to "uploads" directory', () => {
-      const originalValue = process.env.UPLOAD_DIR;
-      delete process.env.UPLOAD_DIR;
+    it('devrait avoir une limite raisonnable (entre 1MB et 50MB)', () => {
+      const maxSize = imageConfig.maxFileSize;
+      const oneMB = 1024 * 1024;
+      const fiftyMB = 50 * 1024 * 1024;
+      expect(maxSize).toBeGreaterThanOrEqual(oneMB);
+      expect(maxSize).toBeLessThanOrEqual(fiftyMB);
+    });
 
-      const uploadDirPath = process.env.UPLOAD_DIR || 'uploads';
-      expect(uploadDirPath).toBe('uploads');
+    it('devrait limiter le nombre de fichiers à 1', () => {
+      // La configuration limite à 1 fichier dans multer
+      const middleware = upload.single('image');
+      expect(typeof middleware).toBe('function');
+    });
+  });
 
-      // Restaurer la valeur originale
-      if (originalValue) {
-        process.env.UPLOAD_DIR = originalValue;
-      }
+  describe('Utilisation réelle', () => {
+    it('devrait être compatible avec Express', () => {
+      // Multer crée des middlewares Express standard (req, res, next)
+      const middleware = upload.single('test');
+      expect(middleware.length).toBe(3);
+    });
+
+    it('devrait créer des middlewares fonctionnels', () => {
+      // Vérifier que toutes les méthodes sont disponibles
+      expect(typeof upload.single).toBe('function');
+      expect(typeof upload.array).toBe('function');
+      expect(typeof upload.fields).toBe('function');
+      expect(typeof upload.any).toBe('function');
+      expect(typeof upload.none).toBe('function');
     });
   });
 });

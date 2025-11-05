@@ -2,8 +2,8 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Phenom API",
-    "version": "1.2.4",
-    "description": "API pour l'application d'observations OVNI de l'app Phenom",
+    "version": "3.0.0",
+    "description": "API REST et WebSocket pour l'application d'observations OVNI Phenom.\n\n---\n\n## � Démarrage rapide\n\n### API REST\nTous les endpoints REST sont documentés ci-dessous avec leurs schémas de requête/réponse.\n\n**Base URL** : `/api/v1`\n\n**Authentification** : Bearer Token JWT (voir section \"Authentification\")\n\n### WebSocket Temps Réel\n\nL'API Phenom intègre un serveur WebSocket utilisant **WsMini** pour les mises à jour en temps réel.\n\n**URLs WebSocket** :\n- 🔧 **Développement** : `ws://localhost:3000`\n- 🌐 **Production** : `wss://phenom-backend.onrender.com`\n\n⚠️ **Important** : Le WebSocket utilise le **même port** que l'API REST.\n\n---\n\n## 🔌 Guide WebSocket\n\n### 1️⃣ Connexion\n\n```javascript\n// Détecter automatiquement l'environnement\nconst wsUrl = import.meta.env.PROD \n  ? 'wss://phenom-backend.onrender.com'\n  : 'ws://localhost:3000';\n\nconst ws = new WebSocket(wsUrl);\n\nws.onopen = () => {\n  console.log('✅ Connecté au WebSocket Phenom');\n};\n```\n\n### 2️⃣ Abonnement aux canaux\n\n**Canal `observations`** - Mises à jour des observations OVNI\n```javascript\nws.send(JSON.stringify({ \n  action: 'subscribe', \n  channel: 'observations' \n}));\n```\n\n**Événements disponibles** :\n- 🆕 `observation:created` - Nouvelle observation publiée\n- ✏️ `observation:updated` - Observation modifiée\n- 🗑️ `observation:deleted` - Observation supprimée\n\n**Canal `comments`** - Mises à jour des commentaires\n```javascript\nws.send(JSON.stringify({ \n  action: 'subscribe', \n  channel: 'comments' \n}));\n```\n\n**Événements disponibles** :\n- 🆕 `comment:created` - Nouveau commentaire posté\n- ✏️ `comment:updated` - Commentaire modifié\n- 🗑️ `comment:deleted` - Commentaire supprimé\n\n### 3️⃣ Réception des messages\n\n```javascript\nws.onmessage = (event) => {\n  const message = JSON.parse(event.data);\n  \n  switch(message.type) {\n    case 'observation:created':\n      console.log('Nouvelle observation:', message.data);\n      break;\n    case 'comment:created':\n      console.log('Nouveau commentaire:', message.data);\n      break;\n    // ... autres événements\n  }\n};\n```\n\n### 4️⃣ Format des messages\n\nTous les messages WebSocket suivent ce format standardisé :\n\n```json\n{\n  \"type\": \"observation:created\",\n  \"data\": {\n    \"_id\": \"507f1f77bcf86cd799439011\",\n    \"title\": \"OVNI triangulaire\",\n    \"description\": \"...\",\n    \"location\": { \"type\": \"Point\", \"coordinates\": [6.6323, 46.5197] },\n    \"userId\": \"507f191e810c19729de860ea\",\n    \"createdAt\": \"2025-11-03T12:34:56.789Z\"\n  },\n  \"timestamp\": \"2025-11-03T12:34:56.789Z\"\n}\n```\n\n### 5️⃣ Gestion des erreurs\n\n```javascript\nws.onerror = (error) => {\n  console.error('❌ Erreur WebSocket:', error);\n};\n\nws.onclose = (event) => {\n  console.log('🔌 Connexion WebSocket fermée', event.code);\n  // Implémenter reconnexion automatique si nécessaire\n};\n```\n\n---\n\n## 📚 Ressources\n\n- 📖 [Documentation technique complète](backend/src/config/WEBSOCKET_README.md)\n- 🔗 [WsMini - Librairie utilisée](https://github.com/Chabloz/WsMini)\n- 🔐 Note : Les clients peuvent **uniquement s'abonner** aux canaux. Seul le serveur publie des événements.\n",
     "contact": {
       "name": "Équipe Phenom",
       "email": "contact@phenom.app"
@@ -168,6 +168,186 @@
             "format": "date-time"
           }
         }
+      },
+      "WebSocketMessage": {
+        "type": "object",
+        "description": "**Message générique WebSocket** - Format standard pour tous les événements temps réel",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "observation:created",
+              "observation:updated",
+              "observation:deleted",
+              "comment:created",
+              "comment:updated",
+              "comment:deleted"
+            ],
+            "example": "observation:created",
+            "description": "Type d'événement WebSocket"
+          },
+          "data": {
+            "type": "object",
+            "description": "Données de l'événement (observation ou commentaire complet)"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-11-03T12:34:56.789Z",
+            "description": "Horodatage de l'événement (ISO 8601)"
+          }
+        },
+        "required": [
+          "type",
+          "data",
+          "timestamp"
+        ],
+        "example": {
+          "type": "observation:created",
+          "data": {
+            "_id": "507f1f77bcf86cd799439011",
+            "title": "OVNI triangulaire",
+            "description": "Observation d'un objet triangulaire lumineux",
+            "location": {
+              "type": "Point",
+              "coordinates": [
+                6.6323,
+                46.5197
+              ]
+            },
+            "userId": "507f191e810c19729de860ea",
+            "createdAt": "2025-11-03T12:34:56.789Z"
+          },
+          "timestamp": "2025-11-03T12:34:56.789Z"
+        }
+      },
+      "WebSocketObservationCreated": {
+        "type": "object",
+        "description": "**WebSocket : Observation créée** - Émis lorsqu'une nouvelle observation est publiée",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "observation:created"
+            ],
+            "example": "observation:created"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Observation"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-11-03T12:34:56.789Z"
+          }
+        },
+        "example": {
+          "type": "observation:created",
+          "data": {
+            "_id": "507f1f77bcf86cd799439011",
+            "title": "OVNI triangulaire au-dessus de Genève",
+            "description": "Trois lumières formant un triangle parfait",
+            "images": [
+              {
+                "imageId": "67890abcdef12345",
+                "imageUrl": "/api/v1/images/67890abcdef12345",
+                "size": 524288,
+                "format": "image/jpeg"
+              }
+            ],
+            "location": {
+              "type": "Point",
+              "coordinates": [
+                6.1432,
+                46.2044
+              ]
+            },
+            "userId": "507f191e810c19729de860ea",
+            "createdAt": "2025-11-03T12:34:56.789Z",
+            "updatedAt": "2025-11-03T12:34:56.789Z"
+          },
+          "timestamp": "2025-11-03T12:34:56.789Z"
+        }
+      },
+      "WebSocketObservationDeleted": {
+        "type": "object",
+        "description": "**WebSocket : Observation supprimée** - Émis lorsqu'une observation est supprimée (par l'utilisateur ou un admin)",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "observation:deleted"
+            ],
+            "example": "observation:deleted"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "observationId": {
+                "type": "string",
+                "example": "507f1f77bcf86cd799439011",
+                "description": "ID de l'observation supprimée"
+              }
+            }
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-11-03T12:34:56.789Z"
+          }
+        },
+        "example": {
+          "type": "observation:deleted",
+          "data": {
+            "observationId": "507f1f77bcf86cd799439011"
+          },
+          "timestamp": "2025-11-03T12:34:56.789Z"
+        }
+      },
+      "WebSocketCommentCreated": {
+        "type": "object",
+        "description": "**WebSocket : Commentaire créé** - Émis lorsqu'un nouveau commentaire est posté sur une observation",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "comment:created"
+            ],
+            "example": "comment:created"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "comment": {
+                "$ref": "#/components/schemas/Comment"
+              },
+              "observationId": {
+                "type": "string",
+                "example": "507f1f77bcf86cd799439011",
+                "description": "ID de l'observation commentée"
+              }
+            }
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-11-03T12:34:56.789Z"
+          }
+        },
+        "example": {
+          "type": "comment:created",
+          "data": {
+            "comment": {
+              "_id": "507f1f77bcf86cd799439012",
+              "text": "J'ai vu exactement la même chose hier soir!",
+              "observationId": "507f1f77bcf86cd799439011",
+              "userId": "507f191e810c19729de860eb",
+              "createdAt": "2025-11-03T12:35:00.000Z"
+            },
+            "observationId": "507f1f77bcf86cd799439011"
+          },
+          "timestamp": "2025-11-03T12:35:00.000Z"
+        }
       }
     }
   },
@@ -195,6 +375,10 @@
     {
       "name": "Administration",
       "description": "Opérations administratives (admins uniquement)"
+    },
+    {
+      "name": "WebSocket",
+      "description": "**Mises à jour en temps réel via WebSocket (WsMini)**\n\n---\n\n### 🔗 Connexion\n\n**URLs** :\n- Dev : `ws://localhost:3000`\n- Prod : `wss://phenom-backend.onrender.com`\n\n### 📡 Canaux disponibles\n\n| Canal | Description | Événements |\n|-------|-------------|------------|\n| `observations` | Mises à jour des observations OVNI | `created`, `updated`, `deleted` |\n| `comments` | Mises à jour des commentaires | `created`, `updated`, `deleted` |\n\n### 📝 Format des messages\n\n```json\n{\n  \"type\": \"observation:created\",\n  \"data\": { /* Observation complète */ },\n  \"timestamp\": \"2025-11-03T12:34:56.789Z\"\n}\n```\n\n### 🔐 Notes importantes\n\n- ✅ Les clients peuvent **s'abonner** (subscribe) aux canaux\n- ❌ Les clients **ne peuvent pas publier** (seul le serveur publie)\n- 🔄 Reconnexion automatique recommandée en cas de déconnexion\n\n### 📚 Documentation\n\nConsultez le guide complet dans `backend/src/config/WEBSOCKET_README.md`\n"
     }
   ],
   "paths": {
@@ -843,385 +1027,6 @@
         }
       }
     },
-    "/api/v1/admin/observations/{id}/approve": {
-      "post": {
-        "summary": "Approuve une observation signalée",
-        "tags": [
-          "Administration"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "ID de l'observation",
-            "example": "507f1f77bcf86cd799439011"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Observation approuvée avec succès",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Observation approuvée avec succès"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "ID invalide",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Non authentifié",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Accès refusé (admin uniquement)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Observation non trouvée",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/admin/observations/{id}/reject": {
-      "post": {
-        "summary": "Rejette une observation avec motif",
-        "tags": [
-          "Administration"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "ID de l'observation",
-            "example": "507f1f77bcf86cd799439011"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "reason": {
-                    "type": "string",
-                    "example": "Contenu inapproprié"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Observation rejetée avec succès",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Observation rejetée avec succès"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "ID invalide",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Non authentifié",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Accès refusé (admin uniquement)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Observation non trouvée",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/admin/users/{id}/suspend": {
-      "post": {
-        "summary": "Suspend un utilisateur",
-        "tags": [
-          "Administration"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "ID de l'utilisateur",
-            "example": "507f1f77bcf86cd799439011"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "reason": {
-                    "type": "string",
-                    "example": "Violation des conditions d'utilisation"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Utilisateur suspendu avec succès",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Utilisateur suspendu avec succès"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "ID invalide",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Non authentifié",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Accès refusé (admin uniquement)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Utilisateur non trouvé",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/admin/users/{id}/activate": {
-      "post": {
-        "summary": "Réactive un utilisateur suspendu",
-        "tags": [
-          "Administration"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "ID de l'utilisateur",
-            "example": "507f1f77bcf86cd799439011"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Utilisateur réactivé avec succès",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Utilisateur réactivé avec succès"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "ID invalide",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Non authentifié",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Accès refusé (admin uniquement)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Utilisateur non trouvé",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/admin/comments": {
       "get": {
         "summary": "Récupère tous les commentaires (admin)",
@@ -1827,7 +1632,7 @@
         },
         "responses": {
           "201": {
-            "description": "Commentaire créé avec succès",
+            "description": "Commentaire créé avec succès\n\n**🔌 WebSocket**: Un événement `comment:created` est automatiquement diffusé\nsur le canal WebSocket `comments` à tous les clients connectés.\n\nFormat du message WebSocket:\n```json\n{\n  \"type\": \"comment:created\",\n  \"data\": {\n    \"comment\": { \"commentaire complet avec tous les champs\" },\n    \"observationId\": \"507f1f77bcf86cd799439011\"\n  },\n  \"timestamp\": \"2025-11-03T12:34:56.789Z\"\n}\n```\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -1938,7 +1743,7 @@
         },
         "responses": {
           "200": {
-            "description": "Commentaire mis à jour avec succès",
+            "description": "Commentaire mis à jour avec succès\n\n**🔌 WebSocket**: Un événement `comment:updated` est automatiquement diffusé\nsur le canal WebSocket `comments` à tous les clients connectés.\n\nFormat du message WebSocket:\n```json\n{\n  \"type\": \"comment:updated\",\n  \"data\": {\n    \"comment\": { \"commentaire mis à jour avec tous les champs\" },\n    \"observationId\": \"507f1f77bcf86cd799439011\"\n  },\n  \"timestamp\": \"2025-11-03T12:34:56.789Z\"\n}\n```\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -2026,7 +1831,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Commentaire supprimé avec succès",
+            "description": "Commentaire supprimé avec succès\n\n**🔌 WebSocket**: Un événement `comment:deleted` est automatiquement diffusé\nsur le canal WebSocket `comments` à tous les clients connectés.\n\nFormat du message WebSocket:\n```json\n{\n  \"type\": \"comment:deleted\",\n  \"data\": {\n    \"commentId\": \"507f1f77bcf86cd799439011\",\n    \"observationId\": \"507f1f77bcf86cd799439011\"\n  },\n  \"timestamp\": \"2025-11-03T12:34:56.789Z\"\n}\n```\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -2170,6 +1975,11 @@
         "summary": "Récupère une image",
         "tags": [
           "Images"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
         ],
         "parameters": [
           {
@@ -2610,7 +2420,7 @@
         },
         "responses": {
           "201": {
-            "description": "Observation créée avec succès",
+            "description": "Observation créée avec succès\n\n**🔌 WebSocket**: Un événement `observation:created` est automatiquement diffusé\nsur le canal WebSocket `observations` à tous les clients connectés.\n\nFormat du message WebSocket:\n```json\n{\n  \"type\": \"observation:created\",\n  \"data\": { \"observation complète avec tous les champs\" },\n  \"timestamp\": \"2025-11-03T12:34:56.789Z\"\n}\n```\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -2796,7 +2606,7 @@
         },
         "responses": {
           "200": {
-            "description": "Observation mise à jour avec succès",
+            "description": "Observation mise à jour avec succès\n\n**🔌 WebSocket**: Un événement `observation:updated` est automatiquement diffusé\nsur le canal WebSocket `observations` à tous les clients connectés.\n\nFormat du message WebSocket:\n```json\n{\n  \"type\": \"observation:updated\",\n  \"data\": { \"observation mise à jour avec tous les champs\" },\n  \"timestamp\": \"2025-11-03T12:34:56.789Z\"\n}\n```\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -2884,7 +2694,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Observation supprimée avec succès",
+            "description": "Observation supprimée avec succès\n\n**🔌 WebSocket**: Un événement `observation:deleted` est automatiquement diffusé\nsur le canal WebSocket `observations` à tous les clients connectés.\n\nFormat du message WebSocket:\n```json\n{\n  \"type\": \"observation:deleted\",\n  \"data\": { \"observationId\": \"507f1f77bcf86cd799439011\" },\n  \"timestamp\": \"2025-11-03T12:34:56.789Z\"\n}\n```\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -2935,223 +2745,6 @@
           },
           "404": {
             "description": "Observation non trouvée",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/observations/{id}/images": {
-      "post": {
-        "summary": "Ajoute une image à une observation",
-        "tags": [
-          "Observations"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "ID de l'observation",
-            "example": "507f1f77bcf86cd799439011"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "image"
-                ],
-                "properties": {
-                  "image": {
-                    "type": "string",
-                    "format": "binary",
-                    "description": "Fichier image (JPEG, PNG, WebP, max 10MB)"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Image ajoutée avec succès",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Image ajoutée avec succès"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/Observation"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Fichier invalide ou manquant",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Non authentifié",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Non autorisé (pas propriétaire ni admin)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Observation non trouvée",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "413": {
-            "description": "Fichier trop volumineux (>10MB)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/observations/{id}/images/{imageId}": {
-      "delete": {
-        "summary": "Supprime une image d'une observation",
-        "tags": [
-          "Observations"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "ID de l'observation",
-            "example": "507f1f77bcf86cd799439011"
-          },
-          {
-            "in": "path",
-            "name": "imageId",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "ID de l'image",
-            "example": "507f1f77bcf86cd799439012"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Image supprimée avec succès",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Image supprimée avec succès"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "ID invalide",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Non authentifié",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Non autorisé (pas propriétaire ni admin)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Observation ou image non trouvée",
             "content": {
               "application/json": {
                 "schema": {

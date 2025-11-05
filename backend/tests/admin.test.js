@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { jest } from '@jest/globals';
+//import { jest } from '@jest/globals';
 import app from '../src/app.js';
 import User from '../src/models/User.js';
 import Observation from '../src/models/Observation.js';
@@ -11,11 +11,11 @@ import Comment from '../src/models/Comment.js';
  */
 describe('Admin Endpoints', () => {
   let adminToken;
-  let adminId;
   let regularUserId;
   let regularUserToken;
   let observationId;
   let commentId;
+  let _adminId;
 
   // Helper pour créer et authentifier un utilisateur
   const createAuthenticatedUser = async (role = 'viewer') => {
@@ -47,7 +47,7 @@ describe('Admin Endpoints', () => {
     // Créer admin et utilisateur régulier
     const admin = await createAuthenticatedUser('admin');
     adminToken = admin.token;
-    adminId = admin.userId;
+    _adminId = admin.userId;
 
     const regular = await createAuthenticatedUser('viewer');
     regularUserToken = regular.token;
