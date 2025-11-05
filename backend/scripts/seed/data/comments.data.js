@@ -23,7 +23,7 @@ export const commentsData = [
     text: 'Les triangles sont souvent rapportés. Forme très classique dans les observations d\'OVNI. Merci pour le partage !',
     daysAgo: 0
   },
-  
+
   // Commentaires sur l'observation 1 (Sphère Genève)
   {
     observationIndex: 1,
@@ -37,7 +37,7 @@ export const commentsData = [
     text: 'Une disparition instantanée, c\'est fascinant ! Aucune explication logique pour ce type de comportement.',
     daysAgo: 2
   },
-  
+
   // Commentaires sur l'observation 2 (Formation V Berne)
   {
     observationIndex: 2,
@@ -51,7 +51,7 @@ export const commentsData = [
     text: 'Les formations en V sont souvent mentionnées. Ça pourrait être des drones, mais la vitesse que tu décris semble trop élevée.',
     daysAgo: 0
   },
-  
+
   // Commentaires sur l'observation 3 (Disque Lyon)
   {
     observationIndex: 3,
@@ -71,7 +71,7 @@ export const commentsData = [
     text: 'Des virages à 90° à haute vitesse... aucun appareil humain ne peut faire ça. Impressionnant !',
     daysAgo: 2
   },
-  
+
   // Commentaires sur l'observation 4 (Lumières Paris)
   {
     observationIndex: 4,
@@ -85,7 +85,7 @@ export const commentsData = [
     text: '20 minutes c\'est long ! Tu as dû pouvoir bien l\'observer. Les couleurs changeaient de manière aléatoire ou selon un pattern ?',
     daysAgo: 2
   },
-  
+
   // Commentaires sur l'observation 5 (Cylindre Zurich)
   {
     observationIndex: 5,
@@ -99,7 +99,7 @@ export const commentsData = [
     text: 'Si c\'était un météore, la trajectoire serait descendante et courbe. Une ligne droite horizontale exclut cette hypothèse.',
     daysAgo: 0
   },
-  
+
   // Commentaires sur l'observation 6 (Triangle Marseille)
   {
     observationIndex: 6,
@@ -119,7 +119,7 @@ export const commentsData = [
     text: 'Direction sud-est vers la mer... intéressant. Beaucoup d\'observations mentionnent des objets se dirigeant vers l\'eau.',
     daysAgo: 3
   },
-  
+
   // Commentaires sur l'observation 7 (Cigare Lucerne)
   {
     observationIndex: 7,
@@ -133,7 +133,7 @@ export const commentsData = [
     text: 'Le lac des Quatre-Cantons est magnifique. Bizarre que ces choses apparaissent souvent près de l\'eau...',
     daysAgo: 1
   },
-  
+
   // Commentaires sur l'observation 8 (Flash Bordeaux)
   {
     observationIndex: 8,
@@ -153,7 +153,7 @@ export const commentsData = [
     text: 'Ce genre d\'accélération défie toutes les lois de la physique que nous connaissons. Fascinant et terrifiant à la fois.',
     daysAgo: 2
   },
-  
+
   // Commentaires sur l'observation 9 (Orbe Montreux)
   {
     observationIndex: 9,
@@ -167,7 +167,7 @@ export const commentsData = [
     text: 'Le changement de couleur cyclique suggère soit une rotation, soit une pulsation énergétique. Très intéressant !',
     daysAgo: 2
   },
-  
+
   // Commentaires sur l'observation 10 (Losange Toulouse)
   {
     observationIndex: 10,
@@ -181,7 +181,7 @@ export const commentsData = [
     text: 'Mouvement en zigzag puis montée verticale... pattern très similaire à d\'autres observations documentées.',
     daysAgo: 0
   },
-  
+
   // Commentaires sur l'observation 11 (Deux sphères Neuchâtel)
   {
     observationIndex: 11,
@@ -195,7 +195,7 @@ export const commentsData = [
     text: 'Le ballet aérien que tu décris est cohérent avec d\'autres témoignages. Comme s\'ils étaient liés par une force invisible.',
     daysAgo: 1
   },
-  
+
   // Commentaires sur l'observation 12 (Rayon Nice)
   {
     observationIndex: 12,
@@ -215,7 +215,7 @@ export const commentsData = [
     text: 'La Côte d\'Azur a beaucoup d\'observations. La mer Méditerranée semble être une zone d\'activité importante.',
     daysAgo: 1
   },
-  
+
   // Commentaires sur l'observation 13 (Boomerang Fribourg)
   {
     observationIndex: 13,
@@ -229,7 +229,7 @@ export const commentsData = [
     text: 'La taille d\'un terrain de foot ! Si c\'est exact, on parle d\'un engin gigantesque. As-tu pu estimer l\'altitude ?',
     daysAgo: 1
   },
-  
+
   // Commentaires sur l'observation 14 (Formation Strasbourg)
   {
     observationIndex: 14,
@@ -255,7 +255,7 @@ export const commentsData = [
     text: 'La disparition simultanée de tous les objets est troublante. Comme s\'ils avaient reçu un signal pour partir tous ensemble.',
     daysAgo: 1
   },
-  
+
   // Quelques commentaires supplémentaires pour créer du contexte
   {
     observationIndex: 0,

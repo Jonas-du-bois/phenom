@@ -15,7 +15,7 @@ export const observationsData = [
     imageFilename: 'ovni-triangle-lausanne.jpg',
     userIndex: 0 // Sophie Martin
   },
-  
+
   // Suisse - Genève
   {
     title: 'Sphère orange brillante stationnaire',
@@ -27,7 +27,7 @@ export const observationsData = [
     imageFilename: 'ovni-sphere-geneve.jpg',
     userIndex: 1 // Jean Dupont
   },
-  
+
   // Suisse - Berne
   {
     title: 'Formation de 7 lumières en V',
@@ -39,7 +39,7 @@ export const observationsData = [
     imageFilename: 'ovni-formation-berne.jpg',
     userIndex: 2 // Marie Leclerc
   },
-  
+
   // Suisse - Zurich
   {
     title: 'Disque métallique en plein jour',
@@ -51,7 +51,7 @@ export const observationsData = [
     imageFilename: 'ovni-disque-zurich.jpg',
     userIndex: 3 // Pierre Dubois
   },
-  
+
   // France - Lyon
   {
     title: 'Objet cylindrique avec traînée lumineuse',
@@ -63,7 +63,7 @@ export const observationsData = [
     imageFilename: 'ovni-cylindre-lyon.jpg',
     userIndex: 4 // Julie Moreau
   },
-  
+
   // France - Paris
   {
     title: 'Objet en forme de cigare au-dessus de la Seine',
@@ -75,7 +75,7 @@ export const observationsData = [
     imageFilename: 'ovni-cigare-paris.jpg',
     userIndex: 5 // Thomas Bernard
   },
-  
+
   // France - Marseille
   {
     title: 'Lumière pulsante multicolore',
@@ -87,7 +87,7 @@ export const observationsData = [
     imageFilename: 'ovni-lumiere-marseille.jpg',
     userIndex: 6 // Emma Petit
   },
-  
+
   // France - Nice
   {
     title: 'Objet noir en forme de boomerang',
@@ -99,7 +99,7 @@ export const observationsData = [
     imageFilename: 'ovni-boomerang-nice.jpg',
     userIndex: 7 // Lucas Roux
   },
-  
+
   // France - Toulouse
   {
     title: 'Rayon lumineux vertical depuis un objet',
@@ -111,7 +111,7 @@ export const observationsData = [
     imageFilename: 'ovni-rayon-toulouse.jpg',
     userIndex: 8 // Chloé Simon
   },
-  
+
   // France - Bordeaux
   {
     title: 'Sphère orange brillante stationnaire',
@@ -123,7 +123,7 @@ export const observationsData = [
     imageFilename: 'ovni-sphere2-bordeaux.jpg',
     userIndex: 9 // Alexandre Laurent
   },
-  
+
   // France - Strasbourg
   {
     title: 'Formation triangulaire de lumières',
@@ -135,7 +135,7 @@ export const observationsData = [
     imageFilename: 'ovni-triangle2-strasbourg.jpg',
     userIndex: 0 // Sophie Martin (deuxième observation)
   },
-  
+
   // Suisse - Lucerne
   {
     title: 'Disque argenté en rotation',
@@ -147,7 +147,7 @@ export const observationsData = [
     imageFilename: 'ovni-disque2-lucerne.jpg',
     userIndex: 1 // Jean Dupont (deuxième observation)
   },
-  
+
   // Suisse - Montreux
   {
     title: 'Formation en V de lumières blanches',
@@ -159,7 +159,7 @@ export const observationsData = [
     imageFilename: 'ovni-formation2-montreux.jpg',
     userIndex: 2 // Marie Leclerc (deuxième observation)
   },
-  
+
   // Suisse - Neuchâtel
   {
     title: 'Lumière zigzagante rapide',
@@ -171,7 +171,7 @@ export const observationsData = [
     imageFilename: 'ovni-lumiere2-neuchatel.jpg',
     userIndex: 3 // Pierre Dubois (deuxième observation)
   },
-  
+
   // Suisse - Fribourg
   {
     title: 'Cylindre avec hublots lumineux',

@@ -92,7 +92,7 @@ if (db.getName() === 'phenom_dev') {
     role: 'admin',
     createdAt: new Date()
   };
-  
+
   db.users.insertOne(adminUser);
   print('✅ Utilisateur admin créé (email: admin@phenom.com, password: admin123)');
 }

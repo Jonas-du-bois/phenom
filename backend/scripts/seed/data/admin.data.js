@@ -1,6 +1,5 @@
 /**
  * Données de l'administrateur principal
- * Modifie ces valeurs selon tes besoins
  */
 export const adminData = {
   name: 'Admin Phenom',

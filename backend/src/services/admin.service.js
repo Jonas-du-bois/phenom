@@ -16,6 +16,11 @@ class AdminService {
     const { page, limit, skip } = getPaginationParams(filters);
     const query = {};
 
+    // Filtre par rôle
+    if (filters.role) {
+      query.role = filters.role;
+    }
+
     // Filtre de recherche
     if (filters.search) {
       query.$or = [
@@ -190,10 +195,15 @@ class AdminService {
       query.userId = filters.userId;
     }
 
+    // Gestion du tri
+    const sortBy = filters.sortBy || 'createdAt';
+    const order = filters.order === 'asc' ? 1 : -1;
+    const sortOptions = { [sortBy]: order };
+
     const [observations, total] = await Promise.all([
       Observation.find(query)
         .populate('userId', 'name email')
-        .sort({ createdAt: -1 })
+        .sort(sortOptions)
         .skip(skip)
         .limit(limit)
         .lean(),

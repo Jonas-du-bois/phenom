@@ -1,0 +1,20 @@
+# Dépendances
+node_modules/
+dist/
+build/
+
+# Coverage
+coverage/
+*.lcov
+
+# Scripts MongoDB Shell (ne sont pas du Node.js)
+db/init/mongo-init.js
+
+# Fichiers générés
+*.min.js
+
+# Documentation
+docs/
+
+# Fichiers de test temporaires
+*.test.tmp.js

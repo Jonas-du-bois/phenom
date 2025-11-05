@@ -1,7 +1,7 @@
 /**
  * Coordonnées GPS des villes principales
  * Format MongoDB GeoJSON: [longitude, latitude]
- * 
+ *
  * ⚠️ ATTENTION: L'ordre est [lng, lat] (inversé par rapport à Google Maps!)
  */
 
@@ -24,7 +24,7 @@ export const GPS_COORDINATES = {
     yverdon: [6.6414, 46.7784],
     morges: [6.4988, 46.5104]
   },
-  
+
   // === FRANCE ===
   france: {
     paris: [2.3522, 48.8566],
@@ -75,19 +75,19 @@ export const createGeoPoint = (coordinates) => {
 
 /**
  * Exemples d'utilisation:
- * 
+ *
  * import { GPS_COORDINATES, getCoordinates, createGeoPoint } from './gps-coordinates.js';
- * 
+ *
  * // Méthode 1: Directement
  * const lausanne = GPS_COORDINATES.suisse.lausanne; // [6.6323, 46.5197]
- * 
+ *
  * // Méthode 2: Avec helper
  * const paris = getCoordinates('france', 'paris'); // [2.3522, 48.8566]
- * 
+ *
  * // Méthode 3: Créer un GeoJSON Point
  * const location = createGeoPoint(GPS_COORDINATES.suisse.geneve);
  * // { type: 'Point', coordinates: [6.1432, 46.2044] }
- * 
+ *
  * // Méthode 4: Chainer les helpers
  * const observation = {
  *   title: 'Mon observation',
@@ -113,18 +113,18 @@ export const findNearestCity = (targetCoords, country = null) => {
   const [targetLng, targetLat] = targetCoords;
   let nearest = null;
   let minDistance = Infinity;
-  
+
   const countries = country ? [country] : ['suisse', 'france'];
-  
+
   countries.forEach(countryName => {
     Object.entries(GPS_COORDINATES[countryName]).forEach(([city, coords]) => {
       const [lng, lat] = coords;
-      
+
       // Distance euclidienne simple (suffisant pour ce cas)
       const distance = Math.sqrt(
         Math.pow(lng - targetLng, 2) + Math.pow(lat - targetLat, 2)
       );
-      
+
       if (distance < minDistance) {
         minDistance = distance;
         nearest = {
@@ -136,7 +136,7 @@ export const findNearestCity = (targetCoords, country = null) => {
       }
     });
   });
-  
+
   return nearest;
 };
 
@@ -149,9 +149,9 @@ export const areValidCoordinates = (coordinates) => {
   if (!Array.isArray(coordinates) || coordinates.length !== 2) {
     return false;
   }
-  
+
   const [lng, lat] = coordinates;
-  
+
   // Longitude: -180 à 180
   // Latitude: -90 à 90
   return (

@@ -17,9 +17,9 @@ const checkConnection = async () => {
   console.log('='.repeat(60));
   console.log('🔍 Diagnostic de connexion MongoDB');
   console.log('='.repeat(60));
-  
+
   const uri = process.env.MONGODB_URI;
-  
+
   if (!uri) {
     console.error('❌ MONGODB_URI n\'est pas défini dans .env');
     process.exit(1);
@@ -28,18 +28,18 @@ const checkConnection = async () => {
   // Masquer le mot de passe dans l'affichage
   const maskedUri = uri.replace(/\/\/([^:]+):([^@]+)@/, '//***:***@');
   console.log(`📍 URI: ${maskedUri}`);
-  
+
   // Détection du type de connexion
   const isAtlas = uri.includes('mongodb+srv://');
   const isLocal = uri.includes('localhost') || uri.includes('127.0.0.1');
-  
+
   console.log(`📦 Type: ${isAtlas ? 'MongoDB Atlas (Cloud)' : isLocal ? 'MongoDB Local' : 'MongoDB Distant'}`);
   console.log(`🌍 Environnement: ${process.env.NODE_ENV || 'development'}`);
   console.log('');
-  
+
   try {
     console.log('⏳ Tentative de connexion...');
-    
+
     const options = {
       maxPoolSize: 10,
       minPoolSize: 5,
@@ -49,7 +49,7 @@ const checkConnection = async () => {
     };
 
     await mongoose.connect(uri, options);
-    
+
     console.log('✅ Connexion réussie !');
     console.log('');
     console.log('📊 Informations de connexion:');
@@ -62,7 +62,7 @@ const checkConnection = async () => {
     // Liste des collections
     console.log('📚 Collections disponibles:');
     const collections = await mongoose.connection.db.listCollections().toArray();
-    
+
     if (collections.length === 0) {
       console.log('   ⚠️  Aucune collection (base de données vide)');
     } else {
@@ -71,18 +71,18 @@ const checkConnection = async () => {
         console.log(`   - ${collection.name}: ${count} document(s)`);
       }
     }
-    
+
     console.log('');
     console.log('✅ Diagnostic terminé avec succès');
     console.log('='.repeat(60));
-    
+
   } catch (error) {
     console.error('');
     console.error('❌ Échec de la connexion');
     console.error('='.repeat(60));
     console.error('Erreur:', error.message);
     console.error('');
-    
+
     if (error.message.includes('Authentication failed')) {
       console.error('💡 Vérifiez:');
       console.error('   - Le nom d\'utilisateur et mot de passe dans MONGODB_URI');
@@ -98,10 +98,10 @@ const checkConnection = async () => {
       console.error('   - L\'URL du cluster Atlas');
       console.error('   - Votre connexion DNS');
     }
-    
+
     console.error('='.repeat(60));
     process.exit(1);
-    
+
   } finally {
     await mongoose.connection.close();
   }

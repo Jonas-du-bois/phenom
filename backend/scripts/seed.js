@@ -29,15 +29,15 @@ const seedDatabase = async () => {
     console.log('╔════════════════════════════════════════════════════╗');
     console.log('║     SEED DE LA BASE DE DONNÉES PHENOM              ║');
     console.log('╚════════════════════════════════════════════════════╝\n');
-    
+
     // 1. Connexion à MongoDB Atlas
     console.log('🔌 Connexion à MongoDB Atlas...');
     await connectDB();
-    
+
     // 2. Initialisation de GridFS pour les images
     console.log('📦 Initialisation de GridFS...');
     initGridFS();
-    
+
     // 3. Nettoyage des collections existantes
     console.log('\n🧹 Nettoyage des collections...');
     await Promise.all([
@@ -45,29 +45,30 @@ const seedDatabase = async () => {
       Observation.deleteMany({}),
       Comment.deleteMany({})
     ]);
-    
+
     // Nettoyer GridFS (images)
     const db = mongoose.connection.db;
     try {
       await db.collection('images.files').deleteMany({});
       await db.collection('images.chunks').deleteMany({});
-      console.log('   ✅ Collections nettoyées (Users, Observations, Comments, Images)');
+      console.log(
+        '   ✅ Collections nettoyées (Users, Observations, Comments, Images)'
+      );
     } catch (error) {
       console.log('   ⚠️  GridFS collections may not exist yet (first run)');
     }
-    
+
     // 4. Seed Admin (1 admin)
     const admin = await seedAdmin();
-    
+
     // 5. Seed Users (10 utilisateurs normaux)
     const users = await seedUsers();
-    
     // 6. Seed Observations (15 observations avec images)
     const observations = await seedObservations(users);
-    
+
     // 7. Seed Comments (~50 commentaires sur les observations)
     const comments = await seedComments(users, observations);
-    
+
     // 8. Statistiques finales
     console.log('╔══════════════════════════════════════════════════╗');
     console.log('║            📊 STATISTIQUES FINALES              ║');
@@ -76,18 +77,21 @@ const seedDatabase = async () => {
     console.log(`   👥 Utilisateurs:       ${users.length}`);
     console.log(`   📸 Observations:       ${observations.length}`);
     console.log(`   💬 Commentaires:       ${comments.length}`);
-    console.log(`   🖼️  Images uploadées:   ${observations.filter(o => o.imageUrl).length}\n`);
-    
+    console.log(
+      `   🖼️  Images uploadées:   ${
+        observations.filter((o) => o.imageUrl).length
+      }\n`
+    );
+
     console.log('╔════════════════════════════════════════════════════╗');
     console.log('║           🔑 INFORMATIONS DE CONNEXION            ║');
     console.log('╚════════════════════════════════════════════════════╝');
-    console.log(`   📧 Email admin:    admin@phenom.app`);
-    console.log(`   🔒 Mot de passe:   Admin123!`);
-    console.log(`   📧 Email users:    sophie.martin@example.com (et autres)`);
-    console.log(`   🔒 Mot de passe:   Password123!\n`);
-    
+    console.log('   📧 Email admin:    admin@phenom.app');
+    console.log('   🔒 Mot de passe:   Admin123!');
+    console.log('   📧 Email users:    sophie.martin@example.com (et autres)');
+    console.log('   🔒 Mot de passe:   Password123!\n');
+
     console.log('✅ Seed terminé avec succès !\n');
-    
   } catch (error) {
     console.error('\n❌ Erreur lors du seed:', error);
     console.error(error.stack);

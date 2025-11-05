@@ -24,7 +24,7 @@ const createAdmin = async () => {
 
     // Vérifier si l'admin existe déjà
     const existingAdmin = await User.findOne({ email: adminEmail });
-    
+
     if (existingAdmin) {
       console.log('⚠️  Un administrateur existe déjà avec cet email');
       console.log(`📧 Email: ${existingAdmin.email}`);

@@ -34,11 +34,16 @@ class ObservationService {
       };
     }
 
+    // Gestion du tri
+    const sortBy = filters.sortBy || 'createdAt';
+    const order = filters.order === 'asc' ? 1 : -1;
+    const sortOptions = { [sortBy]: order };
+
     // Exécuter la requête avec pagination
     const [observations, total] = await Promise.all([
       Observation.find(query)
         .populate('userId', 'name email')
-        .sort({ createdAt: -1 })
+        .sort(sortOptions)
         .skip(skip)
         .limit(limit)
         .lean(),

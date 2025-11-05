@@ -228,8 +228,61 @@ describe('Observation Endpoints', () => {
       expect(response.body.pagination.total).toBe(3);
     });
 
-    // Note: Date filtering and custom sorting not implemented (YAGNI)
-    // The API sorts by createdAt desc by default
+    it('should support sorting by title desc', async () => {
+      const response = await request(app)
+        .get('/api/v1/observations?sortBy=title&order=desc')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.length).toBe(3);
+
+      // Vérifier que le tri est correct (3, 2, 1 en ordre desc)
+      const titles = response.body.data.map(obs => obs.title);
+      expect(titles[0]).toBe('Observation 3');
+      expect(titles[1]).toBe('Observation 2');
+      expect(titles[2]).toBe('Observation 1');
+    });
+
+    it('should support sorting by createdAt asc', async () => {
+      const response = await request(app)
+        .get('/api/v1/observations?sortBy=createdAt&order=asc')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+
+      // Vérifier que les dates sont en ordre croissant
+      const dates = response.body.data.map(obs => new Date(obs.createdAt).getTime());
+      for (let i = 1; i < dates.length; i++) {
+        expect(dates[i]).toBeGreaterThanOrEqual(dates[i - 1]);
+      }
+    });
+
+    it('should support text search', async () => {
+      // Créer une observation avec un terme recherchable
+      await Observation.create({
+        title: 'UFO spotted in Lausanne',
+        description: 'Amazing sighting in Lausanne, Switzerland',
+        date: new Date('2024-10-18'),
+        location: {
+          type: 'Point',
+          coordinates: [6.6323, 46.5197]
+        },
+        userId
+      });
+
+      const response = await request(app)
+        .get('/api/v1/observations?search=Lausanne')
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.length).toBeGreaterThan(0);
+
+      // Vérifier que les résultats contiennent le terme recherché
+      const hasSearchTerm = response.body.data.some(obs =>
+        obs.title.includes('Lausanne') || obs.description.includes('Lausanne')
+      );
+      expect(hasSearchTerm).toBe(true);
+    });
 
     it('should handle invalid pagination parameters', async () => {
       const response = await request(app)

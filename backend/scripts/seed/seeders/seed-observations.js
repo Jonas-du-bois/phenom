@@ -14,19 +14,19 @@ const __dirname = path.dirname(__filename);
 export async function seedObservations(users) {
   try {
     console.log('\n📸 Seed des observations...');
-    
+
     const createdObservations = [];
     const imagesDir = path.join(__dirname, '../images');
-    
+
     for (let i = 0; i < observationsData.length; i++) {
       const obsData = observationsData[i];
       const user = users[obsData.userIndex];
-      
+
       if (!user) {
         console.log(`   ⚠️  Utilisateur ${obsData.userIndex} introuvable, skip observation ${i}`);
         continue;
       }
-      
+
       // Créer l'observation
       const observation = await Observation.create({
         title: obsData.title,
@@ -34,22 +34,22 @@ export async function seedObservations(users) {
         location: obsData.location,
         userId: user._id
       });
-      
+
       // Uploader l'image si elle existe
       const imagePath = path.join(imagesDir, obsData.imageFilename);
-      
+
       if (fs.existsSync(imagePath)) {
         try {
           const imageBuffer = fs.readFileSync(imagePath);
           const mimetype = getMimeType(obsData.imageFilename);
-          
+
           const imageInfo = await imageService.uploadImage(
             imageBuffer,
             obsData.imageFilename,
             mimetype,
             observation._id.toString()
           );
-          
+
           // Ajouter l'image au nouveau système images array
           observation.images.push({
             imageId: imageInfo.id,
@@ -59,7 +59,7 @@ export async function seedObservations(users) {
             uploadedAt: new Date()
           });
           await observation.save();
-          
+
           console.log(`   ✅ [${i + 1}/${observationsData.length}] ${observation.title.substring(0, 50)}... (avec image)`);
         } catch (imageError) {
           console.log(`   ⚠️  [${i + 1}/${observationsData.length}] ${observation.title.substring(0, 50)}... (sans image: ${imageError.message})`);
@@ -67,12 +67,12 @@ export async function seedObservations(users) {
       } else {
         console.log(`   ℹ️  [${i + 1}/${observationsData.length}] ${observation.title.substring(0, 50)}... (image placeholder manquante)`);
       }
-      
+
       createdObservations.push(observation);
     }
-    
+
     console.log(`   📊 Total: ${createdObservations.length} observations créées`);
-    
+
     return createdObservations;
   } catch (error) {
     console.error('   ❌ Erreur lors du seed observations:', error.message);

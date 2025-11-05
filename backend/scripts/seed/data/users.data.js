@@ -1,7 +1,3 @@
-/**
- * Données des utilisateurs normaux
- * Tu peux facilement ajouter/modifier/supprimer des utilisateurs
- */
 export const usersData = [
   {
     name: 'Sophie Martin',

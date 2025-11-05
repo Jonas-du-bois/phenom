@@ -63,7 +63,6 @@ describe('Admin Endpoints', () => {
         coordinates: [2.3522, 48.8566]
       },
       type: 'Lumière',
-      status: 'pending',
       userId: regularUserId
     });
     observationId = observation._id;
@@ -103,6 +102,34 @@ describe('Admin Endpoints', () => {
 
       expect(response.body.pagination).toBeDefined();
       expect(response.body.pagination.limit).toBe(1);
+    });
+
+    it('should filter users by role', async () => {
+      // Test filtre admin
+      const adminResponse = await request(app)
+        .get('/api/v1/admin/users?role=admin')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+
+      expect(adminResponse.body.success).toBe(true);
+      expect(Array.isArray(adminResponse.body.data)).toBe(true);
+      // Tous les utilisateurs retournés doivent être admin
+      adminResponse.body.data.forEach(user => {
+        expect(user.role).toBe('admin');
+      });
+
+      // Test filtre viewer
+      const viewerResponse = await request(app)
+        .get('/api/v1/admin/users?role=viewer')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+
+      expect(viewerResponse.body.success).toBe(true);
+      expect(Array.isArray(viewerResponse.body.data)).toBe(true);
+      // Tous les utilisateurs retournés doivent être viewer
+      viewerResponse.body.data.forEach(user => {
+        expect(user.role).toBe('viewer');
+      });
     });
 
     it('should fail without admin role', async () => {
@@ -194,13 +221,64 @@ describe('Admin Endpoints', () => {
       expect(response.body.data.length).toBeGreaterThanOrEqual(1);
     });
 
-    it('should support status filter', async () => {
+    it('should support sorting by title desc', async () => {
+      // Créer plusieurs observations pour tester le tri
+      await Observation.create({
+        title: 'Observation A',
+        description: 'Description A',
+        date: new Date(),
+        location: {
+          type: 'Point',
+          coordinates: [2.3522, 48.8566]
+        },
+        type: 'Lumière',
+        userId: regularUserId
+      });
+
+      await Observation.create({
+        title: 'Observation Z',
+        description: 'Description Z',
+        date: new Date(),
+        location: {
+          type: 'Point',
+          coordinates: [2.3522, 48.8566]
+        },
+        type: 'Lumière',
+        userId: regularUserId
+      });
+
       const response = await request(app)
-        .get('/api/v1/admin/observations')
+        .get('/api/v1/admin/observations?sortBy=title&order=desc')
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
       expect(response.body.success).toBe(true);
+      expect(Array.isArray(response.body.data)).toBe(true);
+
+      // Vérifier que le tri est correct (Z avant A en ordre desc)
+      if (response.body.data.length >= 2) {
+        const titles = response.body.data.map(obs => obs.title);
+        const sortedTitles = [...titles].sort().reverse();
+        expect(titles).toEqual(sortedTitles);
+      }
+    });
+
+    it('should support sorting by createdAt asc', async () => {
+      const response = await request(app)
+        .get('/api/v1/admin/observations?sortBy=createdAt&order=asc')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(Array.isArray(response.body.data)).toBe(true);
+
+      // Vérifier que les dates sont en ordre croissant
+      if (response.body.data.length >= 2) {
+        const dates = response.body.data.map(obs => new Date(obs.createdAt).getTime());
+        for (let i = 1; i < dates.length; i++) {
+          expect(dates[i]).toBeGreaterThanOrEqual(dates[i - 1]);
+        }
+      }
     });
 
     it('should fail without admin role', async () => {
