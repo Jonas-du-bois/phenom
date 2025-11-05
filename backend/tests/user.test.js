@@ -569,13 +569,29 @@ describe('User Endpoints', () => {
 
     it('should support custom sorting', async () => {
       const response = await request(app)
-        .get('/api/v1/users/me/observations?sort=createdAt&order=asc')
+        .get('/api/v1/users/me/observations?sortBy=createdAt&order=asc')
         .set('Authorization', `Bearer ${authToken}`)
         .expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.data[0].title).toBe('Observation 1'); // Plus ancienne en premier
       expect(response.body.data[2].title).toBe('Observation 3'); // Plus récente en dernier
+    });
+
+    it('should support sorting by title', async () => {
+      const response = await request(app)
+        .get('/api/v1/users/me/observations?sortBy=title&order=asc')
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.length).toBe(3);
+
+      // Vérifier que le tri par titre est correct
+      const titles = response.body.data.map(obs => obs.title);
+      expect(titles[0]).toBe('Observation 1');
+      expect(titles[1]).toBe('Observation 2');
+      expect(titles[2]).toBe('Observation 3');
     });
 
     it('should return empty array when user has no observations', async () => {

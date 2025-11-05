@@ -143,18 +143,13 @@ ws.onclose = (event) => {
         url: 'https://opensource.org/licenses/MIT'
       }
     },
-    security: [
-      {
-        bearerAuth: []
-      }
-    ],
     components: {
       securitySchemes: {
         bearerAuth: {
           type: 'http',
           scheme: 'bearer',
           bearerFormat: 'JWT',
-          description: 'Token JWT pour l\'authentification'
+          description: 'Token JWT pour l\'authentification. Utilisez ce schéma pour les routes nécessitant une authentification.'
         }
       },
       schemas: {

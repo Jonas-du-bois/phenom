@@ -133,12 +133,12 @@ class UserService {
    */
   async getUserObservations(userId, query) {
     const { page, limit, skip } = getPaginationParams(query);
-    const sort = query.sort || 'createdAt';
+    const sortBy = query.sortBy || 'createdAt';
     const order = query.order === 'asc' ? 1 : -1;
 
     const [observations, total] = await Promise.all([
       Observation.find({ userId })
-        .sort({ [sort]: order })
+        .sort({ [sortBy]: order })
         .skip(skip)
         .limit(limit)
         .populate('userId', 'name email')
