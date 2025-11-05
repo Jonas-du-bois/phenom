@@ -32,7 +32,7 @@ export const authService = {
    * Récupère le profil utilisateur
    */
   async getProfile() {
-    const response = await apiClient.get('/auth/profile')
+    const response = await apiClient.get('/auth/me')
     return response.data
   },
 

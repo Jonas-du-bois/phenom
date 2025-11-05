@@ -143,6 +143,11 @@ ws.onclose = (event) => {
         url: 'https://opensource.org/licenses/MIT'
       }
     },
+    security: [
+      {
+        bearerAuth: []
+      }
+    ],
     components: {
       securitySchemes: {
         bearerAuth: {
