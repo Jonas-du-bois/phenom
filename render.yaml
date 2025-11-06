@@ -112,4 +112,3 @@ services:
 # ============================================================================
 # Databases
 # ============================================================================
-# MongoDB Atlas est utilisé pour la base de données, donc aucune configuration de base de données locale n'est nécessaire ici.

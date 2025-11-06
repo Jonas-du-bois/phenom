@@ -1,0 +1,331 @@
+asyncapi: 3.2.4
+info:
+  title: Phenom WebSocket API
+  version: 1.0.0
+  description: |
+    API WebSocket en temps réel pour les événements d'observations et de commentaires.
+    
+    Les clients peuvent s'abonner aux canaux suivants pour recevoir des mises à jour en temps réel :
+    - **observations** : Notifications lors de la création, mise à jour ou suppression d'observations
+    - **comments** : Notifications lors de la création, mise à jour ou suppression de commentaires
+    
+    ### Connexion
+    ```javascript
+    const ws = new WebSocket('ws://localhost:3000');
+    // ou en production
+    const ws = new WebSocket('wss://phenom-backend.onrender.com');
+    ```
+    
+    ### Format des messages
+    Tous les messages reçus suivent ce format :
+    ```json
+    {
+      "event": "observation:created",
+      "data": { ... }
+    }
+    ```
+
+servers:
+  development:
+    host: localhost:3000
+    protocol: ws
+    description: Serveur de développement local
+  production:
+    host: phenom-backend.onrender.com
+    protocol: wss
+    description: Serveur de production sur Render
+
+channels:
+  observations:
+    address: /
+    messages:
+      observationCreated:
+        $ref: '#/components/messages/ObservationCreated'
+      observationUpdated:
+        $ref: '#/components/messages/ObservationUpdated'
+      observationDeleted:
+        $ref: '#/components/messages/ObservationDeleted'
+    description: Canal pour les événements liés aux observations UFO
+    
+  comments:
+    address: /
+    messages:
+      commentCreated:
+        $ref: '#/components/messages/CommentCreated'
+      commentUpdated:
+        $ref: '#/components/messages/CommentUpdated'
+      commentDeleted:
+        $ref: '#/components/messages/CommentDeleted'
+    description: Canal pour les événements liés aux commentaires
+
+operations:
+  receiveObservationEvents:
+    action: receive
+    channel:
+      $ref: '#/channels/observations'
+    summary: Recevoir les événements d'observations
+    description: S'abonner pour recevoir les notifications en temps réel des observations (créées, mises à jour, supprimées)
+    
+  receiveCommentEvents:
+    action: receive
+    channel:
+      $ref: '#/channels/comments'
+    summary: Recevoir les événements de commentaires
+    description: S'abonner pour recevoir les notifications en temps réel des commentaires (créés, mis à jour, supprimés)
+
+components:
+  messages:
+    ObservationCreated:
+      name: observation:created
+      title: Observation créée
+      summary: Événement émis lorsqu'une nouvelle observation est créée
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ObservationEvent'
+      examples:
+        - name: Nouvelle observation
+          summary: Exemple d'une observation fraîchement créée
+          payload:
+            event: observation:created
+            data:
+              _id: 507f1f77bcf86cd799439011
+              title: OVNI triangulaire au-dessus de Lausanne
+              description: Observation d'un objet triangulaire lumineux se déplaçant silencieusement
+              date: 2024-03-15T22:30:00.000Z
+              location:
+                type: Point
+                coordinates: [6.6323, 46.5197]
+              city: Lausanne
+              country: Suisse
+              userId: 507f191e810c19729de860ea
+              status: pending
+              visibility: public
+              createdAt: 2024-03-15T23:00:00.000Z
+              updatedAt: 2024-03-15T23:00:00.000Z
+
+    ObservationUpdated:
+      name: observation:updated
+      title: Observation mise à jour
+      summary: Événement émis lorsqu'une observation existante est modifiée
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ObservationEvent'
+
+    ObservationDeleted:
+      name: observation:deleted
+      title: Observation supprimée
+      summary: Événement émis lorsqu'une observation est supprimée
+      contentType: application/json
+      payload:
+        type: object
+        required:
+          - event
+          - data
+        properties:
+          event:
+            type: string
+            const: observation:deleted
+            description: Type d'événement
+          data:
+            type: object
+            required:
+              - _id
+            properties:
+              _id:
+                type: string
+                description: ID de l'observation supprimée
+                example: 507f1f77bcf86cd799439011
+
+    CommentCreated:
+      name: comment:created
+      title: Commentaire créé
+      summary: Événement émis lorsqu'un nouveau commentaire est ajouté
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/CommentEvent'
+      examples:
+        - name: Nouveau commentaire
+          summary: Exemple d'un commentaire fraîchement créé
+          payload:
+            event: comment:created
+            data:
+              _id: 507f1f77bcf86cd799439022
+              content: J'ai vu la même chose au même endroit !
+              observationId: 507f1f77bcf86cd799439011
+              userId: 507f191e810c19729de860eb
+              createdAt: 2024-03-16T10:00:00.000Z
+              updatedAt: 2024-03-16T10:00:00.000Z
+
+    CommentUpdated:
+      name: comment:updated
+      title: Commentaire mis à jour
+      summary: Événement émis lorsqu'un commentaire existant est modifié
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/CommentEvent'
+
+    CommentDeleted:
+      name: comment:deleted
+      title: Commentaire supprimé
+      summary: Événement émis lorsqu'un commentaire est supprimé
+      contentType: application/json
+      payload:
+        type: object
+        required:
+          - event
+          - data
+        properties:
+          event:
+            type: string
+            const: comment:deleted
+            description: Type d'événement
+          data:
+            type: object
+            required:
+              - _id
+            properties:
+              _id:
+                type: string
+                description: ID du commentaire supprimé
+                example: 507f1f77bcf86cd799439022
+
+  schemas:
+    ObservationEvent:
+      type: object
+      required:
+        - event
+        - data
+      properties:
+        event:
+          type: string
+          enum:
+            - observation:created
+            - observation:updated
+          description: Type d'événement WebSocket
+        data:
+          type: object
+          description: Données de l'observation
+          required:
+            - _id
+            - title
+            - date
+            - location
+            - userId
+            - status
+          properties:
+            _id:
+              type: string
+              description: Identifiant unique de l'observation
+              example: 507f1f77bcf86cd799439011
+            title:
+              type: string
+              description: Titre de l'observation
+              example: OVNI triangulaire au-dessus de Lausanne
+            description:
+              type: string
+              description: Description détaillée
+              example: Observation d'un objet triangulaire lumineux
+            date:
+              type: string
+              format: date-time
+              description: Date et heure de l'observation
+            location:
+              type: object
+              description: Coordonnées géographiques (GeoJSON)
+              required:
+                - type
+                - coordinates
+              properties:
+                type:
+                  type: string
+                  const: Point
+                coordinates:
+                  type: array
+                  items:
+                    type: number
+                  minItems: 2
+                  maxItems: 2
+                  description: "[longitude, latitude]"
+                  example: [6.6323, 46.5197]
+            city:
+              type: string
+              description: Ville de l'observation
+              example: Lausanne
+            country:
+              type: string
+              description: Pays de l'observation
+              example: Suisse
+            userId:
+              type: string
+              description: ID de l'utilisateur ayant créé l'observation
+              example: 507f191e810c19729de860ea
+            status:
+              type: string
+              enum: [pending, verified, rejected]
+              description: Statut de validation de l'observation
+              example: pending
+            visibility:
+              type: string
+              enum: [public, private]
+              description: Visibilité de l'observation
+              example: public
+            tags:
+              type: array
+              items:
+                type: string
+              description: Tags associés à l'observation
+              example: [lumineux, triangulaire, silencieux]
+            createdAt:
+              type: string
+              format: date-time
+              description: Date de création
+            updatedAt:
+              type: string
+              format: date-time
+              description: Date de dernière mise à jour
+
+    CommentEvent:
+      type: object
+      required:
+        - event
+        - data
+      properties:
+        event:
+          type: string
+          enum:
+            - comment:created
+            - comment:updated
+          description: Type d'événement WebSocket
+        data:
+          type: object
+          description: Données du commentaire
+          required:
+            - _id
+            - content
+            - observationId
+            - userId
+          properties:
+            _id:
+              type: string
+              description: Identifiant unique du commentaire
+              example: 507f1f77bcf86cd799439022
+            content:
+              type: string
+              description: Contenu du commentaire
+              example: J'ai vu la même chose au même endroit !
+            observationId:
+              type: string
+              description: ID de l'observation commentée
+              example: 507f1f77bcf86cd799439011
+            userId:
+              type: string
+              description: ID de l'utilisateur ayant créé le commentaire
+              example: 507f191e810c19729de860eb
+            createdAt:
+              type: string
+              format: date-time
+              description: Date de création
+            updatedAt:
+              type: string
+              format: date-time
+              description: Date de dernière mise à jour

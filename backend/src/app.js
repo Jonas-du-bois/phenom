@@ -29,6 +29,9 @@ import {
   createWebSocketServer,
   startWebSocketServer
 } from './config/websocket.js';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import yaml from 'js-yaml';
 
 // Valider la configuration JWT
 validateJwtConfig();
@@ -73,7 +76,7 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     environment: process.env.NODE_ENV,
-    version: '1.0.0'
+    version: '3.1.2'
   });
 });
 
@@ -82,7 +85,7 @@ app.get('/', (req, res) => {
   res.json({
     success: true,
     message: 'Phenom API - UFO Observation Platform',
-    version: '1.0.0',
+    version: '3.1.2',
     documentation: '/api-docs',
     endpoints: {
       health: '/health',
@@ -93,11 +96,54 @@ app.get('/', (req, res) => {
 });
 
 // Documentation Swagger
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+// Page d'accueil de la documentation
+app.get('/api-docs', (req, res) => {
+  const htmlPath = join(__dirname, 'public', 'docs', 'index.html');
+  res.sendFile(htmlPath);
+});
+
+// Documentation REST (Swagger)
+app.use('/api-docs/rest', swaggerUi.serve);
+app.get('/api-docs/rest', swaggerUi.setup(swaggerSpec, {
   customCss: '.swagger-ui .topbar { display: none }',
-  customSiteTitle: 'Phenom API Documentation',
+  customSiteTitle: 'Phenom REST API Documentation',
   customfavIcon: '/favicon.ico'
 }));
+
+// Documentation WebSocket (AsyncAPI) - Page HTML avec iframe vers AsyncAPI Studio
+app.get('/api-docs/websocket', (req, res) => {
+  // Définir un CSP qui autorise l'iframe vers studio.asyncapi.com
+  const csp = 'default-src \'self\'; script-src \'self\'; style-src \'self\' \'unsafe-inline\'; frame-src https://studio.asyncapi.com; img-src \'self\' data:; connect-src \'self\' https://studio.asyncapi.com';
+  res.setHeader('Content-Security-Policy', csp);
+
+  const htmlPath = join(__dirname, 'public', 'docs', 'websocket.html');
+  res.sendFile(htmlPath);
+});
+
+// Servir le loader JS pour la page WebSocket
+app.get('/api-docs/websocket/loader.js', (req, res) => {
+  const jsPath = join(__dirname, 'public', 'docs', 'loader.js');
+  res.setHeader('Content-Type', 'application/javascript');
+  res.sendFile(jsPath);
+});
+
+// Endpoint pour servir la spec AsyncAPI en JSON (parsée depuis YAML)
+app.get('/api-docs/websocket/spec', (req, res) => {
+  try {
+    const yamlPath = join(__dirname, 'config', 'asyncapi.yaml');
+    const yamlContent = readFileSync(yamlPath, 'utf8');
+    const asyncApiSpec = yaml.load(yamlContent);
+
+    res.setHeader('Content-Type', 'application/json');
+    res.status(200).json(asyncApiSpec);
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors du chargement de la spec AsyncAPI',
+      error: err.message
+    });
+  }
+});
 
 // Endpoint pour exporter le spec OpenAPI en JSON
 app.get('/openapi.json', (req, res) => {
@@ -131,10 +177,10 @@ const startServer = async () => {
       console.log('🚀 Serveur Phenom API démarré avec succès');
       console.log('='.repeat(50));
       console.log(`📍 Environnement: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`🔗 URL: http://localhost:${PORT}`);
-      console.log(`📚 Documentation: http://localhost:${PORT}/api-docs`);
-      console.log(`🏥 Health check: http://localhost:${PORT}/health`);
-      console.log(`🔌 API Endpoints: http://localhost:${PORT}${API_PREFIX}`);
+      console.log(`🔗 URL: http://localhost:${PORT} ou https://phenom-backend.onrender.com/`);
+      console.log(`📚 Documentation: http://localhost:${PORT}/api-docs ou https://phenom-backend.onrender.com/api-docs`);
+      console.log(`🏥 Health check: http://localhost:${PORT}/health ou https://phenom-backend.onrender.com/health`);
+      console.log(`🔌 API Endpoints: http://localhost:${PORT}${API_PREFIX} ou https://phenom-backend.onrender.com${API_PREFIX}`);
       console.log('='.repeat(50));
     });
 

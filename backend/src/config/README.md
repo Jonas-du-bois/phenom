@@ -296,10 +296,10 @@ API_BASE_URL=http://localhost:3000
 ```javascript
 const options = {
   definition: {
-    openapi: '3.0.0',
+    openapi: '3.2.4',
     info: {
       title: 'Phenom API',
-      version: '1.0.0',
+      version: '3.2.4',
       description: 'API pour observations OVNI'
     },
     servers: [
