@@ -29,9 +29,26 @@ import {
   createWebSocketServer,
   startWebSocketServer
 } from './config/websocket.js';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import yaml from 'js-yaml';
+
+// Fonction utilitaire pour résoudre les chemins de fichiers
+// Compatible avec le développement local et le déploiement Render
+const resolveFilePath = (relativePath) => {
+  const localPath = join(__dirname, relativePath);
+  if (existsSync(localPath)) {
+    return localPath;
+  }
+
+  // Fallback pour Render ou autres environnements
+  const alternativePath = join(process.cwd(), 'src', relativePath);
+  if (existsSync(alternativePath)) {
+    return alternativePath;
+  }
+
+  return null;
+};
 
 // Valider la configuration JWT
 validateJwtConfig();
@@ -98,8 +115,18 @@ app.get('/', (req, res) => {
 // Documentation Swagger
 // Page d'accueil de la documentation
 app.get('/api-docs', (req, res) => {
-  const htmlPath = join(__dirname, 'public', 'docs', 'index.html');
-  res.sendFile(htmlPath);
+  const htmlPath = resolveFilePath('public/docs/index.html');
+
+  if (htmlPath) {
+    res.sendFile(htmlPath);
+  } else {
+    res.status(404).json({
+      success: false,
+      error: 'Documentation index.html not found',
+      __dirname,
+      cwd: process.cwd()
+    });
+  }
 });
 
 // Documentation REST (Swagger)
@@ -116,24 +143,45 @@ app.get('/api-docs/websocket', (req, res) => {
   const csp = 'default-src \'self\'; script-src \'self\'; style-src \'self\' \'unsafe-inline\'; frame-src https://studio.asyncapi.com; img-src \'self\' data:; connect-src \'self\' https://studio.asyncapi.com';
   res.setHeader('Content-Security-Policy', csp);
 
-  const htmlPath = join(__dirname, 'public', 'docs', 'websocket.html');
-  res.sendFile(htmlPath);
+  const htmlPath = resolveFilePath('public/docs/websocket.html');
+
+  if (htmlPath) {
+    res.sendFile(htmlPath);
+  } else {
+    res.status(404).json({
+      success: false,
+      error: 'websocket.html not found'
+    });
+  }
 });
 
 // Servir le loader JS pour la page WebSocket
 app.get('/api-docs/websocket/loader.js', (req, res) => {
-  const jsPath = join(__dirname, 'public', 'docs', 'loader.js');
   res.setHeader('Content-Type', 'application/javascript');
-  res.sendFile(jsPath);
+
+  const jsPath = resolveFilePath('public/docs/loader.js');
+
+  if (jsPath) {
+    res.sendFile(jsPath);
+  } else {
+    res.status(404).send('// loader.js not found');
+  }
 });
 
 // Endpoint pour servir la spec AsyncAPI en JSON (parsée depuis YAML)
 app.get('/api-docs/websocket/spec', (req, res) => {
   try {
-    const yamlPath = join(__dirname, 'config', 'asyncapi.yaml');
+    const yamlPath = resolveFilePath('config/asyncapi.yaml');
+
+    if (!yamlPath) {
+      return res.status(404).json({
+        success: false,
+        error: 'asyncapi.yaml not found'
+      });
+    }
+
     const yamlContent = readFileSync(yamlPath, 'utf8');
     const asyncApiSpec = yaml.load(yamlContent);
-
     res.setHeader('Content-Type', 'application/json');
     res.status(200).json(asyncApiSpec);
   } catch (err) {
