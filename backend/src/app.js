@@ -171,6 +171,11 @@ app.get('/api-docs/websocket/loader.js', (req, res) => {
 // Endpoint pour servir la spec AsyncAPI en JSON (parsée depuis YAML)
 app.get('/api-docs/websocket/spec', (req, res) => {
   try {
+    // Ajouter les en-têtes CORS pour permettre à AsyncAPI Studio d'accéder à la spec
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
     const yamlPath = resolveFilePath('config/asyncapi.yaml');
 
     if (!yamlPath) {
@@ -191,6 +196,14 @@ app.get('/api-docs/websocket/spec', (req, res) => {
       error: err.message
     });
   }
+});
+
+// Gérer les requêtes OPTIONS pour CORS preflight
+app.options('/api-docs/websocket/spec', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.status(204).end();
 });
 
 // Endpoint pour exporter le spec OpenAPI en JSON
