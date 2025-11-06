@@ -1,4 +1,4 @@
-asyncapi: 3.2.4
+asyncapi: 3.0.0
 info:
   title: Phenom WebSocket API
   version: 1.0.0

@@ -2,13 +2,13 @@ import swaggerJsdoc from 'swagger-jsdoc';
 
 const options = {
   definition: {
-    openapi: '3.2.4',
+    openapi: '3.0.0',
     info: {
       title: 'Phenom API',
-      version: '3.2.4',
+      version: '1.0.0',
       description: `API REST et WebSocket pour l'application d'observations OVNI Phenom.
 
-## � Démarrage rapide
+## 🚀 Démarrage rapide
 
 ### API REST
 Tous les endpoints REST sont documentés ci-dessous avec leurs schémas de requête/réponse.
