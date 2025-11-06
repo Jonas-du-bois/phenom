@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phenom API - Documentation</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 900px;
+      width: 100%;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 40px 30px;
+      text-align: center;
+    }
+    
+    .header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+    
+    .header p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+    
+    .content {
+      padding: 40px 30px;
+    }
+    
+    .description {
+      text-align: center;
+      color: #666;
+      margin-bottom: 40px;
+      line-height: 1.6;
+    }
+    
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .card {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 30px;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      border: 2px solid transparent;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      border-color: #667eea;
+    }
+    
+    .card-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+    
+    .card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    
+    .card p {
+      color: #666;
+      line-height: 1.5;
+    }
+    
+    .features {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 30px;
+      margin-top: 30px;
+    }
+    
+    .features h3 {
+      color: #333;
+      margin-bottom: 20px;
+      font-size: 1.3rem;
+    }
+    
+    .features ul {
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+    
+    .features li {
+      padding: 10px;
+      background: white;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .features li::before {
+      content: '✅';
+      font-size: 1.2rem;
+    }
+    
+    .footer {
+      text-align: center;
+      padding: 20px;
+      color: #999;
+      font-size: 0.9rem;
+      border-top: 1px solid #eee;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🛸 Phenom API</h1>
+      <p>Plateforme d'observations OVNI</p>
+    </div>
+    
+    <div class="content">
+      <div class="description">
+        <p>
+          Bienvenue sur la documentation de l'API Phenom. Cette API permet de gérer 
+          des observations d'OVNI avec un système complet d'authentification, de gestion 
+          d'utilisateurs, et de notifications en temps réel.
+        </p>
+      </div>
+      
+      <div class="cards">
+        <a href="/api-docs/rest" class="card">
+          <div class="card-icon">📚</div>
+          <h2>API REST</h2>
+          <p>Documentation Swagger interactive pour tester tous les endpoints REST de l'API</p>
+        </a>
+        
+        <a href="/api-docs/websocket" class="card">
+          <div class="card-icon">🔌</div>
+          <h2>WebSocket</h2>
+          <p>Documentation AsyncAPI pour les événements temps réel et les canaux WebSocket</p>
+        </a>
+      </div>
+      
+      <div class="features">
+        <h3>🎯 Fonctionnalités principales</h3>
+        <ul>
+          <li>Gestion des observations OVNI</li>
+          <li>Système d'authentification JWT</li>
+          <li>Upload et gestion d'images</li>
+          <li>Commentaires et discussions</li>
+          <li>Recherche géographique</li>
+          <li>Notifications temps réel</li>
+          <li>Panel d'administration</li>
+          <li>Statistiques publiques</li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="footer">
+      <p>Phenom API v3.1.2 | <a href="/health" style="color: #667eea;">Health Check</a></p>
+    </div>
+  </div>
+</body>
+</html>

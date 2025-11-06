@@ -46,6 +46,7 @@ backups/
 # OS
 Thumbs.db
 
-# docs
+# docs (ignore documentation folder, except API docs)
 docs/
+!backend/src/public/docs/
 
