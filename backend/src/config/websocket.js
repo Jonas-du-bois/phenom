@@ -64,7 +64,8 @@ export const publishToChannel = (channel, type, data) => {
 
   try {
     // Utiliser la méthode pub de WSmini pour publier sur le canal
-    wss.pub(channel, JSON.stringify(message));
+    // WsMini envoie automatiquement l'objet au format JSON
+    wss.pub(channel, message);
     console.log(`📤 Message publié sur ${channel}:`, type);
   } catch (error) {
     console.error(`❌ Erreur lors de la publication sur ${channel}:`, error);

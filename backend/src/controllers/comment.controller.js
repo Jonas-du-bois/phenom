@@ -1,6 +1,7 @@
 import commentService from '../services/comment.service.js';
 import { successResponse, createdResponse, notFoundResponse } from '../utils/response.js';
 import { paginatedResponse } from '../utils/pagination.js';
+import { publishCommentEvent } from '../config/websocket.js';
 
 /**
  * Contrôleur des commentaires
@@ -40,6 +41,9 @@ class CommentController {
         req.user._id
       );
 
+      // Publier l'événement WebSocket
+      publishCommentEvent('comment:created', comment);
+
       return createdResponse(res, comment, 'Commentaire ajouté avec succès');
     } catch (error) {
       if (error.message === 'OBSERVATION_NOT_FOUND') {
@@ -57,6 +61,9 @@ class CommentController {
     try {
       const comment = await commentService.updateComment(req.params.id, req.body);
 
+      // Publier l'événement WebSocket
+      publishCommentEvent('comment:updated', comment);
+
       return successResponse(res, comment, 'Commentaire mis à jour avec succès');
     } catch (error) {
       if (error.message === 'COMMENT_NOT_FOUND') {
@@ -72,7 +79,11 @@ class CommentController {
    */
   async deleteComment(req, res, next) {
     try {
-      await commentService.deleteComment(req.params.id);
+      const commentId = req.params.id;
+      await commentService.deleteComment(commentId);
+
+      // Publier l'événement WebSocket
+      publishCommentEvent('comment:deleted', { _id: commentId });
 
       return res.status(204).send();
     } catch (error) {
