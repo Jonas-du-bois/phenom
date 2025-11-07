@@ -7,8 +7,8 @@ export const commentService = {
   /**
    * Récupère les commentaires d'une observation
    */
-  async getByObservation(observationId) {
-    const response = await apiClient.get(`/observations/${observationId}/comments`)
+  async getByObservation(observationId, params = {}) {
+    const response = await apiClient.get(`/observations/${observationId}/comments`, { params })
     return response.data
   },
 

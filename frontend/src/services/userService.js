@@ -62,7 +62,7 @@ export const userService = {
    */
   async changePassword(passwords) {
     try {
-      const response = await api.put('/users/me/password', passwords)
+      const response = await api.patch('/users/me/password', passwords)
       return response.data
     } catch (error) {
       console.error('Erreur lors du changement de mot de passe:', error)

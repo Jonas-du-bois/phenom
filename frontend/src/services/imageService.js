@@ -5,7 +5,25 @@ import apiClient from '../utils/api'
 
 export const imageService = {
   /**
-   * Upload une image
+   * Upload une image pour une observation
+   * @param {string} observationId - ID de l'observation
+   * @param {File} file - Fichier image à uploader
+   */
+  async uploadToObservation(observationId, file) {
+    const formData = new FormData()
+    formData.append('image', file)
+    
+    const response = await apiClient.post(`/observations/${observationId}/images`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    return response.data
+  },
+
+  /**
+   * Upload une image (legacy - utilise uploadToObservation à la place)
+   * @deprecated
    */
   async upload(file) {
     const formData = new FormData()

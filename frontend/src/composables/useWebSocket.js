@@ -1,56 +1,76 @@
 /**
- * Composable pour la connexion WebSocket
+ * Composable pour la connexion WebSocket avec WsMini PubSub
+ * Utilise le client WSClient de WsMini
  */
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onUnmounted } from 'vue'
+import { WSClient } from 'wsmini'
 
 export function useWebSocket() {
   const ws = ref(null)
   const connected = ref(false)
   const messages = ref([])
   const error = ref(null)
+  const reconnectAttempts = ref(0)
+  const maxReconnectAttempts = 5
+  const reconnectDelay = 3000
 
-  const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:3000'
+  // URL du WebSocket - en production, utiliser l'URL Render
+  const WS_URL = import.meta.env.VITE_WS_URL || 'wss://phenom-backend.onrender.com'
 
   /**
-   * Connexion au WebSocket
+   * Connexion au WebSocket avec WsMini WSClient
    */
-  function connect(token) {
+  async function connect(token = null) {
     try {
-      // Connexion avec le token en query parameter
-      const url = token ? `${WS_URL}?token=${token}` : WS_URL
-      ws.value = new WebSocket(url)
+      console.log(`🔌 Tentative de connexion WebSocket à: ${WS_URL}`)
+      
+      // Créer le client WsMini
+      ws.value = new WSClient(WS_URL)
 
-      ws.value.onopen = () => {
-        connected.value = true
-        error.value = null
-        console.log('✅ WebSocket connecté')
-      }
+      // Se connecter
+      await ws.value.connect()
+      
+      connected.value = true
+      error.value = null
+      reconnectAttempts.value = 0
+      console.log('✅ WebSocket connecté avec WSClient')
 
-      ws.value.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data)
-          messages.value.push({
-            ...data,
-            timestamp: new Date().toISOString()
-          })
-          console.log('📨 Message WebSocket reçu:', data)
-        } catch (err) {
-          console.error('Erreur parsing message WebSocket:', err)
-        }
-      }
+      // S'abonner aux canaux avec callbacks
+      await ws.value.sub('observations', (data) => {
+        console.log('📨 Message observations:', data)
+        messages.value.push({
+          channel: 'observations',
+          data,
+          receivedAt: new Date().toISOString()
+        })
+      })
 
-      ws.value.onerror = (err) => {
-        error.value = 'Erreur WebSocket'
-        console.error('❌ Erreur WebSocket:', err)
-      }
+      await ws.value.sub('comments', (data) => {
+        console.log('📨 Message comments:', data)
+        messages.value.push({
+          channel: 'comments',
+          data,
+          receivedAt: new Date().toISOString()
+        })
+      })
 
-      ws.value.onclose = () => {
-        connected.value = false
-        console.log('🔌 WebSocket déconnecté')
-      }
+      console.log('✅ Souscriptions aux canaux: observations, comments')
+
     } catch (err) {
       error.value = err.message
-      console.error('Erreur connexion WebSocket:', err)
+      connected.value = false
+      console.error('❌ Erreur connexion WebSocket:', err)
+      console.error(`⚠️ Vérifiez que le serveur backend est accessible à ${WS_URL}`)
+
+      // Tentative de reconnexion automatique
+      if (reconnectAttempts.value < maxReconnectAttempts) {
+        reconnectAttempts.value++
+        console.log(`🔄 Reconnexion (${reconnectAttempts.value}/${maxReconnectAttempts}) dans ${reconnectDelay/1000}s...`)
+        setTimeout(() => connect(token), reconnectDelay)
+      } else {
+        console.warn('⚠️ Nombre maximum de tentatives de reconnexion atteint')
+        console.warn(`💡 Vérifiez que le backend est accessible à ${WS_URL}`)
+      }
     }
   }
 
@@ -58,22 +78,40 @@ export function useWebSocket() {
    * Déconnexion du WebSocket
    */
   function disconnect() {
+    reconnectAttempts.value = maxReconnectAttempts // Empêcher la reconnexion auto
     if (ws.value) {
-      ws.value.close()
+      // WSmini gère la fermeture automatiquement
       ws.value = null
       connected.value = false
-      messages.value = []
+      console.log('🔌 WebSocket déconnecté')
     }
   }
 
   /**
-   * Envoie un message
+   * S'abonne à un canal supplémentaire (si besoin)
    */
-  function send(data) {
+  async function subscribe(channel, callback) {
     if (ws.value && connected.value) {
-      ws.value.send(JSON.stringify(data))
-    } else {
-      console.warn('WebSocket non connecté')
+      try {
+        await ws.value.sub(channel, callback)
+        console.log(`📡 Souscription au canal: ${channel}`)
+      } catch (err) {
+        console.error(`❌ Erreur souscription au canal ${channel}:`, err)
+      }
+    }
+  }
+
+  /**
+   * Se désabonne d'un canal
+   */
+  async function unsubscribe(channel) {
+    if (ws.value && connected.value) {
+      try {
+        await ws.value.unsub(channel)
+        console.log(`📡 Désinscription du canal: ${channel}`)
+      } catch (err) {
+        console.error(`❌ Erreur désinscription du canal ${channel}:`, err)
+      }
     }
   }
 
@@ -93,9 +131,11 @@ export function useWebSocket() {
     connected,
     messages,
     error,
+    reconnectAttempts,
     connect,
     disconnect,
-    send,
+    subscribe,
+    unsubscribe,
     clearMessages
   }
 }

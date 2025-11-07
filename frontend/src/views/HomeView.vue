@@ -9,7 +9,7 @@
         <p class="text-xl text-gray-300 mb-2">
           Centre de test des endpoints API
         </p>
-        <div class="flex justify-center gap-4 text-sm">
+        <div class="flex justify-center gap-4 text-sm flex-wrap">
           <span class="px-3 py-1 bg-green-500/20 text-green-400 rounded-full">
             API: {{ apiUrl }}
           </span>
@@ -22,6 +22,20 @@
             ]"
           >
             Status: {{ healthStatus || 'checking...' }}
+          </span>
+          <!-- Utilisateur connecté -->
+          <span 
+            v-if="currentUser"
+            class="px-3 py-1 bg-violet-500/20 text-violet-400 rounded-full"
+          >
+            👤 {{ currentUser.username || currentUser.email }}
+            <span v-if="currentUser.role === 'admin'" class="ml-1">👑</span>
+          </span>
+          <span 
+            v-else
+            class="px-3 py-1 bg-gray-500/20 text-gray-400 rounded-full"
+          >
+            🔒 Non connecté
           </span>
         </div>
       </div>
@@ -135,6 +149,15 @@
             </button>
             <pre v-if="results.logout" class="result-box">{{ JSON.stringify(results.logout, null, 2) }}</pre>
           </div>
+
+          <!-- Debug LocalStorage -->
+          <div class="api-card">
+            <h3 class="text-lg font-semibold mb-3">🔍 Debug</h3>
+            <button @click="debugLocalStorage" class="btn-primary mb-3">
+              Afficher localStorage
+            </button>
+            <pre v-if="results.debug" class="result-box">{{ JSON.stringify(results.debug, null, 2) }}</pre>
+          </div>
         </div>
       </section>
 
@@ -168,21 +191,35 @@
           <!-- Change Password -->
           <div class="api-card">
             <h3 class="text-lg font-semibold mb-3">Changer le mot de passe</h3>
+            <p v-if="!currentUser" class="text-yellow-400 text-sm mb-3">
+              ⚠️ Vous devez être connecté pour changer votre mot de passe
+            </p>
             <div class="space-y-2 mb-3">
               <input
                 v-model="userForms.password.currentPassword"
                 type="password"
-                placeholder="Ancien mot de passe"
+                placeholder="Ancien mot de passe (Admin123!)"
                 class="input-field"
               />
               <input
                 v-model="userForms.password.newPassword"
                 type="password"
-                placeholder="Nouveau mot de passe"
+                placeholder="Nouveau mot de passe (min 6 caractères)"
+                class="input-field"
+              />
+              <input
+                v-model="userForms.password.confirmPassword"
+                type="password"
+                placeholder="Confirmer le nouveau mot de passe"
                 class="input-field"
               />
             </div>
-            <button @click="changePassword" class="btn-primary mb-3">
+            <button 
+              @click="changePassword" 
+              class="btn-primary mb-3"
+              :disabled="!currentUser"
+              :class="{ 'opacity-50 cursor-not-allowed': !currentUser }"
+            >
               Changer le mot de passe
             </button>
             <pre v-if="results.changePassword" class="result-box">{{ JSON.stringify(results.changePassword, null, 2) }}</pre>
@@ -198,18 +235,38 @@
           <div class="api-card">
             <h3 class="text-lg font-semibold mb-3">Lister les observations</h3>
             <div class="space-y-2 mb-3">
+              <div class="grid grid-cols-2 gap-2">
+                <input
+                  v-model.number="observationForms.list.page"
+                  type="number"
+                  placeholder="Page (défaut: 1)"
+                  class="input-field"
+                />
+                <input
+                  v-model.number="observationForms.list.limit"
+                  type="number"
+                  placeholder="Limit (défaut: 10)"
+                  class="input-field"
+                />
+              </div>
               <input
-                v-model.number="observationForms.list.limit"
-                type="number"
-                placeholder="Limit"
+                v-model="observationForms.list.search"
+                type="text"
+                placeholder="Recherche (titre, description)"
                 class="input-field"
               />
-              <input
-                v-model.number="observationForms.list.page"
-                type="number"
-                placeholder="Page"
-                class="input-field"
-              />
+              <div class="grid grid-cols-2 gap-2">
+                <select v-model="observationForms.list.sortBy" class="input-field">
+                  <option value="">Trier par...</option>
+                  <option value="createdAt">Date de création</option>
+                  <option value="updatedAt">Date de modification</option>
+                  <option value="title">Titre</option>
+                </select>
+                <select v-model="observationForms.list.order" class="input-field">
+                  <option value="desc">Décroissant</option>
+                  <option value="asc">Croissant</option>
+                </select>
+              </div>
             </div>
             <button @click="getObservations" class="btn-primary mb-3">
               Récupérer
@@ -224,30 +281,80 @@
               <input
                 v-model="observationForms.create.title"
                 type="text"
-                placeholder="Titre"
+                placeholder="Titre (ex: OVNI triangulaire)"
                 class="input-field"
               />
               <textarea
                 v-model="observationForms.create.description"
-                placeholder="Description"
+                placeholder="Description détaillée (min 10 caractères)"
                 class="input-field"
-                rows="2"
+                rows="3"
               ></textarea>
-              <input
-                v-model="observationForms.create.location"
-                type="text"
-                placeholder="Localisation"
-                class="input-field"
-              />
-              <input
-                v-model="observationForms.create.date"
-                type="datetime-local"
-                class="input-field"
-              />
+              
+              <!-- Localisation GPS -->
+              <div class="space-y-2">
+                <label class="text-sm text-gray-400">📍 Localisation GPS</label>
+                <div class="flex gap-2">
+                  <input
+                    v-model="observationForms.create.longitude"
+                    type="number"
+                    step="0.000001"
+                    placeholder="Longitude (ex: 6.6323)"
+                    class="input-field flex-1"
+                  />
+                  <input
+                    v-model="observationForms.create.latitude"
+                    type="number"
+                    step="0.000001"
+                    placeholder="Latitude (ex: 46.5197)"
+                    class="input-field flex-1"
+                  />
+                </div>
+                <button 
+                  @click="getGeolocation" 
+                  class="btn-secondary w-full text-sm"
+                  type="button"
+                >
+                  📍 Utiliser ma position actuelle
+                </button>
+                <p v-if="observationForms.create.locationError" class="text-red-400 text-xs">
+                  {{ observationForms.create.locationError }}
+                </p>
+              </div>
+
+              <!-- Upload d'image -->
+              <div class="space-y-2">
+                <label class="text-sm text-gray-400">📷 Photo (requise)</label>
+                <input
+                  ref="observationImageInput"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  @change="handleObservationImageSelect"
+                  class="input-field"
+                />
+                <p class="text-xs text-gray-500">
+                  Formats acceptés: JPEG, PNG, WebP. Max: 10 MB
+                </p>
+                <div v-if="observationForms.create.imagePreview" class="mt-2">
+                  <img 
+                    :src="observationForms.create.imagePreview" 
+                    alt="Preview" 
+                    class="w-full h-40 object-cover rounded-lg"
+                  />
+                </div>
+              </div>
             </div>
-            <button @click="createObservation" class="btn-primary mb-3">
-              Créer
+            <button 
+              @click="createObservation" 
+              class="btn-primary mb-3 w-full"
+              :disabled="!observationForms.create.imageFile || !currentUser"
+              :class="{ 'opacity-50 cursor-not-allowed': !observationForms.create.imageFile || !currentUser }"
+            >
+              {{ observationForms.create.imageFile ? 'Créer l\'observation' : 'Sélectionnez une photo d\'abord' }}
             </button>
+            <p v-if="!currentUser" class="text-yellow-400 text-sm mb-3">
+              ⚠️ Vous devez être connecté pour créer une observation
+            </p>
             <pre v-if="results.createObservation" class="result-box">{{ JSON.stringify(results.createObservation, null, 2) }}</pre>
           </div>
 
@@ -321,9 +428,23 @@
               <input
                 v-model="commentForms.list.observationId"
                 type="text"
-                placeholder="ID de l'observation"
+                placeholder="ID de l'observation (requis)"
                 class="input-field"
               />
+              <div class="grid grid-cols-2 gap-2">
+                <input
+                  v-model.number="commentForms.list.page"
+                  type="number"
+                  placeholder="Page (défaut: 1)"
+                  class="input-field"
+                />
+                <input
+                  v-model.number="commentForms.list.limit"
+                  type="number"
+                  placeholder="Limit (défaut: 10)"
+                  class="input-field"
+                />
+              </div>
             </div>
             <button @click="getComments" class="btn-primary mb-3">
               Récupérer
@@ -448,115 +569,222 @@
           <!-- Get All Users -->
           <div class="api-card">
             <h3 class="text-lg font-semibold mb-3">Liste des utilisateurs</h3>
+            <div class="space-y-2 mb-3">
+              <div class="grid grid-cols-2 gap-2">
+                <input
+                  v-model.number="adminForms.users.page"
+                  type="number"
+                  placeholder="Page (défaut: 1)"
+                  class="input-field"
+                />
+                <input
+                  v-model.number="adminForms.users.limit"
+                  type="number"
+                  placeholder="Limit (défaut: 10)"
+                  class="input-field"
+                />
+              </div>
+              <input
+                v-model="adminForms.users.search"
+                type="text"
+                placeholder="Recherche (nom, email)"
+                class="input-field"
+              />
+              <select v-model="adminForms.users.role" class="input-field">
+                <option value="">Tous les rôles</option>
+                <option value="viewer">Viewer</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
             <button @click="getAllUsers" class="btn-primary mb-3">
               Récupérer
             </button>
             <pre v-if="results.allUsers" class="result-box">{{ JSON.stringify(results.allUsers, null, 2) }}</pre>
           </div>
 
-          <!-- Get All Posts -->
+          <!-- Update User Role -->
           <div class="api-card">
-            <h3 class="text-lg font-semibold mb-3">Liste des posts</h3>
+            <h3 class="text-lg font-semibold mb-3">Modifier le rôle d'un utilisateur</h3>
             <div class="space-y-2 mb-3">
-              <select v-model="adminForms.posts.status" class="input-field">
-                <option value="">Tous</option>
-                <option value="pending">En attente</option>
-                <option value="approved">Approuvés</option>
-                <option value="rejected">Rejetés</option>
+              <input
+                v-model="adminForms.updateRole.userId"
+                type="text"
+                placeholder="ID de l'utilisateur"
+                class="input-field"
+              />
+              <select v-model="adminForms.updateRole.role" class="input-field">
+                <option value="">Sélectionner un rôle</option>
+                <option value="viewer">Viewer</option>
+                <option value="admin">Admin</option>
               </select>
             </div>
-            <button @click="getAllPosts" class="btn-primary mb-3">
+            <button @click="updateUserRole" class="btn-primary mb-3">
+              Modifier le rôle
+            </button>
+            <pre v-if="results.updateUserRole" class="result-box">{{ JSON.stringify(results.updateUserRole, null, 2) }}</pre>
+          </div>
+
+          <!-- Delete Observation (Admin) -->
+          <div class="api-card">
+            <h3 class="text-lg font-semibold mb-3">Supprimer une observation (Admin)</h3>
+            <div class="space-y-2 mb-3">
+              <input
+                v-model="adminForms.deleteObservation.id"
+                type="text"
+                placeholder="ID de l'observation"
+                class="input-field"
+              />
+            </div>
+            <button @click="deleteObservationAdmin" class="btn-danger mb-3">
+              Supprimer
+            </button>
+            <pre v-if="results.deleteObservationAdmin" class="result-box">{{ JSON.stringify(results.deleteObservationAdmin, null, 2) }}</pre>
+          </div>
+
+          <!-- Delete Comment (Admin) -->
+          <div class="api-card">
+            <h3 class="text-lg font-semibold mb-3">Supprimer un commentaire (Admin)</h3>
+            <div class="space-y-2 mb-3">
+              <input
+                v-model="adminForms.deleteComment.id"
+                type="text"
+                placeholder="ID du commentaire"
+                class="input-field"
+              />
+            </div>
+            <button @click="deleteCommentAdmin" class="btn-danger mb-3">
+              Supprimer
+            </button>
+            <pre v-if="results.deleteCommentAdmin" class="result-box">{{ JSON.stringify(results.deleteCommentAdmin, null, 2) }}</pre>
+          </div>
+
+          <!-- Get User Details -->
+          <div class="api-card">
+            <h3 class="text-lg font-semibold mb-3">Détails d'un utilisateur</h3>
+            <div class="space-y-2 mb-3">
+              <input
+                v-model="adminForms.userDetails.id"
+                type="text"
+                placeholder="ID de l'utilisateur"
+                class="input-field"
+              />
+            </div>
+            <button @click="getUserDetails" class="btn-primary mb-3">
               Récupérer
             </button>
-            <pre v-if="results.allPosts" class="result-box">{{ JSON.stringify(results.allPosts, null, 2) }}</pre>
-          </div>
-
-          <!-- Approve Post -->
-          <div class="api-card">
-            <h3 class="text-lg font-semibold mb-3">Approuver un post</h3>
-            <div class="space-y-2 mb-3">
-              <input
-                v-model="adminForms.approve.id"
-                type="text"
-                placeholder="ID du post"
-                class="input-field"
-              />
-            </div>
-            <button @click="approvePost" class="btn-primary mb-3">
-              Approuver
-            </button>
-            <pre v-if="results.approvePost" class="result-box">{{ JSON.stringify(results.approvePost, null, 2) }}</pre>
-          </div>
-
-          <!-- Reject Post -->
-          <div class="api-card">
-            <h3 class="text-lg font-semibold mb-3">Rejeter un post</h3>
-            <div class="space-y-2 mb-3">
-              <input
-                v-model="adminForms.reject.id"
-                type="text"
-                placeholder="ID du post"
-                class="input-field"
-              />
-            </div>
-            <button @click="rejectPost" class="btn-danger mb-3">
-              Rejeter
-            </button>
-            <pre v-if="results.rejectPost" class="result-box">{{ JSON.stringify(results.rejectPost, null, 2) }}</pre>
+            <pre v-if="results.userDetails" class="result-box">{{ JSON.stringify(results.userDetails, null, 2) }}</pre>
           </div>
         </div>
       </section>
 
       <!-- Section: WebSocket -->
       <section id="websocket" class="api-section mb-8">
-        <h2 class="section-title">🔌 WebSocket</h2>
+        <h2 class="section-title">🔌 WebSocket (WsMini PubSub)</h2>
         <div class="grid md:grid-cols-2 gap-4">
           <!-- Connect -->
           <div class="api-card">
             <h3 class="text-lg font-semibold mb-3">Connexion WebSocket</h3>
-            <div class="flex gap-2 mb-3">
-              <button 
-                @click="connectWs" 
-                class="btn-primary"
-                :disabled="wsConnected"
-              >
-                Connecter
-              </button>
-              <button 
-                @click="disconnectWs" 
-                class="btn-danger"
-                :disabled="!wsConnected"
-              >
-                Déconnecter
-              </button>
+            <div class="space-y-3">
+              <div class="flex gap-2">
+                <button 
+                  @click="connectWs" 
+                  class="btn-primary flex-1"
+                  :disabled="wsConnected"
+                >
+                  🔌 Connecter
+                </button>
+                <button 
+                  @click="disconnectWs" 
+                  class="btn-danger flex-1"
+                  :disabled="!wsConnected"
+                >
+                  🔴 Déconnecter
+                </button>
+              </div>
+              
+              <div class="flex items-center justify-between p-3 bg-black/30 rounded-lg">
+                <span class="text-sm text-gray-400">Statut:</span>
+                <span 
+                  :class="[
+                    'px-3 py-1 rounded-full text-sm font-semibold',
+                    wsConnected 
+                      ? 'bg-green-500/20 text-green-400' 
+                      : 'bg-red-500/20 text-red-400'
+                  ]"
+                >
+                  {{ wsConnected ? '🟢 Connecté' : '🔴 Déconnecté' }}
+                </span>
+              </div>
+
+              <div class="text-xs text-gray-500">
+                URL: {{ wsUrl }}
+              </div>
+
+              <!-- Erreur de connexion -->
+              <div v-if="wsError && !wsConnected" class="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+                <p class="text-sm text-red-400">⚠️ {{ wsError }}</p>
+                <p class="text-xs text-gray-500 mt-1">
+                  💡 Assurez-vous que le backend est démarré
+                </p>
+              </div>
             </div>
-            <div class="mb-3">
-              <span 
-                :class="[
-                  'px-3 py-1 rounded-full text-sm',
-                  wsConnected 
-                    ? 'bg-green-500/20 text-green-400' 
-                    : 'bg-red-500/20 text-red-400'
-                ]"
-              >
-                {{ wsConnected ? '🟢 Connecté' : '🔴 Déconnecté' }}
-              </span>
+          </div>
+
+          <!-- Channels -->
+          <div class="api-card">
+            <h3 class="text-lg font-semibold mb-3">Canaux (Channels)</h3>
+            <div class="space-y-2">
+              <div class="flex items-center justify-between p-2 bg-black/30 rounded">
+                <div>
+                  <span class="font-mono text-violet-mystique">observations</span>
+                  <p class="text-xs text-gray-500">Créations/Modifs/Suppressions d'observations</p>
+                </div>
+                <span class="text-xs text-green-400">📡 Auto</span>
+              </div>
+              <div class="flex items-center justify-between p-2 bg-black/30 rounded">
+                <div>
+                  <span class="font-mono text-violet-mystique">comments</span>
+                  <p class="text-xs text-gray-500">Créations/Modifs/Suppressions de commentaires</p>
+                </div>
+                <span class="text-xs text-green-400">📡 Auto</span>
+              </div>
+              <p class="text-xs text-gray-500 mt-2">
+                ℹ️ Souscription automatique à la connexion
+              </p>
             </div>
           </div>
 
           <!-- Messages -->
-          <div class="api-card">
-            <h3 class="text-lg font-semibold mb-3">Messages WebSocket ({{ wsMessages.length }})</h3>
-            <button @click="clearWsMessages" class="btn-secondary mb-3">
-              Effacer les messages
-            </button>
+          <div class="api-card md:col-span-2">
+            <div class="flex justify-between items-center mb-3">
+              <h3 class="text-lg font-semibold">Messages en temps réel ({{ wsMessages.length }})</h3>
+              <button @click="clearWsMessages" class="btn-secondary">
+                🗑️ Effacer
+              </button>
+            </div>
+            
             <div class="result-box max-h-96 overflow-y-auto">
-              <div v-if="wsMessages.length === 0" class="text-gray-500">
-                Aucun message reçu
+              <div v-if="wsMessages.length === 0" class="text-center text-gray-500 py-8">
+                <p class="text-2xl mb-2">📭</p>
+                <p>Aucun message reçu</p>
+                <p class="text-xs mt-2">Créez une observation ou un commentaire pour voir les événements en temps réel</p>
               </div>
-              <div v-for="(msg, index) in wsMessages" :key="index" class="mb-2 pb-2 border-b border-gray-700 last:border-0">
-                <div class="text-xs text-gray-500 mb-1">{{ msg.timestamp }}</div>
-                <pre class="text-sm">{{ JSON.stringify(msg, null, 2) }}</pre>
+              <div v-for="(msg, index) in wsMessages" :key="index" class="mb-3 pb-3 border-b border-gray-700 last:border-0">
+                <div class="flex items-center justify-between mb-2">
+                  <span 
+                    :class="[
+                      'px-2 py-1 rounded text-xs font-mono',
+                      msg.type?.includes('created') ? 'bg-green-500/20 text-green-400' :
+                      msg.type?.includes('updated') ? 'bg-blue-500/20 text-blue-400' :
+                      msg.type?.includes('deleted') ? 'bg-red-500/20 text-red-400' :
+                      'bg-gray-500/20 text-gray-400'
+                    ]"
+                  >
+                    {{ msg.type }}
+                  </span>
+                  <span class="text-xs text-gray-500">{{ msg.timestamp || msg.receivedAt }}</span>
+                </div>
+                <pre class="text-sm bg-black/30 p-2 rounded overflow-x-auto">{{ JSON.stringify(msg.data, null, 2) }}</pre>
               </div>
             </div>
           </div>
@@ -612,14 +840,18 @@ import { useWebSocket } from '../composables/useWebSocket'
 
 // Configuration
 const apiUrl = computed(() => import.meta.env.VITE_API_URL || 'http://localhost:3000/api')
+const wsUrl = computed(() => import.meta.env.VITE_WS_URL || 'ws://localhost:3000')
 
 // État
 const healthStatus = ref(null)
 const results = ref({})
 const selectedFile = ref(null)
+const observationImageInput = ref(null)
+const currentUser = ref(null) // Utilisateur connecté
+const currentToken = ref(localStorage.getItem('token') || null) // Token JWT
 
 // WebSocket
-const { connected: wsConnected, messages: wsMessages, connect, disconnect, clearMessages } = useWebSocket()
+const { connected: wsConnected, messages: wsMessages, error: wsError, connect, disconnect, clearMessages } = useWebSocket()
 
 // Sections
 const sections = [
@@ -641,19 +873,37 @@ const authForms = ref({
 
 const userForms = ref({
   update: { username: '', bio: '' },
-  password: { currentPassword: '', newPassword: '' }
+  password: { currentPassword: '', newPassword: '', confirmPassword: '' }
 })
 
 const observationForms = ref({
-  list: { limit: 10, page: 1 },
-  create: { title: '', description: '', location: '', date: '' },
+  list: { 
+    page: 1, 
+    limit: 10, 
+    search: '', 
+    sortBy: 'createdAt', 
+    order: 'desc' 
+  },
+  create: { 
+    title: '', 
+    description: '', 
+    longitude: null, 
+    latitude: null,
+    imageFile: null,
+    imagePreview: null,
+    locationError: ''
+  },
   getOne: { id: '' },
   update: { id: '', title: '' },
   delete: { id: '' }
 })
 
 const commentForms = ref({
-  list: { observationId: '' },
+  list: { 
+    observationId: '', 
+    page: 1, 
+    limit: 10 
+  },
   create: { observationId: '', text: '' },
   delete: { id: '' }
 })
@@ -664,9 +914,16 @@ const imageForms = ref({
 })
 
 const adminForms = ref({
-  posts: { status: '' },
-  approve: { id: '' },
-  reject: { id: '' }
+  users: { 
+    page: 1, 
+    limit: 10, 
+    search: '', 
+    role: '' 
+  },
+  updateRole: { userId: '', role: '' },
+  deleteObservation: { id: '' },
+  deleteComment: { id: '' },
+  userDetails: { id: '' }
 })
 
 // Méthodes - Santé & Stats
@@ -695,10 +952,39 @@ async function testLogin() {
   try {
     const response = await authService.login(authForms.value.login)
     results.value.login = response
-    if (response.data?.token) {
-      localStorage.setItem('token', response.data.token)
+    
+    console.log('📦 Réponse login complète:', response)
+    
+    // Stocker le token et l'utilisateur
+    // La structure est: { success: true, data: { user, accessToken, refreshToken } }
+    const token = response.data?.accessToken || response.data?.token
+    const user = response.data?.user
+    
+    if (token) {
+      currentToken.value = token
+      localStorage.setItem('token', token)
+      console.log('✅ Token stocké:', token.substring(0, 20) + '...')
+      
+      // Stocker aussi le refreshToken
+      if (response.data?.refreshToken) {
+        localStorage.setItem('refreshToken', response.data.refreshToken)
+      }
+    } else {
+      console.error('❌ Aucun token trouvé dans la réponse')
     }
+    
+    // Récupérer et stocker les infos utilisateur
+    if (user) {
+      currentUser.value = user
+      localStorage.setItem('user', JSON.stringify(user))
+      console.log('✅ Utilisateur stocké:', user.username || user.email)
+    } else {
+      console.error('❌ Aucun utilisateur trouvé dans la réponse')
+    }
+    
+    console.log('✅ Connecté avec succès')
   } catch (error) {
+    console.error('❌ Erreur login:', error)
     results.value.login = { error: error.response?.data || error.message }
   }
 }
@@ -721,11 +1007,34 @@ async function getProfile() {
   }
 }
 
+function debugLocalStorage() {
+  const token = localStorage.getItem('token')
+  const refreshToken = localStorage.getItem('refreshToken')
+  const user = localStorage.getItem('user')
+  
+  results.value.debug = {
+    token: token ? token.substring(0, 30) + '... (' + token.length + ' chars)' : 'null',
+    refreshToken: refreshToken ? refreshToken.substring(0, 30) + '... (' + refreshToken.length + ' chars)' : 'null',
+    user: user ? JSON.parse(user) : 'null',
+    currentUser: currentUser.value,
+    currentToken: currentToken.value ? currentToken.value.substring(0, 30) + '...' : 'null'
+  }
+  
+  console.log('🔍 Debug localStorage:', results.value.debug)
+}
+
 async function testLogout() {
   try {
     const response = await authService.logout()
     results.value.logout = response
+    
+    // Nettoyer les données locales
+    currentToken.value = null
+    currentUser.value = null
     localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    
+    console.log('👋 Déconnecté avec succès')
   } catch (error) {
     results.value.logout = { error: error.response?.data || error.message }
   }
@@ -743,11 +1052,129 @@ async function updateProfile() {
 
 async function changePassword() {
   try {
+    // Validation côté client
+    const { currentPassword, newPassword, confirmPassword } = userForms.value.password
+    
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      results.value.changePassword = {
+        error: {
+          success: false,
+          error: 'Tous les champs sont requis'
+        }
+      }
+      return
+    }
+    
+    if (newPassword !== confirmPassword) {
+      results.value.changePassword = {
+        error: {
+          success: false,
+          error: 'Les mots de passe ne correspondent pas'
+        }
+      }
+      return
+    }
+    
+    if (newPassword.length < 6) {
+      results.value.changePassword = {
+        error: {
+          success: false,
+          error: 'Le nouveau mot de passe doit contenir au moins 6 caractères'
+        }
+      }
+      return
+    }
+    
+    // Debug: vérifier le token
+    const token = localStorage.getItem('token')
+    console.log('🔑 Token présent:', !!token)
+    console.log('📝 Données envoyées:', { currentPassword: '***', newPassword: '***', confirmPassword: '***' })
+    
     const response = await userService.changePassword(userForms.value.password)
     results.value.changePassword = response
+    
+    // Réinitialiser le formulaire en cas de succès
+    if (response.success) {
+      userForms.value.password = { currentPassword: '', newPassword: '', confirmPassword: '' }
+      console.log('✅ Mot de passe changé avec succès')
+    }
   } catch (error) {
+    console.error('❌ Erreur changement mot de passe:', error)
     results.value.changePassword = { error: error.response?.data || error.message }
   }
+}
+
+// Méthodes - Géolocalisation et upload
+function getGeolocation() {
+  observationForms.value.create.locationError = ''
+  
+  if (!navigator.geolocation) {
+    observationForms.value.create.locationError = '❌ Géolocalisation non supportée par ce navigateur'
+    return
+  }
+
+  observationForms.value.create.locationError = '🔄 Détection en cours...'
+  
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      observationForms.value.create.longitude = position.coords.longitude
+      observationForms.value.create.latitude = position.coords.latitude
+      observationForms.value.create.locationError = `✅ Position détectée: ${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)}`
+    },
+    (error) => {
+      let errorMsg = '❌ '
+      switch (error.code) {
+        case error.PERMISSION_DENIED:
+          errorMsg += 'Permission refusée. Autorisez la géolocalisation dans les paramètres.'
+          break
+        case error.POSITION_UNAVAILABLE:
+          errorMsg += 'Position non disponible.'
+          break
+        case error.TIMEOUT:
+          errorMsg += 'Délai de détection dépassé.'
+          break
+        default:
+          errorMsg += 'Erreur inconnue.'
+      }
+      observationForms.value.create.locationError = errorMsg
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0
+    }
+  )
+}
+
+function handleObservationImageSelect(event) {
+  const file = event.target.files[0]
+  if (!file) return
+
+  // Validation du fichier
+  const validTypes = ['image/jpeg', 'image/png', 'image/webp']
+  const maxSize = 10 * 1024 * 1024 // 10 MB
+
+  if (!validTypes.includes(file.type)) {
+    results.value.createObservation = { error: 'Format non valide. Utilisez JPEG, PNG ou WebP.' }
+    event.target.value = ''
+    return
+  }
+
+  if (file.size > maxSize) {
+    results.value.createObservation = { error: 'Fichier trop volumineux. Max: 10 MB.' }
+    event.target.value = ''
+    return
+  }
+
+  // Stocker le fichier
+  observationForms.value.create.imageFile = file
+
+  // Créer un aperçu
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    observationForms.value.create.imagePreview = e.target.result
+  }
+  reader.readAsDataURL(file)
 }
 
 // Méthodes - Observations
@@ -762,8 +1189,55 @@ async function getObservations() {
 
 async function createObservation() {
   try {
-    const response = await observationService.create(observationForms.value.create)
-    results.value.createObservation = response
+    // Validation
+    if (!observationForms.value.create.imageFile) {
+      results.value.createObservation = { error: 'Une photo est requise' }
+      return
+    }
+    
+    if (!observationForms.value.create.longitude || !observationForms.value.create.latitude) {
+      results.value.createObservation = { error: 'La localisation GPS est requise' }
+      return
+    }
+
+    // Étape 1: Créer l'observation SANS image
+    results.value.createObservation = { status: 'Création de l\'observation...' }
+    
+    const observationData = {
+      title: observationForms.value.create.title,
+      description: observationForms.value.create.description,
+      location: {
+        type: 'Point',
+        coordinates: [
+          observationForms.value.create.longitude,
+          observationForms.value.create.latitude
+        ]
+      }
+    }
+    
+    const observationResponse = await observationService.create(observationData)
+    const observationId = observationResponse.data?.id || observationResponse.data?._id
+    
+    // Étape 2: Uploader l'image pour cette observation
+    results.value.createObservation = { status: 'Upload de l\'image...' }
+    
+    await imageService.uploadToObservation(observationId, observationForms.value.create.imageFile)
+    
+    // Récupérer l'observation complète avec l'image
+    const finalObservation = await observationService.getById(observationId)
+    results.value.createObservation = finalObservation
+    
+    // Reset du formulaire
+    observationForms.value.create = {
+      title: '',
+      description: '',
+      longitude: null,
+      latitude: null,
+      imageFile: null,
+      imagePreview: null,
+      locationError: ''
+    }
+    
   } catch (error) {
     results.value.createObservation = { error: error.response?.data || error.message }
   }
@@ -800,7 +1274,9 @@ async function deleteObservation() {
 // Méthodes - Comments
 async function getComments() {
   try {
-    const response = await commentService.getByObservation(commentForms.value.list.observationId)
+    const { observationId, page, limit } = commentForms.value.list
+    const params = { page, limit }
+    const response = await commentService.getByObservation(observationId, params)
     results.value.comments = response
   } catch (error) {
     results.value.comments = { error: error.response?.data || error.message }
@@ -872,44 +1348,55 @@ async function getAdminStats() {
 
 async function getAllUsers() {
   try {
-    const response = await adminService.getUsers()
+    const params = adminForms.value.users
+    const response = await adminService.getUsers(params)
     results.value.allUsers = response
   } catch (error) {
     results.value.allUsers = { error: error.response?.data || error.message }
   }
 }
 
-async function getAllPosts() {
+async function updateUserRole() {
   try {
-    const response = await adminService.getPosts(adminForms.value.posts.status || null)
-    results.value.allPosts = response
+    const { userId, role } = adminForms.value.updateRole
+    const response = await adminService.updateUserRole(userId, role)
+    results.value.updateUserRole = response
   } catch (error) {
-    results.value.allPosts = { error: error.response?.data || error.message }
+    results.value.updateUserRole = { error: error.response?.data || error.message }
   }
 }
 
-async function approvePost() {
+async function deleteObservationAdmin() {
   try {
-    const response = await adminService.approvePost(adminForms.value.approve.id)
-    results.value.approvePost = response
+    const response = await adminService.deleteObservation(adminForms.value.deleteObservation.id)
+    results.value.deleteObservationAdmin = response
   } catch (error) {
-    results.value.approvePost = { error: error.response?.data || error.message }
+    results.value.deleteObservationAdmin = { error: error.response?.data || error.message }
   }
 }
 
-async function rejectPost() {
+async function deleteCommentAdmin() {
   try {
-    const response = await adminService.rejectPost(adminForms.value.reject.id)
-    results.value.rejectPost = response
+    const response = await adminService.deleteComment(adminForms.value.deleteComment.id)
+    results.value.deleteCommentAdmin = response
   } catch (error) {
-    results.value.rejectPost = { error: error.response?.data || error.message }
+    results.value.deleteCommentAdmin = { error: error.response?.data || error.message }
+  }
+}
+
+async function getUserDetails() {
+  try {
+    const response = await adminService.getUserDetails(adminForms.value.userDetails.id)
+    results.value.userDetails = response
+  } catch (error) {
+    results.value.userDetails = { error: error.response?.data || error.message }
   }
 }
 
 // Méthodes - WebSocket
 function connectWs() {
-  const token = localStorage.getItem('token')
-  connect(token)
+  // Pas besoin de token pour WsMini PubSub (canaux en lecture seule)
+  connect()
 }
 
 function disconnectWs() {
@@ -928,6 +1415,18 @@ function scrollToSection(sectionId) {
 // Lifecycle
 onMounted(() => {
   checkHealth()
+  
+  // Charger l'utilisateur depuis localStorage au démarrage
+  const savedUser = localStorage.getItem('user')
+  if (savedUser) {
+    try {
+      currentUser.value = JSON.parse(savedUser)
+      console.log('👤 Utilisateur chargé:', currentUser.value)
+    } catch (error) {
+      console.error('Erreur lors du chargement de l\'utilisateur:', error)
+      localStorage.removeItem('user')
+    }
+  }
 })
 </script>
 
