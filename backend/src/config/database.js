@@ -21,6 +21,9 @@ const connectDB = async () => {
 
     // Désactiver autoIndex en production (performances + sécurité)
     mongoose.set('autoIndex', process.env.NODE_ENV !== 'production');
+    
+    // Timeout pour les requêtes (protection DoS)
+    mongoose.set('maxTimeMS', 10000); // 10 secondes max par requête
 
     const options = {
       maxPoolSize: 10,

@@ -57,6 +57,9 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const API_PREFIX = process.env.API_PREFIX || '/api/v1';
 
+// Trust proxy pour obtenir la vraie IP derrière un reverse proxy (Render, Nginx, etc.)
+app.set('trust proxy', 1);
+
 // Middleware de logging
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
@@ -64,9 +67,46 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('combined'));
 }
 
-// Middleware de sécurité
+// Middleware de sécurité - Configuration Helmet renforcée
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: 'cross-origin' }
+  // Content Security Policy
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"], // unsafe-inline requis pour Swagger UI
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'self'", "https://studio.asyncapi.com"], // Pour AsyncAPI iframe
+    },
+  },
+  // Cross-Origin policies
+  crossOriginEmbedderPolicy: false, // Désactivé pour compatibilité
+  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  // DNS Prefetch Control
+  dnsPrefetchControl: { allow: false },
+  // Frameguard - Empêche l'utilisation dans des iframes
+  frameguard: { action: "deny" },
+  // Masquer X-Powered-By
+  hidePoweredBy: true,
+  // HTTP Strict Transport Security (HSTS) - Force HTTPS
+  hsts: {
+    maxAge: 31536000, // 1 an
+    includeSubDomains: true,
+    preload: true
+  },
+  // IE No Open - Protection IE8+
+  ieNoOpen: true,
+  // X-Content-Type-Options - Empêche MIME sniffing
+  noSniff: true,
+  // Referrer Policy
+  referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+  // XSS Filter
+  xssFilter: true,
 }));
 
 app.use(cors({

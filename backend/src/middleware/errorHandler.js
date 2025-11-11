@@ -26,9 +26,9 @@ export const errorHandler = (err, req, res, _next) => {
 
   // Erreur de duplication (clé unique)
   if (err.code === 11000) {
-    const field = Object.keys(err.keyPattern)[0];
-    error.message = `${field} existe déjà`;
-    return res.status(400).json({
+    // Ne pas exposer les noms de champs de base de données pour des raisons de sécurité
+    error.message = 'Cette ressource existe déjà';
+    return res.status(409).json({
       success: false,
       error: error.message
     });

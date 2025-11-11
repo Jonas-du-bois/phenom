@@ -17,7 +17,9 @@ export const signupValidation = [
 
   body('password')
     .notEmpty().withMessage('Le mot de passe est requis')
-    .isLength({ min: 6 }).withMessage('Le mot de passe doit contenir au moins 6 caractères')
+    .isLength({ min: 8 }).withMessage('Le mot de passe doit contenir au moins 8 caractères')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+    .withMessage('Le mot de passe doit contenir au moins une minuscule, une majuscule et un chiffre')
 ];
 
 /**
@@ -55,5 +57,7 @@ export const resetPasswordValidation = [
 
   body('newPassword')
     .notEmpty().withMessage('Le nouveau mot de passe est requis')
-    .isLength({ min: 6 }).withMessage('Le mot de passe doit contenir au moins 6 caractères')
+    .isLength({ min: 8 }).withMessage('Le mot de passe doit contenir au moins 8 caractères')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+    .withMessage('Le mot de passe doit contenir au moins une minuscule, une majuscule et un chiffre')
 ];

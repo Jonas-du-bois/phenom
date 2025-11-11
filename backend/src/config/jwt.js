@@ -17,9 +17,11 @@ export const validateJwtConfig = () => {
   if (process.env.NODE_ENV === 'production') {
     if (process.env.JWT_SECRET.length < 32) {
       console.warn('⚠️  JWT_SECRET devrait avoir au moins 32 caractères en production');
+      throw new Error('JWT_SECRET trop court pour la production (minimum 32 caractères)');
     }
     if (process.env.JWT_REFRESH_SECRET.length < 32) {
       console.warn('⚠️  JWT_REFRESH_SECRET devrait avoir au moins 32 caractères en production');
+      throw new Error('JWT_REFRESH_SECRET trop court pour la production (minimum 32 caractères)');
     }
   }
 };
