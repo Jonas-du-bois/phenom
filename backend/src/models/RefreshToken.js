@@ -74,7 +74,7 @@ refreshTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
  * @param {Object} metadata - Métadonnées (userAgent, ip)
  * @returns {Promise<RefreshToken>}
  */
-refreshTokenSchema.statics.createToken = async function(userId, token, expiresAt, metadata = {}) {
+refreshTokenSchema.statics.createToken = async function (userId, token, expiresAt, metadata = {}) {
   return await this.create({
     userId,
     token,
@@ -89,13 +89,13 @@ refreshTokenSchema.statics.createToken = async function(userId, token, expiresAt
  * @param {string} token - Token à vérifier
  * @returns {Promise<boolean>}
  */
-refreshTokenSchema.statics.isValid = async function(token) {
+refreshTokenSchema.statics.isValid = async function (token) {
   const refreshToken = await this.findOne({
     token,
     isRevoked: false,
     expiresAt: { $gt: new Date() }
   });
-  
+
   return !!refreshToken;
 };
 
@@ -105,7 +105,7 @@ refreshTokenSchema.statics.isValid = async function(token) {
  * @param {string} reason - Raison de la révocation
  * @returns {Promise<boolean>}
  */
-refreshTokenSchema.statics.revokeToken = async function(token, reason = 'Manual revocation') {
+refreshTokenSchema.statics.revokeToken = async function (token, reason = 'Manual revocation') {
   const result = await this.updateOne(
     { token },
     {
@@ -116,7 +116,7 @@ refreshTokenSchema.statics.revokeToken = async function(token, reason = 'Manual 
       }
     }
   );
-  
+
   return result.modifiedCount > 0;
 };
 
@@ -126,7 +126,7 @@ refreshTokenSchema.statics.revokeToken = async function(token, reason = 'Manual 
  * @param {string} reason - Raison de la révocation
  * @returns {Promise<number>} Nombre de tokens révoqués
  */
-refreshTokenSchema.statics.revokeAllUserTokens = async function(userId, reason = 'User logout from all devices') {
+refreshTokenSchema.statics.revokeAllUserTokens = async function (userId, reason = 'User logout from all devices') {
   const result = await this.updateMany(
     { userId, isRevoked: false },
     {
@@ -137,7 +137,7 @@ refreshTokenSchema.statics.revokeAllUserTokens = async function(userId, reason =
       }
     }
   );
-  
+
   return result.modifiedCount;
 };
 
@@ -145,11 +145,11 @@ refreshTokenSchema.statics.revokeAllUserTokens = async function(userId, reason =
  * Méthode statique pour nettoyer les tokens expirés
  * @returns {Promise<number>} Nombre de tokens supprimés
  */
-refreshTokenSchema.statics.cleanupExpired = async function() {
+refreshTokenSchema.statics.cleanupExpired = async function () {
   const result = await this.deleteMany({
     expiresAt: { $lt: new Date() }
   });
-  
+
   return result.deletedCount;
 };
 
@@ -158,20 +158,20 @@ refreshTokenSchema.statics.cleanupExpired = async function() {
  * @param {string} userId - ID de l'utilisateur
  * @returns {Promise<Array>}
  */
-refreshTokenSchema.statics.getUserSessions = async function(userId) {
+refreshTokenSchema.statics.getUserSessions = async function (userId) {
   return await this.find({
     userId,
     isRevoked: false,
     expiresAt: { $gt: new Date() }
   })
-  .select('userAgent ipAddress createdAt lastUsedAt')
-  .sort({ lastUsedAt: -1 });
+    .select('userAgent ipAddress createdAt lastUsedAt')
+    .sort({ lastUsedAt: -1 });
 };
 
 /**
  * Méthode d'instance pour mettre à jour la dernière utilisation
  */
-refreshTokenSchema.methods.updateLastUsed = async function() {
+refreshTokenSchema.methods.updateLastUsed = async function () {
   this.lastUsedAt = new Date();
   return await this.save();
 };

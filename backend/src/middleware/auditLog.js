@@ -39,7 +39,7 @@ export const logAuditEvent = (action, details, req) => {
 export const auditLogin = (req, res, next) => {
   // Intercepter la réponse pour vérifier le succès
   const originalJson = res.json;
-  res.json = function(data) {
+  res.json = function (data) {
     if (data.success && req.path.includes('/login')) {
       logAuditEvent('LOGIN_SUCCESS', {
         email: req.body.email
@@ -65,7 +65,7 @@ export const auditFailedLogin = (email, req) => {
  */
 export const auditSignup = (req, res, next) => {
   const originalJson = res.json;
-  res.json = function(data) {
+  res.json = function (data) {
     if (data.success && req.path.includes('/signup')) {
       logAuditEvent('SIGNUP', {
         email: req.body.email,
@@ -117,7 +117,7 @@ export const auditAdminDelete = (resourceType, resourceId, req) => {
  */
 export const auditTokenRefresh = (req, res, next) => {
   const originalJson = res.json;
-  res.json = function(data) {
+  res.json = function (data) {
     if (data.success && req.path.includes('/refresh-token')) {
       logAuditEvent('TOKEN_REFRESH', {
         // Ne pas logger le token lui-même pour des raisons de sécurité
