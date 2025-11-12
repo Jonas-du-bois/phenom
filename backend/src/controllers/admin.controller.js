@@ -61,7 +61,7 @@ class AdminController {
     try {
       await adminService.deleteObservation(req.params.id);
 
-      return res.status(204).send();
+      return successResponse(res, {}, 'Observation supprimée avec succès');
     } catch (error) {
       if (error.message === 'OBSERVATION_NOT_FOUND') {
         return notFoundResponse(res, 'Observation non trouvée');
@@ -78,7 +78,7 @@ class AdminController {
     try {
       await adminService.deleteComment(req.params.id);
 
-      return res.status(204).send();
+      return successResponse(res, {}, 'Commentaire supprimé avec succès');
     } catch (error) {
       if (error.message === 'COMMENT_NOT_FOUND') {
         return notFoundResponse(res, 'Commentaire non trouvé');

@@ -89,7 +89,7 @@ class UserController {
       const userId = req.user._id;
       await userService.deleteAccount(userId);
 
-      return res.status(204).send();
+      return successResponse(res, {}, 'Compte supprimé avec succès');
     } catch (error) {
       if (error.message === 'USER_NOT_FOUND') {
         return notFoundResponse(res, 'Utilisateur non trouvé');

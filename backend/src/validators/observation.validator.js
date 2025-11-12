@@ -6,13 +6,13 @@ import { body, query, param } from 'express-validator';
 export const createObservationValidation = [
   body('title')
     .trim()
-    .escape() // Échapper HTML pour prévenir XSS
+    .escape()
     .notEmpty().withMessage('Le titre est requis')
     .isLength({ min: 3, max: 100 }).withMessage('Le titre doit contenir entre 3 et 100 caractères'),
 
   body('description')
     .trim()
-    .escape() // Échapper HTML pour prévenir XSS
+    .escape()
     .notEmpty().withMessage('La description est requise')
     .isLength({ min: 10, max: 2000 }).withMessage('La description doit contenir entre 10 et 2000 caractères'),
 
@@ -23,7 +23,28 @@ export const createObservationValidation = [
     .isFloat({ min: -180, max: 180 }).withMessage('La longitude doit être entre -180 et 180'),
 
   body('location.coordinates.1')
-    .isFloat({ min: -90, max: 90 }).withMessage('La latitude doit être entre -90 et 90')
+    .isFloat({ min: -90, max: 90 }).withMessage('La latitude doit être entre -90 et 90'),
+
+  body('date')
+    .optional()
+    .isISO8601().withMessage('Date invalide'),
+
+  body('type')
+    .optional()
+    .isIn([
+      'WAV', 'TCH', 'HST', 'SND', 'ODD', 'LND', 'SUB', 'OBS', 'RAY', 'SIG',
+      'ANI', 'HUM', 'INJ', 'VEH', 'BLD', 'DRT', 'VEG', 'PHT', 'RDA', 'TRC',
+      'NOC', 'CMF', 'MID', 'CNT', 'OID', 'COV', 'OGA'
+    ])
+    .withMessage('Type invalide'),
+
+  body('tags')
+    .optional()
+    .isArray().withMessage('Les tags doivent être un tableau')
+    .custom((tags) => {
+      if (!Array.isArray(tags)) return false;
+      return tags.every(tag => typeof tag === 'string' && tag.length >= 2 && tag.length <= 30);
+    }).withMessage('Chaque tag doit contenir entre 2 et 30 caractères')
 ];
 
 /**
@@ -36,14 +57,48 @@ export const updateObservationValidation = [
   body('title')
     .optional()
     .trim()
-    .escape() // Échapper HTML pour prévenir XSS
+    .escape()
     .isLength({ min: 3, max: 100 }).withMessage('Le titre doit contenir entre 3 et 100 caractères'),
 
   body('description')
     .optional()
     .trim()
-    .escape() // Échapper HTML pour prévenir XSS
-    .isLength({ min: 10, max: 2000 }).withMessage('La description doit contenir entre 10 et 2000 caractères')
+    .escape()
+    .isLength({ min: 10, max: 2000 }).withMessage('La description doit contenir entre 10 et 2000 caractères'),
+
+  body('date')
+    .optional()
+    .isISO8601().withMessage('Date invalide'),
+
+  body('type')
+    .optional()
+    .isIn([
+      'WAV', 'TCH', 'HST', 'SND', 'ODD', 'LND', 'SUB', 'OBS', 'RAY', 'SIG',
+      'ANI', 'HUM', 'INJ', 'VEH', 'BLD', 'DRT', 'VEG', 'PHT', 'RDA', 'TRC',
+      'NOC', 'CMF', 'MID', 'CNT', 'OID', 'COV', 'OGA'
+    ])
+    .withMessage('Type invalide'),
+
+  body('tags')
+    .optional()
+    .isArray().withMessage('Les tags doivent être un tableau')
+    .custom((tags) => {
+      if (!Array.isArray(tags)) return false;
+      return tags.every(tag => typeof tag === 'string' && tag.length >= 2 && tag.length <= 30);
+    }).withMessage('Chaque tag doit contenir entre 2 et 30 caractères'),
+
+  body('location.type')
+    .optional()
+    .equals('Point').withMessage('Le type de localisation doit être "Point"'),
+
+  body('location.coordinates')
+    .optional()
+    .isArray({ min: 2, max: 2 }).withMessage('Les coordonnées doivent être un tableau de 2 éléments')
+    .custom((value) => {
+      if (!Array.isArray(value) || value.length !== 2) return false;
+      const [lng, lat] = value;
+      return lng >= -180 && lng <= 180 && lat >= -90 && lat <= 90;
+    }).withMessage('Coordonnées invalides. Format: [longitude, latitude]')
 ];
 
 /**

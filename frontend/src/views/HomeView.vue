@@ -28,7 +28,7 @@
             v-if="currentUser"
             class="px-3 py-1 bg-violet-500/20 text-violet-400 rounded-full"
           >
-            👤 {{ currentUser.username || currentUser.email }}
+            👤 {{ currentUser.name || currentUser.email }}
             <span v-if="currentUser.role === 'admin'" class="ml-1">👑</span>
           </span>
           <span 
@@ -108,9 +108,9 @@
             <h3 class="text-lg font-semibold mb-3">Register</h3>
             <div class="space-y-2 mb-3">
               <input
-                v-model="authForms.register.username"
+                v-model="authForms.register.name"
                 type="text"
-                placeholder="Username"
+                placeholder="Nom"
                 class="input-field"
               />
               <input
@@ -170,9 +170,9 @@
             <h3 class="text-lg font-semibold mb-3">Mettre à jour le profil</h3>
             <div class="space-y-2 mb-3">
               <input
-                v-model="userForms.update.username"
+                v-model="userForms.update.name"
                 type="text"
-                placeholder="Nouveau username"
+                placeholder="Nouveau nom"
                 class="input-field"
               />
               <textarea
@@ -290,6 +290,57 @@
                 class="input-field"
                 rows="3"
               ></textarea>
+
+              <!-- Date d'observation -->
+              <div class="space-y-1">
+                <label class="text-sm text-gray-400">📅 Date de l'observation (optionnel)</label>
+                <input
+                  v-model="observationForms.create.date"
+                  type="datetime-local"
+                  class="input-field"
+                />
+              </div>
+
+              <!-- Type d'observation -->
+              <div class="space-y-1">
+                <label class="text-sm text-gray-400">🏷️ Type d'observation</label>
+                <select
+                  v-model="observationForms.create.type"
+                  class="input-field"
+                >
+                  <option value="">Sélectionner un type...</option>
+                  <option 
+                    v-for="option in OBSERVATION_TYPE_OPTIONS" 
+                    :key="option.value" 
+                    :value="option.value"
+                    :title="option.description"
+                  >
+                    {{ option.label }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Tags personnalisés -->
+              <div class="space-y-1">
+                <label class="text-sm text-gray-400">🔖 Tags personnalisés</label>
+                <input
+                  v-model="observationForms.create.newTag"
+                  type="text"
+                  placeholder="Ajouter un tag (2-30 caractères)"
+                  class="input-field"
+                  @keypress.enter.prevent="addTagToCreate"
+                />
+                <div v-if="observationForms.create.tags.length > 0" class="flex flex-wrap gap-2 mt-2">
+                  <span
+                    v-for="(tag, index) in observationForms.create.tags"
+                    :key="index"
+                    class="px-2 py-1 bg-violet-500/20 text-violet-400 rounded text-sm flex items-center gap-1"
+                  >
+                    {{ tag }}
+                    <button @click="removeTagFromCreate(index)" class="hover:text-red-400">×</button>
+                  </span>
+                </div>
+              </div>
               
               <!-- Localisation GPS -->
               <div class="space-y-2">
@@ -391,6 +442,69 @@
                 placeholder="Nouveau titre"
                 class="input-field"
               />
+              <textarea
+                v-model="observationForms.update.description"
+                placeholder="Nouvelle description"
+                class="input-field"
+                rows="3"
+              ></textarea>
+              <input
+                v-model="observationForms.update.date"
+                type="datetime-local"
+                placeholder="Date de l'observation"
+                class="input-field"
+              />
+              <select
+                v-model="observationForms.update.type"
+                class="input-field"
+              >
+                <option value="">Type (optionnel)</option>
+                <option
+                  v-for="option in OBSERVATION_TYPE_OPTIONS"
+                  :key="option.value"
+                  :value="option.value"
+                  :title="option.description"
+                >
+                  {{ option.label }}
+                </option>
+              </select>
+              <!-- Tags personnalisés -->
+              <div class="space-y-1">
+                <label class="text-sm text-gray-400">🔖 Tags personnalisés</label>
+                <input
+                  v-model="observationForms.update.newTag"
+                  type="text"
+                  placeholder="Ajouter un tag (2-30 caractères)"
+                  class="input-field"
+                  @keypress.enter.prevent="addTagToUpdate"
+                />
+                <div v-if="observationForms.update.tags.length > 0" class="flex flex-wrap gap-2 mt-2">
+                  <span
+                    v-for="(tag, index) in observationForms.update.tags"
+                    :key="index"
+                    class="px-2 py-1 bg-violet-500/20 text-violet-400 rounded text-sm flex items-center gap-1"
+                  >
+                    {{ tag }}
+                    <button @click="removeTagFromUpdate(index)" class="hover:text-red-400">×</button>
+                  </span>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <input
+                  v-model.number="observationForms.update.longitude"
+                  type="number"
+                  step="0.000001"
+                  placeholder="Longitude (optionnel)"
+                  class="input-field"
+                />
+                <input
+                  v-model.number="observationForms.update.latitude"
+                  type="number"
+                  step="0.000001"
+                  placeholder="Latitude (optionnel)"
+                  class="input-field"
+                />
+              </div>
             </div>
             <button @click="updateObservation" class="btn-primary mb-3">
               Modifier
@@ -837,10 +951,11 @@ import { imageService } from '../services/imageService'
 import { adminService } from '../services/adminService'
 import { statsService } from '../services/statsService'
 import { useWebSocket } from '../composables/useWebSocket'
+import { OBSERVATION_TYPE_OPTIONS } from '../constants/observationTypes'
 
 // Configuration
-const apiUrl = computed(() => import.meta.env.VITE_API_URL || 'http://localhost:3000/api')
-const wsUrl = computed(() => import.meta.env.VITE_WS_URL || 'ws://localhost:3000')
+const apiUrl = computed(() => import.meta.env.VITE_API_BASE_URL)
+const wsUrl = computed(() => import.meta.env.VITE_WS_URL)
 
 // État
 const healthStatus = ref(null)
@@ -868,11 +983,11 @@ const sections = [
 // Formulaires
 const authForms = ref({
   login: { email: 'admin@phenom.app', password: 'Admin123!' },
-  register: { username: '', email: '', password: '' }
+  register: { name: '', email: '', password: '' }
 })
 
 const userForms = ref({
-  update: { username: '', bio: '' },
+  update: { name: '', bio: '' },
   password: { currentPassword: '', newPassword: '', confirmPassword: '' }
 })
 
@@ -884,17 +999,31 @@ const observationForms = ref({
     sortBy: 'createdAt', 
     order: 'desc' 
   },
-  create: { 
-    title: '', 
-    description: '', 
-    longitude: null, 
+  create: {
+    title: '',
+    description: '',
+    date: '',
+    type: '',
+    tags: [],
+    newTag: '',
+    longitude: null,
     latitude: null,
     imageFile: null,
     imagePreview: null,
     locationError: ''
   },
   getOne: { id: '' },
-  update: { id: '', title: '' },
+  update: {
+    id: '',
+    title: '',
+    description: '',
+    date: '',
+    type: '',
+    tags: [],
+    newTag: '',
+    longitude: null,
+    latitude: null
+  },
   delete: { id: '' }
 })
 
@@ -977,7 +1106,7 @@ async function testLogin() {
     if (user) {
       currentUser.value = user
       localStorage.setItem('user', JSON.stringify(user))
-      console.log('✅ Utilisateur stocké:', user.username || user.email)
+      console.log('✅ Utilisateur stocké:', user.name || user.email)
     } else {
       console.error('❌ Aucun utilisateur trouvé dans la réponse')
     }
@@ -1104,6 +1233,31 @@ async function changePassword() {
   }
 }
 
+// Méthodes - Gestion des tags
+function addTagToCreate() {
+  const tag = observationForms.value.create.newTag.trim()
+  if (tag && tag.length >= 2 && tag.length <= 30 && !observationForms.value.create.tags.includes(tag)) {
+    observationForms.value.create.tags.push(tag)
+    observationForms.value.create.newTag = ''
+  }
+}
+
+function removeTagFromCreate(index) {
+  observationForms.value.create.tags.splice(index, 1)
+}
+
+function addTagToUpdate() {
+  const tag = observationForms.value.update.newTag.trim()
+  if (tag && tag.length >= 2 && tag.length <= 30 && !observationForms.value.update.tags.includes(tag)) {
+    observationForms.value.update.tags.push(tag)
+    observationForms.value.update.newTag = ''
+  }
+}
+
+function removeTagFromUpdate(index) {
+  observationForms.value.update.tags.splice(index, 1)
+}
+
 // Méthodes - Géolocalisation et upload
 function getGeolocation() {
   observationForms.value.create.locationError = ''
@@ -1214,6 +1368,17 @@ async function createObservation() {
         ]
       }
     }
+
+    // Ajouter les champs optionnels s'ils sont remplis
+    if (observationForms.value.create.date) {
+      observationData.date = observationForms.value.create.date
+    }
+    if (observationForms.value.create.type) {
+      observationData.type = observationForms.value.create.type
+    }
+    if (observationForms.value.create.tags.length > 0) {
+      observationData.tags = observationForms.value.create.tags
+    }
     
     const observationResponse = await observationService.create(observationData)
     const observationId = observationResponse.data?.id || observationResponse.data?._id
@@ -1254,7 +1419,16 @@ async function getOneObservation() {
 
 async function updateObservation() {
   try {
-    const { id, ...data } = observationForms.value.update
+    const { id, longitude, latitude, newTag, ...data } = observationForms.value.update
+    
+    // Ajouter les coordonnées si fournies
+    if (longitude !== null && latitude !== null) {
+      data.location = {
+        type: 'Point',
+        coordinates: [longitude, latitude]
+      }
+    }
+    
     const response = await observationService.update(id, data)
     results.value.updateObservation = response
   } catch (error) {

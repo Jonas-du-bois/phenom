@@ -20,7 +20,7 @@ export const userService = {
 
   /**
    * Met à jour les informations du profil de l'utilisateur
-   * @param {Object} userData - Données à mettre à jour (username, bio, etc.)
+   * @param {Object} userData - Données à mettre à jour (name, bio, etc.)
    * @returns {Promise} Profil mis à jour
    */
   async updateMe(userData) {

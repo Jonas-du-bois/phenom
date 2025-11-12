@@ -59,7 +59,7 @@ const seedDatabase = async () => {
     }
 
     // 4. Seed Admin (1 admin)
-    const admin = await seedAdmin();
+    const _admin = await seedAdmin();
 
     // 5. Seed Users (10 utilisateurs normaux)
     const users = await seedUsers();

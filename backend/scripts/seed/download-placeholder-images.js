@@ -16,21 +16,56 @@ const BASE_URL = 'https://picsum.photos';
 
 // Liste des images à télécharger (correspond aux noms dans observations.data.js)
 const images = [
+  // Observations 0-9
   'ovni-triangle-lausanne.jpg',
   'ovni-sphere-geneve.jpg',
   'ovni-formation-berne.jpg',
   'ovni-disque-zurich.jpg',
-  'ovni-cylindre-lyon.jpg',
+  'ovni-submersible-leman.jpg',
+  'ovni-rayon-lyon.jpg',
   'ovni-cigare-paris.jpg',
-  'ovni-lumiere-marseille.jpg',
-  'ovni-boomerang-nice.jpg',
-  'ovni-rayon-toulouse.jpg',
-  'ovni-sphere2-bordeaux.jpg',
-  'ovni-triangle2-strasbourg.jpg',
-  'ovni-disque2-lucerne.jpg',
-  'ovni-formation2-montreux.jpg',
-  'ovni-lumiere2-neuchatel.jpg',
-  'ovni-cylindre2-fribourg.jpg'
+  'ovni-signaux-marseille.jpg',
+  'ovni-atterrissage-alpes.jpg',
+  'ovni-panne-toulouse.jpg',
+  // Observations 10-19
+  'ovni-animaux-bordeaux.jpg',
+  'ovni-enlevement-strasbourg.jpg',
+  'ovni-traces-lucerne.jpg',
+  'ovni-radiation-montreux.jpg',
+  'ovni-entite-neuchatel.jpg',
+  'ovni-historique-fribourg.jpg',
+  'ovni-camouflage-nice.jpg',
+  'satellites-starlink-lille.jpg',
+  'ovni-contact-grenoble.jpg',
+  'ovni-humanoide-nantes.jpg',
+  // Observations 20-29
+  'ovni-coverup-dijon.jpg',
+  'ovni-rapport-annecy.jpg',
+  'traces-vosges.jpg',
+  'cercle-colmar.jpg',
+  'panne-montpellier.jpg',
+  'brulures-vaud.jpg',
+  'nocturne-jura.jpg',
+  'triangle-besancon.jpg',
+  'sphere-couleurs-geneve.jpg',
+  'duo-bale.jpg',
+  // Observations 30-39
+  'nuage-lausanne.jpg',
+  'telescope-clermont.jpg',
+  'rayons-fontainebleau.jpg',
+  'atterrissage-thonon.jpg',
+  'missing-time-mulhouse.jpg',
+  'submersible-neuchatel.jpg',
+  'sons-chamonix.jpg',
+  'oiseaux-camargue.jpg',
+  'interference-reims.jpg',
+  'fragment-perpignan.jpg',
+  // Observations 40-44
+  'arbres-nancy.jpg',
+  'radiation-grenoble.jpg',
+  'pylone-metz.jpg',
+  'effets-brest.jpg',
+  'contact-rennes.jpg'
 ];
 
 /**
@@ -102,7 +137,7 @@ async function main() {
     const filepath = path.join(IMAGES_DIR, filename);
 
     // URL avec seed différent pour chaque image (pour avoir des images différentes)
-    const imageUrl = `${BASE_URL}/800/600?random=${i}`;
+    const imageUrl = `${BASE_URL}/1200/1000?random=${i}`;
 
     try {
       await downloadImage(imageUrl, filepath);

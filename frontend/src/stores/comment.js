@@ -16,6 +16,10 @@ export const useCommentStore = defineStore('comment', () => {
     // Ajout de commentaire
   }
 
+  const changeComment = async (commentId, newText) => {
+    // Changement de commentaire
+  }
+
   const deleteComment = async (commentId) => {
     // Suppression de commentaire
   }
@@ -25,6 +29,7 @@ export const useCommentStore = defineStore('comment', () => {
     loading,
     fetchComments,
     addComment,
-    deleteComment
+    deleteComment,
+    changeComment
   }
 })

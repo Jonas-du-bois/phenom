@@ -64,7 +64,7 @@ class ObservationController {
   async updateObservation(req, res, next) {
     try {
       // Whitelist des champs modifiables (userId ne doit pas être modifiable)
-      const allowedFields = ['title', 'description', 'date', 'location', 'status', 'type', 'images'];
+      const allowedFields = ['title', 'description', 'date', 'location', 'type', 'tags', 'images'];
       const updateData = {};
       allowedFields.forEach(field => {
         if (req.body[field] !== undefined) {
@@ -98,7 +98,7 @@ class ObservationController {
       // Publier l'événement WebSocket
       publishObservationEvent('observation:deleted', { _id: observationId });
 
-      return res.status(204).send();
+      return successResponse(res, {}, 'Observation supprimée avec succès');
     } catch (error) {
       if (error.message === 'OBSERVATION_NOT_FOUND') {
         return notFoundResponse(res, 'Observation non trouvée');

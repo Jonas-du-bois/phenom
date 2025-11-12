@@ -85,7 +85,7 @@ class CommentController {
       // Publier l'événement WebSocket
       publishCommentEvent('comment:deleted', { _id: commentId });
 
-      return res.status(204).send();
+      return successResponse(res, {}, 'Commentaire supprimé avec succès');
     } catch (error) {
       if (error.message === 'COMMENT_NOT_FOUND') {
         return notFoundResponse(res, 'Commentaire non trouvé');

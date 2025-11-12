@@ -57,8 +57,7 @@ class UserService {
       {
         ...(name && { name }),
         ...(email && { email }),
-        ...(bio !== undefined && { bio }),
-        updatedAt: Date.now()
+        ...(bio !== undefined && { bio })
       },
       { new: true, runValidators: true }
     );

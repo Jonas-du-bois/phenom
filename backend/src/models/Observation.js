@@ -62,13 +62,28 @@ const observationSchema = new mongoose.Schema({
     ref: 'User',
     required: [true, 'L\'ID utilisateur est requis']
   },
-  createdAt: {
+  date: {
     type: Date,
     default: Date.now
   },
-  updatedAt: {
-    type: Date,
-    default: Date.now
+  type: {
+    type: String,
+    enum: [
+      'WAV', 'TCH', 'HST', 'SND', 'ODD', 'LND', 'SUB', 'OBS', 'RAY', 'SIG',
+      'ANI', 'HUM', 'INJ', 'VEH', 'BLD', 'DRT', 'VEG', 'PHT', 'RDA', 'TRC',
+      'NOC', 'CMF', 'MID', 'CNT', 'OID', 'COV', 'OGA'
+    ],
+    required: false
+  },
+  tags: {
+    type: [String],
+    default: [],
+    validate: {
+      validator: function (tags) {
+        return tags.every(tag => tag.length >= 2 && tag.length <= 30);
+      },
+      message: 'Chaque tag doit contenir entre 2 et 30 caractères'
+    }
   }
 }, {
   timestamps: true,
@@ -80,15 +95,19 @@ const observationSchema = new mongoose.Schema({
 observationSchema.index({ location: '2dsphere' });
 observationSchema.index({ userId: 1, createdAt: -1 });
 observationSchema.index({ createdAt: -1 });
+observationSchema.index({ type: 1 });
+observationSchema.index({ tags: 1 });
 
 // Index de recherche textuelle
 observationSchema.index({
   title: 'text',
-  description: 'text'
+  description: 'text',
+  tags: 'text'
 }, {
   weights: {
     title: 10,
-    description: 5
+    description: 5,
+    tags: 8
   }
 });
 
