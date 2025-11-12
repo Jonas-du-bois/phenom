@@ -97,6 +97,12 @@ services:
       - key: VITE_API_BASE_URL
         value: https://phenom-backend.onrender.com
       
+      - key: VITE_API_PREFIX
+        value: /api/v1
+      
+      - key: VITE_WS_URL
+        value: wss://phenom-backend.onrender.com
+      
       - key: VITE_APP_NAME
         value: Phenom
       
