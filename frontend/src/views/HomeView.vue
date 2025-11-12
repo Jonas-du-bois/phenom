@@ -1396,6 +1396,10 @@ async function createObservation() {
     observationForms.value.create = {
       title: '',
       description: '',
+      date: '',
+      type: '',
+      tags: [],
+      newTag: '',
       longitude: null,
       latitude: null,
       imageFile: null,
