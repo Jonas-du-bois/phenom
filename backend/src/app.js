@@ -26,8 +26,7 @@ import routes from './routes/index.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 import { generalLimiter } from './middleware/rateLimiter.js';
 import {
-  createWebSocketServer,
-  startWebSocketServer
+  createWebSocketServer
 } from './config/websocket.js';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
@@ -232,8 +231,15 @@ const startServer = async () => {
     // Connexion à MongoDB
     await connectDB();
 
-    // Démarrage du serveur HTTP
-    const server = app.listen(PORT, '0.0.0.0', () => {
+    // Créer le serveur HTTP SANS le faire écouter immédiatement
+    const http = await import('http');
+    const server = http.createServer(app);
+
+    // Créer et démarrer le serveur WebSocket (wss.start() est appelé à l'intérieur)
+    createWebSocketServer(server);
+
+    // Maintenant, faire écouter le serveur HTTP (avec WebSocket attaché)
+    server.listen(PORT, '0.0.0.0', () => {
       console.log('='.repeat(50));
       console.log('🚀 Serveur Phenom API démarré avec succès');
       console.log('='.repeat(50));
@@ -242,13 +248,9 @@ const startServer = async () => {
       console.log(`📚 Documentation: http://localhost:${PORT}/api-docs ou https://phenom-backend.onrender.com/api-docs`);
       console.log(`🏥 Health check: http://localhost:${PORT}/health ou https://phenom-backend.onrender.com/health`);
       console.log(`🔌 API Endpoints: http://localhost:${PORT}${API_PREFIX} ou https://phenom-backend.onrender.com${API_PREFIX}`);
+      console.log(`🔌 WebSocket: ws://localhost:${PORT} (même port que HTTP)`);
       console.log('='.repeat(50));
     });
-
-    // Créer le serveur WebSocket sur le MÊME serveur HTTP
-    createWebSocketServer(server);
-    startWebSocketServer();
-    console.log(`🔌 WebSocket opérationnel sur le même port (${PORT})`);
 
   } catch (error) {
     console.error('❌ Erreur lors du démarrage du serveur:', error.message);

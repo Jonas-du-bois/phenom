@@ -32,7 +32,9 @@ export async function seedObservations(users) {
         title: obsData.title,
         description: obsData.description,
         location: obsData.location,
-        userId: user._id
+        userId: user._id,
+        type: obsData.type,
+        tags: obsData.tags || []
       });
 
       // Uploader l'image si elle existe

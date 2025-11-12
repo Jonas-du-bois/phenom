@@ -13,35 +13,36 @@ let wss = null;
 export const createWebSocketServer = (server) => {
   console.log('🔌 Configuration du serveur WebSocket avec WsMini...');
 
-  // Créer le serveur WebSocket avec PubSub selon la doc WsMini
+  const corsOrigin = process.env.CORS_ORIGIN || '*';
+  console.log(`🔐 CORS Origins configuré: ${corsOrigin}`);
+
   wss = new WSServerPubSub({
-    httpServer: server, // Utiliser le même serveur HTTP
-    channels: {
-      observations: {
-        usersCanPub: false // Seul le serveur peut publier
-      },
-      comments: {
-        usersCanPub: false // Seul le serveur peut publier
-      }
-    }
+    origins: corsOrigin,
+    maxNbOfClients: 1000,
+    maxInputSize: 100000,
+    pingTimeout: 30000,
+    logLevel: process.env.NODE_ENV === 'production' ? 'warn' : 'info'
   });
 
-  console.log('✅ Serveur WebSocket configuré (PubSub)');
+  // Ajouter les canaux AVANT start()
+  wss.addChannel('observations', {
+    usersCanPub: false,
+    usersCanSub: true
+  });
+
+  wss.addChannel('comments', {
+    usersCanPub: false,
+    usersCanSub: true
+  });
+
+  // Démarrer avec le serveur HTTP existant
+  wss.start({ server });
+
+  console.log('✅ Serveur WebSocket configuré et démarré (PubSub)');
+  console.log('📡 WebSocket disponible sur le même port que le serveur HTTP');
+  console.log('🔐 Canaux: observations, comments (serveur uniquement)');
 
   return wss;
-};
-
-/**
- * Démarre le serveur WebSocket
- * ⚠️ Avec WsMini, le serveur WebSocket est automatiquement démarré
- * quand on crée l'instance avec httpServer
- */
-export const startWebSocketServer = () => {
-  if (wss) {
-    console.log('✅ Serveur WebSocket opérationnel');
-  } else {
-    console.warn('⚠️ Serveur WebSocket non initialisé');
-  }
 };
 
 /**
