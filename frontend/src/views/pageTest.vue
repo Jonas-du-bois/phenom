@@ -62,9 +62,28 @@
                 <h2 class="text-2xl font-bold text-gray-900">{{ observation.title }}</h2>
                 <p class="mt-2 text-gray-600">{{ observation.description }}</p>
               </div>
-              <span v-if="observation.type" class="ml-4 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                {{ observation.type }}
-              </span>
+              <div class="ml-4 flex items-center gap-2">
+                <span v-if="observation.type" class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                  {{ observation.type }}
+                </span>
+                <a 
+                  v-if="observation.location?.coordinates"
+                  :href="getOpenStreetMapUrl(observation.location.coordinates)"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 text-sm font-medium shadow-md hover:shadow-lg"
+                  title="Voir sur la carte"
+                >
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+                  </svg>
+                  Carte
+                  <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/>
+                    <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/>
+                  </svg>
+                </a>
+              </div>
             </div>
 
             <!-- Métadonnées -->
@@ -73,7 +92,7 @@
                 <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
                 </svg>
-                {{ observation.author?.username || 'Anonyme' }}
+                {{ observation.userId?.name || observation.author?.name || 'Anonyme' }}
               </div>
               <div class="flex items-center">
                 <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -81,12 +100,23 @@
                 </svg>
                 {{ formatDate(observation.date) }}
               </div>
-              <div v-if="observation.location?.coordinates" class="flex items-center">
+              <a 
+                v-if="observation.location?.coordinates" 
+                :href="getOpenStreetMapUrl(observation.location.coordinates)"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="flex items-center text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition-colors"
+                title="Voir sur OpenStreetMap"
+              >
                 <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
                 </svg>
                 {{ observation.location.coordinates[1].toFixed(4) }}, {{ observation.location.coordinates[0].toFixed(4) }}
-              </div>
+                <svg class="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/>
+                  <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/>
+                </svg>
+              </a>
             </div>
 
             <!-- Tags -->
@@ -112,11 +142,11 @@
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               <div
                 v-for="(image, index) in observation.images"
-                :key="image.id || index"
+                :key="image.imageId || image.id || index"
                 class="relative group"
               >
                 <img
-                  :src="getImageUrl(observation._id, image.filename)"
+                  :src="getImageUrl(observation._id, image)"
                   :alt="`Photo ${index + 1}`"
                   class="w-full h-48 object-cover rounded-lg shadow-md group-hover:shadow-xl transition-shadow duration-300"
                   @error="handleImageError"
@@ -148,13 +178,13 @@
                 <div class="flex items-start">
                   <div class="flex-shrink-0">
                     <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold">
-                      {{ getInitials(comment.author?.username) }}
+                      {{ getInitials(comment) }}
                     </div>
                   </div>
                   <div class="ml-4 flex-1">
                     <div class="flex items-center justify-between">
                       <h4 class="text-sm font-semibold text-gray-900">
-                        {{ comment.author?.username || 'Utilisateur inconnu' }}
+                        {{ comment.userId?.name || comment.author?.name || 'Utilisateur inconnu' }}
                       </h4>
                       <span class="text-xs text-gray-500">
                         {{ formatDate(comment.createdAt) }}
@@ -230,19 +260,59 @@ const formatDate = (date) => {
   })
 }
 
-const getInitials = (username) => {
-  if (!username) return '?'
-  return username.substring(0, 2).toUpperCase()
+const getInitials = (comment) => {
+  // Essayer d'obtenir le nom depuis différents champs
+  const name = comment?.userId?.name || comment?.author?.name || comment?.userId?.username || comment?.author?.username
+  if (!name) return '?'
+  
+  // Prendre les initiales (première lettre de chaque mot)
+  const parts = name.split(' ')
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase()
+  }
+  return name.substring(0, 2).toUpperCase()
 }
 
-const getImageUrl = (observationId, filename) => {
+const getImageUrl = (observationId, imageData) => {
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
   const API_PREFIX = import.meta.env.VITE_API_PREFIX
-  return `${API_BASE_URL}${API_PREFIX}/observations/${observationId}/images/${filename}`
+  
+  let url = ''
+  
+  // Si imageData est une string, c'est le filename
+  if (typeof imageData === 'string') {
+    url = `${API_BASE_URL}${API_PREFIX}/images/${imageData}`
+  }
+  // Si c'est un objet avec imageUrl, utiliser imageUrl
+  else if (imageData?.imageUrl) {
+    url = imageData.imageUrl
+  }
+  // Si c'est un objet avec imageId
+  else if (imageData?.imageId) {
+    url = `${API_BASE_URL}${API_PREFIX}/images/${imageData.imageId}`
+  }
+  // Si c'est un objet avec filename
+  else if (imageData?.filename) {
+    url = `${API_BASE_URL}${API_PREFIX}/images/${imageData.filename}`
+  }
+  
+  console.log('🖼️ URL image générée:', url, 'pour', imageData)
+  return url
 }
 
 const handleImageError = (event) => {
+  console.warn('❌ Erreur de chargement d\'image:', event.target.src)
   event.target.src = 'https://via.placeholder.com/400x300?text=Image+non+disponible'
+  event.target.classList.add('opacity-50')
+}
+
+const getOpenStreetMapUrl = (coordinates) => {
+  // coordinates est au format [longitude, latitude] (GeoJSON)
+  const [lng, lat] = coordinates
+  // OpenStreetMap utilise le format: https://www.openstreetmap.org/?mlat={lat}&mlon={lng}#map={zoom}/{lat}/{lng}
+  // mlat/mlon ajoute un marqueur, #map définit le zoom et le centre
+  const zoom = 15 // Niveau de zoom (15 = quartier, 18 = rue)
+  return `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=${zoom}/${lat}/${lng}`
 }
 
 // Charger les observations
@@ -251,10 +321,31 @@ const loadObservations = async () => {
     loading.value = true
     error.value = null
     
-    const response = await observationService.getAll({ limit: 10 })
-    observations.value = response.data || response.observations || []
+    const response = await observationService.getAll({ limit: 100 })
+    
+    // Gérer différentes structures de réponse
+    if (response.data) {
+      observations.value = Array.isArray(response.data) ? response.data : []
+    } else if (response.observations) {
+      observations.value = response.observations
+    } else if (Array.isArray(response)) {
+      observations.value = response
+    } else {
+      observations.value = []
+    }
     
     console.log('✅ Observations chargées:', observations.value.length)
+    console.log('📊 Première observation:', observations.value[0])
+    
+    // Afficher les détails d'une observation avec images
+    const obsWithImages = observations.value.find(obs => obs.images?.length > 0)
+    if (obsWithImages) {
+      console.log('🖼️ Observation avec images:', {
+        id: obsWithImages._id,
+        title: obsWithImages.title,
+        images: obsWithImages.images
+      })
+    }
     
     // Charger automatiquement les commentaires pour chaque observation
     for (const obs of observations.value) {
@@ -271,8 +362,19 @@ const loadObservations = async () => {
 // Charger les commentaires d'une observation
 const loadComments = async (observationId) => {
   try {
-    const response = await commentService.getByObservation(observationId)
-    observationComments.value[observationId] = response.data || response.comments || []
+    const response = await commentService.getByObservation(observationId, { limit: 100 })
+    
+    // Gérer différentes structures de réponse
+    if (response.data) {
+      observationComments.value[observationId] = response.data
+    } else if (response.comments) {
+      observationComments.value[observationId] = response.comments
+    } else if (Array.isArray(response)) {
+      observationComments.value[observationId] = response
+    } else {
+      observationComments.value[observationId] = []
+    }
+    
     console.log(`✅ Commentaires chargés pour ${observationId}:`, observationComments.value[observationId].length)
   } catch (err) {
     console.error(`❌ Erreur lors du chargement des commentaires pour ${observationId}:`, err)
