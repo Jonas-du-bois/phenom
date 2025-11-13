@@ -224,13 +224,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { observationService } from '../services/observationService'
 import { commentService } from '../services/commentService'
 
 // État
 const observations = ref([])
 const observationComments = ref({})
+const imageBlobs = ref({}) // Stocker les blobs d'images
 const loading = ref(true)
 const error = ref(null)
 
@@ -274,48 +275,70 @@ const getInitials = (comment) => {
 }
 
 const getImageUrl = (observationId, imageData) => {
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-  const API_PREFIX = import.meta.env.VITE_API_PREFIX
+  // Si on a déjà un blob pour cette image, l'utiliser
+  const imageId = imageData?.imageId || imageData?.id
+  if (imageId && imageBlobs.value[imageId]) {
+    return imageBlobs.value[imageId]
+  }
   
-  console.log('📸 Données image reçues:', imageData)
-  console.log('🔧 Config API:', { API_BASE_URL, API_PREFIX })
-  
-  let url = ''
-  
-  // Si c'est un objet avec imageUrl (format: /api/v1/images/xxx)
-  if (imageData?.imageUrl) {
-    // Si l'imageUrl commence par /api, ajouter juste le base URL
-    if (imageData.imageUrl.startsWith('/api')) {
-      url = `${API_BASE_URL}${imageData.imageUrl}`
-    } else {
-      url = imageData.imageUrl
+  // Sinon retourner une URL temporaire (sera remplacée par le blob)
+  return 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="400" height="300" fill="%23e5e7eb"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="14" fill="%239ca3af">Chargement...</text></svg>'
+}
+
+// Nouvelle fonction pour charger une image via l'API avec authentification
+const loadImageBlob = async (imageId) => {
+  try {
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+    const API_PREFIX = import.meta.env.VITE_API_PREFIX
+    const token = localStorage.getItem('token')
+    
+    if (!token) {
+      console.warn('⚠️ Pas de token pour charger l\'image:', imageId)
+      return null
     }
-    console.log('  → Type: objet avec imageUrl, URL:', url)
+    
+    const url = `${API_BASE_URL}${API_PREFIX}/images/${imageId}`
+    console.log('📥 Chargement de l\'image:', url)
+    
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    
+    if (!response.ok) {
+      console.error('❌ Erreur lors du chargement de l\'image:', response.status, response.statusText)
+      return null
+    }
+    
+    const blob = await response.blob()
+    const blobUrl = URL.createObjectURL(blob)
+    imageBlobs.value[imageId] = blobUrl
+    
+    console.log('✅ Image chargée:', imageId, '→', blobUrl)
+    return blobUrl
+  } catch (err) {
+    console.error('❌ Erreur lors du chargement de l\'image:', imageId, err)
+    return null
   }
-  // Si c'est un objet avec imageId
-  else if (imageData?.imageId) {
-    url = `${API_BASE_URL}${API_PREFIX}/images/${imageData.imageId}`
-    console.log('  → Type: objet avec imageId, URL:', url)
-  }
-  // Si c'est un objet avec filename
-  else if (imageData?.filename) {
-    url = `${API_BASE_URL}${API_PREFIX}/images/${imageData.filename}`
-    console.log('  → Type: objet avec filename, URL:', url)
-  }
-  // Si imageData est une string, c'est probablement un imageId
-  else if (typeof imageData === 'string') {
-    url = `${API_BASE_URL}${API_PREFIX}/images/${imageData}`
-    console.log('  → Type: string (imageId), URL:', url)
-  }
-  else {
-    console.warn('  → ⚠️ Format d\'image non reconnu:', imageData)
-  }
+}
+
+// Charger toutes les images d'une observation
+const loadImagesForObservation = async (observation) => {
+  if (!observation.images || observation.images.length === 0) return
   
-  return url
+  console.log(`📸 Chargement de ${observation.images.length} images pour observation ${observation._id}`)
+  
+  for (const image of observation.images) {
+    const imageId = image.imageId || image.id
+    if (imageId && !imageBlobs.value[imageId]) {
+      await loadImageBlob(imageId)
+    }
+  }
 }
 
 const handleImageError = (event) => {
-  console.warn('❌ Erreur de chargement d\'image:', event.target.src)
+  console.warn('❌ Image blob non disponible')
   // Utiliser une image SVG inline au lieu de via.placeholder.com
   event.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="400" height="300" fill="%23f3f4f6"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="16" fill="%236b7280">Image non disponible</text></svg>'
   event.target.classList.add('opacity-50')
@@ -362,6 +385,13 @@ const loadObservations = async () => {
       })
     }
     
+    // Charger les images pour chaque observation
+    console.log('📥 Chargement des images...')
+    for (const obs of observations.value) {
+      await loadImagesForObservation(obs)
+    }
+    console.log('✅ Toutes les images chargées')
+    
     // Charger automatiquement les commentaires pour chaque observation
     for (const obs of observations.value) {
       await loadComments(obs._id)
@@ -400,6 +430,13 @@ const loadComments = async (observationId) => {
 // Charger au montage
 onMounted(() => {
   loadObservations()
+})
+
+// Nettoyer les blobs au démontage pour éviter les fuites mémoire
+onBeforeUnmount(() => {
+  Object.values(imageBlobs.value).forEach(blobUrl => {
+    URL.revokeObjectURL(blobUrl)
+  })
 })
 </script>
 
