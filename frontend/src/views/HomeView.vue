@@ -83,52 +83,57 @@
           <!-- Login -->
           <div class="api-card">
             <h3 class="text-lg font-semibold mb-3">Login</h3>
-            <div class="space-y-2 mb-3">
+            <form @submit.prevent="testLogin" class="space-y-2 mb-3">
               <input
                 v-model="authForms.login.email"
                 type="email"
                 placeholder="Email"
                 class="input-field"
+                autocomplete="email"
               />
               <input
                 v-model="authForms.login.password"
                 type="password"
                 placeholder="Password"
                 class="input-field"
+                autocomplete="current-password"
               />
-            </div>
-            <button @click="testLogin" class="btn-primary mb-3">
-              Se connecter
-            </button>
+              <button type="submit" class="btn-primary w-full">
+                Se connecter
+              </button>
+            </form>
             <pre v-if="results.login" class="result-box">{{ JSON.stringify(results.login, null, 2) }}</pre>
           </div>
 
           <!-- Register -->
           <div class="api-card">
             <h3 class="text-lg font-semibold mb-3">Register</h3>
-            <div class="space-y-2 mb-3">
+            <form @submit.prevent="testRegister" class="space-y-2 mb-3">
               <input
                 v-model="authForms.register.name"
                 type="text"
                 placeholder="Nom"
                 class="input-field"
+                autocomplete="name"
               />
               <input
                 v-model="authForms.register.email"
                 type="email"
                 placeholder="Email"
                 class="input-field"
+                autocomplete="email"
               />
               <input
                 v-model="authForms.register.password"
                 type="password"
                 placeholder="Password"
                 class="input-field"
+                autocomplete="new-password"
               />
-            </div>
-            <button @click="testRegister" class="btn-primary mb-3">
-              S'inscrire
-            </button>
+              <button type="submit" class="btn-primary w-full">
+                S'inscrire
+              </button>
+            </form>
             <pre v-if="results.register" class="result-box">{{ JSON.stringify(results.register, null, 2) }}</pre>
           </div>
 
@@ -194,34 +199,37 @@
             <p v-if="!currentUser" class="text-yellow-400 text-sm mb-3">
               ⚠️ Vous devez être connecté pour changer votre mot de passe
             </p>
-            <div class="space-y-2 mb-3">
+            <form @submit.prevent="changePassword" class="space-y-2 mb-3">
               <input
                 v-model="userForms.password.currentPassword"
                 type="password"
                 placeholder="Ancien mot de passe (Admin123!)"
                 class="input-field"
+                autocomplete="current-password"
               />
               <input
                 v-model="userForms.password.newPassword"
                 type="password"
                 placeholder="Nouveau mot de passe (min 6 caractères)"
                 class="input-field"
+                autocomplete="new-password"
               />
               <input
                 v-model="userForms.password.confirmPassword"
                 type="password"
                 placeholder="Confirmer le nouveau mot de passe"
                 class="input-field"
+                autocomplete="new-password"
               />
-            </div>
-            <button 
-              @click="changePassword" 
-              class="btn-primary mb-3"
-              :disabled="!currentUser"
-              :class="{ 'opacity-50 cursor-not-allowed': !currentUser }"
-            >
-              Changer le mot de passe
-            </button>
+              <button 
+                type="submit" 
+                class="btn-primary w-full"
+                :disabled="!currentUser"
+                :class="{ 'opacity-50 cursor-not-allowed': !currentUser }"
+              >
+                Changer le mot de passe
+              </button>
+            </form>
             <pre v-if="results.changePassword" class="result-box">{{ JSON.stringify(results.changePassword, null, 2) }}</pre>
           </div>
         </div>
