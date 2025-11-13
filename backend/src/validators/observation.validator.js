@@ -55,23 +55,27 @@ export const updateObservationValidation = [
     .isMongoId().withMessage('ID invalide'),
 
   body('title')
-    .optional()
+    .optional({ values: 'falsy' })
     .trim()
     .escape()
+    .notEmpty().withMessage('Le titre ne peut pas être vide')
     .isLength({ min: 3, max: 100 }).withMessage('Le titre doit contenir entre 3 et 100 caractères'),
 
   body('description')
-    .optional()
+    .optional({ values: 'falsy' })
     .trim()
     .escape()
+    .notEmpty().withMessage('La description ne peut pas être vide')
     .isLength({ min: 10, max: 2000 }).withMessage('La description doit contenir entre 10 et 2000 caractères'),
 
   body('date')
-    .optional()
+    .optional({ values: 'falsy' })
+    .notEmpty().withMessage('La date ne peut pas être vide')
     .isISO8601().withMessage('Date invalide'),
 
   body('type')
-    .optional()
+    .optional({ values: 'falsy' })
+    .notEmpty().withMessage('Le type ne peut pas être vide')
     .isIn([
       'WAV', 'TCH', 'HST', 'SND', 'ODD', 'LND', 'SUB', 'OBS', 'RAY', 'SIG',
       'ANI', 'HUM', 'INJ', 'VEH', 'BLD', 'DRT', 'VEG', 'PHT', 'RDA', 'TRC',
@@ -80,7 +84,7 @@ export const updateObservationValidation = [
     .withMessage('Type invalide'),
 
   body('tags')
-    .optional()
+    .optional({ values: 'falsy' })
     .isArray().withMessage('Les tags doivent être un tableau')
     .custom((tags) => {
       if (!Array.isArray(tags)) return false;
@@ -88,11 +92,12 @@ export const updateObservationValidation = [
     }).withMessage('Chaque tag doit contenir entre 2 et 30 caractères'),
 
   body('location.type')
-    .optional()
+    .optional({ values: 'falsy' })
+    .notEmpty().withMessage('Le type de localisation ne peut pas être vide')
     .equals('Point').withMessage('Le type de localisation doit être "Point"'),
 
   body('location.coordinates')
-    .optional()
+    .optional({ values: 'falsy' })
     .isArray({ min: 2, max: 2 }).withMessage('Les coordonnées doivent être un tableau de 2 éléments')
     .custom((value) => {
       if (!Array.isArray(value) || value.length !== 2) return false;

@@ -8,6 +8,11 @@ const router = createRouter({
       name: 'home',
       component: () => import('../views/HomeView.vue')
     },
+    {
+      path: '/test',
+      name: 'test',
+      component: () => import('../views/pageTest.vue')
+    },
     // Route 404 - DOIT être en dernier
     {
       path: '/:pathMatch(.*)*',
