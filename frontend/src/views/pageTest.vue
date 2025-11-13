@@ -277,32 +277,47 @@ const getImageUrl = (observationId, imageData) => {
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
   const API_PREFIX = import.meta.env.VITE_API_PREFIX
   
+  console.log('📸 Données image reçues:', imageData)
+  console.log('🔧 Config API:', { API_BASE_URL, API_PREFIX })
+  
   let url = ''
   
-  // Si imageData est une string, c'est le filename
-  if (typeof imageData === 'string') {
-    url = `${API_BASE_URL}${API_PREFIX}/images/${imageData}`
-  }
-  // Si c'est un objet avec imageUrl, utiliser imageUrl
-  else if (imageData?.imageUrl) {
-    url = imageData.imageUrl
+  // Si c'est un objet avec imageUrl (format: /api/v1/images/xxx)
+  if (imageData?.imageUrl) {
+    // Si l'imageUrl commence par /api, ajouter juste le base URL
+    if (imageData.imageUrl.startsWith('/api')) {
+      url = `${API_BASE_URL}${imageData.imageUrl}`
+    } else {
+      url = imageData.imageUrl
+    }
+    console.log('  → Type: objet avec imageUrl, URL:', url)
   }
   // Si c'est un objet avec imageId
   else if (imageData?.imageId) {
     url = `${API_BASE_URL}${API_PREFIX}/images/${imageData.imageId}`
+    console.log('  → Type: objet avec imageId, URL:', url)
   }
   // Si c'est un objet avec filename
   else if (imageData?.filename) {
     url = `${API_BASE_URL}${API_PREFIX}/images/${imageData.filename}`
+    console.log('  → Type: objet avec filename, URL:', url)
+  }
+  // Si imageData est une string, c'est probablement un imageId
+  else if (typeof imageData === 'string') {
+    url = `${API_BASE_URL}${API_PREFIX}/images/${imageData}`
+    console.log('  → Type: string (imageId), URL:', url)
+  }
+  else {
+    console.warn('  → ⚠️ Format d\'image non reconnu:', imageData)
   }
   
-  console.log('🖼️ URL image générée:', url, 'pour', imageData)
   return url
 }
 
 const handleImageError = (event) => {
   console.warn('❌ Erreur de chargement d\'image:', event.target.src)
-  event.target.src = 'https://via.placeholder.com/400x300?text=Image+non+disponible'
+  // Utiliser une image SVG inline au lieu de via.placeholder.com
+  event.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="400" height="300" fill="%23f3f4f6"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="16" fill="%236b7280">Image non disponible</text></svg>'
   event.target.classList.add('opacity-50')
 }
 
