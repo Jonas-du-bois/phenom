@@ -5,6 +5,7 @@
 
 import { ref, computed } from 'vue'
 import { observationService } from '../services/observationService'
+import { imageService } from '../services/imageService'
 
 export function useObservations() {
   // État
@@ -235,6 +236,79 @@ export function useObservations() {
     })
   }
 
+  /**
+   * Upload une image pour une observation
+   * @param {string} observationId - ID de l'observation
+   * @param {File} file - Fichier image
+   * @returns {Promise<Object|null>}
+   */
+  const uploadImage = async (observationId, file) => {
+    try {
+      loading.value = true
+      error.value = null
+      
+      const response = await imageService.uploadToObservation(observationId, file)
+      console.log('✅ Image uploadée:', response.data)
+      
+      return response.data
+    } catch (err) {
+      console.error('❌ Erreur lors de l\'upload de l\'image:', err)
+      error.value = err.response?.data?.message || err.message
+      return null
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * Modifie/remplace une image existante
+   * @param {string} observationId - ID de l'observation
+   * @param {string} publicId - Public ID de l'image à remplacer
+   * @param {File} file - Nouveau fichier image
+   * @returns {Promise<Object|null>}
+   */
+  const updateImage = async (observationId, publicId, file) => {
+    try {
+      loading.value = true
+      error.value = null
+      
+      const response = await imageService.updateImage(observationId, publicId, file)
+      console.log('✅ Image modifiée:', response.data)
+      
+      return response.data
+    } catch (err) {
+      console.error('❌ Erreur lors de la modification de l\'image:', err)
+      error.value = err.response?.data?.message || err.message
+      return null
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * Supprime une image
+   * @param {string} observationId - ID de l'observation
+   * @param {string} publicId - Public ID de l'image
+   * @returns {Promise<boolean>}
+   */
+  const deleteImage = async (observationId, publicId) => {
+    try {
+      loading.value = true
+      error.value = null
+      
+      await imageService.deleteImage(observationId, publicId)
+      console.log('✅ Image supprimée')
+      
+      return true
+    } catch (err) {
+      console.error('❌ Erreur lors de la suppression de l\'image:', err)
+      error.value = err.response?.data?.message || err.message
+      return false
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     // État
     observations,
@@ -257,6 +331,11 @@ export function useObservations() {
     removeObservation,
     searchObservations,
     filterByType,
-    sortObservations
+    sortObservations,
+    
+    // Méthodes pour les images
+    uploadImage,
+    updateImage,
+    deleteImage
   }
 }

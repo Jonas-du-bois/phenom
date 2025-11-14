@@ -43,6 +43,25 @@ export const imageService = {
   },
 
   /**
+   * Modifie/remplace une image existante
+   * @param {string} observationId - ID de l'observation
+   * @param {string} publicId - Public ID Cloudinary de l'image à remplacer
+   * @param {File} file - Nouveau fichier image
+   */
+  async updateImage(observationId, publicId, file) {
+    const formData = new FormData()
+    formData.append('image', file)
+    
+    const encodedPublicId = encodeURIComponent(publicId)
+    const response = await apiClient.put(`/observations/${observationId}/images/${encodedPublicId}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    return response.data
+  },
+
+  /**
    * Les images Cloudinary ont des URLs publiques directes
    * Plus besoin de passer par le backend pour les afficher !
    * @param {string} url - URL Cloudinary de l'image

@@ -147,15 +147,17 @@
               <div
                 v-for="(image, index) in observation.images"
                 :key="image.publicId || index"
-                class="relative group"
+                class="relative"
               >
-                <img
-                  :src="getImageUrl(image)"
-                  :alt="`Photo ${index + 1}`"
-                  class="w-full h-48 object-cover rounded-lg shadow-md group-hover:shadow-xl transition-shadow duration-300"
-                  @error="(e) => handleImageError(e)"
+                <!-- Utiliser ImageManager pour afficher et gérer les images -->
+                <ImageManager
+                  :current-image="image"
+                  :observation-id="observation._id"
+                  :alt="`Photo ${index + 1} - ${observation.title}`"
+                  :show-delete="true"
+                  @update="handleImageUpdate"
+                  @delete="handleImageDelete"
                 />
-                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-opacity duration-300 rounded-lg"></div>
               </div>
             </div>
           </div>
@@ -232,6 +234,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useWebSocket } from '../composables/useWebSocket'
 import { useObservations } from '../composables/useObservations'
 import { useComments } from '../composables/useComments'
+import ImageManager from '../components/ImageManager.vue'
 
 // Import des utilitaires
 import {
@@ -255,7 +258,9 @@ const {
   observations,
   loading,
   error,
-  loadObservations
+  loadObservations,
+  updateImage,
+  deleteImage
 } = useObservations()
 
 const {
@@ -340,6 +345,32 @@ const handleObservationEvent = async (message) => {
     delete observationComments.value[observationId]
     
     console.log('✅ Observation supprimée')
+  }
+}
+
+// Gérer la modification d'image
+const handleImageUpdate = async ({ observationId, publicId, file }) => {
+  console.log('🔄 Modification d\'image:', { observationId, publicId })
+  
+  const result = await updateImage(observationId, publicId, file)
+  if (result) {
+    console.log('✅ Image modifiée avec succès')
+    // Le WebSocket mettra à jour l'observation automatiquement
+  } else {
+    console.error('❌ Erreur lors de la modification de l\'image')
+  }
+}
+
+// Gérer la suppression d'image
+const handleImageDelete = async ({ observationId, publicId }) => {
+  console.log('🗑️ Suppression d\'image:', { observationId, publicId })
+  
+  const result = await deleteImage(observationId, publicId)
+  if (result) {
+    console.log('✅ Image supprimée avec succès')
+    // Le WebSocket mettra à jour l'observation automatiquement
+  } else {
+    console.error('❌ Erreur lors de la suppression de l\'image')
   }
 }
 

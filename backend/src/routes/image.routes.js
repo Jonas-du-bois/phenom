@@ -175,6 +175,86 @@ router.get('/observations/:observationId/images', authenticate, observationIdVal
 /**
  * @swagger
  * /api/v1/observations/{observationId}/images/{publicId}:
+ *   put:
+ *     summary: Modifie/remplace une image existante
+ *     description: Remplace une image existante par une nouvelle. L'ancienne sera supprimée de Cloudinary et la nouvelle sera uploadée avec compression.
+ *     tags: [Images]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: observationId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID MongoDB de l'observation
+ *       - in: path
+ *         name: publicId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Public ID Cloudinary de l'image à remplacer (URL-encodé)
+ *         example: phenom%2Fobservations%2F507f1f77bcf86cd799439011_1699876543210
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - image
+ *             properties:
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *                 description: Nouvelle image (JPEG, PNG, WebP) - Max 10MB
+ *     responses:
+ *       200:
+ *         description: Image modifiée avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Image modifiée avec succès
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     publicId:
+ *                       type: string
+ *                       example: phenom/observations/507f1f77bcf86cd799439011_1699876543222
+ *                     url:
+ *                       type: string
+ *                       example: https://res.cloudinary.com/dgsfd1fic/image/upload/v1699876543/phenom/observations/507f1f77bcf86cd799439011_1699876543222.jpg
+ *                     format:
+ *                       type: string
+ *                       example: jpg
+ *                     size:
+ *                       type: number
+ *                       example: 245678
+ *                     width:
+ *                       type: number
+ *                       example: 1920
+ *                     height:
+ *                       type: number
+ *                       example: 1080
+ *       400:
+ *         description: Aucune image fournie
+ *       403:
+ *         description: Non autorisé
+ *       404:
+ *         description: Observation ou image non trouvée
+ */
+router.put('/observations/:observationId/images/:publicId', authenticate, upload.single('image'), imageController.updateImage);
+
+/**
+ * @swagger
+ * /api/v1/observations/{observationId}/images/{publicId}:
  *   delete:
  *     summary: Supprime une image de Cloudinary et de l'observation
  *     description: Supprime définitivement l'image. Le publicId doit être URL-encodé car il contient des slashes.
