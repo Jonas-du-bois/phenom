@@ -63,7 +63,11 @@
                 <p class="mt-2 text-gray-600">{{ observation.description }}</p>
               </div>
               <div class="ml-4 flex items-center gap-2">
-                <span v-if="observation.type" class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                <span 
+                  v-if="observation.type" 
+                  class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium cursor-help"
+                  :title="getObservationLabel(observation.type)"
+                >
                   {{ observation.type }}
                 </span>
                 <a 
@@ -242,6 +246,9 @@ import {
   formatCommentForDisplay,
   getUserDisplayName
 } from '../utils'
+
+// Import des constantes
+import { getObservationLabel } from '../constants/observationTypes'
 
 // Composables
 const {
