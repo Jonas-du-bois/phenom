@@ -1,7 +1,7 @@
 /**
  * Types d'observations OVNI/Phénomènes
  */
-export const OBSERVATION_TYPES = {
+export const OBSERVATION_TYPES_LEGACY = {
   WAV: { code: 'WAV', label: 'Vague/cluster/flap', description: 'Wave/cluster/flap' },
   TCH: { code: 'TCH', label: 'Détails techniques', description: 'New technical details/clues' },
   HST: { code: 'HST', label: 'Compte historique', description: 'Historical account' },
@@ -31,7 +31,17 @@ export const OBSERVATION_TYPES = {
   OGA: { code: 'OGA', label: 'Agences gouv.', description: 'Non-Covert Government Agencies' }
 }
 
-export const OBSERVATION_TYPE_OPTIONS = Object.entries(OBSERVATION_TYPES).map(([code, data]) => ({
+// Simplified types for new UI
+export const OBSERVATION_TYPES = [
+  { value: 'ufo', label: 'OVNI', icon: '🛸' },
+  { value: 'entity', label: 'Entité', icon: '👽' },
+  { value: 'light', label: 'Lumière', icon: '💡' },
+  { value: 'sound', label: 'Son', icon: '🔊' },
+  { value: 'trace', label: 'Trace', icon: '👣' },
+  { value: 'other', label: 'Autre', icon: '❓' }
+]
+
+export const OBSERVATION_TYPE_OPTIONS = Object.entries(OBSERVATION_TYPES_LEGACY).map(([code, data]) => ({
   value: code,
   label: `${code} - ${data.label}`,
   description: data.description
@@ -47,7 +57,7 @@ export const OBSERVATION_TYPE_OPTIONS = Object.entries(OBSERVATION_TYPES).map(([
  * getObservationLabel('XXX') // "XXX" (code inconnu)
  */
 export const getObservationLabel = (code) => {
-  return OBSERVATION_TYPES[code]?.label || code
+  return OBSERVATION_TYPES_LEGACY[code]?.label || code
 }
 
 /**
