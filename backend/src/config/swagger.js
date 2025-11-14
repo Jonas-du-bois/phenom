@@ -97,24 +97,37 @@ Tous les endpoints REST sont documentés ci-dessous avec leurs schémas de requ�
             },
             images: {
               type: 'array',
+              description: 'Images stockées sur Cloudinary',
               items: {
                 type: 'object',
                 properties: {
-                  imageId: {
+                  publicId: {
                     type: 'string',
-                    example: '67890abcdef'
+                    description: 'Public ID Cloudinary',
+                    example: 'phenom/observations/507f1f77bcf86cd799439011_1699876543210'
                   },
-                  imageUrl: {
+                  url: {
                     type: 'string',
-                    example: '/api/v1/images/67890abcdef'
+                    description: 'URL HTTPS publique sur Cloudinary',
+                    example: 'https://res.cloudinary.com/dgsfd1fic/image/upload/v1699876543/phenom/observations/507f1f77bcf86cd799439011_1699876543210.jpg'
                   },
                   size: {
                     type: 'number',
-                    example: 524288
+                    description: 'Taille en octets (après compression)',
+                    example: 245678
                   },
                   format: {
                     type: 'string',
-                    example: 'image/jpeg'
+                    description: 'Format de l\'image',
+                    example: 'jpg'
+                  },
+                  width: {
+                    type: 'number',
+                    example: 1920
+                  },
+                  height: {
+                    type: 'number',
+                    example: 1080
                   },
                   uploadedAt: {
                     type: 'string',
@@ -195,7 +208,7 @@ Tous les endpoints REST sont documentés ci-dessous avec leurs schémas de requ�
       },
       {
         name: 'Images',
-        description: 'Gestion des images avec GridFS'
+        description: 'Gestion des images avec Cloudinary (CDN)'
       },
       {
         name: 'Administration',

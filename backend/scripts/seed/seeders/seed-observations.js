@@ -52,17 +52,19 @@ export async function seedObservations(users) {
             observation._id.toString()
           );
 
-          // Ajouter l'image au nouveau système images array
+          // Ajouter l'image avec la nouvelle structure Cloudinary
           observation.images.push({
-            imageId: imageInfo.id,
-            imageUrl: imageInfo.url,
+            publicId: imageInfo.publicId,
+            url: imageInfo.url,
             size: imageInfo.size,
-            format: imageInfo.contentType,
+            format: imageInfo.format,
+            width: imageInfo.width,
+            height: imageInfo.height,
             uploadedAt: new Date()
           });
           await observation.save();
 
-          console.log(`   ✅ [${i + 1}/${observationsData.length}] ${observation.title.substring(0, 50)}... (avec image)`);
+          console.log(`   ✅ [${i + 1}/${observationsData.length}] ${observation.title.substring(0, 50)}... (avec image Cloudinary)`);
         } catch (imageError) {
           console.log(`   ⚠️  [${i + 1}/${observationsData.length}] ${observation.title.substring(0, 50)}... (sans image: ${imageError.message})`);
         }

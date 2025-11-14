@@ -142,14 +142,14 @@
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               <div
                 v-for="(image, index) in observation.images"
-                :key="image.imageId || image.id || index"
+                :key="image.publicId || index"
                 class="relative group"
               >
                 <img
-                  :src="getImageUrl(observation._id, image)"
+                  :src="getImageUrl(image)"
                   :alt="`Photo ${index + 1}`"
                   class="w-full h-48 object-cover rounded-lg shadow-md group-hover:shadow-xl transition-shadow duration-300"
-                  @error="handleImageError"
+                  @error="(e) => handleImageError(e)"
                 />
                 <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-opacity duration-300 rounded-lg"></div>
               </div>
@@ -178,19 +178,19 @@
                 <div class="flex items-start">
                   <div class="flex-shrink-0">
                     <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold">
-                      {{ getInitials(comment) }}
+                      {{ getCommentInitials(comment) }}
                     </div>
                   </div>
                   <div class="ml-4 flex-1">
                     <div class="flex items-center justify-between">
                       <h4 class="text-sm font-semibold text-gray-900">
-                        {{ comment.userId?.name || comment.author?.name || 'Utilisateur inconnu' }}
+                        {{ getUserDisplayName(comment.userId || comment.author) }}
                       </h4>
                       <span class="text-xs text-gray-500">
                         {{ formatDate(comment.createdAt) }}
                       </span>
                     </div>
-                    <p class="mt-2 text-gray-700">{{ comment.text }}</p>
+                    <p class="mt-2 text-gray-700">{{ comment.text || comment.content }}</p>
                   </div>
                 </div>
               </div>
@@ -202,7 +202,7 @@
             <!-- Bouton pour charger les commentaires -->
             <button
               v-if="!observationComments[observation._id]"
-              @click="loadComments(observation._id)"
+              @click="loadObservationComments(observation._id)"
               class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
             >
               Charger les commentaires
@@ -225,218 +225,135 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import { observationService } from '../services/observationService'
-import { commentService } from '../services/commentService'
+import { useWebSocket } from '../composables/useWebSocket'
+import { useObservations } from '../composables/useObservations'
+import { useComments } from '../composables/useComments'
 
-// État
-const observations = ref([])
-const observationComments = ref({})
-const imageBlobs = ref({}) // Stocker les blobs d'images
-const loading = ref(true)
-const error = ref(null)
+// Import des utilitaires
+import {
+  formatDate,
+  getInitials,
+  getOpenStreetMapUrl,
+  getImageUrl,
+  handleImageError,
+  calculateObservationStats,
+  extractUniqueTags,
+  sortComments,
+  formatCommentForDisplay,
+  getUserDisplayName
+} from '../utils'
 
-// Statistiques calculées
-const observationsWithImages = computed(() => {
-  return observations.value.filter(obs => obs.images?.length > 0).length
+// Composables
+const {
+  observations,
+  loading,
+  error,
+  loadObservations
+} = useObservations()
+
+const {
+  commentsByObservation: observationComments,
+  loadComments
+} = useComments()
+
+// WebSocket
+const { connected, connect, disconnect, subscribe } = useWebSocket()
+
+// Statistiques calculées avec les nouvelles fonctions utilitaires
+const stats = computed(() => {
+  return calculateObservationStats(observations.value)
 })
 
+const observationsWithImages = computed(() => stats.value.withImages)
 const totalComments = computed(() => {
   return Object.values(observationComments.value).reduce((sum, comments) => sum + comments.length, 0)
 })
+const uniqueTypes = computed(() => Object.keys(stats.value.byType).length)
 
-const uniqueTypes = computed(() => {
-  const types = new Set(observations.value.map(obs => obs.type).filter(Boolean))
-  return types.size
-})
-
-// Fonctions utilitaires
-const formatDate = (date) => {
-  if (!date) return 'Date inconnue'
-  return new Date(date).toLocaleDateString('fr-FR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
+// Fonction pour obtenir les initiales depuis un commentaire
+const getCommentInitials = (comment) => {
+  const userName = comment.userId?.name || comment.author?.name || 'Utilisateur'
+  return getInitials({ name: userName })
 }
 
-const getInitials = (comment) => {
-  // Essayer d'obtenir le nom depuis différents champs
-  const name = comment?.userId?.name || comment?.author?.name || comment?.userId?.username || comment?.author?.username
-  if (!name) return '?'
+// Charger les observations au montage avec le composable
+const initializeData = async () => {
+  await loadObservations()
   
-  // Prendre les initiales (première lettre de chaque mot)
-  const parts = name.split(' ')
-  if (parts.length >= 2) {
-    return (parts[0][0] + parts[1][0]).toUpperCase()
-  }
-  return name.substring(0, 2).toUpperCase()
-}
-
-const getImageUrl = (observationId, imageData) => {
-  // Si on a déjà un blob pour cette image, l'utiliser
-  const imageId = imageData?.imageId || imageData?.id
-  if (imageId && imageBlobs.value[imageId]) {
-    return imageBlobs.value[imageId]
-  }
+  console.log('✅ Observations chargées:', observations.value.length)
   
-  // Sinon retourner une URL temporaire (sera remplacée par le blob)
-  return 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="400" height="300" fill="%23e5e7eb"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="14" fill="%239ca3af">Chargement...</text></svg>'
-}
-
-// Nouvelle fonction pour charger une image via l'API avec authentification
-const loadImageBlob = async (imageId) => {
-  try {
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-    const API_PREFIX = import.meta.env.VITE_API_PREFIX
-    const token = localStorage.getItem('token')
-    
-    if (!token) {
-      console.warn('⚠️ Pas de token pour charger l\'image:', imageId)
-      return null
-    }
-    
-    const url = `${API_BASE_URL}${API_PREFIX}/images/${imageId}`
-    console.log('📥 Chargement de l\'image:', url)
-    
-    const response = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-    
-    if (!response.ok) {
-      console.error('❌ Erreur lors du chargement de l\'image:', response.status, response.statusText)
-      return null
-    }
-    
-    const blob = await response.blob()
-    const blobUrl = URL.createObjectURL(blob)
-    imageBlobs.value[imageId] = blobUrl
-    
-    console.log('✅ Image chargée:', imageId, '→', blobUrl)
-    return blobUrl
-  } catch (err) {
-    console.error('❌ Erreur lors du chargement de l\'image:', imageId, err)
-    return null
+  // Charger automatiquement les commentaires pour chaque observation
+  for (const obs of observations.value) {
+    await loadComments(obs._id)
   }
 }
 
-// Charger toutes les images d'une observation
-const loadImagesForObservation = async (observation) => {
-  if (!observation.images || observation.images.length === 0) return
+// Charger les commentaires avec formatage
+const loadObservationComments = async (observationId) => {
+  await loadComments(observationId)
   
-  console.log(`📸 Chargement de ${observation.images.length} images pour observation ${observation._id}`)
+  // Trier les commentaires par date (plus récents d'abord)
+  if (observationComments.value[observationId]) {
+    observationComments.value[observationId] = sortComments(
+      observationComments.value[observationId],
+      'desc'
+    )
+  }
+}
+
+// Gérer les événements WebSocket avec le composable useObservations
+const handleObservationEvent = async (data) => {
+  console.log('🔔 Événement observation reçu:', data)
   
-  for (const image of observation.images) {
-    const imageId = image.imageId || image.id
-    if (imageId && !imageBlobs.value[imageId]) {
-      await loadImageBlob(imageId)
+  const { type, observation } = data
+  
+  if (type === 'observation:created') {
+    console.log('➕ Nouvelle observation créée:', observation.title)
+    
+    // Vérifier si l'observation n'existe pas déjà
+    const exists = observations.value.some(obs => obs._id === observation._id)
+    if (!exists) {
+      observations.value.unshift(observation)
+      await loadObservationComments(observation._id)
+      console.log('✅ Nouvelle observation ajoutée')
     }
-  }
-}
-
-const handleImageError = (event) => {
-  console.warn('❌ Image blob non disponible')
-  // Utiliser une image SVG inline au lieu de via.placeholder.com
-  event.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="400" height="300" fill="%23f3f4f6"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="16" fill="%236b7280">Image non disponible</text></svg>'
-  event.target.classList.add('opacity-50')
-}
-
-const getOpenStreetMapUrl = (coordinates) => {
-  // coordinates est au format [longitude, latitude] (GeoJSON)
-  const [lng, lat] = coordinates
-  // OpenStreetMap utilise le format: https://www.openstreetmap.org/?mlat={lat}&mlon={lng}#map={zoom}/{lat}/{lng}
-  // mlat/mlon ajoute un marqueur, #map définit le zoom et le centre
-  const zoom = 15 // Niveau de zoom (15 = quartier, 18 = rue)
-  return `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=${zoom}/${lat}/${lng}`
-}
-
-// Charger les observations
-const loadObservations = async () => {
-  try {
-    loading.value = true
-    error.value = null
+  } else if (type === 'observation:updated') {
+    console.log('✏️ Observation mise à jour:', observation.title)
     
-    const response = await observationService.getAll({ limit: 100 })
-    
-    // Gérer différentes structures de réponse
-    if (response.data) {
-      observations.value = Array.isArray(response.data) ? response.data : []
-    } else if (response.observations) {
-      observations.value = response.observations
-    } else if (Array.isArray(response)) {
-      observations.value = response
-    } else {
-      observations.value = []
+    const index = observations.value.findIndex(obs => obs._id === observation._id)
+    if (index !== -1) {
+      observations.value[index] = observation
+      console.log('✅ Observation mise à jour')
     }
+  } else if (type === 'observation:deleted') {
+    console.log('🗑️ Observation supprimée:', data.observationId || observation._id)
     
-    console.log('✅ Observations chargées:', observations.value.length)
-    console.log('📊 Première observation:', observations.value[0])
+    const observationId = data.observationId || observation._id
+    observations.value = observations.value.filter(obs => obs._id !== observationId)
+    delete observationComments.value[observationId]
     
-    // Afficher les détails d'une observation avec images
-    const obsWithImages = observations.value.find(obs => obs.images?.length > 0)
-    if (obsWithImages) {
-      console.log('🖼️ Observation avec images:', {
-        id: obsWithImages._id,
-        title: obsWithImages.title,
-        images: obsWithImages.images
-      })
-    }
-    
-    // Charger les images pour chaque observation
-    console.log('📥 Chargement des images...')
-    for (const obs of observations.value) {
-      await loadImagesForObservation(obs)
-    }
-    console.log('✅ Toutes les images chargées')
-    
-    // Charger automatiquement les commentaires pour chaque observation
-    for (const obs of observations.value) {
-      await loadComments(obs._id)
-    }
-  } catch (err) {
-    console.error('❌ Erreur lors du chargement des observations:', err)
-    error.value = err.response?.data?.message || err.message || 'Erreur de chargement'
-  } finally {
-    loading.value = false
-  }
-}
-
-// Charger les commentaires d'une observation
-const loadComments = async (observationId) => {
-  try {
-    const response = await commentService.getByObservation(observationId, { limit: 100 })
-    
-    // Gérer différentes structures de réponse
-    if (response.data) {
-      observationComments.value[observationId] = response.data
-    } else if (response.comments) {
-      observationComments.value[observationId] = response.comments
-    } else if (Array.isArray(response)) {
-      observationComments.value[observationId] = response
-    } else {
-      observationComments.value[observationId] = []
-    }
-    
-    console.log(`✅ Commentaires chargés pour ${observationId}:`, observationComments.value[observationId].length)
-  } catch (err) {
-    console.error(`❌ Erreur lors du chargement des commentaires pour ${observationId}:`, err)
-    observationComments.value[observationId] = []
+    console.log('✅ Observation supprimée')
   }
 }
 
 // Charger au montage
-onMounted(() => {
-  loadObservations()
+onMounted(async () => {
+  await initializeData()
+  
+  // Connecter WebSocket
+  const token = localStorage.getItem('token')
+  if (token) {
+    await connect(token)
+    await subscribe('observations', handleObservationEvent)
+    console.log('✅ WebSocket connecté et abonné aux observations')
+  } else {
+    console.warn('⚠️ Pas de token, WebSocket non connecté')
+  }
 })
 
-// Nettoyer les blobs au démontage pour éviter les fuites mémoire
+// Nettoyer au démontage
 onBeforeUnmount(() => {
-  Object.values(imageBlobs.value).forEach(blobUrl => {
-    URL.revokeObjectURL(blobUrl)
-  })
+  disconnect()
 })
 </script>
 

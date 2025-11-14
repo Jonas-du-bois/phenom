@@ -173,14 +173,3 @@ export const nearbyObservationsValidation = [
     .isInt({ min: 1, max: 100 }).withMessage('La limite doit être entre 1 et 100')
     .toInt()
 ];
-
-/**
- * Validation pour l'ID d'image de paramètre
- */
-export const imageIdParamValidation = [
-  param('id')
-    .isMongoId().withMessage('ID d\'observation invalide'),
-  param('imageId')
-    .notEmpty().withMessage('ID d\'image requis')
-    .matches(/^img_[0-9]+_[a-z0-9]+$/).withMessage('ID d\'image invalide')
-];

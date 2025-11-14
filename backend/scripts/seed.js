@@ -1,9 +1,7 @@
-import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
 import { connectDB, disconnectDB } from '../src/config/database.js';
-import { initGridFS } from '../src/config/gridfs.js';
 import User from '../src/models/User.js';
 import Observation from '../src/models/Observation.js';
 import Comment from '../src/models/Comment.js';
@@ -34,31 +32,17 @@ const seedDatabase = async () => {
     console.log('🔌 Connexion à MongoDB Atlas...');
     await connectDB();
 
-    // 2. Initialisation de GridFS pour les images
-    console.log('📦 Initialisation de GridFS...');
-    initGridFS();
-
-    // 3. Nettoyage des collections existantes
+    // 2. Nettoyage des collections existantes
     console.log('\n🧹 Nettoyage des collections...');
     await Promise.all([
       User.deleteMany({}),
       Observation.deleteMany({}),
       Comment.deleteMany({})
     ]);
+    console.log('   ✅ Collections nettoyées (Users, Observations, Comments)');
+    console.log('   📸 Images: Cloudinary (pas de nettoyage nécessaire)');
 
-    // Nettoyer GridFS (images)
-    const db = mongoose.connection.db;
-    try {
-      await db.collection('images.files').deleteMany({});
-      await db.collection('images.chunks').deleteMany({});
-      console.log(
-        '   ✅ Collections nettoyées (Users, Observations, Comments, Images)'
-      );
-    } catch (error) {
-      console.log('   ⚠️  GridFS collections may not exist yet (first run)');
-    }
-
-    // 4. Seed Admin (1 admin)
+    // 3. Seed Admin (1 admin)
     const _admin = await seedAdmin();
 
     // 5. Seed Users (10 utilisateurs normaux)

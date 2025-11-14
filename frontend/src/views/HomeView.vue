@@ -616,61 +616,22 @@
         </div>
       </section>
 
-      <!-- Section: Images -->
+      <!-- Section: Images (Migration vers Cloudinary) -->
       <section id="images" class="api-section mb-8">
-        <h2 class="section-title">🖼️ Images</h2>
-        <div class="grid md:grid-cols-2 gap-4">
-          <!-- Upload Image -->
-          <div class="api-card">
-            <h3 class="text-lg font-semibold mb-3">Upload une image</h3>
-            <div class="space-y-2 mb-3">
-              <input
-                type="file"
-                @change="handleFileSelect"
-                accept="image/*"
-                class="input-field"
-              />
-            </div>
-            <button @click="uploadImage" class="btn-primary mb-3" :disabled="!selectedFile">
-              Upload
-            </button>
-            <pre v-if="results.uploadImage" class="result-box">{{ JSON.stringify(results.uploadImage, null, 2) }}</pre>
-          </div>
-
-          <!-- Get Image -->
-          <div class="api-card">
-            <h3 class="text-lg font-semibold mb-3">Récupérer une image</h3>
-            <div class="space-y-2 mb-3">
-              <input
-                v-model="imageForms.get.id"
-                type="text"
-                placeholder="ID de l'image"
-                class="input-field"
-              />
-            </div>
-            <button @click="getImage" class="btn-primary mb-3">
-              Récupérer
-            </button>
-            <div v-if="results.imageUrl" class="mt-3">
-              <img :src="results.imageUrl" alt="Image" class="max-w-full h-auto rounded" />
-            </div>
-          </div>
-
-          <!-- Delete Image -->
-          <div class="api-card">
-            <h3 class="text-lg font-semibold mb-3">Supprimer une image</h3>
-            <div class="space-y-2 mb-3">
-              <input
-                v-model="imageForms.delete.id"
-                type="text"
-                placeholder="ID de l'image"
-                class="input-field"
-              />
-            </div>
-            <button @click="deleteImage" class="btn-danger mb-3">
-              Supprimer
-            </button>
-            <pre v-if="results.deleteImage" class="result-box">{{ JSON.stringify(results.deleteImage, null, 2) }}</pre>
+        <h2 class="section-title">🖼️ Images (Cloudinary)</h2>
+        <div class="api-card">
+          <div class="bg-blue-900/30 border border-blue-500/30 rounded-lg p-4">
+            <p class="text-blue-200 text-sm">
+              ✨ <strong>Migration vers Cloudinary !</strong><br>
+              Les images sont maintenant stockées sur Cloudinary avec des URLs publiques directes.<br>
+              <br>
+              📸 Les images sont gérées directement via les observations :<br>
+              • <strong>Upload</strong> : Lors de la création d'une observation<br>
+              • <strong>Affichage</strong> : URLs directes HTTPS (pas besoin d'authentification)<br>
+              • <strong>Suppression</strong> : Via l'observation<br>
+              <br>
+              🔗 Consultez la section "Observations" pour gérer les images.
+            </p>
           </div>
         </div>
       </section>
@@ -959,6 +920,28 @@ import { imageService } from '../services/imageService'
 import { adminService } from '../services/adminService'
 import { statsService } from '../services/statsService'
 import { useWebSocket } from '../composables/useWebSocket'
+
+// Import des utilitaires
+import {
+  getAuthToken,
+  saveAuthToken,
+  removeAuthToken,
+  getUserData,
+  saveUserData,
+  removeUserData,
+  clearAuthData,
+  validateEmail,
+  validatePassword,
+  validatePasswordMatch,
+  validateUserData,
+  sanitizeUserData,
+  formatUserForDisplay,
+  isAdmin,
+  canAccessAdminPanel,
+  formatDate,
+  formatRelativeTime
+} from '../utils'
+
 import { OBSERVATION_TYPE_OPTIONS } from '../constants/observationTypes'
 
 // Configuration
@@ -968,10 +951,11 @@ const wsUrl = computed(() => import.meta.env.VITE_WS_URL)
 // État
 const healthStatus = ref(null)
 const results = ref({})
-const selectedFile = ref(null)
 const observationImageInput = ref(null)
-const currentUser = ref(null) // Utilisateur connecté
-const currentToken = ref(localStorage.getItem('token') || null) // Token JWT
+
+// Récupérer l'utilisateur depuis le localStorage avec les utilitaires
+const currentUser = ref(getUserData())
+const currentToken = ref(getAuthToken())
 
 // WebSocket
 const { connected: wsConnected, messages: wsMessages, error: wsError, connect, disconnect, clearMessages } = useWebSocket()
@@ -1045,11 +1029,6 @@ const commentForms = ref({
   delete: { id: '' }
 })
 
-const imageForms = ref({
-  get: { id: '' },
-  delete: { id: '' }
-})
-
 const adminForms = ref({
   users: { 
     page: 1, 
@@ -1087,19 +1066,24 @@ async function getPublicStats() {
 // Méthodes - Auth
 async function testLogin() {
   try {
+    // Valider l'email et le mot de passe avant l'envoi
+    if (!validateEmail(authForms.value.login.email)) {
+      results.value.login = { error: 'Email invalide' }
+      return
+    }
+    
     const response = await authService.login(authForms.value.login)
     results.value.login = response
     
     console.log('📦 Réponse login complète:', response)
     
-    // Stocker le token et l'utilisateur
-    // La structure est: { success: true, data: { user, accessToken, refreshToken } }
+    // Stocker le token et l'utilisateur avec les utilitaires
     const token = response.data?.accessToken || response.data?.token
     const user = response.data?.user
     
     if (token) {
       currentToken.value = token
-      localStorage.setItem('token', token)
+      saveAuthToken(token)
       console.log('✅ Token stocké:', token.substring(0, 20) + '...')
       
       // Stocker aussi le refreshToken
@@ -1110,11 +1094,12 @@ async function testLogin() {
       console.error('❌ Aucun token trouvé dans la réponse')
     }
     
-    // Récupérer et stocker les infos utilisateur
+    // Récupérer et stocker les infos utilisateur avec formatage
     if (user) {
-      currentUser.value = user
-      localStorage.setItem('user', JSON.stringify(user))
-      console.log('✅ Utilisateur stocké:', user.name || user.email)
+      const formattedUser = formatUserForDisplay(user)
+      currentUser.value = formattedUser
+      saveUserData(formattedUser)
+      console.log('✅ Utilisateur stocké:', formattedUser.name)
     } else {
       console.error('❌ Aucun utilisateur trouvé dans la réponse')
     }
@@ -1128,7 +1113,16 @@ async function testLogin() {
 
 async function testRegister() {
   try {
-    const response = await authService.register(authForms.value.register)
+    // Valider les données avant l'envoi
+    const validation = validateUserData(authForms.value.register, false)
+    if (!validation.valid) {
+      results.value.register = { error: validation.errors }
+      return
+    }
+    
+    // Nettoyer les données
+    const cleanData = sanitizeUserData(authForms.value.register)
+    const response = await authService.register(cleanData)
     results.value.register = response
   } catch (error) {
     results.value.register = { error: error.response?.data || error.message }
@@ -1145,16 +1139,18 @@ async function getProfile() {
 }
 
 function debugLocalStorage() {
-  const token = localStorage.getItem('token')
+  const token = getAuthToken()
   const refreshToken = localStorage.getItem('refreshToken')
-  const user = localStorage.getItem('user')
+  const user = getUserData()
   
   results.value.debug = {
     token: token ? token.substring(0, 30) + '... (' + token.length + ' chars)' : 'null',
     refreshToken: refreshToken ? refreshToken.substring(0, 30) + '... (' + refreshToken.length + ' chars)' : 'null',
-    user: user ? JSON.parse(user) : 'null',
+    user: user,
     currentUser: currentUser.value,
-    currentToken: currentToken.value ? currentToken.value.substring(0, 30) + '...' : 'null'
+    currentToken: currentToken.value ? currentToken.value.substring(0, 30) + '...' : 'null',
+    isAdmin: isAdmin(user),
+    canAccessAdmin: canAccessAdminPanel(user)
   }
   
   console.log('🔍 Debug localStorage:', results.value.debug)
@@ -1165,11 +1161,10 @@ async function testLogout() {
     const response = await authService.logout()
     results.value.logout = response
     
-    // Nettoyer les données locales
+    // Nettoyer toutes les données d'authentification avec l'utilitaire
     currentToken.value = null
     currentUser.value = null
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
+    clearAuthData()
     
     console.log('👋 Déconnecté avec succès')
   } catch (error) {
@@ -1180,8 +1175,24 @@ async function testLogout() {
 // Méthodes - Users
 async function updateProfile() {
   try {
-    const response = await userService.updateMe(userForms.value.update)
+    // Valider les données
+    const validation = validateUserData(userForms.value.update, true)
+    if (!validation.valid) {
+      results.value.updateProfile = { error: validation.errors }
+      return
+    }
+    
+    // Nettoyer les données
+    const cleanData = sanitizeUserData(userForms.value.update)
+    const response = await userService.updateMe(cleanData)
     results.value.updateProfile = response
+    
+    // Mettre à jour l'utilisateur courant
+    if (response.success && response.data) {
+      const formattedUser = formatUserForDisplay(response.data)
+      currentUser.value = formattedUser
+      saveUserData(formattedUser)
+    }
   } catch (error) {
     results.value.updateProfile = { error: error.response?.data || error.message }
   }
@@ -1189,7 +1200,7 @@ async function updateProfile() {
 
 async function changePassword() {
   try {
-    // Validation côté client
+    // Validation côté client avec les utilitaires
     const { currentPassword, newPassword, confirmPassword } = userForms.value.password
     
     if (!currentPassword || !newPassword || !confirmPassword) {
@@ -1202,7 +1213,8 @@ async function changePassword() {
       return
     }
     
-    if (newPassword !== confirmPassword) {
+    // Utiliser validatePasswordMatch
+    if (!validatePasswordMatch(newPassword, confirmPassword)) {
       results.value.changePassword = {
         error: {
           success: false,
@@ -1212,7 +1224,8 @@ async function changePassword() {
       return
     }
     
-    if (newPassword.length < 6) {
+    // Utiliser validatePassword
+    if (!validatePassword(newPassword)) {
       results.value.changePassword = {
         error: {
           success: false,
@@ -1223,7 +1236,7 @@ async function changePassword() {
     }
     
     // Debug: vérifier le token
-    const token = localStorage.getItem('token')
+    const token = getAuthToken()
     console.log('🔑 Token présent:', !!token)
     console.log('📝 Données envoyées:', { currentPassword: '***', newPassword: '***', confirmPassword: '***' })
     
@@ -1488,40 +1501,6 @@ async function deleteComment() {
   }
 }
 
-// Méthodes - Images
-function handleFileSelect(event) {
-  selectedFile.value = event.target.files[0]
-}
-
-async function uploadImage() {
-  if (!selectedFile.value) return
-  try {
-    const response = await imageService.upload(selectedFile.value)
-    results.value.uploadImage = response
-  } catch (error) {
-    results.value.uploadImage = { error: error.response?.data || error.message }
-  }
-}
-
-async function getImage() {
-  try {
-    const blob = await imageService.getById(imageForms.value.get.id)
-    results.value.imageUrl = URL.createObjectURL(blob)
-  } catch (error) {
-    results.value.imageUrl = null
-    console.error('Erreur:', error)
-  }
-}
-
-async function deleteImage() {
-  try {
-    const response = await imageService.delete(imageForms.value.delete.id)
-    results.value.deleteImage = response
-  } catch (error) {
-    results.value.deleteImage = { error: error.response?.data || error.message }
-  }
-}
-
 // Méthodes - Admin
 async function getAdminStats() {
   try {
@@ -1602,16 +1581,12 @@ function scrollToSection(sectionId) {
 onMounted(() => {
   checkHealth()
   
-  // Charger l'utilisateur depuis localStorage au démarrage
-  const savedUser = localStorage.getItem('user')
+  // Charger l'utilisateur depuis localStorage avec l'utilitaire
+  const savedUser = getUserData()
   if (savedUser) {
-    try {
-      currentUser.value = JSON.parse(savedUser)
-      console.log('👤 Utilisateur chargé:', currentUser.value)
-    } catch (error) {
-      console.error('Erreur lors du chargement de l\'utilisateur:', error)
-      localStorage.removeItem('user')
-    }
+    currentUser.value = savedUser
+    console.log('👤 Utilisateur chargé:', savedUser.name)
+    console.log('🔑 Est admin:', isAdmin(savedUser))
   }
 })
 </script>

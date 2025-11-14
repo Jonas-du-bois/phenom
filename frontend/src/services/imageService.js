@@ -1,5 +1,6 @@
 /**
- * Services API pour les images
+ * Service API pour les images (Cloudinary)
+ * Simplifié: les images ont des URLs publiques directes
  */
 import apiClient from '../utils/api'
 
@@ -22,43 +23,48 @@ export const imageService = {
   },
 
   /**
-   * Upload une image (legacy - utilise uploadToObservation à la place)
-   * @deprecated
+   * Liste les images d'une observation
+   * @param {string} observationId - ID de l'observation
    */
-  async upload(file) {
-    const formData = new FormData()
-    formData.append('image', file)
-    
-    const response = await apiClient.post('/images', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    })
+  async listImages(observationId) {
+    const response = await apiClient.get(`/observations/${observationId}/images`)
     return response.data
-  },
-
-  /**
-   * Récupère une image par ID
-   */
-  async getById(imageId) {
-    const response = await apiClient.get(`/images/${imageId}`, {
-      responseType: 'blob'
-    })
-    return response.data
-  },
-
-  /**
-   * Récupère l'URL d'une image
-   */
-  getImageUrl(imageId) {
-    return `${apiClient.defaults.baseURL}/images/${imageId}`
   },
 
   /**
    * Supprime une image
+   * @param {string} observationId - ID de l'observation
+   * @param {string} publicId - Public ID Cloudinary (sera URL-encodé)
    */
-  async delete(imageId) {
-    const response = await apiClient.delete(`/images/${imageId}`)
+  async deleteImage(observationId, publicId) {
+    const encodedPublicId = encodeURIComponent(publicId)
+    const response = await apiClient.delete(`/observations/${observationId}/images/${encodedPublicId}`)
     return response.data
+  },
+
+  /**
+   * Les images Cloudinary ont des URLs publiques directes
+   * Plus besoin de passer par le backend pour les afficher !
+   * @param {string} url - URL Cloudinary de l'image
+   * @param {Object} options - Options de transformation (optionnel)
+   */
+  getImageUrl(url, options = {}) {
+    if (!url) return null
+    
+    // Si des transformations sont demandées, on peut les ajouter à l'URL Cloudinary
+    if (options.width || options.height) {
+      // Cloudinary permet de modifier l'URL pour transformer l'image
+      // Format: https://res.cloudinary.com/cloud_name/image/upload/w_300,h_200/path
+      const parts = url.split('/upload/')
+      if (parts.length === 2) {
+        let transform = []
+        if (options.width) transform.push(`w_${options.width}`)
+        if (options.height) transform.push(`h_${options.height}`)
+        if (options.crop) transform.push(`c_${options.crop}`)
+        return `${parts[0]}/upload/${transform.join(',')}/${parts[1]}`
+      }
+    }
+    
+    return url
   }
 }

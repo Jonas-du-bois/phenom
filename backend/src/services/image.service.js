@@ -1,130 +1,58 @@
-import { Readable } from 'stream';
-import { getGridFSBucket } from '../config/gridfs.js';
-import { ObjectId } from 'mongodb';
+import { uploadImage, deleteImage, deleteImages, getImageUrl } from '../config/cloudinary.js';
 import imageCompressor from '../utils/compress-image.js';
 
 /**
- * Service de gestion des images avec GridFS
+ * Service de gestion des images avec Cloudinary
+ * Remplace GridFS pour plus de performance et simplicité
  */
 class ImageService {
   /**
-   * Upload une image dans GridFS (avec compression automatique)
-   * @param {Buffer} buffer - Buffer de l'image
-   * @param {string} filename - Nom du fichier
-   * @param {string} mimetype - Type MIME
-   * @param {string} observationId - ID de l'observation
-   * @returns {Promise<Object>} Informations du fichier uploadé
+   * Upload une image sur Cloudinary (avec compression automatique)
    */
   async uploadImage(buffer, filename, mimetype, observationId) {
     try {
-      const bucket = getGridFSBucket();
-
-      // 🗜️ COMPRESSION DE L'IMAGE (délégué au compressor)
       const compressed = await imageCompressor.compress(buffer, mimetype);
 
-      // Créer un stream depuis le buffer compressé
-      const readableStream = new Readable();
-      readableStream.push(compressed.buffer);
-      readableStream.push(null);
+      const result = await uploadImage(compressed.buffer, {
+        folder: 'phenom/observations',
+        public_id: `${observationId}_${Date.now()}`,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        quality: 85
+      });
 
-      // Upload dans GridFS avec les métadonnées de compression
-      const uploadStream = bucket.openUploadStream(filename, {
-        contentType: compressed.mimetype,
-        metadata: {
-          observationId,
-          uploadedAt: new Date(),
-          // Métadonnées de compression
-          compression: {
-            originalSize: compressed.metadata.originalSize,
-            compressedSize: compressed.metadata.compressedSize,
-            compressionRatio: compressed.metadata.compressionRatio,
-            savedBytes: compressed.metadata.savedBytes,
-            processingTime: compressed.metadata.processingTime,
-            originalDimensions: compressed.metadata.originalDimensions
-          }
+      return {
+        publicId: result.public_id,
+        url: result.secure_url,
+        format: result.format,
+        size: result.bytes,
+        width: result.width,
+        height: result.height,
+        observationId,
+        compression: {
+          originalSize: compressed.metadata.originalSize,
+          compressedSize: compressed.metadata.compressedSize,
+          ratio: compressed.metadata.compressionRatio,
+          savedBytes: compressed.metadata.savedBytes
         }
-      });
-
-      return new Promise((resolve, reject) => {
-        readableStream
-          .pipe(uploadStream)
-          .on('error', reject)
-          .on('finish', () => {
-            resolve({
-              id: uploadStream.id.toString(),
-              filename: uploadStream.filename,
-              contentType: compressed.mimetype,
-              size: compressed.metadata.compressedSize,
-              url: `/api/v1/images/${uploadStream.id.toString()}`,
-              observationId,
-              compression: {
-                originalSize: compressed.metadata.originalSize,
-                savedBytes: compressed.metadata.savedBytes,
-                ratio: compressed.metadata.compressionRatio
-              }
-            });
-          });
-      });
+      };
     } catch (error) {
       throw new Error(`Erreur lors de l'upload: ${error.message}`);
     }
   }
 
   /**
-   * Récupère une image depuis GridFS
-   * @param {string} imageId - ID de l'image
-   * @returns {Promise<Stream>} Stream de l'image
+   * Supprime une image de Cloudinary
    */
-  async getImage(imageId) {
+  async deleteImage(publicId) {
     try {
-      const bucket = getGridFSBucket();
+      const result = await deleteImage(publicId);
 
-      // Vérifier que l'image existe
-      const files = await bucket.find({ _id: new ObjectId(imageId) }).toArray();
-
-      if (!files || files.length === 0) {
-        throw new Error('IMAGE_NOT_FOUND');
+      if (result.result !== 'ok' && result.result !== 'not found') {
+        throw new Error('IMAGE_DELETE_FAILED');
       }
-
-      const file = files[0];
-      const downloadStream = bucket.openDownloadStream(new ObjectId(imageId));
-
-      return {
-        stream: downloadStream,
-        contentType: file.contentType || 'image/jpeg',
-        filename: file.filename
-      };
     } catch (error) {
-      if (error.message === 'IMAGE_NOT_FOUND') {
-        throw error;
-      }
-      throw new Error(`Erreur lors de la récupération: ${error.message}`);
-    }
-  }
-
-  /**
-   * Supprime une image de GridFS
-   * @param {string} imageId - ID de l'image
-   * @param {string} observationId - ID de l'observation (pour vérification)
-   * @returns {Promise<void>}
-   */
-  async deleteImage(imageId, observationId) {
-    try {
-      const bucket = getGridFSBucket();
-
-      // Vérifier que l'image existe et appartient à l'observation
-      const files = await bucket.find({
-        _id: new ObjectId(imageId),
-        'metadata.observationId': observationId
-      }).toArray();
-
-      if (!files || files.length === 0) {
-        throw new Error('IMAGE_NOT_FOUND');
-      }
-
-      await bucket.delete(new ObjectId(imageId));
-    } catch (error) {
-      if (error.message === 'IMAGE_NOT_FOUND') {
+      if (error.message === 'IMAGE_DELETE_FAILED') {
         throw error;
       }
       throw new Error(`Erreur lors de la suppression: ${error.message}`);
@@ -132,53 +60,26 @@ class ImageService {
   }
 
   /**
-   * Supprime toutes les images d'une observation
-   * @param {string} observationId - ID de l'observation
-   * @returns {Promise<number>} Nombre d'images supprimées
+   * Supprime plusieurs images
    */
-  async deleteAllImagesForObservation(observationId) {
+  async deleteMultipleImages(publicIds) {
     try {
-      const bucket = getGridFSBucket();
-
-      // Trouver toutes les images de l'observation
-      const files = await bucket.find({
-        'metadata.observationId': observationId
-      }).toArray();
-
-      // Supprimer chaque image
-      for (const file of files) {
-        await bucket.delete(file._id);
+      if (!publicIds || publicIds.length === 0) {
+        return 0;
       }
 
-      return files.length;
+      const result = await deleteImages(publicIds);
+      return result.deleted ? Object.keys(result.deleted).length : 0;
     } catch (error) {
-      throw new Error(`Erreur lors de la suppression des images: ${error.message}`);
+      throw new Error(`Erreur lors de la suppression multiple: ${error.message}`);
     }
   }
 
   /**
-   * Liste les images d'une observation
-   * @param {string} observationId - ID de l'observation
-   * @returns {Promise<Array>} Liste des images
+   * Génère une URL optimisée
    */
-  async listImagesForObservation(observationId) {
-    try {
-      const bucket = getGridFSBucket();
-
-      const files = await bucket.find({
-        'metadata.observationId': observationId
-      }).toArray();
-
-      return files.map(file => ({
-        id: file._id.toString(),
-        filename: file.filename,
-        contentType: file.contentType,
-        size: file.length,
-        uploadedAt: file.metadata.uploadedAt
-      }));
-    } catch (error) {
-      throw new Error(`Erreur lors de la récupération des images: ${error.message}`);
-    }
+  getImageUrl(publicId, options = {}) {
+    return getImageUrl(publicId, options);
   }
 }
 

@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
-import { initGridFS } from './gridfs.js';
 
 /**
  * Configure et connecte à MongoDB (local ou Atlas)
  * Charge automatiquement les variables depuis phenom/.env
+ * Images stockées sur Cloudinary (plus besoin de GridFS)
  * @returns {Promise<void>}
  */
 const connectDB = async () => {
@@ -37,9 +37,7 @@ const connectDB = async () => {
     console.log(`✅ ${connectionType} connecté avec succès`);
     console.log(`   Database: ${mongoose.connection.name}`);
     console.log(`   AutoIndex: ${mongoose.get('autoIndex') ? 'activé (dev)' : 'désactivé (prod)'}`);
-
-    // Initialiser GridFS pour le stockage des images
-    initGridFS();
+    console.log('   Images: Cloudinary (CDN)');
 
     // Gestion des événements de connexion
     mongoose.connection.on('error', (err) => {

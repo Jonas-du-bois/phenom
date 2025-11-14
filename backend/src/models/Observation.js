@@ -16,21 +16,33 @@ const observationSchema = new mongoose.Schema({
     maxlength: [2000, 'La description ne peut pas dépasser 2000 caractères']
   },
   images: [{
-    imageId: {
+    publicId: {
       type: String,
-      required: true
+      required: true,
+      comment: 'Cloudinary public_id'
     },
-    imageUrl: {
+    url: {
       type: String,
-      required: true
+      required: true,
+      comment: 'URL Cloudinary complète (HTTPS)'
     },
     size: {
       type: Number,
-      required: true
+      required: true,
+      comment: 'Taille en octets'
     },
     format: {
       type: String,
-      required: true
+      required: true,
+      comment: 'Format (jpeg, png, webp...)'
+    },
+    width: {
+      type: Number,
+      comment: 'Largeur en pixels'
+    },
+    height: {
+      type: Number,
+      comment: 'Hauteur en pixels'
     },
     uploadedAt: {
       type: Date,

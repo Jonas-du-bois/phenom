@@ -37,4 +37,40 @@ export const OBSERVATION_TYPE_OPTIONS = Object.entries(OBSERVATION_TYPES).map(([
   description: data.description
 }))
 
+/**
+ * Convertit un code d'observation (3 lettres) en label complet
+ * @param {string} code - Code à 3 lettres (ex: "WAV")
+ * @returns {string} Label complet ou le code si inconnu
+ * @example
+ * getObservationLabel('WAV') // "Vague/cluster/flap"
+ * getObservationLabel('TCH') // "Détails techniques"
+ * getObservationLabel('XXX') // "XXX" (code inconnu)
+ */
+export const getObservationLabel = (code) => {
+  return OBSERVATION_TYPES[code]?.label || code
+}
+
+/**
+ * Convertit un code d'observation en description complète
+ * @param {string} code - Code à 3 lettres
+ * @returns {string} Description ou le code si inconnu
+ * @example
+ * getObservationDescription('WAV') // "Wave/cluster/flap"
+ */
+export const getObservationDescription = (code) => {
+  return OBSERVATION_TYPES[code]?.description || code
+}
+
+/**
+ * Vérifie si un code d'observation est valide
+ * @param {string} code - Code à vérifier
+ * @returns {boolean} true si le code existe
+ * @example
+ * isValidObservationType('WAV') // true
+ * isValidObservationType('XXX') // false
+ */
+export const isValidObservationType = (code) => {
+  return code in OBSERVATION_TYPES
+}
+
 export default OBSERVATION_TYPES
