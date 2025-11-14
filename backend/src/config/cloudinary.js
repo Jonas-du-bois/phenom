@@ -11,18 +11,46 @@ const initCloudinary = () => {
     throw new Error('CLOUDINARY_URL non défini dans .env');
   }
 
-  // Configuration automatique via CLOUDINARY_URL
+  // Parser l'URL Cloudinary (format: cloudinary://api_key:api_secret@cloud_name)
+  const cloudinaryUrl = process.env.CLOUDINARY_URL;
+  const match = cloudinaryUrl.match(/cloudinary:\/\/([^:]+):([^@]+)@(.+)/);
+
+  if (!match) {
+    throw new Error('Format CLOUDINARY_URL invalide. Format attendu: cloudinary://api_key:api_secret@cloud_name');
+  }
+
+  const [, api_key, api_secret, cloud_name] = match;
+
+  // Configuration avec les credentials extraits
   cloudinary.config({
-    cloudinary_url: process.env.CLOUDINARY_URL,
+    cloud_name,
+    api_key,
+    api_secret,
     secure: true // Toujours utiliser HTTPS
   });
 
   console.log('✅ Cloudinary configuré avec succès');
+  console.log('   Cloud Name:', cloud_name);
+  console.log('   API Key:', api_key ? `${api_key.substring(0, 6)}...` : 'MANQUANT');
 };
 
-// Initialiser seulement si CLOUDINARY_URL est défini
+// Variable pour tracker si déjà initialisé
+let isInitialized = false;
+
+// Fonction pour s'assurer que Cloudinary est initialisé
+const ensureInitialized = () => {
+  if (!isInitialized && process.env.CLOUDINARY_URL) {
+    initCloudinary();
+    isInitialized = true;
+  } else if (!process.env.CLOUDINARY_URL) {
+    throw new Error('CLOUDINARY_URL non défini - impossible d\'initialiser Cloudinary');
+  }
+};
+
+// Initialiser automatiquement si CLOUDINARY_URL est déjà défini
 if (process.env.CLOUDINARY_URL) {
   initCloudinary();
+  isInitialized = true;
 }
 
 /**
@@ -32,6 +60,8 @@ if (process.env.CLOUDINARY_URL) {
  * @returns {Promise<Object>} Résultat de l'upload
  */
 export const uploadImage = async (buffer, options = {}) => {
+  ensureInitialized(); // S'assurer que Cloudinary est configuré
+
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
@@ -67,6 +97,8 @@ export const uploadImage = async (buffer, options = {}) => {
  * @returns {Promise<Object>} Résultat de la suppression
  */
 export const deleteImage = async (publicId) => {
+  ensureInitialized(); // S'assurer que Cloudinary est configuré
+
   try {
     const result = await cloudinary.uploader.destroy(publicId);
     return result;
@@ -81,6 +113,8 @@ export const deleteImage = async (publicId) => {
  * @returns {Promise<Object>} Résultat de la suppression
  */
 export const deleteImages = async (publicIds) => {
+  ensureInitialized(); // S'assurer que Cloudinary est configuré
+
   try {
     const result = await cloudinary.api.delete_resources(publicIds);
     return result;
@@ -96,6 +130,8 @@ export const deleteImages = async (publicIds) => {
  * @returns {string} URL de l'image
  */
 export const getImageUrl = (publicId, options = {}) => {
+  ensureInitialized(); // S'assurer que Cloudinary est configuré
+
   return cloudinary.url(publicId, {
     width: options.width,
     height: options.height,

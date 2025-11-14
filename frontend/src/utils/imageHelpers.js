@@ -5,12 +5,16 @@
 
 /**
  * Récupère l'URL d'une image Cloudinary
- * @param {string} observationId - ID de l'observation (non utilisé avec Cloudinary)
  * @param {Object} imageData - Données de l'image contenant l'URL Cloudinary
  * @param {Object} options - Options de transformation (optionnel)
  * @returns {string} URL de l'image Cloudinary ou placeholder
  */
-export const getImageUrl = (observationId, imageData, options = {}) => {
+export const getImageUrl = (imageData, options = {}) => {
+  // Si imageData est undefined/null, retourner placeholder
+  if (!imageData) {
+    return getPlaceholderImage('Image non disponible')
+  }
+
   // Récupérer l'URL depuis les données de l'image
   const url = imageData?.url
   
@@ -63,29 +67,6 @@ export const handleImageError = (event) => {
   console.warn('❌ Image blob non disponible')
   event.target.src = getPlaceholderImage('Image non disponible')
   event.target.classList.add('opacity-50')
-}
-
-/**
- * Nettoie tous les blobs du cache (à appeler au démontage du composant)
- */
-export const cleanupImageBlobs = () => {
-  imageBlobCache.forEach(blobUrl => {
-    URL.revokeObjectURL(blobUrl)
-  })
-  imageBlobCache.clear()
-  console.log('🧹 Cache d\'images nettoyé')
-}
-
-/**
- * Nettoie un blob spécifique
- * @param {string} imageId - ID de l'image à nettoyer
- */
-export const cleanupImageBlob = (imageId) => {
-  const blobUrl = imageBlobCache.get(imageId)
-  if (blobUrl) {
-    URL.revokeObjectURL(blobUrl)
-    imageBlobCache.delete(imageId)
-  }
 }
 
 /**
