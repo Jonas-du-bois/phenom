@@ -1,7 +1,6 @@
 import observationService from '../services/observation.service.js';
 import { successResponse, createdResponse, errorResponse, notFoundResponse } from '../utils/response.js';
 import { paginatedResponse } from '../utils/pagination.js';
-import { publishObservationEvent } from '../config/websocket.js';
 
 /**
  * Contrôleur des observations
@@ -48,9 +47,6 @@ class ObservationController {
     try {
       const observation = await observationService.createObservation(req.body, req.user._id);
 
-      // Publier l'événement WebSocket
-      publishObservationEvent('observation:created', observation);
-
       return createdResponse(res, observation, 'Observation créée avec succès');
     } catch (error) {
       next(error);
@@ -74,9 +70,6 @@ class ObservationController {
 
       const observation = await observationService.updateObservation(req.params.id, updateData);
 
-      // Publier l'événement WebSocket
-      publishObservationEvent('observation:updated', observation);
-
       return successResponse(res, observation, 'Observation mise à jour avec succès');
     } catch (error) {
       if (error.message === 'OBSERVATION_NOT_FOUND') {
@@ -94,9 +87,6 @@ class ObservationController {
     try {
       const observationId = req.params.id;
       await observationService.deleteObservation(observationId);
-
-      // Publier l'événement WebSocket
-      publishObservationEvent('observation:deleted', { _id: observationId });
 
       return successResponse(res, {}, 'Observation supprimée avec succès');
     } catch (error) {

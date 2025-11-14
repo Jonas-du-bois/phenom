@@ -309,33 +309,33 @@ const loadObservationComments = async (observationId) => {
 }
 
 // Gérer les événements WebSocket avec le composable useObservations
-const handleObservationEvent = async (data) => {
-  console.log('🔔 Événement observation reçu:', data)
+const handleObservationEvent = async (message) => {
+  console.log('🔔 Événement observation reçu:', message)
   
-  const { type, observation } = data
+  const { type, data } = message
   
   if (type === 'observation:created') {
-    console.log('➕ Nouvelle observation créée:', observation.title)
+    console.log('➕ Nouvelle observation créée:', data.title)
     
     // Vérifier si l'observation n'existe pas déjà
-    const exists = observations.value.some(obs => obs._id === observation._id)
+    const exists = observations.value.some(obs => obs._id === data._id)
     if (!exists) {
-      observations.value.unshift(observation)
-      await loadObservationComments(observation._id)
+      observations.value.unshift(data)
+      await loadObservationComments(data._id)
       console.log('✅ Nouvelle observation ajoutée')
     }
   } else if (type === 'observation:updated') {
-    console.log('✏️ Observation mise à jour:', observation.title)
+    console.log('✏️ Observation mise à jour:', data.title)
     
-    const index = observations.value.findIndex(obs => obs._id === observation._id)
+    const index = observations.value.findIndex(obs => obs._id === data._id)
     if (index !== -1) {
-      observations.value[index] = observation
+      observations.value[index] = data
       console.log('✅ Observation mise à jour')
     }
   } else if (type === 'observation:deleted') {
-    console.log('🗑️ Observation supprimée:', data.observationId || observation._id)
+    console.log('🗑️ Observation supprimée:', data.observationId)
     
-    const observationId = data.observationId || observation._id
+    const observationId = data.observationId
     observations.value = observations.value.filter(obs => obs._id !== observationId)
     delete observationComments.value[observationId]
     
