@@ -204,6 +204,10 @@ const getFirstImage = (obs) => {
   return obs.images?.[0]?.url || null
 }
 
+const getObservationTypeLabel = (type) => {
+  return getObservationLabel(type)
+}
+
 const truncateText = (text, maxLength) => {
   if (!text) return ''
   if (text.length <= maxLength) return text
@@ -231,9 +235,16 @@ const formatDate = (date) => {
 const loadStats = async () => {
   try {
     const response = await observationService.getStats()
-    stats.value = response
+    stats.value = response.data || response
   } catch (error) {
     console.error('Erreur chargement stats:', error)
+    // Valeurs par défaut en cas d'erreur
+    stats.value = {
+      totalObservations: 0,
+      totalUsers: 0,
+      totalComments: 0,
+      totalCountries: 0
+    }
   }
 }
 

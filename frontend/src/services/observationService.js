@@ -64,4 +64,12 @@ export const observationService = {
     );
     return response.data;
   },
+
+  /**
+   * Récupère les statistiques des observations
+   */
+  async getStats() {
+    const response = await apiClient.get("/observations/stats");
+    return response.data;
+  },
 };
