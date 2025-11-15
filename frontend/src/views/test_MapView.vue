@@ -58,10 +58,13 @@ import 'leaflet/dist/leaflet.css'
 import 'leaflet.markercluster'
 import 'leaflet.markercluster/dist/MarkerCluster.css'
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
+import { useWebSocket } from '../composables/useWebSocket'
 import { observationService } from '../services/observationService'
 import { getObservationLabel } from '../constants/observationTypes'
 import TestBaseButton from '../components/test_BaseButton.vue'
 import TestBaseLoading from '../components/test_BaseLoading.vue'
+
+const { connect, disconnect, subscribe, unsubscribe } = useWebSocket()
 
 const mapContainer = ref(null)
 const map = ref(null)
@@ -171,8 +174,8 @@ const loadObservations = async () => {
   
   try {
     console.log('🔍 Chargement des observations...')
-    const data = await observationService.getAll()
-    observations.value = data
+    const response = await observationService.getAll()
+    observations.value = response.data || response || []
     console.log(`✅ ${observations.value.length} observation(s) chargée(s)`)
     
     // Nettoyer les anciens marqueurs
@@ -244,13 +247,114 @@ const centerOnUser = () => {
 onMounted(() => {
   initializeMap()
   loadObservations()
+  
+  // Connecter WebSocket pour les mises à jour en temps réel
+  connect()
+  subscribe('observation:created', handleObservationCreated)
+  subscribe('observation:updated', handleObservationUpdated)
+  subscribe('observation:deleted', handleObservationDeleted)
 })
 
 onUnmounted(() => {
   if (map.value) {
     map.value.remove()
   }
+  
+  // Nettoyer WebSocket
+  unsubscribe('observation:created', handleObservationCreated)
+  unsubscribe('observation:updated', handleObservationUpdated)
+  unsubscribe('observation:deleted', handleObservationDeleted)
+  disconnect()
 })
+
+// Handlers WebSocket
+const handleObservationCreated = (obs) => {
+  console.log('🔔 Nouvelle observation reçue:', obs)
+  
+  // Vérifier si elle a des coordonnées valides
+  if (obs.location?.coordinates && obs.location.coordinates.length === 2) {
+    // Ajouter à la liste
+    observations.value.push(obs)
+    
+    // Créer le marqueur
+    const [lng, lat] = obs.location.coordinates
+    const marker = L.marker([lat, lng], {
+      icon: createCustomIcon(obs.type)
+    })
+    
+    marker.bindPopup(createPopupContent(obs), {
+      maxWidth: 300,
+      className: 'custom-popup'
+    })
+    
+    markerClusterGroup.value.addLayer(marker)
+    console.log('✅ Nouvelle observation ajoutée à la carte')
+  }
+}
+
+const handleObservationUpdated = (obs) => {
+  console.log('🔔 Observation mise à jour:', obs)
+  
+  // Mettre à jour dans la liste
+  const index = observations.value.findIndex(o => o._id === obs._id)
+  if (index !== -1) {
+    observations.value[index] = obs
+  }
+  
+  // Recharger tous les marqueurs pour simplifier
+  // (une optimisation serait de trouver et mettre à jour seulement le marqueur concerné)
+  if (markerClusterGroup.value) {
+    markerClusterGroup.value.clearLayers()
+    
+    observations.value.forEach(observation => {
+      if (observation.location?.coordinates && observation.location.coordinates.length === 2) {
+        const [lng, lat] = observation.location.coordinates
+        const marker = L.marker([lat, lng], {
+          icon: createCustomIcon(observation.type)
+        })
+        
+        marker.bindPopup(createPopupContent(observation), {
+          maxWidth: 300,
+          className: 'custom-popup'
+        })
+        
+        markerClusterGroup.value.addLayer(marker)
+      }
+    })
+    
+    console.log('✅ Observation mise à jour sur la carte')
+  }
+}
+
+const handleObservationDeleted = (data) => {
+  console.log('🔔 Observation supprimée:', data)
+  
+  // Retirer de la liste
+  observations.value = observations.value.filter(obs => obs._id !== data._id)
+  
+  // Recharger les marqueurs (plus simple que de trouver le bon marqueur)
+  if (markerClusterGroup.value) {
+    markerClusterGroup.value.clearLayers()
+    
+    observations.value.forEach(obs => {
+      if (obs.location?.coordinates && obs.location.coordinates.length === 2) {
+        const [lng, lat] = obs.location.coordinates
+        const marker = L.marker([lat, lng], {
+          icon: createCustomIcon(obs.type)
+        })
+        
+        marker.bindPopup(createPopupContent(obs), {
+          maxWidth: 300,
+          className: 'custom-popup'
+        })
+        
+        markerClusterGroup.value.addLayer(marker)
+      }
+    })
+    
+    console.log('✅ Observation retirée de la carte')
+  }
+}
 </script>
 
 <style scoped>

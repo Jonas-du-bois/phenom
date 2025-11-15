@@ -26,21 +26,24 @@
       </div>
 
       <!-- Filtres type -->
-      <div class="filter-chips">
-        <button
-          :class="['filter-chip', { active: !activeType }]"
-          @click="setFilter(null)"
-        >
-          Tous
-        </button>
-        <button
-          v-for="type in observationTypes"
-          :key="type.value"
-          :class="['filter-chip', { active: activeType === type.value }]"
-          @click="setFilter(type.value)"
-        >
-          {{ type.label }}
-        </button>
+      <div class="filter-chips-wrapper">
+        <div class="filter-chips">
+          <button
+            :class="['filter-chip', { active: !activeType }]"
+            @click="setFilter(null)"
+          >
+            Tous
+          </button>
+          <button
+            v-for="type in observationTypes"
+            :key="type.value"
+            :class="['filter-chip', { active: activeType === type.value }]"
+            @click="setFilter(type.value)"
+            :title="type.description"
+          >
+            {{ type.label }}
+          </button>
+        </div>
       </div>
     </div>
 
@@ -107,7 +110,7 @@ import { ref, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useInfiniteScroll } from "../composables/useInfiniteScroll";
 import { observationService } from "../services/observationService";
-import { OBSERVATION_TYPES } from "../constants/observationTypes";
+import { OBSERVATION_TYPE_OPTIONS, getObservationLabel } from "../constants/observationTypes";
 import TestBaseCard from "../components/test_BaseCard.vue";
 import TestBaseButton from "../components/test_BaseButton.vue";
 import TestBaseLoading from "../components/test_BaseLoading.vue";
@@ -118,7 +121,7 @@ const router = useRouter();
 const searchQuery = ref("");
 const activeType = ref(null);
 
-const observationTypes = OBSERVATION_TYPES;
+const observationTypes = OBSERVATION_TYPE_OPTIONS;
 
 // Fonction de fetch avec filtres
 const fetchObservations = async (params) => {
@@ -159,8 +162,7 @@ const getFirstImage = (observation) => {
 };
 
 const getObservationTypeLabel = (type) => {
-  const found = observationTypes.find((t) => t.value === type);
-  return found ? found.label : type;
+  return getObservationLabel(type);
 };
 
 const truncateText = (text, maxLength) => {
@@ -238,16 +240,36 @@ watch([activeType, searchQuery], () => {
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
+.filter-chips-wrapper {
+  position: relative;
+  margin: 0 -0.5rem;
+}
+
 .filter-chips {
   display: flex;
   gap: 0.5rem;
   overflow-x: auto;
-  padding-bottom: 0.5rem;
+  padding: 0.5rem;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #e5e7eb transparent;
 }
 
 .filter-chips::-webkit-scrollbar {
-  display: none;
+  height: 4px;
+}
+
+.filter-chips::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.filter-chips::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 2px;
+}
+
+.filter-chips::-webkit-scrollbar-thumb:hover {
+  background: #d1d5db;
 }
 
 .filter-chip {
@@ -256,7 +278,7 @@ watch([activeType, searchQuery], () => {
   border: 2px solid #e5e7eb;
   background: white;
   border-radius: 9999px;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: #6b7280;
   cursor: pointer;

@@ -204,6 +204,8 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { useMap } from "../composables/useMap";
 import { useImageUpload } from "../composables/useImageUpload";
 import { observationService } from "../services/observationService";
@@ -228,6 +230,7 @@ const errors = ref({});
 const selectedFiles = ref([]);
 const fileInput = ref(null);
 const mapContainer = ref(null);
+const locationMarker = ref(null);
 
 // Utiliser les types backend compatibles (codes à 3 lettres)
 const observationTypes = OBSERVATION_TYPE_OPTIONS;
@@ -253,42 +256,40 @@ const nextStep = async () => {
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Create Leaflet map
-      if (window.L) {
-        const leafletMap = window.L.map(mapContainer.value).setView(
-          [46.603354, 1.888334],
-          6,
-        );
+      const leafletMap = L.map(mapContainer.value).setView(
+        [46.603354, 1.888334],
+        6,
+      );
 
-        // Add tile layer
-        window.L.tileLayer(
-          "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-          {
-            attribution: "© OpenStreetMap contributors",
-          },
-        ).addTo(leafletMap);
+      // Add tile layer
+      L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+          attribution: "© OpenStreetMap contributors",
+        },
+      ).addTo(leafletMap);
 
-        // Initialize map in composable
-        initMap(leafletMap);
+      // Initialize map in composable
+      initMap(leafletMap);
 
-        // Add click listener to set location
-        leafletMap.on("click", (e) => {
-          form.value.location = {
-            type: "Point",
-            coordinates: [e.latlng.lng, e.latlng.lat],
-          };
+      // Add click listener to set location
+      leafletMap.on("click", (e) => {
+        form.value.location = {
+          type: "Point",
+          coordinates: [e.latlng.lng, e.latlng.lat],
+        };
 
-          // Add marker at clicked location
-          // Remove old marker if exists
-          if (window.locationMarker) {
-            leafletMap.removeLayer(window.locationMarker);
-          }
+        // Add marker at clicked location
+        // Remove old marker if exists
+        if (locationMarker.value) {
+          leafletMap.removeLayer(locationMarker.value);
+        }
 
-          window.locationMarker = window.L.marker([
-            e.latlng.lat,
-            e.latlng.lng,
-          ]).addTo(leafletMap);
-        });
-      }
+        locationMarker.value = L.marker([
+          e.latlng.lat,
+          e.latlng.lng,
+        ]).addTo(leafletMap);
+      });
     }
   }
 };
@@ -342,11 +343,11 @@ const useCurrentLocation = async () => {
     };
 
     // Add marker
-    if (window.L && map.value) {
-      if (window.locationMarker) {
-        map.value.removeLayer(window.locationMarker);
+    if (map.value) {
+      if (locationMarker.value) {
+        map.value.removeLayer(locationMarker.value);
       }
-      window.locationMarker = window.L.marker([coords.lat, coords.lng]).addTo(
+      locationMarker.value = L.marker([coords.lat, coords.lng]).addTo(
         map.value,
       );
       map.value.setView([coords.lat, coords.lng], 13);

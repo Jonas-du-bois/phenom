@@ -229,10 +229,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useAuth } from "../composables/useAuth";
 import { useMap } from "../composables/useMap";
+import { useWebSocket } from "../composables/useWebSocket";
 import { observationService } from "../services/observationService";
 import { commentService } from "../services/commentService";
 import { OBSERVATION_TYPES } from "../constants/observationTypes";
@@ -244,6 +245,7 @@ import TestBaseModal from "../components/test_BaseModal.vue";
 const router = useRouter();
 const route = useRoute();
 const { user: currentUser } = useAuth();
+const { connect, disconnect, subscribe, unsubscribe } = useWebSocket();
 
 const observation = ref(null);
 const loading = ref(true);
@@ -267,7 +269,93 @@ const isOwner = computed(() => {
 
 onMounted(async () => {
   await loadObservation();
+  
+  // Connecter WebSocket
+  await connect();
+  
+  // Écouter les événements de commentaires
+  subscribe('comment:created', handleCommentCreated);
+  subscribe('comment:updated', handleCommentUpdated);
+  subscribe('comment:deleted', handleCommentDeleted);
+  
+  // Écouter les événements d'observation
+  subscribe('observation:updated', handleObservationUpdated);
+  subscribe('observation:deleted', handleObservationDeleted);
 });
+
+onUnmounted(() => {
+  // Nettoyer les listeners
+  unsubscribe('comment:created', handleCommentCreated);
+  unsubscribe('comment:updated', handleCommentUpdated);
+  unsubscribe('comment:deleted', handleCommentDeleted);
+  unsubscribe('observation:updated', handleObservationUpdated);
+  unsubscribe('observation:deleted', handleObservationDeleted);
+  disconnect();
+});
+
+// Handlers WebSocket
+const handleCommentCreated = (comment) => {
+  console.log('🔔 Nouveau commentaire reçu:', comment);
+  // Vérifier que c'est pour cette observation
+  if (comment.observationId === observation.value?._id) {
+    // Vérifier si le commentaire n'existe pas déjà
+    if (!observation.value.comments) {
+      observation.value.comments = [];
+    }
+    const exists = observation.value.comments.some(c => c._id === comment._id);
+    if (!exists) {
+      observation.value.comments.push(comment);
+      console.log('✅ Commentaire ajouté à la liste');
+    }
+  }
+};
+
+const handleCommentUpdated = (comment) => {
+  console.log('🔔 Commentaire mis à jour:', comment);
+  // Vérifier que c'est pour cette observation
+  if (comment.observationId === observation.value?._id && observation.value?.comments) {
+    const index = observation.value.comments.findIndex(c => c._id === comment._id);
+    if (index !== -1) {
+      // Remplacer le commentaire existant par la version mise à jour
+      observation.value.comments[index] = comment;
+      console.log('✅ Commentaire mis à jour dans la liste');
+    }
+  }
+};
+
+const handleCommentDeleted = (data) => {
+  console.log('🔔 Commentaire supprimé:', data);
+  if (observation.value?.comments) {
+    observation.value.comments = observation.value.comments.filter(
+      c => c._id !== data._id
+    );
+    console.log('✅ Commentaire retiré de la liste');
+  }
+};
+
+const handleObservationUpdated = (obs) => {
+  console.log('🔔 Observation mise à jour:', obs);
+  // Vérifier que c'est bien cette observation
+  if (obs._id === observation.value?._id) {
+    // Garder les commentaires actuels si non fournis
+    const currentComments = observation.value.comments;
+    observation.value = obs;
+    if (!observation.value.comments && currentComments) {
+      observation.value.comments = currentComments;
+    }
+    console.log('✅ Observation mise à jour');
+  }
+};
+
+const handleObservationDeleted = (data) => {
+  console.log('🔔 Observation supprimée:', data);
+  // Vérifier que c'est bien cette observation
+  if (data._id === observation.value?._id) {
+    // Rediriger vers le feed
+    router.push('/');
+    console.log('✅ Observation supprimée, redirection...');
+  }
+};
 
 const loadObservation = async () => {
   loading.value = true;
@@ -275,7 +363,9 @@ const loadObservation = async () => {
 
   try {
     const response = await observationService.getById(route.params.id);
-    observation.value = response.data;
+    console.log('📥 Observation reçue:', response);
+    observation.value = response.data || response;
+    console.log('✅ Comments dans observation:', observation.value.comments);
 
     // Initialize map if location exists
     if (observation.value.location?.coordinates && mapContainer.value) {
@@ -345,9 +435,9 @@ const addComment = async () => {
       text: newComment.value,
     });
 
-    // Reload observation to get updated comments
-    await loadObservation();
+    // Ne pas recharger - le WebSocket va ajouter le commentaire automatiquement
     newComment.value = "";
+    console.log('✅ Commentaire créé, attente événement WebSocket...');
   } catch (err) {
     console.error("Erreur ajout commentaire:", err);
   } finally {
