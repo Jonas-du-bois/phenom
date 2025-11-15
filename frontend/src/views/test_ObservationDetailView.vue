@@ -83,7 +83,7 @@
       </div>
 
       <!-- Content Container -->
-  <PageContainer class="content-container" :maxWidth="1100">
+  <PageContainer :maxWidth="1100">
         <!-- Header Card -->
         <div class="header-card">
           <h1 class="obs-title">{{ observation.title }}</h1>

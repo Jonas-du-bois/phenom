@@ -48,7 +48,7 @@
     </div>
 
     <!-- Liste des observations -->
-  <PageContainer class="feed-content" :maxWidth="1100">
+    <PageContainer :maxWidth="1100" noBackground>
       <div v-if="loading && items.length === 0" class="loading-container">
         <test-BaseLoading size="lg" text="Chargement des observations..." />
       </div>
@@ -62,7 +62,7 @@
         </test-BaseButton>
       </div>
 
-        <div v-else class="observations-grid">
+      <div v-else class="observations-grid">
         <div
           v-for="obs in items"
           :key="obs._id"
@@ -124,7 +124,7 @@
             </div>
           </div>
         </div>
-        </div>
+      </div>
 
       <!-- Loading indicator pour scroll infini -->
       <div v-if="loading && items.length > 0" class="loading-more">
@@ -135,7 +135,7 @@
       <div v-if="!hasMore && items.length > 0" class="end-message">
         <span>✨ Vous avez tout vu !</span>
       </div>
-  </PageContainer>
+    </PageContainer>
   </div>
 </template>
 
@@ -324,10 +324,6 @@ watch([activeType, searchQuery], () => {
   border-color: transparent;
   color: white;
   box-shadow: 0 0 20px rgba(123, 63, 242, 0.4);
-}
-
-.feed-content {
-  padding: var(--phenom-space-4);
 }
 
 .loading-container {

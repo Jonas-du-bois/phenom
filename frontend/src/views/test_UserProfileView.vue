@@ -4,7 +4,7 @@
       <test-BaseLoading size="lg" text="Chargement du profil..." />
     </div>
 
-  <PageContainer class="profile-container" :maxWidth="1100">
+  <PageContainer :maxWidth="1100">
       <!-- Profile Header -->
       <div class="profile-header">
         <div class="header-background"></div>

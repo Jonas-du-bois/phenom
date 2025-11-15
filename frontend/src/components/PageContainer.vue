@@ -1,6 +1,6 @@
 <template>
   <div
-    :class="['page-container', { 'no-padding': noPadding } , customClass]"
+    :class="['page-container', { 'no-padding': noPadding, 'no-background': noBackground } , customClass]"
     :style="containerStyle"
   >
     <slot />
@@ -8,12 +8,15 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
+
 const props = defineProps({
   maxWidth: {
     type: [String, Number],
     default: 1100,
   },
   noPadding: Boolean,
+  noBackground: Boolean,
   customClass: {
     type: [String, Array, Object],
     default: '',
@@ -42,5 +45,13 @@ const containerStyle = computed(() => ({
 
 .page-container.no-padding {
   padding: 0;
+}
+
+.page-container.no-background {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: none;
+  box-shadow: none;
 }
 </style>

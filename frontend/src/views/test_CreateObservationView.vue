@@ -5,7 +5,7 @@
       <div class="progress-fill" :style="{ width: `${progress}%` }"></div>
     </div>
 
-  <PageContainer class="create-container" :maxWidth="700">
+  <PageContainer :maxWidth="700">
       <!-- Step 1: Information -->
       <div v-show="currentStep === 1" class="step">
         <h2 class="step-title">Informations de l'observation</h2>

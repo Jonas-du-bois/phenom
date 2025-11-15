@@ -35,7 +35,7 @@
     </section>
 
     <!-- Stats Section -->
-    <PageContainer :maxWidth="1100">
+    <PageContainer :maxWidth="1100" noBackground>
       <section class="stats-section">
       <div class="stats-grid">
         <div class="stat-card">
@@ -63,7 +63,7 @@
     </PageContainer>
 
     <!-- Categories Section -->
-    <PageContainer :maxWidth="1100">
+    <PageContainer :maxWidth="1100" noBackground>
       <section class="categories-section">
       <h2 class="section-title">Types d'observations</h2>
       <div class="categories-grid">
@@ -89,7 +89,7 @@
     </PageContainer>
 
     <!-- Recent Observations Preview -->
-    <PageContainer :maxWidth="1100">
+    <PageContainer :maxWidth="1100" noBackground>
       <section class="recent-section">
       <div class="section-header">
         <h2 class="section-title">Dernières observations</h2>
@@ -149,7 +149,7 @@
     </PageContainer>
 
     <!-- CTA Section -->
-    <PageContainer :maxWidth="1100">
+    <PageContainer :maxWidth="1100" noBackground>
       <section class="cta-section">
       <div class="cta-content">
         <h2 class="cta-title">Prêt à partager votre expérience ?</h2>
