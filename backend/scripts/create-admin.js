@@ -18,7 +18,7 @@ const createAdmin = async () => {
   try {
     await connectDB();
 
-    const adminEmail = process.env.ADMIN_EMAIL || 'admin@phenom.com';
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@phenom.app';
     const adminPassword = process.env.ADMIN_PASSWORD || 'Admin123!';
     const adminName = process.env.ADMIN_NAME || 'Administrator';
 

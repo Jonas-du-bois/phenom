@@ -215,25 +215,37 @@ const nextStep = async () => {
     
     // Initialize map on step 2
     if (currentStep.value === 2 && mapContainer.value && !map.value) {
-      await initMap(mapContainer.value)
+      // Wait for next tick to ensure DOM is ready
+      await new Promise(resolve => setTimeout(resolve, 100))
       
-      // Add click listener to set location
-      map.value.on('click', (e) => {
-        form.value.location = {
-          type: 'Point',
-          coordinates: [e.latlng.lng, e.latlng.lat]
-        }
+      // Create Leaflet map
+      if (window.L) {
+        const leafletMap = window.L.map(mapContainer.value).setView([46.603354, 1.888334], 6)
         
-        // Add marker at clicked location
-        if (window.L) {
-          // Remove old marker if exists
-          if (window.locationMarker) {
-            map.value.removeLayer(window.locationMarker)
+        // Add tile layer
+        window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors'
+        }).addTo(leafletMap)
+        
+        // Initialize map in composable
+        initMap(leafletMap)
+        
+        // Add click listener to set location
+        leafletMap.on('click', (e) => {
+          form.value.location = {
+            type: 'Point',
+            coordinates: [e.latlng.lng, e.latlng.lat]
           }
           
-          window.locationMarker = window.L.marker([e.latlng.lat, e.latlng.lng]).addTo(map.value)
-        }
-      })
+          // Add marker at clicked location
+          // Remove old marker if exists
+          if (window.locationMarker) {
+            leafletMap.removeLayer(window.locationMarker)
+          }
+          
+          window.locationMarker = window.L.marker([e.latlng.lat, e.latlng.lng]).addTo(leafletMap)
+        })
+      }
     }
   }
 }
@@ -342,7 +354,11 @@ const submitObservation = async () => {
       location: form.value.location
     }
     
+    console.log('📤 Données observation:', obsData)
+    
     const response = await observationService.create(obsData)
+    console.log('📥 Réponse création:', response)
+    
     const observationId = response.data._id
     
     // Upload images if any
@@ -359,7 +375,8 @@ const submitObservation = async () => {
     router.push(`/observations/${observationId}`)
   } catch (error) {
     console.error('Erreur création observation:', error)
-    errors.value.submit = error.message || 'Erreur lors de la création'
+    console.error('Détails erreur:', error.response?.data)
+    errors.value.submit = error.response?.data?.message || error.message || 'Erreur lors de la création'
   } finally {
     submitting.value = false
   }
