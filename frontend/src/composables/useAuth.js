@@ -28,11 +28,14 @@ export function useAuth() {
 
       const response = await authService.login({ email, password })
       
-      token.value = response.token
-      user.value = response.user
+      // Backend retourne: { success: true, data: { user, accessToken, refreshToken } }
+      const { user: userData, accessToken } = response.data
       
-      localStorage.setItem('token', response.token)
-      localStorage.setItem('user', JSON.stringify(response.user))
+      token.value = accessToken
+      user.value = userData
+      
+      localStorage.setItem('token', accessToken)
+      localStorage.setItem('user', JSON.stringify(userData))
 
       return true
     } catch (err) {
@@ -53,11 +56,14 @@ export function useAuth() {
 
       const response = await authService.register({ name, email, password })
       
-      token.value = response.token
-      user.value = response.user
+      // Backend retourne: { success: true, data: { user, accessToken, refreshToken } }
+      const { user: userData, accessToken } = response.data
       
-      localStorage.setItem('token', response.token)
-      localStorage.setItem('user', JSON.stringify(response.user))
+      token.value = accessToken
+      user.value = userData
+      
+      localStorage.setItem('token', accessToken)
+      localStorage.setItem('user', JSON.stringify(userData))
 
       return true
     } catch (err) {
@@ -86,7 +92,8 @@ export function useAuth() {
     try {
       loading.value = true
       const response = await authService.getProfile()
-      user.value = response.data || response.user
+      // Backend retourne: { success: true, data: { user } }
+      user.value = response.data
       localStorage.setItem('user', JSON.stringify(user.value))
     } catch (err) {
       console.error('Erreur de chargement du profil:', err)

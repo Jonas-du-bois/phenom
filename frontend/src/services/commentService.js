@@ -15,8 +15,8 @@ export const commentService = {
   /**
    * Ajoute un commentaire
    */
-  async create(observationId, text) {
-    const response = await apiClient.post(`/observations/${observationId}/comments`, { text })
+  async create(observationId, commentData) {
+    const response = await apiClient.post(`/observations/${observationId}/comments`, commentData)
     return response.data
   },
 

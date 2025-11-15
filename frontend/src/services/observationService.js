@@ -45,12 +45,10 @@ export const observationService = {
   },
 
   /**
-   * Uploader une image
+   * Upload des images pour une observation
    */
-  async uploadImage(file) {
-    const formData = new FormData()
-    formData.append('image', file)
-    const response = await apiClient.post('/observations/upload', formData, {
+  async addImages(observationId, formData) {
+    const response = await apiClient.post(`/observations/${observationId}/images`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }

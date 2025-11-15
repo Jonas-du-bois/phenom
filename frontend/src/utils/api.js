@@ -23,7 +23,7 @@ apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
   
   // Routes qui ne nécessitent pas de token
-  const publicRoutes = ['/auth/login', '/auth/register', '/auth/forgot-password']
+  const publicRoutes = ['/auth/login', '/auth/signup', '/auth/forgot-password', '/auth/reset-password', '/auth/refresh-token']
   const isPublicRoute = publicRoutes.some(route => config.url?.includes(route))
   
   if (token && !isPublicRoute) {

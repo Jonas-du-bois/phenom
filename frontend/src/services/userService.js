@@ -19,8 +19,23 @@ export const userService = {
   },
 
   /**
-   * Met à jour les informations du profil de l'utilisateur
-   * @param {Object} userData - Données à mettre à jour (name, bio, etc.)
+   * Récupère les informations d'un utilisateur par ID
+   * @param {string} userId - ID de l'utilisateur
+   * @returns {Promise} Profil de l'utilisateur
+   */
+  async getById(userId) {
+    try {
+      const response = await api.get(`/users/${userId}`)
+      return response.data
+    } catch (error) {
+      console.error('Erreur lors de la récupération de l\'utilisateur:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Met à jour les informations du profil de l'utilisateur connecté
+   * @param {Object} userData - Données à mettre à jour (name, email, etc.)
    * @returns {Promise} Profil mis à jour
    */
   async updateMe(userData) {
@@ -29,6 +44,22 @@ export const userService = {
       return response.data
     } catch (error) {
       console.error('Erreur lors de la mise à jour du profil:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Met à jour un utilisateur par ID
+   * @param {string} userId - ID de l'utilisateur
+   * @param {Object} userData - Données à mettre à jour
+   * @returns {Promise} Profil mis à jour
+   */
+  async update(userId, userData) {
+    try {
+      const response = await api.put(`/users/${userId}`, userData)
+      return response.data
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour de l\'utilisateur:', error)
       throw error
     }
   },

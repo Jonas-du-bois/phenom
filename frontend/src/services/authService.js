@@ -16,7 +16,7 @@ export const authService = {
    * Inscription
    */
   async register(userData) {
-    const response = await apiClient.post('/auth/register', userData)
+    const response = await apiClient.post('/auth/signup', userData)
     return response.data
   },
 
