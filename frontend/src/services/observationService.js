@@ -8,7 +8,9 @@ export const observationService = {
    * Récupère toutes les observations
    */
   async getAll(params = {}) {
+    console.log('📥 Récupération observations avec params:', params)
     const response = await apiClient.get('/observations', { params })
+    console.log('✅ Observations reçues:', response.data)
     return response.data
   },
 

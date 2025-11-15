@@ -159,7 +159,7 @@ import { useRouter } from 'vue-router'
 import { useMap } from '../composables/useMap'
 import { useImageUpload } from '../composables/useImageUpload'
 import { observationService } from '../services/observationService'
-import { OBSERVATION_TYPES } from '../constants/observationTypes'
+import { OBSERVATION_TYPE_OPTIONS } from '../constants/observationTypes'
 import TestBaseInput from '../components/test_BaseInput.vue'
 import TestBaseButton from '../components/test_BaseButton.vue'
 
@@ -181,10 +181,8 @@ const selectedFiles = ref([])
 const fileInput = ref(null)
 const mapContainer = ref(null)
 
-const observationTypes = OBSERVATION_TYPES.map(type => ({
-  ...type,
-  icon: getTypeIcon(type.value)
-}))
+// Utiliser les types backend compatibles (codes à 3 lettres)
+const observationTypes = OBSERVATION_TYPE_OPTIONS
 
 function getTypeIcon(type) {
   const icons = {
@@ -376,6 +374,15 @@ const submitObservation = async () => {
   } catch (error) {
     console.error('Erreur création observation:', error)
     console.error('Détails erreur:', error.response?.data)
+    console.error('Details validation:', error.response?.data?.details)
+    
+    // Afficher les erreurs de validation
+    if (error.response?.data?.details) {
+      error.response.data.details.forEach(detail => {
+        console.error(`❌ ${detail.field}: ${detail.message}`)
+      })
+    }
+    
     errors.value.submit = error.response?.data?.message || error.message || 'Erreur lors de la création'
   } finally {
     submitting.value = false
