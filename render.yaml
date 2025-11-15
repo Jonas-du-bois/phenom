@@ -67,7 +67,7 @@ services:
         value: 10
       
       - key: MAX_PAGE_SIZE
-        value: 100
+        value: 1000
       
       # API
       - key: API_PREFIX
