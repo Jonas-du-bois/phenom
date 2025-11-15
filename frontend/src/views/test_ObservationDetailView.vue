@@ -10,20 +10,40 @@
     </div>
 
     <div v-else-if="observation" class="observation-detail">
-      <!-- Image Carousel -->
-      <div class="image-carousel">
+      <!-- Hero Image Section -->
+      <div class="hero-section">
         <div
           v-if="observation.images && observation.images.length > 0"
-          class="carousel-container"
+          class="hero-image-container"
         >
           <img
             :src="observation.images[currentImageIndex].url"
             :alt="observation.title"
-            class="carousel-image"
+            class="hero-image"
           />
+          
+          <!-- Gradient Overlay -->
+          <div class="hero-gradient"></div>
 
-          <div v-if="observation.images.length > 1" class="carousel-controls">
-            <button class="carousel-btn" @click="previousImage">
+          <!-- Badges Overlay (Type + Location) -->
+          <div class="hero-badges">
+            <div class="type-badge">
+              {{ getObservationTypeLabel(observation.type) }}
+            </div>
+            <div v-if="observation.location" class="location-badge">
+              <svg class="badge-icon" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fill-rule="evenodd"
+                  d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                />
+              </svg>
+              <span>{{ observation.location.city || 'Localisation' }}</span>
+            </div>
+          </div>
+
+          <!-- Image Navigation -->
+          <div v-if="observation.images.length > 1" class="image-nav">
+            <button class="nav-btn nav-prev" @click="previousImage">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   stroke-linecap="round"
@@ -33,7 +53,7 @@
                 />
               </svg>
             </button>
-            <button class="carousel-btn" @click="nextImage">
+            <button class="nav-btn nav-next" @click="nextImage">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   stroke-linecap="round"
@@ -45,7 +65,8 @@
             </button>
           </div>
 
-          <div class="carousel-indicators">
+          <!-- Image Indicators -->
+          <div v-if="observation.images.length > 1" class="image-indicators">
             <span
               v-for="(img, index) in observation.images"
               :key="img.publicId"
@@ -55,84 +76,99 @@
           </div>
         </div>
 
-        <div v-else class="no-image">
-          <span class="no-image-icon">📷</span>
-          <p>Aucune image</p>
+        <div v-else class="hero-placeholder">
+          <span class="placeholder-icon">�</span>
+          <p>Aucune image disponible</p>
         </div>
       </div>
 
-      <!-- Content -->
-      <div class="observation-content">
-        <!-- Header -->
-        <div class="obs-header">
-          <div class="obs-type-badge">
-            {{ getObservationTypeLabel(observation.type) }}
-          </div>
+      <!-- Content Container -->
+      <div class="content-container">
+        <!-- Header Card -->
+        <div class="header-card">
           <h1 class="obs-title">{{ observation.title }}</h1>
-        </div>
+          
+          <!-- Meta Info -->
+          <div class="obs-meta">
+            <test-BaseAvatar
+              :src="observation.userId?.avatar"
+              :name="observation.userId?.name || 'Anonyme'"
+              size="md"
+              class="author-avatar"
+              @click="navigateToProfile(observation.userId?._id)"
+            />
+            <div class="meta-info">
+              <p class="author-name">
+                {{ observation.userId?.name || "Anonyme" }}
+              </p>
+              <p class="meta-date">{{ formatDate(observation.createdAt) }}</p>
+            </div>
 
-        <!-- Meta -->
-        <div class="obs-meta">
-          <test-BaseAvatar
-            :src="observation.userId?.avatar"
-            :name="observation.userId?.name || 'Anonyme'"
-            size="md"
-            class="author-avatar"
-            @click="navigateToProfile(observation.userId?._id)"
-          />
-          <div class="meta-info">
-            <p class="author-name">
-              {{ observation.userId?.name || "Anonyme" }}
-            </p>
-            <p class="meta-date">{{ formatDate(observation.createdAt) }}</p>
+            <!-- Actions (edit/delete for owner) -->
+            <div v-if="isOwner" class="obs-actions">
+              <button class="action-btn" @click="editObservation" title="Modifier">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                  />
+                </svg>
+              </button>
+              <button class="action-btn delete" @click="confirmDelete" title="Supprimer">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
 
-          <!-- Actions (edit/delete for owner) -->
-          <div v-if="isOwner" class="obs-actions">
-            <button class="action-btn" @click="editObservation">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                />
+          <!-- Stats -->
+          <div class="obs-stats">
+            <div class="stat-item">
+              <svg class="stat-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
-            </button>
-            <button class="action-btn delete" @click="confirmDelete">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                />
+              <span>{{ observation.comments?.length || 0 }} commentaires</span>
+            </div>
+            <div class="stat-item">
+              <svg class="stat-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
               </svg>
-            </button>
+              <span>{{ observation.stats?.views || 0 }} vues</span>
+            </div>
           </div>
         </div>
 
-        <!-- Description -->
-        <div class="obs-description">
-          <p>{{ observation.description }}</p>
+        <!-- Description Card -->
+        <div class="description-card">
+          <h3 class="section-title">Description</h3>
+          <p class="description-text">{{ observation.description }}</p>
         </div>
 
-        <!-- Location -->
-        <div v-if="observation.location" class="obs-location">
-          <div class="location-header">
-            <svg class="location-icon" fill="currentColor" viewBox="0 0 20 20">
+        <!-- Map Card -->
+        <div v-if="observation.location" class="map-card">
+          <h3 class="section-title">
+            <svg class="title-icon" fill="currentColor" viewBox="0 0 20 20">
               <path
                 fill-rule="evenodd"
                 d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
               />
             </svg>
-            <span class="location-title">Localisation</span>
-          </div>
+            Localisation
+          </h3>
           <div id="detail-map" ref="mapContainer" class="detail-map"></div>
         </div>
 
-        <!-- Comments -->
-        <div class="comments-section">
+        <!-- Comments Section -->
+        <div class="comments-card">
           <h3 class="section-title">
             Commentaires ({{ observation.comments?.length || 0 }})
           </h3>
@@ -229,7 +265,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useAuth } from "../composables/useAuth";
 import { useMap } from "../composables/useMap";
@@ -245,7 +281,7 @@ import TestBaseModal from "../components/test_BaseModal.vue";
 const router = useRouter();
 const route = useRoute();
 const { user: currentUser } = useAuth();
-const { connect, disconnect, subscribe, unsubscribe } = useWebSocket();
+const { connect, disconnect, messages } = useWebSocket();
 
 const observation = ref(null);
 const loading = ref(true);
@@ -270,19 +306,22 @@ const isOwner = computed(() => {
 onMounted(async () => {
   await loadObservation();
   
-  // Connecter WebSocket et écouter les messages
+  // Connecter WebSocket (il s'abonne automatiquement aux canaux)
   await connect();
-  
-  // Écouter les messages du canal comments (déjà souscrit dans useWebSocket)
-  const unsubComments = await subscribe('comments', handleWebSocketMessage);
-  
-  // Écouter les messages du canal observations (déjà souscrit dans useWebSocket)
-  const unsubObservations = await subscribe('observations', handleWebSocketMessage);
 });
 
 onUnmounted(() => {
   disconnect();
 });
+
+// Watcher pour écouter les messages WebSocket (évite les souscriptions multiples)
+watch(messages, (newMessages) => {
+  if (newMessages.length > 0) {
+    const lastMessage = newMessages[newMessages.length - 1];
+    console.log('📨 Message WebSocket reçu:', lastMessage.data);
+    handleWebSocketMessage(lastMessage.data);
+  }
+}, { deep: true });
 
 // Handler unique pour tous les messages WebSocket
 const handleWebSocketMessage = (message) => {
@@ -489,7 +528,7 @@ const deleteObservation = async () => {
 <style scoped>
 .detail-view {
   min-height: 100vh;
-  background: #f9fafb;
+  background: var(--phenom-bg-primary);
 }
 
 .loading-container,
@@ -512,29 +551,97 @@ const deleteObservation = async () => {
   margin: 0 auto;
 }
 
-.image-carousel {
+/* Hero Section */
+.hero-section {
   position: relative;
-  background: #000;
+  width: 100%;
+  margin-bottom: var(--phenom-space-6);
 }
 
-.carousel-container {
+.hero-image-container {
   position: relative;
+  width: 100%;
   aspect-ratio: 16/9;
+  overflow: hidden;
+  background: var(--phenom-surface-glass-subtle);
 }
 
 @media (max-width: 640px) {
-  .carousel-container {
+  .hero-image-container {
     aspect-ratio: 4/3;
   }
 }
 
-.carousel-image {
+.hero-image {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
 }
 
-.carousel-controls {
+.hero-gradient {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to top, rgba(30, 38, 64, 0.9), transparent);
+  pointer-events: none;
+}
+
+.hero-badges {
+  position: absolute;
+  top: var(--phenom-space-4);
+  right: var(--phenom-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--phenom-space-2);
+  align-items: flex-end;
+}
+
+.type-badge,
+.location-badge {
+  padding: 0.5rem 1rem;
+  background: var(--phenom-surface-glass-soft);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--phenom-border-soft);
+  border-radius: var(--phenom-radius-full);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--phenom-text-primary);
+  box-shadow: var(--phenom-shadow-lg);
+}
+
+.location-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--phenom-space-2);
+}
+
+.badge-icon {
+  width: 1rem;
+  height: 1rem;
+  color: var(--phenom-primary);
+}
+
+.hero-placeholder {
+  aspect-ratio: 16/9;
+  background: var(--phenom-surface-glass-subtle);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--phenom-text-tertiary);
+}
+
+.placeholder-icon {
+  font-size: 4rem;
+  margin-bottom: 0.5rem;
+  filter: drop-shadow(0 0 16px rgba(123, 63, 242, 0.5));
+}
+
+/* Image Navigation */
+.image-nav {
   position: absolute;
   top: 50%;
   left: 0;
@@ -542,40 +649,45 @@ const deleteObservation = async () => {
   transform: translateY(-50%);
   display: flex;
   justify-content: space-between;
-  padding: 0 1rem;
+  padding: 0 var(--phenom-space-4);
+  pointer-events: none;
 }
 
-.carousel-btn {
+.nav-btn {
   width: 2.5rem;
   height: 2.5rem;
-  background: rgba(255, 255, 255, 0.9);
-  border: none;
+  background: var(--phenom-surface-glass-soft);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--phenom-border-soft);
   border-radius: 50%;
-  color: #374151;
+  color: var(--phenom-text-primary);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  transition: var(--phenom-transition-base);
+  pointer-events: all;
+  box-shadow: var(--phenom-shadow-md);
 }
 
-.carousel-btn:hover {
-  background: white;
+.nav-btn:hover {
+  background: var(--phenom-surface-glass-base);
+  border-color: var(--phenom-primary);
   transform: scale(1.1);
 }
 
-.carousel-btn svg {
+.nav-btn svg {
   width: 1.5rem;
   height: 1.5rem;
 }
 
-.carousel-indicators {
+.image-indicators {
   position: absolute;
-  bottom: 1rem;
+  bottom: var(--phenom-space-4);
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 0.5rem;
+  gap: var(--phenom-space-2);
 }
 
 .indicator {
@@ -584,74 +696,70 @@ const deleteObservation = async () => {
   background: rgba(255, 255, 255, 0.5);
   border-radius: 50%;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--phenom-transition-base);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .indicator.active {
-  background: white;
+  background: var(--phenom-primary);
   width: 1.5rem;
-  border-radius: 0.25rem;
+  border-radius: var(--phenom-radius-sm);
+  box-shadow: var(--phenom-glow-primary-medium);
 }
 
-.no-image {
-  aspect-ratio: 16/9;
-  background: #e5e7eb;
+/* Content Container */
+.content-container {
+  padding: 0 var(--phenom-space-4);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: #9ca3af;
-}
-
-.no-image-icon {
-  font-size: 4rem;
-  margin-bottom: 0.5rem;
-}
-
-.observation-content {
-  background: white;
-  padding: 1.5rem;
+  gap: var(--phenom-space-4);
+  padding-bottom: var(--phenom-space-8);
 }
 
 @media (min-width: 768px) {
-  .observation-content {
-    padding: 2rem;
+  .content-container {
+    padding: 0 var(--phenom-space-6);
   }
 }
 
-.obs-header {
-  margin-bottom: 1rem;
-}
-
-.obs-type-badge {
-  display: inline-block;
-  padding: 0.375rem 0.75rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border-radius: 9999px;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  margin-bottom: 0.75rem;
+/* Cards */
+.header-card,
+.description-card,
+.map-card,
+.comments-card {
+  background: var(--phenom-surface-glass-base);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--phenom-border-soft);
+  border-radius: var(--phenom-radius-2xl);
+  padding: var(--phenom-space-6);
+  box-shadow: var(--phenom-shadow-lg);
 }
 
 .obs-title {
   font-size: 1.875rem;
   font-weight: 700;
-  color: #111827;
-  margin: 0;
+  color: var(--phenom-text-primary);
+  margin: 0 0 var(--phenom-space-4);
+  line-height: 1.2;
 }
 
 .obs-meta {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
-  margin-bottom: 1.5rem;
+  gap: var(--phenom-space-3);
+  padding-bottom: var(--phenom-space-4);
+  border-bottom: 1px solid var(--phenom-border-soft);
+  margin-bottom: var(--phenom-space-4);
 }
 
 .author-avatar {
   cursor: pointer;
+  transition: var(--phenom-transition-base);
+}
+
+.author-avatar:hover {
+  transform: scale(1.05);
 }
 
 .meta-info {
@@ -660,39 +768,41 @@ const deleteObservation = async () => {
 
 .author-name {
   font-weight: 600;
-  color: #111827;
+  color: var(--phenom-text-primary);
   margin: 0 0 0.125rem;
+  font-size: 1rem;
 }
 
 .meta-date {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--phenom-text-tertiary);
   margin: 0;
 }
 
 .obs-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--phenom-space-2);
   margin-left: auto;
 }
 
 .action-btn {
   width: 2.5rem;
   height: 2.5rem;
-  border: 1px solid #e5e7eb;
-  background: white;
-  border-radius: 0.5rem;
-  color: #6b7280;
+  border: 1px solid var(--phenom-border-soft);
+  background: var(--phenom-surface-glass-base);
+  border-radius: var(--phenom-radius-lg);
+  color: var(--phenom-text-secondary);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  transition: var(--phenom-transition-base);
 }
 
 .action-btn:hover {
-  border-color: #667eea;
-  color: #667eea;
+  border-color: var(--phenom-primary);
+  color: var(--phenom-primary);
+  background: var(--phenom-surface-glass-soft);
 }
 
 .action-btn.delete:hover {
@@ -705,124 +815,141 @@ const deleteObservation = async () => {
   height: 1.25rem;
 }
 
-.obs-description {
-  color: #374151;
-  font-size: 1rem;
-  line-height: 1.7;
-  margin-bottom: 2rem;
+/* Stats */
+.obs-stats {
+  display: flex;
+  gap: var(--phenom-space-6);
+  padding-top: var(--phenom-space-4);
+  border-top: 1px solid var(--phenom-border-soft);
 }
 
-.obs-location {
-  margin-bottom: 2rem;
-}
-
-.location-header {
+.stat-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
+  gap: var(--phenom-space-2);
+  color: var(--phenom-text-secondary);
+  font-size: 0.9375rem;
 }
 
-.location-icon {
+.stat-icon {
   width: 1.25rem;
   height: 1.25rem;
-  color: #667eea;
+  color: var(--phenom-primary);
 }
 
-.location-title {
-  font-weight: 600;
-  color: #111827;
-}
-
-.detail-map {
-  width: 100%;
-  height: 250px;
-  border-radius: 0.75rem;
-  overflow: hidden;
-  border: 2px solid #e5e7eb;
-}
-
-.comments-section {
-  margin-top: 2rem;
-  padding-top: 2rem;
-  border-top: 2px solid #e5e7eb;
-}
-
+/* Description */
 .section-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #111827;
-  margin: 0 0 1.5rem;
+  color: var(--phenom-text-primary);
+  margin: 0 0 var(--phenom-space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--phenom-space-2);
 }
 
+.title-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--phenom-primary);
+}
+
+.description-text {
+  color: var(--phenom-text-secondary);
+  font-size: 1rem;
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* Map */
+.detail-map {
+  width: 100%;
+  height: 250px;
+  border-radius: var(--phenom-radius-xl);
+  overflow: hidden;
+  border: 1px solid var(--phenom-border-soft);
+  margin-top: var(--phenom-space-4);
+}
+
+/* Comments */
 .comment-form {
   display: flex;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
+  gap: var(--phenom-space-3);
+  margin-bottom: var(--phenom-space-6);
+  padding-bottom: var(--phenom-space-6);
+  border-bottom: 1px solid var(--phenom-border-soft);
 }
 
 .comment-input-wrapper {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--phenom-space-2);
 }
 
 .comment-input {
   width: 100%;
   padding: 0.75rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 0.75rem;
+  background: var(--phenom-surface-glass-subtle);
+  border: 1px solid var(--phenom-border-soft);
+  border-radius: var(--phenom-radius-lg);
   font-size: 0.9375rem;
   font-family: inherit;
+  color: var(--phenom-text-primary);
   resize: vertical;
-  transition: all 0.2s;
+  transition: var(--phenom-transition-base);
+}
+
+.comment-input::placeholder {
+  color: var(--phenom-text-tertiary);
 }
 
 .comment-input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: var(--phenom-primary);
+  box-shadow: var(--phenom-glow-primary-soft);
+  background: var(--phenom-surface-glass-base);
 }
 
 .comments-list {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--phenom-space-4);
 }
 
 .comment-item {
   display: flex;
-  gap: 0.75rem;
+  gap: var(--phenom-space-3);
 }
 
 .comment-content {
   flex: 1;
-  background: #f9fafb;
-  padding: 0.75rem 1rem;
-  border-radius: 0.75rem;
+  background: var(--phenom-surface-glass-subtle);
+  border: 1px solid var(--phenom-border-soft);
+  padding: var(--phenom-space-3) var(--phenom-space-4);
+  border-radius: var(--phenom-radius-xl);
 }
 
 .comment-header {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.25rem;
+  gap: var(--phenom-space-2);
+  margin-bottom: var(--phenom-space-1);
 }
 
 .comment-author {
   font-weight: 600;
   font-size: 0.875rem;
-  color: #111827;
+  color: var(--phenom-text-primary);
 }
 
 .comment-date {
   font-size: 0.8125rem;
-  color: #9ca3af;
+  color: var(--phenom-text-tertiary);
 }
 
 .comment-text {
-  color: #374151;
+  color: var(--phenom-text-secondary);
   font-size: 0.9375rem;
   line-height: 1.6;
   margin: 0;
@@ -830,13 +957,32 @@ const deleteObservation = async () => {
 
 .no-comments {
   text-align: center;
-  padding: 2rem;
-  color: #9ca3af;
+  padding: var(--phenom-space-8) var(--phenom-space-4);
+  color: var(--phenom-text-tertiary);
 }
 
 .modal-actions {
   display: flex;
-  gap: 0.75rem;
+  gap: var(--phenom-space-3);
   justify-content: flex-end;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .obs-title {
+    font-size: 1.5rem;
+  }
+
+  .header-card,
+  .description-card,
+  .map-card,
+  .comments-card {
+    padding: var(--phenom-space-4);
+  }
+
+  .content-container {
+    padding: 0 var(--phenom-space-3);
+    gap: var(--phenom-space-3);
+  }
 }
 </style>

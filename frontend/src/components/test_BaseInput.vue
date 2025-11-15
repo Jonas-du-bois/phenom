@@ -116,14 +116,14 @@ const clear = () => {
 .input-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--phenom-space-2);
   width: 100%;
 }
 
 .input-label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--phenom-text-primary);
   display: block;
 }
 
@@ -137,25 +137,29 @@ const clear = () => {
   width: 100%;
   padding: 0.75rem 1rem;
   font-size: 1rem;
-  border: 2px solid #d1d5db;
-  border-radius: 0.5rem;
-  background: white;
-  transition: all 0.2s;
+  border: 1px solid var(--phenom-border-soft);
+  border-radius: var(--phenom-radius-lg);
+  background: var(--phenom-surface-glass-base);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--phenom-text-primary);
+  transition: var(--phenom-transition-base);
   outline: none;
   font-family: inherit;
 }
 
 .input-field:focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: var(--phenom-primary);
+  box-shadow: var(--phenom-glow-primary-soft);
+  background: var(--phenom-surface-glass-soft);
 }
 
 .input-field::placeholder {
-  color: #9ca3af;
+  color: var(--phenom-text-tertiary);
 }
 
 .input-field:disabled {
-  background: #f3f4f6;
+  background: var(--phenom-surface-glass-subtle);
   cursor: not-allowed;
   opacity: 0.6;
 }
@@ -177,7 +181,7 @@ const clear = () => {
   justify-content: center;
   width: 1.25rem;
   height: 1.25rem;
-  color: #6b7280;
+  color: var(--phenom-text-tertiary);
 }
 
 .input-icon-left {
@@ -194,7 +198,7 @@ const clear = () => {
 }
 
 .input-error .input-field:focus {
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
 }
 
 .input-error-text {
@@ -205,7 +209,7 @@ const clear = () => {
 
 .input-helper-text {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--phenom-text-secondary);
   margin: 0;
 }
 
@@ -223,23 +227,6 @@ const clear = () => {
 
   .input-with-icon-right {
     padding-right: 3rem;
-  }
-}
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .input-label {
-    color: #e5e7eb;
-  }
-
-  .input-field {
-    background: #1f2937;
-    border-color: #374151;
-    color: #f3f4f6;
-  }
-
-  .input-field:focus {
-    border-color: #818cf8;
   }
 }
 </style>

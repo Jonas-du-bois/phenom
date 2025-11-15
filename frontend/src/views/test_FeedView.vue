@@ -63,33 +63,67 @@
       </div>
 
       <div v-else class="observations-grid">
-        <test-BaseCard
+        <div
           v-for="obs in items"
           :key="obs._id"
-          :image="getFirstImage(obs)"
-          :title="obs.title"
-          :subtitle="getObservationTypeLabel(obs.type)"
-          variant="elevated"
-          clickable
+          class="observation-card"
           @click="navigateTo(`/observations/${obs._id}`)"
         >
-          <p class="observation-description">
-            {{ truncateText(obs.description, 120) }}
-          </p>
+          <!-- Image -->
+          <div class="card-image-container">
+            <img
+              v-if="getFirstImage(obs)"
+              :src="getFirstImage(obs)"
+              :alt="obs.title"
+              class="card-image"
+            />
+            <div v-else class="card-image-placeholder">
+              <span class="placeholder-icon">🛸</span>
+            </div>
+            <!-- Badge type overlay -->
+            <div class="card-badge">
+              {{ getObservationTypeLabel(obs.type) }}
+            </div>
+          </div>
 
-          <template #footer>
-            <div class="observation-meta">
+          <!-- Content -->
+          <div class="card-content">
+            <h3 class="card-title">{{ obs.title }}</h3>
+            <p class="card-description">
+              {{ truncateText(obs.description, 120) }}
+            </p>
+
+            <!-- Meta -->
+            <div class="card-meta">
               <test-BaseAvatar
                 :src="obs.userId?.avatar"
                 :name="obs.userId?.name || 'Anonyme'"
                 size="sm"
               />
-              <span class="meta-text">{{ obs.userId?.name || "Anonyme" }}</span>
-              <span class="meta-separator">•</span>
-              <span class="meta-text">{{ formatDate(obs.createdAt) }}</span>
+              <div class="meta-info">
+                <span class="meta-name">{{ obs.userId?.name || "Anonyme" }}</span>
+                <span class="meta-date">{{ formatDate(obs.createdAt) }}</span>
+              </div>
             </div>
-          </template>
-        </test-BaseCard>
+
+            <!-- Stats -->
+            <div class="card-stats">
+              <div class="stat-item">
+                <svg class="stat-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                <span>{{ obs.stats?.comments || 0 }}</span>
+              </div>
+              <div class="stat-item">
+                <svg class="stat-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                <span>{{ obs.stats?.views || 0 }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Loading indicator pour scroll infini -->
@@ -117,7 +151,6 @@ import TestBaseLoading from "../components/test_BaseLoading.vue";
 import TestBaseAvatar from "../components/test_BaseAvatar.vue";
 
 const router = useRouter();
-
 const searchQuery = ref("");
 const activeType = ref(null);
 
@@ -197,22 +230,24 @@ watch([activeType, searchQuery], () => {
 <style scoped>
 .feed-view {
   min-height: 100vh;
-  background: #f9fafb;
+  background: var(--phenom-bg-primary);
 }
 
 .feed-header {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: white;
-  padding: 1rem;
-  border-bottom: 1px solid #e5e7eb;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  background: var(--phenom-surface-glass-soft);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: var(--phenom-space-4);
+  border-bottom: 1px solid var(--phenom-border-soft);
+  box-shadow: var(--phenom-shadow-md);
 }
 
 .search-wrapper {
   position: relative;
-  margin-bottom: 1rem;
+  margin-bottom: var(--phenom-space-3);
 }
 
 .search-icon {
@@ -222,22 +257,30 @@ watch([activeType, searchQuery], () => {
   transform: translateY(-50%);
   width: 1.25rem;
   height: 1.25rem;
-  color: #9ca3af;
+  color: var(--phenom-text-tertiary);
+  pointer-events: none;
 }
 
 .search-input {
   width: 100%;
   padding: 0.75rem 1rem 0.75rem 3rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 9999px;
+  background: var(--phenom-surface-glass-base);
+  border: 1px solid var(--phenom-border-soft);
+  border-radius: var(--phenom-radius-full);
   font-size: 1rem;
-  transition: all 0.2s;
+  color: var(--phenom-text-primary);
+  transition: var(--phenom-transition-base);
+}
+
+.search-input::placeholder {
+  color: var(--phenom-text-tertiary);
 }
 
 .search-input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: var(--phenom-primary);
+  box-shadow: var(--phenom-glow-primary-soft);
+  background: var(--phenom-surface-glass-soft);
 }
 
 .filter-chips-wrapper {
@@ -247,58 +290,41 @@ watch([activeType, searchQuery], () => {
 
 .filter-chips {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--phenom-space-2);
   overflow-x: auto;
   padding: 0.5rem;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-  scrollbar-color: #e5e7eb transparent;
-}
-
-.filter-chips::-webkit-scrollbar {
-  height: 4px;
-}
-
-.filter-chips::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.filter-chips::-webkit-scrollbar-thumb {
-  background: #e5e7eb;
-  border-radius: 2px;
-}
-
-.filter-chips::-webkit-scrollbar-thumb:hover {
-  background: #d1d5db;
 }
 
 .filter-chip {
   flex-shrink: 0;
   padding: 0.5rem 1rem;
-  border: 2px solid #e5e7eb;
-  background: white;
-  border-radius: 9999px;
+  border: 1px solid var(--phenom-border-soft);
+  background: var(--phenom-surface-glass-base);
+  border-radius: var(--phenom-radius-full);
   font-size: 0.8125rem;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--phenom-text-secondary);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--phenom-transition-base);
   white-space: nowrap;
 }
 
 .filter-chip:hover {
-  border-color: #667eea;
-  color: #667eea;
+  border-color: var(--phenom-primary);
+  color: var(--phenom-primary);
+  background: var(--phenom-surface-glass-soft);
 }
 
 .filter-chip.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-color: #667eea;
+  background: var(--phenom-gradient-primary);
+  border-color: transparent;
   color: white;
+  box-shadow: var(--phenom-glow-primary-medium);
 }
 
 .feed-content {
-  padding: 1rem;
+  padding: var(--phenom-space-4);
 }
 
 .loading-container {
@@ -317,26 +343,180 @@ watch([activeType, searchQuery], () => {
   font-size: 5rem;
   display: block;
   margin-bottom: 1rem;
+  filter: drop-shadow(0 0 16px rgba(123, 63, 242, 0.5));
 }
 
 .empty-state h3 {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--phenom-text-primary);
   margin: 0 0 0.5rem;
 }
 
 .empty-state p {
-  color: #6b7280;
+  color: var(--phenom-text-secondary);
   margin: 0 0 1.5rem;
 }
 
+/* Observation Cards - Glassmorphic Design */
 .observations-grid {
   display: grid;
-  gap: 1.5rem;
+  gap: var(--phenom-space-6);
   grid-template-columns: 1fr;
 }
 
+.observation-card {
+  background: var(--phenom-surface-glass-base);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--phenom-border-soft);
+  border-radius: var(--phenom-radius-2xl);
+  overflow: hidden;
+  cursor: pointer;
+  transition: var(--phenom-transition-base);
+  box-shadow: var(--phenom-shadow-lg);
+}
+
+.observation-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--phenom-shadow-xl), var(--phenom-glow-primary-soft);
+  border-color: var(--phenom-border-medium);
+}
+
+.card-image-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--phenom-surface-glass-subtle);
+}
+
+.card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: var(--phenom-transition-base);
+}
+
+.observation-card:hover .card-image {
+  transform: scale(1.05);
+}
+
+.card-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(123, 63, 242, 0.1) 0%, rgba(107, 47, 209, 0.1) 100%);
+}
+
+.placeholder-icon {
+  font-size: 4rem;
+  opacity: 0.3;
+  filter: drop-shadow(0 0 16px rgba(123, 63, 242, 0.5));
+}
+
+.card-badge {
+  position: absolute;
+  top: var(--phenom-space-3);
+  right: var(--phenom-space-3);
+  padding: 0.375rem 0.875rem;
+  background: var(--phenom-surface-glass-soft);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--phenom-border-soft);
+  border-radius: var(--phenom-radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--phenom-text-primary);
+  box-shadow: var(--phenom-shadow-md);
+}
+
+.card-content {
+  padding: var(--phenom-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--phenom-space-3);
+}
+
+.card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--phenom-text-primary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.card-description {
+  color: var(--phenom-text-secondary);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--phenom-space-3);
+}
+
+.meta-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  flex: 1;
+}
+
+.meta-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--phenom-text-primary);
+}
+
+.meta-date {
+  font-size: 0.75rem;
+  color: var(--phenom-text-tertiary);
+}
+
+.card-stats {
+  display: flex;
+  gap: var(--phenom-space-4);
+  padding-top: var(--phenom-space-3);
+  border-top: 1px solid var(--phenom-border-soft);
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: var(--phenom-space-2);
+  color: var(--phenom-text-secondary);
+  font-size: 0.875rem;
+}
+
+.stat-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  color: var(--phenom-primary);
+}
+
+.loading-more {
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.end-message {
+  text-align: center;
+  padding: 2rem;
+  color: var(--phenom-text-secondary);
+  font-size: 0.9375rem;
+  background: var(--phenom-surface-glass-base);
+  border-radius: var(--phenom-radius-2xl);
+  border: 1px solid var(--phenom-border-soft);
+  margin-top: var(--phenom-space-6);
+}
+
+/* Responsive Grid */
 @media (min-width: 640px) {
   .observations-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -349,53 +529,17 @@ watch([activeType, searchQuery], () => {
   }
 }
 
-.observation-description {
-  color: #6b7280;
-  font-size: 0.9375rem;
-  line-height: 1.6;
-  margin: 0;
-}
-
-.observation-meta {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  width: 100%;
-}
-
-.meta-text {
-  font-size: 0.8125rem;
-  color: #6b7280;
-}
-
-.meta-separator {
-  color: #d1d5db;
-}
-
-.loading-more {
-  padding: 2rem;
-  display: flex;
-  justify-content: center;
-}
-
-.end-message {
-  text-align: center;
-  padding: 2rem;
-  color: #6b7280;
-  font-size: 0.9375rem;
-}
-
 @media (max-width: 640px) {
   .feed-header {
-    padding: 0.875rem;
+    padding: var(--phenom-space-3);
   }
 
   .feed-content {
-    padding: 0.875rem;
+    padding: var(--phenom-space-3);
   }
 
   .observations-grid {
-    gap: 1rem;
+    gap: var(--phenom-space-4);
   }
 }
 </style>

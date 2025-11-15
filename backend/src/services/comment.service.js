@@ -1,7 +1,6 @@
 import Comment from '../models/Comment.js';
 import Observation from '../models/Observation.js';
 import { getPaginationParams, createPaginationMeta } from '../utils/pagination.js';
-import { publishCommentEvent } from '../config/websocket.js';
 
 /**
  * Service de gestion des commentaires
@@ -66,14 +65,9 @@ class CommentService {
       userId
     });
 
-    const populatedComment = await comment.populate('userId', 'name email');
+    const populatedComment = await comment.populate('userId', 'name email avatar');
 
-    // Publier l'événement via WebSocket
-    publishCommentEvent('comment:created', {
-      comment: populatedComment.toObject(),
-      observationId
-    });
-
+    // Le WebSocket sera publié dans le contrôleur
     return populatedComment;
   }
 
@@ -97,18 +91,13 @@ class CommentService {
       commentId,
       { $set: filteredData },
       { new: true, runValidators: true }
-    ).populate('userId', 'name email');
+    ).populate('userId', 'name email avatar');
 
     if (!comment) {
       throw new Error('COMMENT_NOT_FOUND');
     }
 
-    // Publier l'événement via WebSocket
-    publishCommentEvent('comment:updated', {
-      comment: comment.toObject(),
-      observationId: comment.observationId
-    });
-
+    // Le WebSocket sera publié dans le contrôleur
     return comment;
   }
 
@@ -124,12 +113,7 @@ class CommentService {
       throw new Error('COMMENT_NOT_FOUND');
     }
 
-    // Publier l'événement via WebSocket
-    publishCommentEvent('comment:deleted', {
-      commentId,
-      observationId: comment.observationId
-    });
-
+    // Le WebSocket sera publié dans le contrôleur
     return comment;
   }
 

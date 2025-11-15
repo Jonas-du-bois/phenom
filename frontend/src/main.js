@@ -5,7 +5,6 @@ import router from "./router";
 import { useAuth } from "./composables/useAuth";
 import "leaflet/dist/leaflet.css";
 import "./style.css";
-import "./styles/phenom-design.css";
 
 const app = createApp(App);
 const pinia = createPinia();

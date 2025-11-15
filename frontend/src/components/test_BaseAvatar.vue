@@ -40,6 +40,10 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  glow: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const imageError = ref(false);
@@ -50,6 +54,7 @@ const avatarClasses = computed(() => {
     {
       "avatar-rounded": props.rounded,
       "avatar-square": !props.rounded,
+      "avatar-glow": props.glow,
     },
   ];
 });
@@ -58,7 +63,7 @@ const avatarStyle = computed(() => {
   if (imageError.value || !props.src) {
     // Generate color from name
     const colors = [
-      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      "var(--phenom-gradient-primary)",
       "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
       "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
       "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
@@ -93,7 +98,9 @@ const handleError = () => {
   justify-content: center;
   overflow: hidden;
   flex-shrink: 0;
-  background: #e5e7eb;
+  background: var(--phenom-surface-glass-base);
+  border: 2px solid var(--phenom-border-soft);
+  transition: var(--phenom-transition-base);
 }
 
 .avatar-rounded {
@@ -101,7 +108,12 @@ const handleError = () => {
 }
 
 .avatar-square {
-  border-radius: 0.5rem;
+  border-radius: var(--phenom-radius-lg);
+}
+
+.avatar-glow {
+  border-color: var(--phenom-primary);
+  box-shadow: var(--phenom-glow-primary-medium);
 }
 
 /* Sizes */
@@ -155,7 +167,8 @@ const handleError = () => {
   width: 25%;
   height: 25%;
   border-radius: 9999px;
-  border: 2px solid white;
+  border: 2px solid var(--phenom-bg-primary);
+  box-shadow: var(--phenom-shadow-md);
 }
 
 .status-online {
@@ -163,7 +176,7 @@ const handleError = () => {
 }
 
 .status-offline {
-  background: #6b7280;
+  background: var(--phenom-text-tertiary);
 }
 
 .status-away {

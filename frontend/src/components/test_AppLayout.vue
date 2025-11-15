@@ -1,7 +1,7 @@
 <template>
   <div class="app-layout">
-    <!-- Header (mobile + desktop) -->
-    <header class="app-header">
+    <!-- Header (desktop only) -->
+    <header class="app-header desktop-only">
       <div class="header-content">
         <!-- Logo -->
         <router-link to="/feed" class="logo">
@@ -9,8 +9,8 @@
           <span class="logo-text">Phenom</span>
         </router-link>
 
-        <!-- Search (desktop) -->
-        <div class="header-search desktop-only">
+        <!-- Search -->
+        <div class="header-search">
           <input
             type="search"
             placeholder="Rechercher une observation..."
@@ -84,7 +84,7 @@
         </nav>
 
         <!-- Create button (sidebar) -->
-        <button class="btn-create" @click="navigateTo('/create')">
+        <button class="btn-create" @click="handleCreate">
           <svg
             class="w-6 h-6"
             fill="none"
@@ -113,35 +113,10 @@
     </main>
 
     <!-- Bottom navigation (mobile only) -->
-    <nav class="bottom-nav mobile-only">
-      <router-link
-        v-for="item in navItems"
-        :key="item.path"
-        :to="item.path"
-        class="bottom-nav-item"
-        :class="{ 'bottom-nav-item-active': isActive(item.path) }"
-      >
-        <component :is="item.icon" class="bottom-nav-icon" />
-        <span class="bottom-nav-label">{{ item.label }}</span>
-      </router-link>
-
-      <!-- Floating create button (mobile) -->
-      <button class="fab" @click="navigateTo('/create')">
-        <svg
-          class="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 4v16m8-8H4"
-          />
-        </svg>
-      </button>
-    </nav>
+    <BottomNav 
+      class="mobile-only" 
+      @create="handleCreate"
+    />
   </div>
 </template>
 
@@ -150,6 +125,7 @@ import { ref, computed, h } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useAuth } from "../composables/useAuth";
 import TestBaseAvatar from "./test_BaseAvatar.vue";
+import BottomNav from "./BottomNav.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -237,6 +213,10 @@ const navigateTo = (path) => {
   router.push(path);
 };
 
+const handleCreate = () => {
+  router.push("/create");
+};
+
 const handleSearch = () => {
   if (searchQuery.value.trim()) {
     router.push({ path: "/feed", query: { q: searchQuery.value } });
@@ -249,7 +229,7 @@ const handleSearch = () => {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f9fafb;
+  background: var(--phenom-bg-primary);
 }
 
 /* Header */
@@ -257,11 +237,11 @@ const handleSearch = () => {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(30, 38, 64, 0.8);
+  background: var(--phenom-surface-glass-soft);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid var(--phenom-border-soft);
+  box-shadow: var(--phenom-shadow-md);
 }
 
 .header-content {
@@ -280,15 +260,21 @@ const handleSearch = () => {
   text-decoration: none;
   font-weight: 700;
   font-size: 1.25rem;
-  color: #667eea;
+  color: var(--phenom-primary);
+  transition: var(--phenom-transition-base);
+}
+
+.logo:hover {
+  color: var(--phenom-primary-light);
 }
 
 .logo-icon {
   font-size: 1.75rem;
+  filter: drop-shadow(0 0 8px rgba(123, 63, 242, 0.5));
 }
 
 .logo-text {
-  display: none;
+  font-size: 1.25rem;
 }
 
 .header-search {
@@ -300,16 +286,23 @@ const handleSearch = () => {
 .search-input {
   width: 100%;
   padding: 0.625rem 1rem 0.625rem 2.75rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 9999px;
+  background: var(--phenom-surface-glass-base);
+  border: 1px solid var(--phenom-border-soft);
+  border-radius: var(--phenom-radius-full);
   font-size: 0.9375rem;
-  transition: all 0.2s;
+  color: var(--phenom-text-primary);
+  transition: var(--phenom-transition-base);
+}
+
+.search-input::placeholder {
+  color: var(--phenom-text-tertiary);
 }
 
 .search-input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: var(--phenom-primary);
+  box-shadow: var(--phenom-glow-primary-soft);
+  background: var(--phenom-surface-glass-soft);
 }
 
 .search-icon {
@@ -319,7 +312,8 @@ const handleSearch = () => {
   transform: translateY(-50%);
   width: 1.25rem;
   height: 1.25rem;
-  color: #9ca3af;
+  color: var(--phenom-text-tertiary);
+  pointer-events: none;
 }
 
 .header-actions {
@@ -333,30 +327,32 @@ const handleSearch = () => {
   position: relative;
   padding: 0.5rem;
   background: transparent;
-  border: none;
-  border-radius: 0.5rem;
+  border: 1px solid transparent;
+  border-radius: var(--phenom-radius-lg);
   cursor: pointer;
-  color: #6b7280;
-  transition: all 0.2s;
+  color: var(--phenom-text-secondary);
+  transition: var(--phenom-transition-base);
 }
 
 .btn-icon:hover {
-  background: #f3f4f6;
-  color: #111827;
+  background: var(--phenom-surface-glass-base);
+  border-color: var(--phenom-border-soft);
+  color: var(--phenom-text-primary);
 }
 
 .badge {
   position: absolute;
   top: 0.25rem;
   right: 0.25rem;
-  background: #ef4444;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
   color: white;
   font-size: 0.625rem;
   padding: 0.125rem 0.375rem;
-  border-radius: 9999px;
+  border-radius: var(--phenom-radius-full);
   font-weight: 600;
   min-width: 1.25rem;
   text-align: center;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
 }
 
 /* Main */
@@ -375,9 +371,8 @@ const handleSearch = () => {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(30, 38, 64, 0.5);
-  backdrop-filter: blur(10px);
+  border-right: 1px solid var(--phenom-border-soft);
+  background: var(--phenom-surface-glass-subtle);
 }
 
 .sidebar-nav {
@@ -391,22 +386,25 @@ const handleSearch = () => {
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  border-radius: 0.5rem;
+  border-radius: var(--phenom-radius-lg);
   text-decoration: none;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--phenom-text-secondary);
   font-weight: 500;
-  transition: all 0.2s;
+  transition: var(--phenom-transition-base);
+  border: 1px solid transparent;
 }
 
 .nav-item:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: white;
+  background: var(--phenom-surface-glass-base);
+  color: var(--phenom-text-primary);
+  border-color: var(--phenom-border-soft);
 }
 
 .nav-item-active {
-  background: #7B3FF2;
+  background: var(--phenom-gradient-primary);
   color: white;
-  box-shadow: 0 4px 12px rgba(123, 63, 242, 0.4);
+  box-shadow: var(--phenom-glow-primary-medium);
+  border-color: transparent;
 }
 
 .nav-icon {
@@ -425,99 +423,30 @@ const handleSearch = () => {
   justify-content: center;
   gap: 0.5rem;
   padding: 0.875rem 1.25rem;
-  background: #7B3FF2;
+  background: var(--phenom-gradient-primary);
   color: white;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 9999px;
+  border: 1px solid var(--phenom-border-soft);
+  border-radius: var(--phenom-radius-full);
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 8px 24px rgba(123, 63, 242, 0.4);
+  transition: var(--phenom-transition-base);
+  box-shadow: var(--phenom-glow-primary-medium);
 }
 
 .btn-create:hover {
   transform: translateY(-2px);
-  background: #6B2FD1;
-  box-shadow: 0 12px 32px rgba(123, 63, 242, 0.6);
+  box-shadow: var(--phenom-glow-primary-strong);
+}
+
+.btn-create:active {
+  transform: translateY(0);
 }
 
 /* Content */
 .app-content {
   flex: 1;
   overflow-y: auto;
-}
-
-/* Bottom navigation (mobile) */
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: rgba(30, 38, 64, 0.9);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  justify-content: space-around;
-  padding: 0.5rem 0.5rem calc(0.5rem + env(safe-area-inset-bottom));
-  z-index: 100;
-  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.2);
-}
-
-.bottom-nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.5rem 1rem;
-  text-decoration: none;
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 0.75rem;
-  font-weight: 500;
-  transition: all 0.2s;
-  min-width: 60px;
-}
-
-.bottom-nav-item-active {
-  color: #7B3FF2;
-}
-
-.bottom-nav-icon {
-  width: 1.5rem;
-  height: 1.5rem;
-}
-
-.bottom-nav-label {
-  font-size: 0.6875rem;
-}
-
-/* FAB (mobile) */
-.fab {
-  position: fixed;
-  bottom: calc(4.5rem + env(safe-area-inset-bottom));
-  right: 1rem;
-  width: 3.5rem;
-  height: 3.5rem;
-  background: #7B3FF2;
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  box-shadow: 0 8px 24px rgba(123, 63, 242, 0.5);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-  z-index: 99;
-}
-
-.fab:hover {
-  background: #6B2FD1;
-  box-shadow: 0 12px 32px rgba(123, 63, 242, 0.7);
-}
-
-.fab:active {
-  transform: scale(0.95);
+  padding-bottom: 0;
 }
 
 /* Responsive */
@@ -530,10 +459,6 @@ const handleSearch = () => {
 }
 
 @media (min-width: 768px) {
-  .logo-text {
-    display: inline;
-  }
-
   .header-content {
     padding: 1rem 1.5rem;
   }
@@ -553,14 +478,14 @@ const handleSearch = () => {
   }
 
   .app-content {
-    padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom));
   }
 }
 
 /* Transitions */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.2s;
+  transition: opacity 0.2s ease;
 }
 
 .fade-enter-from,

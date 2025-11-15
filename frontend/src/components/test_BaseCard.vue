@@ -80,35 +80,36 @@ const handleClick = (event) => {
 
 <style scoped>
 .card {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--phenom-surface-glass-base);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-radius: 0.75rem;
+  border-radius: var(--phenom-radius-2xl);
   overflow: hidden;
-  transition: all 0.3s;
+  transition: var(--phenom-transition-base);
 }
 
 /* Variants */
 .card-default {
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--phenom-border-soft);
+  box-shadow: var(--phenom-shadow-md);
 }
 
 .card-elevated {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--phenom-shadow-xl);
+  border: 1px solid var(--phenom-border-soft);
 }
 
 .card-outlined {
-  border: 2px solid #7B3FF2;
-  box-shadow: 0 4px 16px rgba(123, 63, 242, 0.2);
+  border: 2px solid var(--phenom-primary);
+  box-shadow: var(--phenom-glow-primary-soft);
 }
 
 /* Hover effect */
 .card-hoverable:hover {
   transform: translateY(-4px);
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(123, 63, 242, 0.3);
-  box-shadow: 0 12px 32px rgba(123, 63, 242, 0.3);
+  background: var(--phenom-surface-glass-soft);
+  border-color: var(--phenom-border-medium);
+  box-shadow: var(--phenom-shadow-xl), var(--phenom-glow-primary-soft);
 }
 
 .card-clickable {
@@ -119,7 +120,7 @@ const handleClick = (event) => {
 .card-media {
   width: 100%;
   overflow: hidden;
-  background: #f3f4f6;
+  background: var(--phenom-surface-glass-subtle);
 }
 
 .card-image {
@@ -127,7 +128,7 @@ const handleClick = (event) => {
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.3s;
+  transition: var(--phenom-transition-base);
 }
 
 .card-hoverable:hover .card-image {
@@ -138,7 +139,7 @@ const handleClick = (event) => {
 .card-content {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--phenom-space-4);
 }
 
 .card-padding-none .card-content {
@@ -146,42 +147,42 @@ const handleClick = (event) => {
 }
 
 .card-padding-sm .card-content {
-  padding: 0.75rem;
+  padding: var(--phenom-space-3);
 }
 
 .card-padding-md .card-content {
-  padding: 1.25rem;
+  padding: var(--phenom-space-4);
 }
 
 .card-padding-lg .card-content {
-  padding: 2rem;
+  padding: var(--phenom-space-6);
 }
 
 /* Header */
 .card-header {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--phenom-space-1);
 }
 
 .card-title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--phenom-text-primary);
   margin: 0;
   line-height: 1.4;
 }
 
 .card-subtitle {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--phenom-text-secondary);
   margin: 0;
 }
 
 /* Body */
 .card-body {
   font-size: 0.9375rem;
-  color: #374151;
+  color: var(--phenom-text-secondary);
   line-height: 1.6;
 }
 
@@ -189,51 +190,27 @@ const handleClick = (event) => {
 .card-footer {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid #e5e7eb;
+  gap: var(--phenom-space-3);
+  padding-top: var(--phenom-space-3);
+  border-top: 1px solid var(--phenom-border-soft);
 }
 
 /* Mobile optimization */
 @media (max-width: 640px) {
   .card {
-    border-radius: 0.5rem;
-  }
-
-  .card-title {
-    font-size: 1rem;
+    border-radius: var(--phenom-radius-xl);
   }
 
   .card-padding-md .card-content {
-    padding: 1rem;
+    padding: var(--phenom-space-3);
   }
 
   .card-padding-lg .card-content {
-    padding: 1.5rem;
+    padding: var(--phenom-space-4);
   }
-}
-
-/* Dark mode */
-@media (prefers-color-scheme: dark) {
-  .card {
-    background: #1f2937;
-    border-color: #374151;
-  }
-
+  
   .card-title {
-    color: #f3f4f6;
-  }
-
-  .card-subtitle {
-    color: #9ca3af;
-  }
-
-  .card-body {
-    color: #d1d5db;
-  }
-
-  .card-footer {
-    border-top-color: #374151;
+    font-size: 1rem;
   }
 }
 </style>

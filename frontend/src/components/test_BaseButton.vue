@@ -79,10 +79,10 @@ const handleClick = (event) => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: var(--phenom-space-2);
   font-weight: 500;
-  border-radius: 9999px;
-  transition: all 0.2s;
+  border-radius: var(--phenom-radius-full);
+  transition: var(--phenom-transition-base);
   cursor: pointer;
   border: none;
   outline: none;
@@ -111,16 +111,15 @@ const handleClick = (event) => {
 
 /* Variants */
 .btn-primary {
-  background: #7B3FF2;
+  background: var(--phenom-gradient-primary);
   color: white;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 24px rgba(123, 63, 242, 0.4);
+  border: 1px solid var(--phenom-border-soft);
+  box-shadow: var(--phenom-glow-primary-medium);
 }
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  background: #6B2FD1;
-  box-shadow: 0 12px 32px rgba(123, 63, 242, 0.6);
+  box-shadow: var(--phenom-glow-primary-strong);
 }
 
 .btn-primary:active:not(:disabled) {
@@ -128,47 +127,51 @@ const handleClick = (event) => {
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.05);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: var(--phenom-surface-glass-base);
+  color: var(--phenom-text-primary);
+  border: 1px solid var(--phenom-border-soft);
   backdrop-filter: blur(10px);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: var(--phenom-surface-glass-soft);
+  border-color: var(--phenom-border-medium);
 }
 
 .btn-outline {
   background: transparent;
-  border: 2px solid #7B3FF2;
-  color: #7B3FF2;
+  border: 2px solid var(--phenom-primary);
+  color: var(--phenom-primary);
   backdrop-filter: blur(10px);
 }
 
 .btn-outline:hover:not(:disabled) {
-  background: #7B3FF2;
+  background: var(--phenom-primary);
   color: white;
-  box-shadow: 0 4px 16px rgba(123, 63, 242, 0.4);
+  box-shadow: var(--phenom-glow-primary-medium);
 }
 
 .btn-ghost {
   background: transparent;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--phenom-text-secondary);
+  border: 1px solid transparent;
 }
 
-
 .btn-ghost:hover:not(:disabled) {
-  background: rgba(102, 126, 234, 0.1);
+  background: var(--phenom-surface-glass-base);
+  color: var(--phenom-text-primary);
 }
 
 .btn-danger {
-  background: #ef4444;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
   color: white;
+  border: 1px solid var(--phenom-border-soft);
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4);
 }
 
 .btn-danger:hover:not(:disabled) {
-  background: #dc2626;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(239, 68, 68, 0.6);
 }
 
 /* States */
@@ -189,7 +192,7 @@ const handleClick = (event) => {
 }
 
 .btn-rounded {
-  border-radius: 9999px;
+  border-radius: var(--phenom-radius-full);
 }
 
 /* Spinner */
@@ -240,7 +243,7 @@ const handleClick = (event) => {
 
 /* Active/Focus states */
 .btn:focus-visible {
-  outline: 2px solid #667eea;
+  outline: 2px solid var(--phenom-primary);
   outline-offset: 2px;
 }
 </style>
