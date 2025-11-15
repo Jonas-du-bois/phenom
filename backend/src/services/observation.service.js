@@ -63,7 +63,15 @@ class ObservationService {
    */
   async getObservationById(observationId) {
     const observation = await Observation.findById(observationId)
-      .populate('userId', 'name email');
+      .populate('userId', 'name email')
+      .populate({
+        path: 'comments',
+        populate: {
+          path: 'userId',
+          select: 'name email avatar'
+        },
+        options: { sort: { createdAt: -1 } }
+      });
 
     if (!observation) {
       throw new Error('OBSERVATION_NOT_FOUND');

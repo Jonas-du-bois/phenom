@@ -270,30 +270,47 @@ const isOwner = computed(() => {
 onMounted(async () => {
   await loadObservation();
   
-  // Connecter WebSocket
+  // Connecter WebSocket et écouter les messages
   await connect();
   
-  // Écouter les événements de commentaires
-  subscribe('comment:created', handleCommentCreated);
-  subscribe('comment:updated', handleCommentUpdated);
-  subscribe('comment:deleted', handleCommentDeleted);
+  // Écouter les messages du canal comments (déjà souscrit dans useWebSocket)
+  const unsubComments = await subscribe('comments', handleWebSocketMessage);
   
-  // Écouter les événements d'observation
-  subscribe('observation:updated', handleObservationUpdated);
-  subscribe('observation:deleted', handleObservationDeleted);
+  // Écouter les messages du canal observations (déjà souscrit dans useWebSocket)
+  const unsubObservations = await subscribe('observations', handleWebSocketMessage);
 });
 
 onUnmounted(() => {
-  // Nettoyer les listeners
-  unsubscribe('comment:created', handleCommentCreated);
-  unsubscribe('comment:updated', handleCommentUpdated);
-  unsubscribe('comment:deleted', handleCommentDeleted);
-  unsubscribe('observation:updated', handleObservationUpdated);
-  unsubscribe('observation:deleted', handleObservationDeleted);
   disconnect();
 });
 
-// Handlers WebSocket
+// Handler unique pour tous les messages WebSocket
+const handleWebSocketMessage = (message) => {
+  console.log('📨 Message WebSocket reçu:', message);
+  
+  // Le message contient { type, data, timestamp }
+  const { type, data } = message;
+  
+  switch (type) {
+    case 'comment:created':
+      handleCommentCreated(data);
+      break;
+    case 'comment:updated':
+      handleCommentUpdated(data);
+      break;
+    case 'comment:deleted':
+      handleCommentDeleted(data);
+      break;
+    case 'observation:updated':
+      handleObservationUpdated(data);
+      break;
+    case 'observation:deleted':
+      handleObservationDeleted(data);
+      break;
+  }
+};
+
+// Handlers pour chaque type d'événement
 const handleCommentCreated = (comment) => {
   console.log('🔔 Nouveau commentaire reçu:', comment);
   // Vérifier que c'est pour cette observation

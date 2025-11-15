@@ -131,6 +131,13 @@ observationSchema.virtual('commentsCount', {
   count: true
 });
 
+// Virtual pour la liste des commentaires
+observationSchema.virtual('comments', {
+  ref: 'Comment',
+  localField: '_id',
+  foreignField: 'observationId'
+});
+
 const Observation = mongoose.model('Observation', observationSchema);
 
 export default Observation;

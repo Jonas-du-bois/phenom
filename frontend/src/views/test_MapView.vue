@@ -248,11 +248,9 @@ onMounted(() => {
   initializeMap()
   loadObservations()
   
-  // Connecter WebSocket pour les mises à jour en temps réel
+  // Connecter WebSocket et écouter les messages
   connect()
-  subscribe('observation:created', handleObservationCreated)
-  subscribe('observation:updated', handleObservationUpdated)
-  subscribe('observation:deleted', handleObservationDeleted)
+  subscribe('observations', handleWebSocketMessage)
 })
 
 onUnmounted(() => {
@@ -260,14 +258,30 @@ onUnmounted(() => {
     map.value.remove()
   }
   
-  // Nettoyer WebSocket
-  unsubscribe('observation:created', handleObservationCreated)
-  unsubscribe('observation:updated', handleObservationUpdated)
-  unsubscribe('observation:deleted', handleObservationDeleted)
   disconnect()
 })
 
-// Handlers WebSocket
+// Handler unique pour tous les messages WebSocket
+const handleWebSocketMessage = (message) => {
+  console.log('📨 Message WebSocket reçu:', message);
+  
+  // Le message contient { type, data, timestamp }
+  const { type, data } = message;
+  
+  switch (type) {
+    case 'observation:created':
+      handleObservationCreated(data);
+      break;
+    case 'observation:updated':
+      handleObservationUpdated(data);
+      break;
+    case 'observation:deleted':
+      handleObservationDeleted(data);
+      break;
+  }
+};
+
+// Handlers pour chaque type d'événement
 const handleObservationCreated = (obs) => {
   console.log('🔔 Nouvelle observation reçue:', obs)
   
