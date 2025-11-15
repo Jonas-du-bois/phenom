@@ -27,12 +27,23 @@ class ObservationService {
 
     // Filtre géographique par zone (bounding box) - pour la carte
     if (filters.minLat && filters.maxLat && filters.minLng && filters.maxLng) {
+      const minLng = parseFloat(filters.minLng);
+      const maxLng = parseFloat(filters.maxLng);
+      const minLat = parseFloat(filters.minLat);
+      const maxLat = parseFloat(filters.maxLat);
+      
       query.location = {
         $geoWithin: {
-          $box: [
-            [parseFloat(filters.minLng), parseFloat(filters.minLat)], // Coin sud-ouest
-            [parseFloat(filters.maxLng), parseFloat(filters.maxLat)]  // Coin nord-est
-          ]
+          $geometry: {
+            type: 'Polygon',
+            coordinates: [[
+              [minLng, minLat], // Coin sud-ouest
+              [maxLng, minLat], // Coin sud-est
+              [maxLng, maxLat], // Coin nord-est
+              [minLng, maxLat], // Coin nord-ouest
+              [minLng, minLat]  // Retour au point de départ (fermeture du polygone)
+            ]]
+          }
         }
       };
     }
