@@ -8,7 +8,9 @@ export const authService = {
    * Connexion
    */
   async login(credentials) {
+    console.log('📤 Envoi login avec:', { email: credentials.email, password: '***' })
     const response = await apiClient.post('/auth/login', credentials)
+    console.log('📥 Réponse login reçue:', response.data)
     return response.data
   },
 

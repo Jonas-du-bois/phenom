@@ -28,8 +28,15 @@ export function useAuth() {
 
       const response = await authService.login({ email, password })
       
-      // Backend retourne: { success: true, data: { user, accessToken, refreshToken } }
+      console.log('🔍 Response complète:', response)
+      console.log('🔍 response.data:', response.data)
+      
+      // authService retourne response.data du backend: { success: true, data: { user, accessToken, refreshToken } }
+      // Donc response.data contient { user, accessToken, refreshToken }
       const { user: userData, accessToken } = response.data
+      
+      console.log('🔍 userData:', userData)
+      console.log('🔍 accessToken:', accessToken)
       
       token.value = accessToken
       user.value = userData
@@ -39,6 +46,7 @@ export function useAuth() {
 
       return true
     } catch (err) {
+      console.error('❌ Erreur login:', err)
       error.value = err.response?.data?.message || 'Erreur de connexion'
       return false
     } finally {
@@ -56,7 +64,8 @@ export function useAuth() {
 
       const response = await authService.register({ name, email, password })
       
-      // Backend retourne: { success: true, data: { user, accessToken, refreshToken } }
+      // authService retourne déjà response.data qui contient: { success: true, data: { user, accessToken, refreshToken } }
+      // Donc on accède directement à response.data (pas response.data.data)
       const { user: userData, accessToken } = response.data
       
       token.value = accessToken
@@ -67,6 +76,7 @@ export function useAuth() {
 
       return true
     } catch (err) {
+      console.error('❌ Erreur register:', err)
       error.value = err.response?.data?.message || 'Erreur d\'inscription'
       return false
     } finally {

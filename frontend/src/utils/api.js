@@ -22,12 +22,19 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
   
+  console.log('🔧 Interceptor request:', { url: config.url, hasToken: !!token })
+  
   // Routes qui ne nécessitent pas de token
   const publicRoutes = ['/auth/login', '/auth/signup', '/auth/forgot-password', '/auth/reset-password', '/auth/refresh-token']
   const isPublicRoute = publicRoutes.some(route => config.url?.includes(route))
   
+  console.log('🔧 Is public route?', isPublicRoute)
+  
   if (token && !isPublicRoute) {
     config.headers.Authorization = `Bearer ${token}`
+    console.log('🔧 Token ajouté au header')
+  } else {
+    console.log('🔧 Pas de token ajouté (public route ou pas de token)')
   }
   
   return config
