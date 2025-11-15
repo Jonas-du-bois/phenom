@@ -15,6 +15,11 @@ class ObservationService {
     const { page, limit, skip } = getPaginationParams(filters);
     const query = {};
 
+    // Filtre par type d'observation
+    if (filters.type) {
+      query.type = filters.type;
+    }
+
     // Filtre de recherche textuelle
     if (filters.search) {
       query.$text = { $search: filters.search };
