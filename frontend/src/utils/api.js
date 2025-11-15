@@ -21,12 +21,15 @@ const apiClient = axios.create({
 // Intercepteur pour ajouter le token
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
-  if (token) {
+  
+  // Routes qui ne nécessitent pas de token
+  const publicRoutes = ['/auth/login', '/auth/register', '/auth/forgot-password']
+  const isPublicRoute = publicRoutes.some(route => config.url?.includes(route))
+  
+  if (token && !isPublicRoute) {
     config.headers.Authorization = `Bearer ${token}`
-    console.log('🔑 Token ajouté à la requête:', config.url)
-  } else {
-    console.warn('⚠️ Aucun token trouvé pour:', config.url)
   }
+  
   return config
 })
 
@@ -35,6 +38,44 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     // Gestion des erreurs globales
+    if (error.response) {
+      // Erreur de réponse du serveur
+      const status = error.response.status
+      const message = error.response.data?.message || error.message
+      
+      switch (status) {
+        case 401:
+          // Non autorisé - token invalide ou expiré
+          if (!error.config.url?.includes('/auth/login')) {
+            console.error('🔒 Session expirée - redirection nécessaire')
+            localStorage.removeItem('token')
+            localStorage.removeItem('user')
+            // Rediriger vers login si nécessaire
+            if (window.location.pathname !== '/auth') {
+              window.location.href = '/auth'
+            }
+          }
+          break
+        case 403:
+          console.error('🚫 Accès refusé:', message)
+          break
+        case 404:
+          console.error('❌ Ressource non trouvée:', error.config.url)
+          break
+        case 500:
+          console.error('💥 Erreur serveur:', message)
+          break
+        default:
+          console.error(`⚠️ Erreur ${status}:`, message)
+      }
+    } else if (error.request) {
+      // Erreur réseau - pas de réponse reçue
+      console.error('🌐 Erreur réseau - serveur injoignable')
+    } else {
+      // Autre erreur
+      console.error('❌ Erreur:', error.message)
+    }
+    
     return Promise.reject(error)
   }
 )
