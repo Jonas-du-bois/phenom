@@ -25,8 +25,19 @@ class ObservationService {
       query.$text = { $search: filters.search };
     }
 
-    // Filtre géographique (proximité)
-    if (filters.lat && filters.lng && filters.radius) {
+    // Filtre géographique par zone (bounding box) - pour la carte
+    if (filters.minLat && filters.maxLat && filters.minLng && filters.maxLng) {
+      query.location = {
+        $geoWithin: {
+          $box: [
+            [parseFloat(filters.minLng), parseFloat(filters.minLat)], // Coin sud-ouest
+            [parseFloat(filters.maxLng), parseFloat(filters.maxLat)]  // Coin nord-est
+          ]
+        }
+      };
+    }
+    // Filtre géographique (proximité) - pour la recherche à proximité
+    else if (filters.lat && filters.lng && filters.radius) {
       const radiusInMeters = parseFloat(filters.radius) * 1000;
       query.location = {
         $near: {

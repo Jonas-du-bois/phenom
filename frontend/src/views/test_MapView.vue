@@ -165,18 +165,56 @@ const initializeMap = () => {
   })
   
   map.value.addLayer(markerClusterGroup.value)
+  
+  // Recharger les observations quand la carte bouge ou zoom
+  let moveTimeout
+  map.value.on('moveend', () => {
+    // Debounce pour éviter trop de requêtes
+    clearTimeout(moveTimeout)
+    moveTimeout = setTimeout(() => {
+      console.log('🔄 Carte déplacée, rechargement des observations...')
+      loadObservationsInBounds()
+    }, 500)
+  })
+  
+  map.value.on('zoomend', () => {
+    console.log('🔍 Zoom changé, rechargement des observations...')
+    loadObservationsInBounds()
+  })
+  
   console.log('✅ Carte initialisée avec succès')
 }
 
-const loadObservations = async () => {
+const loadObservationsInBounds = async () => {
+  if (!map.value) return
+  
   loading.value = true
   error.value = null
   
   try {
-    console.log('🔍 Chargement des observations...')
-    const response = await observationService.getAll()
+    // Récupérer les limites de la carte visible
+    const bounds = map.value.getBounds()
+    const sw = bounds.getSouthWest() // Coin sud-ouest
+    const ne = bounds.getNorthEast() // Coin nord-est
+    
+    console.log('�️ Chargement observations dans la zone:', {
+      minLat: sw.lat,
+      maxLat: ne.lat,
+      minLng: sw.lng,
+      maxLng: ne.lng
+    })
+    
+    // Charger les observations dans cette zone
+    const response = await observationService.getAll({
+      minLat: sw.lat,
+      maxLat: ne.lat,
+      minLng: sw.lng,
+      maxLng: ne.lng,
+      limit: 1000
+    })
+    
     observations.value = response.data || response || []
-    console.log(`✅ ${observations.value.length} observation(s) chargée(s)`)
+    console.log(`✅ ${observations.value.length} observation(s) dans cette zone`)
     
     // Nettoyer les anciens marqueurs
     if (markerClusterGroup.value) {
@@ -204,20 +242,18 @@ const loadObservations = async () => {
       markerClusterGroup.value.addLayer(marker)
     })
     
-    // Ajuster la vue pour voir tous les marqueurs
-    if (validObservations.length > 0) {
-      const bounds = validObservations.map(obs => [
-        obs.location.coordinates[1],
-        obs.location.coordinates[0]
-      ])
-      map.value.fitBounds(bounds, { padding: [50, 50] })
-    }
-    
   } catch (err) {
     console.error('❌ Erreur chargement observations:', err)
     error.value = 'Impossible de charger les observations'
   } finally {
     loading.value = false
+  }
+}
+
+// Fonction initiale pour charger les observations (sans bounds spécifiques)
+const loadObservations = async () => {
+  if (map.value) {
+    await loadObservationsInBounds()
   }
 }
 
