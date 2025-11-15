@@ -137,29 +137,31 @@ const clear = () => {
   width: 100%;
   padding: 0.75rem 1rem;
   font-size: 1rem;
-  border: 1px solid var(--phenom-border-soft);
+  border: 1px solid var(--phenom-border-medium);
   border-radius: var(--phenom-radius-lg);
-  background: var(--phenom-surface-glass-base);
+  background: var(--phenom-surface-glass-strong);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   color: var(--phenom-text-primary);
   transition: var(--phenom-transition-base);
   outline: none;
   font-family: inherit;
+  font-weight: 500;
 }
 
 .input-field:focus {
   border-color: var(--phenom-primary);
-  box-shadow: var(--phenom-glow-primary-soft);
-  background: var(--phenom-surface-glass-soft);
+  box-shadow: 0 0 0 3px rgba(123, 63, 242, 0.15);
+  background: var(--phenom-surface-glass-active);
 }
 
 .input-field::placeholder {
-  color: var(--phenom-text-tertiary);
+  color: var(--phenom-text-placeholder);
+  font-weight: 400;
 }
 
 .input-field:disabled {
-  background: var(--phenom-surface-glass-subtle);
+  background: var(--phenom-surface-glass);
   cursor: not-allowed;
   opacity: 0.6;
 }

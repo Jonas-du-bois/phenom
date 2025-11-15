@@ -237,11 +237,11 @@ watch([activeType, searchQuery], () => {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: var(--phenom-surface-glass-soft);
+  background: var(--phenom-surface-glass-strong);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   padding: var(--phenom-space-4);
-  border-bottom: 1px solid var(--phenom-border-soft);
+  border-bottom: 1px solid var(--phenom-border-medium);
   box-shadow: var(--phenom-shadow-md);
 }
 
@@ -264,23 +264,25 @@ watch([activeType, searchQuery], () => {
 .search-input {
   width: 100%;
   padding: 0.75rem 1rem 0.75rem 3rem;
-  background: var(--phenom-surface-glass-base);
-  border: 1px solid var(--phenom-border-soft);
+  background: var(--phenom-surface-glass-strong);
+  border: 1px solid var(--phenom-border-medium);
   border-radius: var(--phenom-radius-full);
   font-size: 1rem;
   color: var(--phenom-text-primary);
+  font-weight: 500;
   transition: var(--phenom-transition-base);
 }
 
 .search-input::placeholder {
-  color: var(--phenom-text-tertiary);
+  color: var(--phenom-text-placeholder);
+  font-weight: 400;
 }
 
 .search-input:focus {
   outline: none;
   border-color: var(--phenom-primary);
-  box-shadow: var(--phenom-glow-primary-soft);
-  background: var(--phenom-surface-glass-soft);
+  box-shadow: 0 0 0 3px rgba(123, 63, 242, 0.15);
+  background: var(--phenom-surface-glass-active);
 }
 
 .filter-chips-wrapper {
@@ -299,11 +301,11 @@ watch([activeType, searchQuery], () => {
 .filter-chip {
   flex-shrink: 0;
   padding: 0.5rem 1rem;
-  border: 1px solid var(--phenom-border-soft);
-  background: var(--phenom-surface-glass-base);
+  border: 1px solid var(--phenom-border-medium);
+  background: var(--phenom-surface-glass-strong);
   border-radius: var(--phenom-radius-full);
   font-size: 0.8125rem;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--phenom-text-secondary);
   cursor: pointer;
   transition: var(--phenom-transition-base);
@@ -313,14 +315,14 @@ watch([activeType, searchQuery], () => {
 .filter-chip:hover {
   border-color: var(--phenom-primary);
   color: var(--phenom-primary);
-  background: var(--phenom-surface-glass-soft);
+  background: var(--phenom-surface-glass-active);
 }
 
 .filter-chip.active {
-  background: var(--phenom-gradient-primary);
+  background: linear-gradient(135deg, var(--phenom-primary) 0%, var(--phenom-primary-dark) 100%);
   border-color: transparent;
   color: white;
-  box-shadow: var(--phenom-glow-primary-medium);
+  box-shadow: 0 0 20px rgba(123, 63, 242, 0.4);
 }
 
 .feed-content {
@@ -358,7 +360,7 @@ watch([activeType, searchQuery], () => {
   margin: 0 0 1.5rem;
 }
 
-/* Observation Cards - Glassmorphic Design */
+/* Observation Cards - Glassmorphic Design with better contrast */
 .observations-grid {
   display: grid;
   gap: var(--phenom-space-6);
@@ -366,10 +368,10 @@ watch([activeType, searchQuery], () => {
 }
 
 .observation-card {
-  background: var(--phenom-surface-glass-base);
+  background: var(--phenom-surface-glass-strong);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--phenom-border-soft);
+  border: 1px solid var(--phenom-border-medium);
   border-radius: var(--phenom-radius-2xl);
   overflow: hidden;
   cursor: pointer;
@@ -379,8 +381,8 @@ watch([activeType, searchQuery], () => {
 
 .observation-card:hover {
   transform: translateY(-4px);
-  box-shadow: var(--phenom-shadow-xl), var(--phenom-glow-primary-soft);
-  border-color: var(--phenom-border-medium);
+  box-shadow: var(--phenom-shadow-xl), 0 0 30px rgba(123, 63, 242, 0.3);
+  border-color: var(--phenom-primary);
 }
 
 .card-image-container {
@@ -388,7 +390,7 @@ watch([activeType, searchQuery], () => {
   width: 100%;
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  background: var(--phenom-surface-glass-subtle);
+  background: var(--phenom-bg-secondary);
 }
 
 .card-image {
@@ -422,14 +424,17 @@ watch([activeType, searchQuery], () => {
   top: var(--phenom-space-3);
   right: var(--phenom-space-3);
   padding: 0.375rem 0.875rem;
-  background: var(--phenom-surface-glass-soft);
+  background: var(--phenom-surface-glass-strong);
   backdrop-filter: blur(12px);
-  border: 1px solid var(--phenom-border-soft);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--phenom-border-medium);
   border-radius: var(--phenom-radius-full);
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--phenom-text-primary);
-  box-shadow: var(--phenom-shadow-md);
+  box-shadow: var(--phenom-shadow-lg);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .card-content {
@@ -441,7 +446,7 @@ watch([activeType, searchQuery], () => {
 
 .card-title {
   font-size: 1.125rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--phenom-text-primary);
   margin: 0;
   line-height: 1.4;
@@ -469,20 +474,21 @@ watch([activeType, searchQuery], () => {
 
 .meta-name {
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--phenom-text-primary);
 }
 
 .meta-date {
   font-size: 0.75rem;
   color: var(--phenom-text-tertiary);
+  font-weight: 500;
 }
 
 .card-stats {
   display: flex;
   gap: var(--phenom-space-4);
   padding-top: var(--phenom-space-3);
-  border-top: 1px solid var(--phenom-border-soft);
+  border-top: 1px solid var(--phenom-border-medium);
 }
 
 .stat-item {
@@ -491,6 +497,7 @@ watch([activeType, searchQuery], () => {
   gap: var(--phenom-space-2);
   color: var(--phenom-text-secondary);
   font-size: 0.875rem;
+  font-weight: 600;
 }
 
 .stat-icon {
@@ -510,9 +517,10 @@ watch([activeType, searchQuery], () => {
   padding: 2rem;
   color: var(--phenom-text-secondary);
   font-size: 0.9375rem;
-  background: var(--phenom-surface-glass-base);
+  font-weight: 600;
+  background: var(--phenom-surface-glass-strong);
   border-radius: var(--phenom-radius-2xl);
-  border: 1px solid var(--phenom-border-soft);
+  border: 1px solid var(--phenom-border-medium);
   margin-top: var(--phenom-space-6);
 }
 

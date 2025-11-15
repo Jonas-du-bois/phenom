@@ -400,9 +400,13 @@ const handleObservationDeleted = (data) => {
 
 <style scoped>
 .map-view {
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
-  height: calc(100vh - 4rem);
+  height: 100vh;
   overflow: hidden;
 }
 
@@ -422,23 +426,27 @@ const handleObservationDeleted = (data) => {
 }
 
 .control-btn {
-  width: 3rem;
-  height: 3rem;
-  background: white;
-  border: none;
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 3.5rem;
+  height: 3.5rem;
+  background: var(--phenom-surface-glass-strong);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--phenom-border-medium);
+  border-radius: var(--phenom-radius-lg);
+  box-shadow: var(--phenom-shadow-lg);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s;
-  color: #667eea;
+  transition: var(--phenom-transition-base);
+  color: var(--phenom-text-primary);
 }
 
 .control-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--phenom-shadow-xl), var(--phenom-glow-sm);
+  border-color: var(--phenom-primary);
+  background: var(--phenom-surface-glass-active);
 }
 
 .control-btn:disabled {
@@ -452,13 +460,16 @@ const handleObservationDeleted = (data) => {
 }
 
 .observations-count {
-  background: white;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background: var(--phenom-surface-glass-strong);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--phenom-border-medium);
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--phenom-radius-lg);
+  box-shadow: var(--phenom-shadow-lg);
   font-size: 0.875rem;
-  font-weight: 500;
-  color: #667eea;
+  font-weight: 600;
+  color: var(--phenom-text-primary);
   text-align: center;
 }
 
@@ -475,60 +486,63 @@ const handleObservationDeleted = (data) => {
   }
 }
 
-/* .map-loading {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1000;
-  background: white;
-  padding: 2rem;
-  border-radius: 1rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-} */
-
 .map-error {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 1000;
-  background: white;
+  background: var(--phenom-surface-glass-strong);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--phenom-border-medium);
   padding: 2rem;
-  border-radius: 1rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border-radius: var(--phenom-radius-2xl);
+  box-shadow: var(--phenom-shadow-2xl);
   text-align: center;
+  max-width: 400px;
 }
 
 .map-error p {
   margin: 0 0 1rem;
   color: #ef4444;
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 1rem;
 }
 
 @media (max-width: 640px) {
   .map-view {
-    height: calc(100vh - 3.5rem);
+    height: 100vh;
   }
 
   .map-controls {
-    bottom: 5rem;
+    bottom: 7rem;
+  }
+
+  .control-btn {
+    width: 3rem;
+    height: 3rem;
   }
 }
 
-/* Leaflet popup styling */
+/* Leaflet popup styling with better contrast */
 :deep(.custom-popup .leaflet-popup-content-wrapper) {
   border-radius: 12px;
   padding: 0;
   overflow: hidden;
+  background: var(--phenom-surface-glass-strong);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--phenom-border-medium);
 }
 
 :deep(.custom-popup .leaflet-popup-content) {
   margin: 0;
   padding: 16px;
+  color: var(--phenom-text-primary);
 }
 
 :deep(.custom-popup .leaflet-popup-tip) {
-  background: white;
+  background: var(--phenom-surface-glass-strong);
+  border: 1px solid var(--phenom-border-medium);
 }
 </style>

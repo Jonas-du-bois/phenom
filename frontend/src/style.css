@@ -17,21 +17,23 @@
   --phenom-bg-secondary: #2A3454;
   --phenom-bg-tertiary: #364466;
   
-  /* Surface Colors (Glassmorphic) */
-  --phenom-surface-glass: rgba(255, 255, 255, 0.05);
-  --phenom-surface-glass-hover: rgba(255, 255, 255, 0.08);
-  --phenom-surface-glass-active: rgba(255, 255, 255, 0.12);
+  /* Surface Colors (Glassmorphic) - Improved contrast */
+  --phenom-surface-glass: rgba(255, 255, 255, 0.08);
+  --phenom-surface-glass-hover: rgba(255, 255, 255, 0.12);
+  --phenom-surface-glass-active: rgba(255, 255, 255, 0.16);
+  --phenom-surface-glass-strong: rgba(255, 255, 255, 0.12);
   
-  /* Border Colors */
-  --phenom-border-subtle: rgba(255, 255, 255, 0.1);
-  --phenom-border-medium: rgba(255, 255, 255, 0.2);
-  --phenom-border-strong: rgba(255, 255, 255, 0.3);
+  /* Border Colors - More visible */
+  --phenom-border-subtle: rgba(255, 255, 255, 0.15);
+  --phenom-border-medium: rgba(255, 255, 255, 0.25);
+  --phenom-border-strong: rgba(255, 255, 255, 0.4);
   
-  /* Text Colors */
+  /* Text Colors - Enhanced contrast */
   --phenom-text-primary: #ffffff;
-  --phenom-text-secondary: rgba(255, 255, 255, 0.8);
-  --phenom-text-tertiary: rgba(255, 255, 255, 0.6);
-  --phenom-text-muted: rgba(255, 255, 255, 0.4);
+  --phenom-text-secondary: rgba(255, 255, 255, 0.9);
+  --phenom-text-tertiary: rgba(255, 255, 255, 0.7);
+  --phenom-text-muted: rgba(255, 255, 255, 0.5);
+  --phenom-text-placeholder: rgba(255, 255, 255, 0.4);
   
   /* Shadows */
   --phenom-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);

@@ -24,7 +24,12 @@ const router = createRouter({
       children: [
         {
           path: "",
-          redirect: "/feed",
+          redirect: "/home",
+        },
+        {
+          path: "home",
+          name: "home",
+          component: () => import("../views/test_HomeView.vue"),
         },
         {
           path: "feed",
@@ -54,10 +59,10 @@ const router = createRouter({
       ],
     },
 
-    // Old routes (keep for compatibility)
+    // Old HomeView route (keep for compatibility)
     {
-      path: "/home",
-      name: "home",
+      path: "/old-home",
+      name: "old-home",
       component: () => import("../views/HomeView.vue"),
     },
     {
@@ -84,8 +89,8 @@ router.beforeEach((to, from, next) => {
     // Redirect to auth if not authenticated
     next("/auth");
   } else if (to.path === "/auth" && userIsAuthenticated) {
-    // Redirect to feed if already authenticated
-    next("/feed");
+    // Redirect to home if already authenticated
+    next("/home");
   } else {
     next();
   }
