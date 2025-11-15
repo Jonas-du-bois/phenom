@@ -31,7 +31,7 @@ class ObservationService {
       const maxLng = parseFloat(filters.maxLng);
       const minLat = parseFloat(filters.minLat);
       const maxLat = parseFloat(filters.maxLat);
-      
+
       query.location = {
         $geoWithin: {
           $geometry: {
