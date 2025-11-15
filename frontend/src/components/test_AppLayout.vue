@@ -446,7 +446,8 @@ const handleSearch = () => {
 .app-content {
   flex: 1;
   overflow-y: auto;
-  padding-bottom: 0;
+  padding-bottom: 2rem;
+  min-height: 100vh;
 }
 
 /* Responsive */
@@ -478,7 +479,7 @@ const handleSearch = () => {
   }
 
   .app-content {
-    padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+    padding-bottom: 7rem;
   }
 }
 

@@ -114,17 +114,17 @@ const createPopupContent = (obs) => {
     : ''
     
   return `
-    <div style="min-width: 250px; max-width: 300px;">
+    <div style="min-width: 250px; max-width: 300px;" class="observation-popup" data-obs-id="${obs._id}">
       ${imageHtml}
-      <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #111827;">${obs.title}</h3>
-      <p style="margin: 0 0 8px 0; font-size: 12px; color: #6B7280; font-weight: 500;">${getObservationLabel(obs.type)}</p>
-      <p style="margin: 0 0 12px 0; font-size: 14px; color: #374151; line-height: 1.5;">${obs.description.slice(0, 150)}${obs.description.length > 150 ? '...' : ''}</p>
-      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 12px; color: #6B7280;">
+      <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 700; color: var(--phenom-text-primary);">${obs.title}</h3>
+      <p style="margin: 0 0 8px 0; font-size: 12px; color: var(--phenom-text-secondary); font-weight: 600;">${getObservationLabel(obs.type)}</p>
+      <p style="margin: 0 0 12px 0; font-size: 14px; color: var(--phenom-text-secondary); line-height: 1.5;">${obs.description.slice(0, 150)}${obs.description.length > 150 ? '...' : ''}</p>
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 12px; color: var(--phenom-text-tertiary); font-weight: 500;">
         <span>👤 ${obs.userId?.name || 'Anonyme'}</span>
         <span>•</span>
         <span>📅 ${formatDate(obs.createdAt)}</span>
       </div>
-      <button onclick="window.location.href='/#/observations/${obs._id}'" style="width: 100%; padding: 8px 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer;">
+      <button class="popup-detail-btn" data-obs-id="${obs._id}" style="width: 100%; padding: 10px 16px; background: linear-gradient(135deg, var(--phenom-primary) 0%, var(--phenom-primary-dark) 100%); color: white; border: none; border-radius: var(--phenom-radius-lg); font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 0 20px rgba(123, 63, 242, 0.4); transition: all 0.2s;">
         Voir les détails
       </button>
     </div>
@@ -227,9 +227,24 @@ const loadObservationsInBounds = async () => {
         icon: createCustomIcon(obs.type)
       })
       
-      marker.bindPopup(createPopupContent(obs), {
+      const popup = L.popup({
         maxWidth: 300,
         className: 'custom-popup'
+      }).setContent(createPopupContent(obs))
+      
+      marker.bindPopup(popup)
+      
+      // Ajouter l'événement click sur le popup après ouverture
+      marker.on('popupopen', () => {
+        setTimeout(() => {
+          const detailBtn = document.querySelector('.popup-detail-btn')
+          if (detailBtn) {
+            detailBtn.addEventListener('click', (e) => {
+              const obsId = e.target.getAttribute('data-obs-id')
+              window.location.href = `/#/observations/${obsId}`
+            })
+          }
+        }, 100)
       })
       
       markerClusterGroup.value.addLayer(marker)

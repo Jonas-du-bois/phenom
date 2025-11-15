@@ -268,7 +268,6 @@
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useAuth } from "../composables/useAuth";
-import { useMap } from "../composables/useMap";
 import { useWebSocket } from "../composables/useWebSocket";
 import { observationService } from "../services/observationService";
 import { commentService } from "../services/commentService";
@@ -292,8 +291,6 @@ const addingComment = ref(false);
 const showDeleteModal = ref(false);
 const deleting = ref(false);
 const mapContainer = ref(null);
-
-const { initMap, addMarker } = useMap();
 
 const isOwner = computed(() => {
   return (
@@ -426,13 +423,33 @@ const loadObservation = async () => {
     // Initialize map if location exists
     if (observation.value.location?.coordinates && mapContainer.value) {
       setTimeout(async () => {
-        await initMap(mapContainer.value);
-        const coords = observation.value.location.coordinates;
-        addMarker({
-          id: observation.value._id,
-          position: { lat: coords[1], lng: coords[0] },
-          title: observation.value.title,
-        });
+        try {
+          // Importer Leaflet dynamiquement
+          const L = (await import('leaflet')).default
+          await import('leaflet/dist/leaflet.css')
+          
+          // Créer la carte
+          const mapInstance = L.map(mapContainer.value).setView(
+            [observation.value.location.coordinates[1], observation.value.location.coordinates[0]],
+            13
+          )
+          
+          // Ajouter les tuiles
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19,
+          }).addTo(mapInstance)
+          
+          // Ajouter le marker
+          const marker = L.marker([
+            observation.value.location.coordinates[1],
+            observation.value.location.coordinates[0]
+          ]).addTo(mapInstance)
+          
+          marker.bindPopup(`<b>${observation.value.title}</b>`).openPopup()
+        } catch (err) {
+          console.error('Erreur initialisation map:', err)
+        }
       }, 100);
     }
   } catch (err) {
@@ -864,11 +881,12 @@ const deleteObservation = async () => {
 /* Map */
 .detail-map {
   width: 100%;
-  height: 250px;
+  height: 300px;
   border-radius: var(--phenom-radius-xl);
   overflow: hidden;
-  border: 1px solid var(--phenom-border-soft);
+  border: 2px solid var(--phenom-border-medium);
   margin-top: var(--phenom-space-4);
+  box-shadow: var(--phenom-shadow-lg);
 }
 
 /* Comments */
@@ -877,82 +895,95 @@ const deleteObservation = async () => {
   gap: var(--phenom-space-3);
   margin-bottom: var(--phenom-space-6);
   padding-bottom: var(--phenom-space-6);
-  border-bottom: 1px solid var(--phenom-border-soft);
+  border-bottom: 2px solid var(--phenom-border-medium);
 }
 
 .comment-input-wrapper {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: var(--phenom-space-2);
+  gap: var(--phenom-space-3);
 }
 
 .comment-input {
   width: 100%;
-  padding: 0.75rem;
-  background: var(--phenom-surface-glass-subtle);
-  border: 1px solid var(--phenom-border-soft);
+  padding: 1rem;
+  background: var(--phenom-surface-glass-strong);
+  border: 2px solid var(--phenom-border-medium);
   border-radius: var(--phenom-radius-lg);
-  font-size: 0.9375rem;
+  font-size: 1rem;
   font-family: inherit;
+  font-weight: 500;
   color: var(--phenom-text-primary);
   resize: vertical;
+  min-height: 80px;
   transition: var(--phenom-transition-base);
 }
 
 .comment-input::placeholder {
-  color: var(--phenom-text-tertiary);
+  color: var(--phenom-text-placeholder);
+  font-weight: 400;
 }
 
 .comment-input:focus {
   outline: none;
   border-color: var(--phenom-primary);
-  box-shadow: var(--phenom-glow-primary-soft);
-  background: var(--phenom-surface-glass-base);
+  box-shadow: 0 0 0 3px rgba(123, 63, 242, 0.15);
+  background: var(--phenom-surface-glass-active);
 }
 
 .comments-list {
   display: flex;
   flex-direction: column;
-  gap: var(--phenom-space-4);
+  gap: var(--phenom-space-6);
 }
 
 .comment-item {
   display: flex;
   gap: var(--phenom-space-3);
+  padding-bottom: var(--phenom-space-6);
+  border-bottom: 1px solid var(--phenom-border-medium);
+}
+
+.comment-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
 }
 
 .comment-content {
   flex: 1;
-  background: var(--phenom-surface-glass-subtle);
-  border: 1px solid var(--phenom-border-soft);
-  padding: var(--phenom-space-3) var(--phenom-space-4);
+  background: var(--phenom-surface-glass-strong);
+  border: 1px solid var(--phenom-border-medium);
+  padding: var(--phenom-space-4);
   border-radius: var(--phenom-radius-xl);
+  box-shadow: var(--phenom-shadow-sm);
 }
 
 .comment-header {
   display: flex;
   align-items: center;
   gap: var(--phenom-space-2);
-  margin-bottom: var(--phenom-space-1);
+  margin-bottom: var(--phenom-space-2);
 }
 
 .comment-author {
-  font-weight: 600;
-  font-size: 0.875rem;
+  font-weight: 700;
+  font-size: 0.9375rem;
   color: var(--phenom-text-primary);
 }
 
 .comment-date {
   font-size: 0.8125rem;
   color: var(--phenom-text-tertiary);
+  font-weight: 500;
 }
 
 .comment-text {
   color: var(--phenom-text-secondary);
-  font-size: 0.9375rem;
+  font-size: 1rem;
   line-height: 1.6;
   margin: 0;
+  font-weight: 500;
 }
 
 .no-comments {

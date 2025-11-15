@@ -248,16 +248,31 @@ const handleRegister = async () => {
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--phenom-bg-primary);
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(123, 63, 242, 0.2) 0%, transparent 70%);
+  pointer-events: none;
 }
 
 .auth-container {
+  position: relative;
+  z-index: 1;
   width: 100%;
   max-width: 440px;
-  background: white;
-  border-radius: 1.5rem;
+  background: var(--phenom-surface-glass-strong);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--phenom-border-medium);
+  border-radius: var(--phenom-radius-2xl);
   padding: 2.5rem;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--phenom-shadow-2xl), 0 0 60px rgba(123, 63, 242, 0.3);
 }
 
 .auth-header {
@@ -269,22 +284,25 @@ const handleRegister = async () => {
   font-size: 4rem;
   display: block;
   margin-bottom: 1rem;
+  filter: drop-shadow(0 0 20px rgba(123, 63, 242, 0.6));
 }
 
 .auth-title {
   font-size: 2rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--phenom-primary-light) 0%, var(--phenom-primary) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   margin: 0 0 0.5rem;
+  text-shadow: 0 0 40px rgba(123, 63, 242, 0.3);
 }
 
 .auth-subtitle {
-  color: #6b7280;
+  color: var(--phenom-text-secondary);
   font-size: 0.9375rem;
   margin: 0;
+  font-weight: 500;
 }
 
 .auth-tabs {
@@ -292,26 +310,32 @@ const handleRegister = async () => {
   grid-template-columns: 1fr 1fr;
   gap: 0.5rem;
   margin-bottom: 2rem;
-  background: #f3f4f6;
+  background: var(--phenom-surface-glass);
   padding: 0.25rem;
-  border-radius: 0.75rem;
+  border-radius: var(--phenom-radius-lg);
+  border: 1px solid var(--phenom-border-subtle);
 }
 
 .tab {
   padding: 0.75rem;
   border: none;
   background: transparent;
-  border-radius: 0.5rem;
-  font-weight: 500;
+  border-radius: var(--phenom-radius-md);
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
-  color: #6b7280;
+  transition: var(--phenom-transition-base);
+  color: var(--phenom-text-tertiary);
+}
+
+.tab:hover {
+  color: var(--phenom-text-secondary);
+  background: var(--phenom-surface-glass);
 }
 
 .tab-active {
-  background: white;
-  color: #667eea;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, var(--phenom-primary) 0%, var(--phenom-primary-dark) 100%);
+  color: white;
+  box-shadow: 0 0 20px rgba(123, 63, 242, 0.4);
 }
 
 .auth-form {
@@ -323,11 +347,13 @@ const handleRegister = async () => {
 .error-message {
   color: #ef4444;
   font-size: 0.875rem;
+  font-weight: 600;
   text-align: center;
   margin: 0;
-  padding: 0.75rem;
-  background: #fee2e2;
-  border-radius: 0.5rem;
+  padding: 0.875rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--phenom-radius-lg);
 }
 
 @media (max-width: 640px) {
