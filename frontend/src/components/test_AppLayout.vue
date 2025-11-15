@@ -256,10 +256,12 @@ const handleSearch = () => {
 .app-header {
   position: sticky;
   top: 0;
-  z-index: 100;
-  background: white;
-  border-bottom: 1px solid #e5e7eb;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  z-index: 50;
+  background: rgba(30, 38, 64, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
 }
 
 .header-content {
@@ -373,8 +375,9 @@ const handleSearch = () => {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  border-right: 1px solid #e5e7eb;
-  background: white;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(30, 38, 64, 0.5);
+  backdrop-filter: blur(10px);
 }
 
 .sidebar-nav {
@@ -390,19 +393,20 @@ const handleSearch = () => {
   padding: 0.75rem 1rem;
   border-radius: 0.5rem;
   text-decoration: none;
-  color: #6b7280;
+  color: rgba(255, 255, 255, 0.7);
   font-weight: 500;
   transition: all 0.2s;
 }
 
 .nav-item:hover {
-  background: #f3f4f6;
-  color: #111827;
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
 }
 
 .nav-item-active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #7B3FF2;
   color: white;
+  box-shadow: 0 4px 12px rgba(123, 63, 242, 0.4);
 }
 
 .nav-icon {
@@ -421,18 +425,20 @@ const handleSearch = () => {
   justify-content: center;
   gap: 0.5rem;
   padding: 0.875rem 1.25rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #7B3FF2;
   color: white;
-  border: none;
-  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  box-shadow: 0 8px 24px rgba(123, 63, 242, 0.4);
 }
 
 .btn-create:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
+  background: #6B2FD1;
+  box-shadow: 0 12px 32px rgba(123, 63, 242, 0.6);
 }
 
 /* Content */
@@ -447,13 +453,15 @@ const handleSearch = () => {
   bottom: 0;
   left: 0;
   right: 0;
-  background: white;
-  border-top: 1px solid #e5e7eb;
+  background: rgba(30, 38, 64, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   justify-content: space-around;
   padding: 0.5rem 0.5rem calc(0.5rem + env(safe-area-inset-bottom));
   z-index: 100;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.2);
 }
 
 .bottom-nav-item {
@@ -463,7 +471,7 @@ const handleSearch = () => {
   gap: 0.25rem;
   padding: 0.5rem 1rem;
   text-decoration: none;
-  color: #9ca3af;
+  color: rgba(255, 255, 255, 0.5);
   font-size: 0.75rem;
   font-weight: 500;
   transition: all 0.2s;
@@ -471,7 +479,7 @@ const handleSearch = () => {
 }
 
 .bottom-nav-item-active {
-  color: #667eea;
+  color: #7B3FF2;
 }
 
 .bottom-nav-icon {
@@ -490,17 +498,22 @@ const handleSearch = () => {
   right: 1rem;
   width: 3.5rem;
   height: 3.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #7B3FF2;
   color: white;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 50%;
-  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8px 24px rgba(123, 63, 242, 0.5);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
   z-index: 99;
+}
+
+.fab:hover {
+  background: #6B2FD1;
+  box-shadow: 0 12px 32px rgba(123, 63, 242, 0.7);
 }
 
 .fab:active {

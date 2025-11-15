@@ -2,14 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Variables CSS personnalisées */
+/* Variables CSS personnalisées - Style Phenom Dark Theme */
 :root {
   /* Couleurs principales */
-  --violet-mystique: #9973bf;
-  --bleu-nuit: #1e2640;
+  --violet-mystique: #7B3FF2;
+  --violet-fonce: #5A1FC9;
+  --bleu-nuit: #1E2640;
   --bleu-profond: #324873;
   --noir-bleute: #111826;
   --noir-profond: #0d0d0d;
+  
+  /* Nouvelles couleurs du design system */
+  --background: #1E2640;
+  --foreground: #ffffff;
+  --card: rgba(255, 255, 255, 0.05);
+  --card-foreground: #ffffff;
+  --primary: #7B3FF2;
+  --primary-foreground: #ffffff;
+  --secondary: #324873;
+  --muted: rgba(255, 255, 255, 0.1);
+  --muted-foreground: rgba(255, 255, 255, 0.6);
+  --accent: #7B3FF2;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.05);
+  --ring: #7B3FF2;
+  --radius: 0.625rem;
 }
 
 /* Styles de base */
@@ -23,6 +40,35 @@ body {
   font-family:
     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
     Arial, sans-serif;
-  background-color: var(--noir-bleute);
+  background-color: var(--bleu-nuit);
   color: white;
+  overflow-x: hidden;
+}
+
+/* Animation float pour éléments flottants */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Animation pulse pour étoiles */
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.animate-twinkle {
+  animation: twinkle 2s ease-in-out infinite;
 }

@@ -81,7 +81,7 @@ const handleClick = (event) => {
   justify-content: center;
   gap: 0.5rem;
   font-weight: 500;
-  border-radius: 0.5rem;
+  border-radius: 9999px;
   transition: all 0.2s;
   cursor: pointer;
   border: none;
@@ -111,14 +111,16 @@ const handleClick = (event) => {
 
 /* Variants */
 .btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #7B3FF2;
   color: white;
-  box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 24px rgba(123, 63, 242, 0.4);
 }
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+  background: #6B2FD1;
+  box-shadow: 0 12px 32px rgba(123, 63, 242, 0.6);
 }
 
 .btn-primary:active:not(:disabled) {
@@ -126,29 +128,35 @@ const handleClick = (event) => {
 }
 
 .btn-secondary {
-  background: #6b7280;
+  background: rgba(255, 255, 255, 0.05);
   color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: #4b5563;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .btn-outline {
   background: transparent;
-  border: 2px solid #667eea;
-  color: #667eea;
+  border: 2px solid #7B3FF2;
+  color: #7B3FF2;
+  backdrop-filter: blur(10px);
 }
 
 .btn-outline:hover:not(:disabled) {
-  background: #667eea;
+  background: #7B3FF2;
   color: white;
+  box-shadow: 0 4px 16px rgba(123, 63, 242, 0.4);
 }
 
 .btn-ghost {
   background: transparent;
-  color: #667eea;
+  color: rgba(255, 255, 255, 0.8);
 }
+
 
 .btn-ghost:hover:not(:disabled) {
   background: rgba(102, 126, 234, 0.1);

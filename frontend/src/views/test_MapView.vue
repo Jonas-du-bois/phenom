@@ -39,9 +39,9 @@
     </div>
 
     <!-- Loading -->
-    <div v-if="loading" class="map-loading">
+    <!-- <div v-if="loading" class="map-loading">
       <test-BaseLoading size="lg" text="Chargement de la carte..." />
-    </div>
+    </div> -->
     
     <!-- Error -->
     <div v-if="error" class="map-error">
@@ -62,7 +62,7 @@ import { useWebSocket } from '../composables/useWebSocket'
 import { observationService } from '../services/observationService'
 import { getObservationLabel } from '../constants/observationTypes'
 import TestBaseButton from '../components/test_BaseButton.vue'
-import TestBaseLoading from '../components/test_BaseLoading.vue'
+//import TestBaseLoading from '../components/test_BaseLoading.vue'
 
 const { connect, disconnect, subscribe, unsubscribe } = useWebSocket()
 
@@ -475,7 +475,7 @@ const handleObservationDeleted = (data) => {
   }
 }
 
-.map-loading {
+/* .map-loading {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -485,7 +485,7 @@ const handleObservationDeleted = (data) => {
   padding: 2rem;
   border-radius: 1rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
+} */
 
 .map-error {
   position: absolute;

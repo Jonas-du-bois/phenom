@@ -1,11 +1,12 @@
 <template>
-  <div id="app" class="min-h-screen bg-noir-bleute text-white">
+  <div id="app" class="min-h-screen relative overflow-x-hidden" style="background-color: #1E2640;">
+    <StarryBackground />
     <router-view />
   </div>
 </template>
 
 <script setup>
-// App principal Phenom
+import StarryBackground from './components/StarryBackground.vue'
 </script>
 
 <style>

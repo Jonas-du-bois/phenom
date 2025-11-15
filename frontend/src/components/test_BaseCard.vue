@@ -80,7 +80,9 @@ const handleClick = (event) => {
 
 <style scoped>
 .card {
-  background: white;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-radius: 0.75rem;
   overflow: hidden;
   transition: all 0.3s;
@@ -88,21 +90,25 @@ const handleClick = (event) => {
 
 /* Variants */
 .card-default {
-  border: 1px solid #e5e7eb;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .card-elevated {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .card-outlined {
-  border: 2px solid #667eea;
+  border: 2px solid #7B3FF2;
+  box-shadow: 0 4px 16px rgba(123, 63, 242, 0.2);
 }
 
 /* Hover effect */
 .card-hoverable:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(123, 63, 242, 0.3);
+  box-shadow: 0 12px 32px rgba(123, 63, 242, 0.3);
 }
 
 .card-clickable {

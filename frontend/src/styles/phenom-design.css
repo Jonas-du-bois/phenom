@@ -1,0 +1,187 @@
+/* Phenom Design System - Classes utilitaires */
+
+/* Effet glassmorphic pour les cartes */
+.glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius, 0.625rem);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(123, 63, 242, 0.3);
+  box-shadow: 0 8px 32px rgba(123, 63, 242, 0.2);
+  transition: all 0.3s ease;
+}
+
+/* Dégradé violet signature */
+.gradient-purple {
+  background: linear-gradient(180deg, #7B3FF2 0%, #5A1FC9 40%, #1E2640 100%);
+}
+
+.gradient-purple-radial {
+  background: radial-gradient(circle at top, #7B3FF2 0%, #5A1FC9 30%, #1E2640 100%);
+}
+
+/* Boutons avec effet glow */
+.btn-primary {
+  background: #7B3FF2;
+  color: white;
+  padding: 0.75rem 2rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 24px rgba(123, 63, 242, 0.4);
+  backdrop-filter: blur(10px);
+}
+
+.btn-primary:hover {
+  background: #6B2FD1;
+  box-shadow: 0 12px 32px rgba(123, 63, 242, 0.6);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  padding: 0.75rem 2rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-weight: 500;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Input avec effet glassmorphic */
+.input-glass {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius, 0.625rem);
+  padding: 0.75rem 1rem;
+  color: white;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.input-glass::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.input-glass:focus {
+  outline: none;
+  border-color: #7B3FF2;
+  box-shadow: 0 0 0 3px rgba(123, 63, 242, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Badge/Chip moderne */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  transition: all 0.2s ease;
+}
+
+.chip:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.chip.active {
+  background: #7B3FF2;
+  border-color: #7B3FF2;
+  box-shadow: 0 4px 12px rgba(123, 63, 242, 0.4);
+}
+
+/* Effet glow violet */
+.glow-purple {
+  box-shadow: 0 0 40px rgba(123, 63, 242, 0.4);
+}
+
+.glow-purple-strong {
+  box-shadow: 0 0 80px rgba(123, 63, 242, 0.6);
+}
+
+/* Séparateur avec dégradé */
+.divider-gradient {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(123, 63, 242, 0.5) 50%, transparent 100%);
+  border: none;
+}
+
+/* Navigation moderne */
+.nav-glass {
+  background: rgba(30, 38, 64, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Scrollbar personnalisée */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(123, 63, 242, 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(123, 63, 242, 0.7);
+}
+
+/* Avatar avec bordure glow */
+.avatar-glow {
+  border: 2px solid rgba(123, 63, 242, 0.3);
+  box-shadow: 0 0 12px rgba(123, 63, 242, 0.3);
+}
+
+/* Text gradient */
+.text-gradient-purple {
+  background: linear-gradient(135deg, #7B3FF2 0%, #B794F6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Animation shimmer pour loading */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.shimmer {
+  animation: shimmer 2s infinite;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 0px,
+    rgba(255, 255, 255, 0.15) 40px,
+    rgba(255, 255, 255, 0.05) 80px
+  );
+  background-size: 1000px 100%;
+}
