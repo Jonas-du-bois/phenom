@@ -70,9 +70,11 @@ const mapContainer = ref(null)
 const map = ref(null)
 const markerClusterGroup = ref(null)
 const observations = ref([])
-const loading = ref(true)
+const loading = ref(false)
 const loadingLocation = ref(false)
 const error = ref(null)
+let moveTimeout = null
+let lastBounds = null
 
 const createCustomIcon = (type) => {
   const color = getTypeColor(type)
@@ -166,45 +168,40 @@ const initializeMap = () => {
   
   map.value.addLayer(markerClusterGroup.value)
   
-  // Recharger les observations quand la carte bouge ou zoom
-  let moveTimeout
+  // Recharger les observations quand la carte bouge (inclut zoom et déplacement)
   map.value.on('moveend', () => {
-    // Debounce pour éviter trop de requêtes
+    // Éviter les requêtes en boucle si un chargement est déjà en cours
+    if (loading.value) return
+    
+    // Debounce pour éviter trop de requêtes pendant le déplacement
     clearTimeout(moveTimeout)
     moveTimeout = setTimeout(() => {
-      console.log('🔄 Carte déplacée, rechargement des observations...')
       loadObservationsInBounds()
-    }, 500)
-  })
-  
-  map.value.on('zoomend', () => {
-    console.log('🔍 Zoom changé, rechargement des observations...')
-    loadObservationsInBounds()
+    }, 300)
   })
   
   console.log('✅ Carte initialisée avec succès')
 }
 
+
 const loadObservationsInBounds = async () => {
-  if (!map.value) return
+  if (!map.value || loading.value) return
   
+  const bounds = map.value.getBounds()
+  const sw = bounds.getSouthWest()
+  const ne = bounds.getNorthEast()
+  
+  const boundsKey = `${sw.lat.toFixed(4)},${sw.lng.toFixed(4)},${ne.lat.toFixed(4)},${ne.lng.toFixed(4)}`
+  
+  if (lastBounds === boundsKey) {
+    return
+  }
+  
+  lastBounds = boundsKey
   loading.value = true
   error.value = null
   
   try {
-    // Récupérer les limites de la carte visible
-    const bounds = map.value.getBounds()
-    const sw = bounds.getSouthWest() // Coin sud-ouest
-    const ne = bounds.getNorthEast() // Coin nord-est
-    
-    console.log('�️ Chargement observations dans la zone:', {
-      minLat: sw.lat,
-      maxLat: ne.lat,
-      minLng: sw.lng,
-      maxLng: ne.lng
-    })
-    
-    // Charger les observations dans cette zone
     const response = await observationService.getAll({
       minLat: sw.lat,
       maxLat: ne.lat,
@@ -214,19 +211,15 @@ const loadObservationsInBounds = async () => {
     })
     
     observations.value = response.data || response || []
-    console.log(`✅ ${observations.value.length} observation(s) dans cette zone`)
+    console.log(`✅ ${observations.value.length} observation(s) chargée(s)`)
     
-    // Nettoyer les anciens marqueurs
     if (markerClusterGroup.value) {
       markerClusterGroup.value.clearLayers()
     }
     
-    // Ajouter les nouveaux marqueurs
     const validObservations = observations.value.filter(
       obs => obs.location?.coordinates && obs.location.coordinates.length === 2
     )
-    
-    console.log(`📍 ${validObservations.length} observation(s) avec coordonnées valides`)
     
     validObservations.forEach(obs => {
       const [lng, lat] = obs.location.coordinates
@@ -243,20 +236,18 @@ const loadObservationsInBounds = async () => {
     })
     
   } catch (err) {
-    console.error('❌ Erreur chargement observations:', err)
+    console.error('Erreur chargement observations:', err)
     error.value = 'Impossible de charger les observations'
   } finally {
     loading.value = false
   }
 }
 
-// Fonction initiale pour charger les observations (sans bounds spécifiques)
 const loadObservations = async () => {
   if (map.value) {
     await loadObservationsInBounds()
   }
 }
-
 const centerOnUser = () => {
   loadingLocation.value = true
   
