@@ -8,13 +8,13 @@
  * @param {string} order - 'asc' (plus anciens d'abord) ou 'desc' (plus récents d'abord)
  * @returns {Array} Commentaires triés
  */
-export const sortComments = (comments, order = 'desc') => {
+export const sortComments = (comments, order = "desc") => {
   return [...comments].sort((a, b) => {
-    const dateA = new Date(a.createdAt).getTime()
-    const dateB = new Date(b.createdAt).getTime()
-    return order === 'asc' ? dateA - dateB : dateB - dateA
-  })
-}
+    const dateA = new Date(a.createdAt).getTime();
+    const dateB = new Date(b.createdAt).getTime();
+    return order === "asc" ? dateA - dateB : dateB - dateA;
+  });
+};
 
 /**
  * Filtre les commentaires par utilisateur
@@ -23,12 +23,12 @@ export const sortComments = (comments, order = 'desc') => {
  * @returns {Array} Commentaires de l'utilisateur
  */
 export const filterCommentsByUser = (comments, userId) => {
-  if (!userId) return comments
-  return comments.filter(comment => {
-    const commentUserId = comment.userId?._id || comment.userId
-    return commentUserId === userId
-  })
-}
+  if (!userId) return comments;
+  return comments.filter((comment) => {
+    const commentUserId = comment.userId?._id || comment.userId;
+    return commentUserId === userId;
+  });
+};
 
 /**
  * Filtre les commentaires par période de temps
@@ -38,13 +38,13 @@ export const filterCommentsByUser = (comments, userId) => {
  * @returns {Array} Commentaires filtrés
  */
 export const filterCommentsByDate = (comments, startDate, endDate) => {
-  return comments.filter(comment => {
-    const commentDate = new Date(comment.createdAt)
-    const start = startDate ? new Date(startDate) : new Date(0)
-    const end = endDate ? new Date(endDate) : new Date()
-    return commentDate >= start && commentDate <= end
-  })
-}
+  return comments.filter((comment) => {
+    const commentDate = new Date(comment.createdAt);
+    const start = startDate ? new Date(startDate) : new Date(0);
+    const end = endDate ? new Date(endDate) : new Date();
+    return commentDate >= start && commentDate <= end;
+  });
+};
 
 /**
  * Recherche dans les commentaires
@@ -53,15 +53,15 @@ export const filterCommentsByDate = (comments, startDate, endDate) => {
  * @returns {Array} Commentaires correspondants
  */
 export const searchComments = (comments, searchText) => {
-  if (!searchText || searchText.trim() === '') return comments
-  
-  const search = searchText.toLowerCase().trim()
-  return comments.filter(comment => {
-    const content = (comment.content || '').toLowerCase()
-    const userName = (comment.userId?.name || '').toLowerCase()
-    return content.includes(search) || userName.includes(search)
-  })
-}
+  if (!searchText || searchText.trim() === "") return comments;
+
+  const search = searchText.toLowerCase().trim();
+  return comments.filter((comment) => {
+    const content = (comment.content || "").toLowerCase();
+    const userName = (comment.userId?.name || "").toLowerCase();
+    return content.includes(search) || userName.includes(search);
+  });
+};
 
 /**
  * Groupe les commentaires par utilisateur
@@ -70,12 +70,12 @@ export const searchComments = (comments, searchText) => {
  */
 export const groupCommentsByUser = (comments) => {
   return comments.reduce((acc, comment) => {
-    const userId = comment.userId?._id || comment.userId
-    if (!acc[userId]) acc[userId] = []
-    acc[userId].push(comment)
-    return acc
-  }, {})
-}
+    const userId = comment.userId?._id || comment.userId;
+    if (!acc[userId]) acc[userId] = [];
+    acc[userId].push(comment);
+    return acc;
+  }, {});
+};
 
 /**
  * Groupe les commentaires par date (jour)
@@ -84,13 +84,13 @@ export const groupCommentsByUser = (comments) => {
  */
 export const groupCommentsByDate = (comments) => {
   return comments.reduce((acc, comment) => {
-    const date = new Date(comment.createdAt)
-    const dateKey = date.toISOString().split('T')[0]
-    if (!acc[dateKey]) acc[dateKey] = []
-    acc[dateKey].push(comment)
-    return acc
-  }, {})
-}
+    const date = new Date(comment.createdAt);
+    const dateKey = date.toISOString().split("T")[0];
+    if (!acc[dateKey]) acc[dateKey] = [];
+    acc[dateKey].push(comment);
+    return acc;
+  }, {});
+};
 
 /**
  * Compte le nombre de commentaires par observation
@@ -99,11 +99,11 @@ export const groupCommentsByDate = (comments) => {
  */
 export const countCommentsByObservation = (comments) => {
   return comments.reduce((acc, comment) => {
-    const obsId = comment.observationId
-    acc[obsId] = (acc[obsId] || 0) + 1
-    return acc
-  }, {})
-}
+    const obsId = comment.observationId;
+    acc[obsId] = (acc[obsId] || 0) + 1;
+    return acc;
+  }, {});
+};
 
 /**
  * Calcule des statistiques sur les commentaires
@@ -115,34 +115,35 @@ export const calculateCommentStats = (comments) => {
     total: comments.length,
     byUser: {},
     avgLength: 0,
-    dateRange: { oldest: null, newest: null }
-  }
-  
-  if (comments.length === 0) return stats
-  
+    dateRange: { oldest: null, newest: null },
+  };
+
+  if (comments.length === 0) return stats;
+
   // Stats par utilisateur
-  comments.forEach(comment => {
-    const userId = comment.userId?._id || comment.userId
-    const userName = comment.userId?.name || 'Anonyme'
+  comments.forEach((comment) => {
+    const userId = comment.userId?._id || comment.userId;
+    const userName = comment.userId?.name || "Anonyme";
     if (!stats.byUser[userId]) {
-      stats.byUser[userId] = { name: userName, count: 0 }
+      stats.byUser[userId] = { name: userName, count: 0 };
     }
-    stats.byUser[userId].count++
-  })
-  
+    stats.byUser[userId].count++;
+  });
+
   // Longueur moyenne
-  const totalLength = comments.reduce((sum, comment) => 
-    sum + (comment.content?.length || 0), 0
-  )
-  stats.avgLength = Math.round(totalLength / comments.length)
-  
+  const totalLength = comments.reduce(
+    (sum, comment) => sum + (comment.content?.length || 0),
+    0,
+  );
+  stats.avgLength = Math.round(totalLength / comments.length);
+
   // Date range
-  const dates = comments.map(c => new Date(c.createdAt).getTime())
-  stats.dateRange.oldest = new Date(Math.min(...dates))
-  stats.dateRange.newest = new Date(Math.max(...dates))
-  
-  return stats
-}
+  const dates = comments.map((c) => new Date(c.createdAt).getTime());
+  stats.dateRange.oldest = new Date(Math.min(...dates));
+  stats.dateRange.newest = new Date(Math.max(...dates));
+
+  return stats;
+};
 
 /**
  * Valide les données d'un commentaire
@@ -150,25 +151,25 @@ export const calculateCommentStats = (comments) => {
  * @returns {Object} { valid: boolean, errors: Array<string> }
  */
 export const validateCommentData = (commentData) => {
-  const errors = []
-  
+  const errors = [];
+
   if (!commentData.content || commentData.content.trim().length === 0) {
-    errors.push('Le commentaire ne peut pas être vide')
+    errors.push("Le commentaire ne peut pas être vide");
   }
-  
+
   if (commentData.content && commentData.content.length > 1000) {
-    errors.push('Le commentaire ne peut pas dépasser 1000 caractères')
+    errors.push("Le commentaire ne peut pas dépasser 1000 caractères");
   }
-  
+
   if (!commentData.observationId) {
-    errors.push('L\'ID de l\'observation est requis')
+    errors.push("L'ID de l'observation est requis");
   }
-  
+
   return {
     valid: errors.length === 0,
-    errors
-  }
-}
+    errors,
+  };
+};
 
 /**
  * Formate un commentaire pour l'affichage
@@ -176,22 +177,22 @@ export const validateCommentData = (commentData) => {
  * @returns {Object} Commentaire formaté
  */
 export const formatCommentForDisplay = (comment) => {
-  if (!comment) return null
-  
+  if (!comment) return null;
+
   return {
     id: comment._id || comment.id,
     content: comment.content,
     author: {
       id: comment.userId?._id || comment.userId,
-      name: comment.userId?.name || 'Utilisateur supprimé',
-      email: comment.userId?.email
+      name: comment.userId?.name || "Utilisateur supprimé",
+      email: comment.userId?.email,
     },
     observationId: comment.observationId,
     createdAt: comment.createdAt,
     updatedAt: comment.updatedAt,
-    isRecent: isRecentComment(comment)
-  }
-}
+    isRecent: isRecentComment(comment),
+  };
+};
 
 /**
  * Vérifie si un commentaire est récent (moins de 24h)
@@ -199,11 +200,11 @@ export const formatCommentForDisplay = (comment) => {
  * @returns {boolean}
  */
 export const isRecentComment = (comment) => {
-  const commentDate = new Date(comment.createdAt)
-  const now = new Date()
-  const diffHours = (now - commentDate) / (1000 * 60 * 60)
-  return diffHours < 24
-}
+  const commentDate = new Date(comment.createdAt);
+  const now = new Date();
+  const diffHours = (now - commentDate) / (1000 * 60 * 60);
+  return diffHours < 24;
+};
 
 /**
  * Nettoie le contenu d'un commentaire
@@ -213,10 +214,10 @@ export const isRecentComment = (comment) => {
 export const sanitizeCommentContent = (content) => {
   return content
     .trim()
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Supprime les scripts
-    .replace(/<[^>]*>/g, '') // Supprime les balises HTML
-    .slice(0, 1000) // Limite à 1000 caractères
-}
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "") // Supprime les scripts
+    .replace(/<[^>]*>/g, "") // Supprime les balises HTML
+    .slice(0, 1000); // Limite à 1000 caractères
+};
 
 /**
  * Trouve les utilisateurs les plus actifs en commentaires
@@ -225,19 +226,19 @@ export const sanitizeCommentContent = (content) => {
  * @returns {Array} Top utilisateurs avec leur nombre de commentaires
  */
 export const getTopCommenters = (comments, limit = 5) => {
-  const userCounts = {}
-  
-  comments.forEach(comment => {
-    const userId = comment.userId?._id || comment.userId
-    const userName = comment.userId?.name || 'Anonyme'
-    
+  const userCounts = {};
+
+  comments.forEach((comment) => {
+    const userId = comment.userId?._id || comment.userId;
+    const userName = comment.userId?.name || "Anonyme";
+
     if (!userCounts[userId]) {
-      userCounts[userId] = { userId, userName, count: 0 }
+      userCounts[userId] = { userId, userName, count: 0 };
     }
-    userCounts[userId].count++
-  })
-  
+    userCounts[userId].count++;
+  });
+
   return Object.values(userCounts)
     .sort((a, b) => b.count - a.count)
-    .slice(0, limit)
-}
+    .slice(0, limit);
+};

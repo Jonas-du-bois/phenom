@@ -1,13 +1,13 @@
 /**
  * Composable pour la géolocalisation
  */
-import { ref } from 'vue'
+import { ref } from "vue";
 
 export function useGeolocation() {
-  const coordinates = ref(null)
-  const address = ref('')
-  const error = ref(null)
-  const loading = ref(false)
+  const coordinates = ref(null);
+  const address = ref("");
+  const error = ref(null);
+  const loading = ref(false);
 
   // Méthodes pour obtenir la position
 
@@ -17,6 +17,6 @@ export function useGeolocation() {
     error,
     loading,
     getCurrentPosition: () => {},
-    reverseGeocode: () => {}
-  }
+    reverseGeocode: () => {},
+  };
 }

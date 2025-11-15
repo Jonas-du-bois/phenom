@@ -3,8 +3,18 @@
     <!-- Header avec recherche et filtres -->
     <div class="feed-header">
       <div class="search-wrapper">
-        <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        <svg
+          class="search-icon"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          />
         </svg>
         <input
           v-model="searchQuery"
@@ -60,8 +70,10 @@
           clickable
           @click="navigateTo(`/observations/${obs._id}`)"
         >
-          <p class="observation-description">{{ truncateText(obs.description, 120) }}</p>
-          
+          <p class="observation-description">
+            {{ truncateText(obs.description, 120) }}
+          </p>
+
           <template #footer>
             <div class="observation-meta">
               <test-BaseAvatar
@@ -69,7 +81,7 @@
                 :name="obs.userId?.name || 'Anonyme'"
                 size="sm"
               />
-              <span class="meta-text">{{ obs.userId?.name || 'Anonyme' }}</span>
+              <span class="meta-text">{{ obs.userId?.name || "Anonyme" }}</span>
               <span class="meta-separator">•</span>
               <span class="meta-text">{{ formatDate(obs.createdAt) }}</span>
             </div>
@@ -91,90 +103,93 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import { useInfiniteScroll } from '../composables/useInfiniteScroll'
-import { observationService } from '../services/observationService'
-import { OBSERVATION_TYPES } from '../constants/observationTypes'
-import TestBaseCard from '../components/test_BaseCard.vue'
-import TestBaseButton from '../components/test_BaseButton.vue'
-import TestBaseLoading from '../components/test_BaseLoading.vue'
-import TestBaseAvatar from '../components/test_BaseAvatar.vue'
+import { ref, computed, watch } from "vue";
+import { useRouter } from "vue-router";
+import { useInfiniteScroll } from "../composables/useInfiniteScroll";
+import { observationService } from "../services/observationService";
+import { OBSERVATION_TYPES } from "../constants/observationTypes";
+import TestBaseCard from "../components/test_BaseCard.vue";
+import TestBaseButton from "../components/test_BaseButton.vue";
+import TestBaseLoading from "../components/test_BaseLoading.vue";
+import TestBaseAvatar from "../components/test_BaseAvatar.vue";
 
-const router = useRouter()
+const router = useRouter();
 
-const searchQuery = ref('')
-const activeType = ref(null)
+const searchQuery = ref("");
+const activeType = ref(null);
 
-const observationTypes = OBSERVATION_TYPES
+const observationTypes = OBSERVATION_TYPES;
 
 // Fonction de fetch avec filtres
 const fetchObservations = async (params) => {
   const filters = {
     ...params,
     search: searchQuery.value || undefined,
-    type: activeType.value || undefined
-  }
-  return await observationService.getAll(filters)
-}
+    type: activeType.value || undefined,
+  };
+  return await observationService.getAll(filters);
+};
 
-const { items, loading, hasMore, reload } = useInfiniteScroll(fetchObservations, {
-  limit: 20,
-  initialLoad: true
-})
+const { items, loading, hasMore, reload } = useInfiniteScroll(
+  fetchObservations,
+  {
+    limit: 20,
+    initialLoad: true,
+  },
+);
 
 const navigateTo = (path) => {
-  router.push(path)
-}
+  router.push(path);
+};
 
 const setFilter = (type) => {
-  activeType.value = type
-  reload()
-}
+  activeType.value = type;
+  reload();
+};
 
 const handleSearch = () => {
   // Debounce search
   if (searchQuery.value.length === 0 || searchQuery.value.length >= 3) {
-    reload()
+    reload();
   }
-}
+};
 
 const getFirstImage = (observation) => {
-  return observation.images?.[0]?.url || null
-}
+  return observation.images?.[0]?.url || null;
+};
 
 const getObservationTypeLabel = (type) => {
-  const found = observationTypes.find(t => t.value === type)
-  return found ? found.label : type
-}
+  const found = observationTypes.find((t) => t.value === type);
+  return found ? found.label : type;
+};
 
 const truncateText = (text, maxLength) => {
-  if (!text) return ''
-  if (text.length <= maxLength) return text
-  return text.substring(0, maxLength) + '...'
-}
+  if (!text) return "";
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + "...";
+};
 
 const formatDate = (date) => {
-  if (!date) return ''
-  const d = new Date(date)
-  const now = new Date()
-  const diff = now - d
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-  
-  if (days === 0) return 'Aujourd\'hui'
-  if (days === 1) return 'Hier'
-  if (days < 7) return `Il y a ${days} jours`
-  if (days < 30) return `Il y a ${Math.floor(days / 7)} semaines`
-  if (days < 365) return `Il y a ${Math.floor(days / 30)} mois`
-  return `Il y a ${Math.floor(days / 365)} ans`
-}
+  if (!date) return "";
+  const d = new Date(date);
+  const now = new Date();
+  const diff = now - d;
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+  if (days === 0) return "Aujourd'hui";
+  if (days === 1) return "Hier";
+  if (days < 7) return `Il y a ${days} jours`;
+  if (days < 30) return `Il y a ${Math.floor(days / 7)} semaines`;
+  if (days < 365) return `Il y a ${Math.floor(days / 30)} mois`;
+  return `Il y a ${Math.floor(days / 365)} ans`;
+};
 
 // Reload when filters change
 watch([activeType, searchQuery], () => {
   if (searchQuery.value.length === 0 || searchQuery.value.length >= 3) {
-    reload()
+    reload();
   }
-})
+});
 </script>
 
 <style scoped>
@@ -352,11 +367,11 @@ watch([activeType, searchQuery], () => {
   .feed-header {
     padding: 0.875rem;
   }
-  
+
   .feed-content {
     padding: 0.875rem;
   }
-  
+
   .observations-grid {
     gap: 1rem;
   }

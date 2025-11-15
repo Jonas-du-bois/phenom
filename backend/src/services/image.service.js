@@ -76,6 +76,26 @@ class ImageService {
   }
 
   /**
+   * Supprime toutes les images d'une observation (cascade)
+   */
+  async deleteAllImagesForObservation(observationId) {
+    try {
+      const Observation = (await import('../models/Observation.js')).default;
+      const observation = await Observation.findById(observationId);
+
+      if (!observation || !observation.images || observation.images.length === 0) {
+        return 0;
+      }
+
+      const publicIds = observation.images.map(img => img.publicId);
+      return await this.deleteMultipleImages(publicIds);
+    } catch (error) {
+      console.error(`Erreur lors de la suppression des images de l'observation ${observationId}:`, error);
+      return 0;
+    }
+  }
+
+  /**
    * Génère une URL optimisée
    */
   getImageUrl(publicId, options = {}) {

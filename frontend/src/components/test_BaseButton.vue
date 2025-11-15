@@ -7,17 +7,17 @@
   >
     <!-- Loading spinner -->
     <span v-if="loading" class="btn-spinner"></span>
-    
+
     <!-- Icon (left) -->
     <span v-if="$slots.icon && !loading" class="btn-icon">
       <slot name="icon"></slot>
     </span>
-    
+
     <!-- Text -->
     <span v-if="$slots.default" class="btn-text">
       <slot></slot>
     </span>
-    
+
     <!-- Icon (right) -->
     <span v-if="$slots.iconRight && !loading" class="btn-icon-right">
       <slot name="iconRight"></slot>
@@ -26,50 +26,51 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed } from "vue";
 
 const props = defineProps({
   variant: {
     type: String,
-    default: 'primary',
-    validator: (value) => ['primary', 'secondary', 'outline', 'ghost', 'danger'].includes(value)
+    default: "primary",
+    validator: (value) =>
+      ["primary", "secondary", "outline", "ghost", "danger"].includes(value),
   },
   size: {
     type: String,
-    default: 'md',
-    validator: (value) => ['sm', 'md', 'lg'].includes(value)
+    default: "md",
+    validator: (value) => ["sm", "md", "lg"].includes(value),
   },
   type: {
     type: String,
-    default: 'button'
+    default: "button",
   },
   disabled: Boolean,
   loading: Boolean,
   fullWidth: Boolean,
-  rounded: Boolean
-})
+  rounded: Boolean,
+});
 
-const emit = defineEmits(['click'])
+const emit = defineEmits(["click"]);
 
 const buttonClasses = computed(() => {
   return [
-    'btn',
+    "btn",
     `btn-${props.variant}`,
     `btn-${props.size}`,
     {
-      'btn-full': props.fullWidth,
-      'btn-rounded': props.rounded,
-      'btn-loading': props.loading,
-      'btn-disabled': props.disabled
-    }
-  ]
-})
+      "btn-full": props.fullWidth,
+      "btn-rounded": props.rounded,
+      "btn-loading": props.loading,
+      "btn-disabled": props.disabled,
+    },
+  ];
+});
 
 const handleClick = (event) => {
   if (!props.disabled && !props.loading) {
-    emit('click', event)
+    emit("click", event);
   }
-}
+};
 </script>
 
 <style scoped>
@@ -223,7 +224,7 @@ const handleClick = (event) => {
     min-height: 3rem;
     padding: 0.875rem 1.25rem;
   }
-  
+
   .btn-lg {
     min-height: 3.75rem;
   }

@@ -1,19 +1,19 @@
 /**
  * Composable pour les notifications toast
  */
-import { ref } from 'vue'
+import { ref } from "vue";
 
 export function useToast() {
-  const toasts = ref([])
+  const toasts = ref([]);
 
-  const show = (message, type = 'info', duration = 3000) => {
+  const show = (message, type = "info", duration = 3000) => {
     // Logique d'affichage toast
-  }
+  };
 
-  const success = (message) => show(message, 'success')
-  const error = (message) => show(message, 'error')
-  const warning = (message) => show(message, 'warning')
-  const info = (message) => show(message, 'info')
+  const success = (message) => show(message, "success");
+  const error = (message) => show(message, "error");
+  const warning = (message) => show(message, "warning");
+  const info = (message) => show(message, "info");
 
   return {
     toasts,
@@ -21,6 +21,6 @@ export function useToast() {
     success,
     error,
     warning,
-    info
-  }
+    info,
+  };
 }

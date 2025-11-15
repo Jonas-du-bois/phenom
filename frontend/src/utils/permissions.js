@@ -6,9 +6,9 @@
  * Rôles disponibles dans l'application
  */
 export const ROLES = {
-  ADMIN: 'admin',
-  VIEWER: 'viewer'
-}
+  ADMIN: "admin",
+  VIEWER: "viewer",
+};
 
 /**
  * Permissions par rôle
@@ -21,26 +21,26 @@ export const PERMISSIONS = {
   DELETE_OWN_OBSERVATION: [ROLES.ADMIN, ROLES.VIEWER],
   DELETE_ANY_OBSERVATION: [ROLES.ADMIN],
   VIEW_OBSERVATIONS: [ROLES.ADMIN, ROLES.VIEWER],
-  
+
   // Commentaires
   CREATE_COMMENT: [ROLES.ADMIN, ROLES.VIEWER],
   EDIT_OWN_COMMENT: [ROLES.ADMIN, ROLES.VIEWER],
   EDIT_ANY_COMMENT: [ROLES.ADMIN],
   DELETE_OWN_COMMENT: [ROLES.ADMIN, ROLES.VIEWER],
   DELETE_ANY_COMMENT: [ROLES.ADMIN],
-  
+
   // Utilisateurs
   VIEW_USERS: [ROLES.ADMIN],
   CREATE_USER: [ROLES.ADMIN],
   EDIT_USER: [ROLES.ADMIN],
   DELETE_USER: [ROLES.ADMIN],
   CHANGE_USER_ROLE: [ROLES.ADMIN],
-  
+
   // Administration
   ACCESS_ADMIN_PANEL: [ROLES.ADMIN],
   VIEW_STATS: [ROLES.ADMIN],
-  MANAGE_SYSTEM: [ROLES.ADMIN]
-}
+  MANAGE_SYSTEM: [ROLES.ADMIN],
+};
 
 /**
  * Vérifie si un utilisateur a un rôle spécifique
@@ -49,8 +49,8 @@ export const PERMISSIONS = {
  * @returns {boolean}
  */
 export const hasRole = (user, role) => {
-  return user?.role === role
-}
+  return user?.role === role;
+};
 
 /**
  * Vérifie si un utilisateur a une permission
@@ -59,10 +59,10 @@ export const hasRole = (user, role) => {
  * @returns {boolean}
  */
 export const hasPermission = (user, permission) => {
-  if (!user || !user.role) return false
-  const allowedRoles = PERMISSIONS[permission]
-  return allowedRoles ? allowedRoles.includes(user.role) : false
-}
+  if (!user || !user.role) return false;
+  const allowedRoles = PERMISSIONS[permission];
+  return allowedRoles ? allowedRoles.includes(user.role) : false;
+};
 
 /**
  * Vérifie si un utilisateur peut créer une observation
@@ -70,8 +70,8 @@ export const hasPermission = (user, permission) => {
  * @returns {boolean}
  */
 export const canCreateObservation = (user) => {
-  return hasPermission(user, 'CREATE_OBSERVATION')
-}
+  return hasPermission(user, "CREATE_OBSERVATION");
+};
 
 /**
  * Vérifie si un utilisateur peut éditer une observation
@@ -80,20 +80,20 @@ export const canCreateObservation = (user) => {
  * @returns {boolean}
  */
 export const canEditObservation = (user, observation) => {
-  if (!user || !observation) return false
-  
+  if (!user || !observation) return false;
+
   // Admin peut tout éditer
-  if (hasPermission(user, 'EDIT_ANY_OBSERVATION')) return true
-  
+  if (hasPermission(user, "EDIT_ANY_OBSERVATION")) return true;
+
   // Utilisateur peut éditer ses propres observations
-  if (hasPermission(user, 'EDIT_OWN_OBSERVATION')) {
-    const userId = user._id || user.id
-    const obsUserId = observation.userId?._id || observation.userId
-    return userId === obsUserId
+  if (hasPermission(user, "EDIT_OWN_OBSERVATION")) {
+    const userId = user._id || user.id;
+    const obsUserId = observation.userId?._id || observation.userId;
+    return userId === obsUserId;
   }
-  
-  return false
-}
+
+  return false;
+};
 
 /**
  * Vérifie si un utilisateur peut supprimer une observation
@@ -102,20 +102,20 @@ export const canEditObservation = (user, observation) => {
  * @returns {boolean}
  */
 export const canDeleteObservation = (user, observation) => {
-  if (!user || !observation) return false
-  
+  if (!user || !observation) return false;
+
   // Admin peut tout supprimer
-  if (hasPermission(user, 'DELETE_ANY_OBSERVATION')) return true
-  
+  if (hasPermission(user, "DELETE_ANY_OBSERVATION")) return true;
+
   // Utilisateur peut supprimer ses propres observations
-  if (hasPermission(user, 'DELETE_OWN_OBSERVATION')) {
-    const userId = user._id || user.id
-    const obsUserId = observation.userId?._id || observation.userId
-    return userId === obsUserId
+  if (hasPermission(user, "DELETE_OWN_OBSERVATION")) {
+    const userId = user._id || user.id;
+    const obsUserId = observation.userId?._id || observation.userId;
+    return userId === obsUserId;
   }
-  
-  return false
-}
+
+  return false;
+};
 
 /**
  * Vérifie si un utilisateur peut créer un commentaire
@@ -123,8 +123,8 @@ export const canDeleteObservation = (user, observation) => {
  * @returns {boolean}
  */
 export const canCreateComment = (user) => {
-  return hasPermission(user, 'CREATE_COMMENT')
-}
+  return hasPermission(user, "CREATE_COMMENT");
+};
 
 /**
  * Vérifie si un utilisateur peut éditer un commentaire
@@ -133,20 +133,20 @@ export const canCreateComment = (user) => {
  * @returns {boolean}
  */
 export const canEditComment = (user, comment) => {
-  if (!user || !comment) return false
-  
+  if (!user || !comment) return false;
+
   // Admin peut tout éditer
-  if (hasPermission(user, 'EDIT_ANY_COMMENT')) return true
-  
+  if (hasPermission(user, "EDIT_ANY_COMMENT")) return true;
+
   // Utilisateur peut éditer ses propres commentaires
-  if (hasPermission(user, 'EDIT_OWN_COMMENT')) {
-    const userId = user._id || user.id
-    const commentUserId = comment.userId?._id || comment.userId
-    return userId === commentUserId
+  if (hasPermission(user, "EDIT_OWN_COMMENT")) {
+    const userId = user._id || user.id;
+    const commentUserId = comment.userId?._id || comment.userId;
+    return userId === commentUserId;
   }
-  
-  return false
-}
+
+  return false;
+};
 
 /**
  * Vérifie si un utilisateur peut supprimer un commentaire
@@ -155,20 +155,20 @@ export const canEditComment = (user, comment) => {
  * @returns {boolean}
  */
 export const canDeleteComment = (user, comment) => {
-  if (!user || !comment) return false
-  
+  if (!user || !comment) return false;
+
   // Admin peut tout supprimer
-  if (hasPermission(user, 'DELETE_ANY_COMMENT')) return true
-  
+  if (hasPermission(user, "DELETE_ANY_COMMENT")) return true;
+
   // Utilisateur peut supprimer ses propres commentaires
-  if (hasPermission(user, 'DELETE_OWN_COMMENT')) {
-    const userId = user._id || user.id
-    const commentUserId = comment.userId?._id || comment.userId
-    return userId === commentUserId
+  if (hasPermission(user, "DELETE_OWN_COMMENT")) {
+    const userId = user._id || user.id;
+    const commentUserId = comment.userId?._id || comment.userId;
+    return userId === commentUserId;
   }
-  
-  return false
-}
+
+  return false;
+};
 
 /**
  * Vérifie si un utilisateur peut accéder au panneau admin
@@ -176,8 +176,8 @@ export const canDeleteComment = (user, comment) => {
  * @returns {boolean}
  */
 export const canAccessAdminPanel = (user) => {
-  return hasPermission(user, 'ACCESS_ADMIN_PANEL')
-}
+  return hasPermission(user, "ACCESS_ADMIN_PANEL");
+};
 
 /**
  * Vérifie si un utilisateur peut gérer d'autres utilisateurs
@@ -185,8 +185,8 @@ export const canAccessAdminPanel = (user) => {
  * @returns {boolean}
  */
 export const canManageUsers = (user) => {
-  return hasPermission(user, 'VIEW_USERS')
-}
+  return hasPermission(user, "VIEW_USERS");
+};
 
 /**
  * Vérifie si un utilisateur peut voir les statistiques
@@ -194,8 +194,8 @@ export const canManageUsers = (user) => {
  * @returns {boolean}
  */
 export const canViewStats = (user) => {
-  return hasPermission(user, 'VIEW_STATS')
-}
+  return hasPermission(user, "VIEW_STATS");
+};
 
 /**
  * Vérifie si un utilisateur peut changer le rôle d'autres utilisateurs
@@ -203,8 +203,8 @@ export const canViewStats = (user) => {
  * @returns {boolean}
  */
 export const canChangeUserRole = (user) => {
-  return hasPermission(user, 'CHANGE_USER_ROLE')
-}
+  return hasPermission(user, "CHANGE_USER_ROLE");
+};
 
 /**
  * Filtre une liste d'actions disponibles selon les permissions
@@ -213,11 +213,11 @@ export const canChangeUserRole = (user) => {
  * @returns {Array} Actions autorisées
  */
 export const filterAllowedActions = (user, actions) => {
-  return actions.filter(action => {
-    if (!action.permission) return true
-    return hasPermission(user, action.permission)
-  })
-}
+  return actions.filter((action) => {
+    if (!action.permission) return true;
+    return hasPermission(user, action.permission);
+  });
+};
 
 /**
  * Obtient toutes les permissions d'un utilisateur
@@ -225,12 +225,12 @@ export const filterAllowedActions = (user, actions) => {
  * @returns {Array<string>} Liste des permissions
  */
 export const getUserPermissions = (user) => {
-  if (!user || !user.role) return []
-  
+  if (!user || !user.role) return [];
+
   return Object.entries(PERMISSIONS)
     .filter(([, roles]) => roles.includes(user.role))
-    .map(([permission]) => permission)
-}
+    .map(([permission]) => permission);
+};
 
 /**
  * Vérifie si un utilisateur a toutes les permissions spécifiées
@@ -239,8 +239,8 @@ export const getUserPermissions = (user) => {
  * @returns {boolean}
  */
 export const hasAllPermissions = (user, permissions) => {
-  return permissions.every(permission => hasPermission(user, permission))
-}
+  return permissions.every((permission) => hasPermission(user, permission));
+};
 
 /**
  * Vérifie si un utilisateur a au moins une des permissions spécifiées
@@ -249,8 +249,8 @@ export const hasAllPermissions = (user, permissions) => {
  * @returns {boolean}
  */
 export const hasAnyPermission = (user, permissions) => {
-  return permissions.some(permission => hasPermission(user, permission))
-}
+  return permissions.some((permission) => hasPermission(user, permission));
+};
 
 /**
  * Obtient un message d'erreur de permission
@@ -259,13 +259,20 @@ export const hasAnyPermission = (user, permissions) => {
  */
 export const getPermissionErrorMessage = (permission) => {
   const messages = {
-    CREATE_OBSERVATION: "Vous n'avez pas la permission de créer une observation",
-    EDIT_ANY_OBSERVATION: "Vous n'avez pas la permission d'éditer cette observation",
-    DELETE_ANY_OBSERVATION: "Vous n'avez pas la permission de supprimer cette observation",
-    ACCESS_ADMIN_PANEL: "Vous devez être administrateur pour accéder à cette section",
+    CREATE_OBSERVATION:
+      "Vous n'avez pas la permission de créer une observation",
+    EDIT_ANY_OBSERVATION:
+      "Vous n'avez pas la permission d'éditer cette observation",
+    DELETE_ANY_OBSERVATION:
+      "Vous n'avez pas la permission de supprimer cette observation",
+    ACCESS_ADMIN_PANEL:
+      "Vous devez être administrateur pour accéder à cette section",
     MANAGE_USERS: "Seuls les administrateurs peuvent gérer les utilisateurs",
-    VIEW_STATS: "Vous n'avez pas accès aux statistiques"
-  }
-  
-  return messages[permission] || "Vous n'avez pas la permission d'effectuer cette action"
-}
+    VIEW_STATS: "Vous n'avez pas accès aux statistiques",
+  };
+
+  return (
+    messages[permission] ||
+    "Vous n'avez pas la permission d'effectuer cette action"
+  );
+};

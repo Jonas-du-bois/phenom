@@ -1,4 +1,4 @@
-import api from '../utils/api'
+import api from "../utils/api";
 
 /**
  * Service pour gérer les opérations liées au profil utilisateur
@@ -10,11 +10,11 @@ export const userService = {
    */
   async getMe() {
     try {
-      const response = await api.get('/users/me')
-      return response.data
+      const response = await api.get("/users/me");
+      return response.data;
     } catch (error) {
-      console.error('Erreur lors de la récupération du profil:', error)
-      throw error
+      console.error("Erreur lors de la récupération du profil:", error);
+      throw error;
     }
   },
 
@@ -25,11 +25,11 @@ export const userService = {
    */
   async getById(userId) {
     try {
-      const response = await api.get(`/users/${userId}`)
-      return response.data
+      const response = await api.get(`/users/${userId}`);
+      return response.data;
     } catch (error) {
-      console.error('Erreur lors de la récupération de l\'utilisateur:', error)
-      throw error
+      console.error("Erreur lors de la récupération de l'utilisateur:", error);
+      throw error;
     }
   },
 
@@ -40,11 +40,11 @@ export const userService = {
    */
   async updateMe(userData) {
     try {
-      const response = await api.put('/users/me', userData)
-      return response.data
+      const response = await api.put("/users/me", userData);
+      return response.data;
     } catch (error) {
-      console.error('Erreur lors de la mise à jour du profil:', error)
-      throw error
+      console.error("Erreur lors de la mise à jour du profil:", error);
+      throw error;
     }
   },
 
@@ -56,11 +56,11 @@ export const userService = {
    */
   async update(userId, userData) {
     try {
-      const response = await api.put(`/users/${userId}`, userData)
-      return response.data
+      const response = await api.put(`/users/${userId}`, userData);
+      return response.data;
     } catch (error) {
-      console.error('Erreur lors de la mise à jour de l\'utilisateur:', error)
-      throw error
+      console.error("Erreur lors de la mise à jour de l'utilisateur:", error);
+      throw error;
     }
   },
 
@@ -71,18 +71,18 @@ export const userService = {
    */
   async updateAvatar(file) {
     try {
-      const formData = new FormData()
-      formData.append('avatar', file)
+      const formData = new FormData();
+      formData.append("avatar", file);
 
-      const response = await api.put('/users/me/avatar', formData, {
+      const response = await api.put("/users/me/avatar", formData, {
         headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      })
-      return response.data
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return response.data;
     } catch (error) {
-      console.error('Erreur lors de la mise à jour de l\'avatar:', error)
-      throw error
+      console.error("Erreur lors de la mise à jour de l'avatar:", error);
+      throw error;
     }
   },
 
@@ -93,11 +93,11 @@ export const userService = {
    */
   async changePassword(passwords) {
     try {
-      const response = await api.patch('/users/me/password', passwords)
-      return response.data
+      const response = await api.patch("/users/me/password", passwords);
+      return response.data;
     } catch (error) {
-      console.error('Erreur lors du changement de mot de passe:', error)
-      throw error
+      console.error("Erreur lors du changement de mot de passe:", error);
+      throw error;
     }
   },
 
@@ -107,13 +107,13 @@ export const userService = {
    */
   async deleteAccount() {
     try {
-      const response = await api.delete('/users/me')
-      return response.data
+      const response = await api.delete("/users/me");
+      return response.data;
     } catch (error) {
-      console.error('Erreur lors de la suppression du compte:', error)
-      throw error
+      console.error("Erreur lors de la suppression du compte:", error);
+      throw error;
     }
-  }
-}
+  },
+};
 
-export default userService
+export default userService;

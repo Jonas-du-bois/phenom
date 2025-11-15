@@ -13,25 +13,25 @@
           <span class="px-3 py-1 bg-green-500/20 text-green-400 rounded-full">
             API: {{ apiUrl }}
           </span>
-          <span 
+          <span
             :class="[
               'px-3 py-1 rounded-full',
-              healthStatus === 'ok' 
-                ? 'bg-green-500/20 text-green-400' 
-                : 'bg-red-500/20 text-red-400'
+              healthStatus === 'ok'
+                ? 'bg-green-500/20 text-green-400'
+                : 'bg-red-500/20 text-red-400',
             ]"
           >
-            Status: {{ healthStatus || 'checking...' }}
+            Status: {{ healthStatus || "checking..." }}
           </span>
           <!-- Utilisateur connecté -->
-          <span 
+          <span
             v-if="currentUser"
             class="px-3 py-1 bg-violet-500/20 text-violet-400 rounded-full"
           >
             👤 {{ currentUser.name || currentUser.email }}
             <span v-if="currentUser.role === 'admin'" class="ml-1">👑</span>
           </span>
-          <span 
+          <span
             v-else
             class="px-3 py-1 bg-gray-500/20 text-gray-400 rounded-full"
           >
@@ -62,7 +62,9 @@
             <button @click="checkHealth" class="btn-primary mb-3">
               Vérifier la santé
             </button>
-            <pre v-if="results.health" class="result-box">{{ JSON.stringify(results.health, null, 2) }}</pre>
+            <pre v-if="results.health" class="result-box">{{
+              JSON.stringify(results.health, null, 2)
+            }}</pre>
           </div>
 
           <!-- Stats publiques -->
@@ -71,7 +73,9 @@
             <button @click="getPublicStats" class="btn-primary mb-3">
               Récupérer les stats
             </button>
-            <pre v-if="results.publicStats" class="result-box">{{ JSON.stringify(results.publicStats, null, 2) }}</pre>
+            <pre v-if="results.publicStats" class="result-box">{{
+              JSON.stringify(results.publicStats, null, 2)
+            }}</pre>
           </div>
         </div>
       </section>
@@ -102,7 +106,9 @@
                 Se connecter
               </button>
             </form>
-            <pre v-if="results.login" class="result-box">{{ JSON.stringify(results.login, null, 2) }}</pre>
+            <pre v-if="results.login" class="result-box">{{
+              JSON.stringify(results.login, null, 2)
+            }}</pre>
           </div>
 
           <!-- Register -->
@@ -134,7 +140,9 @@
                 S'inscrire
               </button>
             </form>
-            <pre v-if="results.register" class="result-box">{{ JSON.stringify(results.register, null, 2) }}</pre>
+            <pre v-if="results.register" class="result-box">{{
+              JSON.stringify(results.register, null, 2)
+            }}</pre>
           </div>
 
           <!-- Get Profile -->
@@ -143,7 +151,9 @@
             <button @click="getProfile" class="btn-primary mb-3">
               Récupérer le profil
             </button>
-            <pre v-if="results.profile" class="result-box">{{ JSON.stringify(results.profile, null, 2) }}</pre>
+            <pre v-if="results.profile" class="result-box">{{
+              JSON.stringify(results.profile, null, 2)
+            }}</pre>
           </div>
 
           <!-- Logout -->
@@ -152,7 +162,9 @@
             <button @click="testLogout" class="btn-primary mb-3">
               Se déconnecter
             </button>
-            <pre v-if="results.logout" class="result-box">{{ JSON.stringify(results.logout, null, 2) }}</pre>
+            <pre v-if="results.logout" class="result-box">{{
+              JSON.stringify(results.logout, null, 2)
+            }}</pre>
           </div>
 
           <!-- Debug LocalStorage -->
@@ -161,7 +173,9 @@
             <button @click="debugLocalStorage" class="btn-primary mb-3">
               Afficher localStorage
             </button>
-            <pre v-if="results.debug" class="result-box">{{ JSON.stringify(results.debug, null, 2) }}</pre>
+            <pre v-if="results.debug" class="result-box">{{
+              JSON.stringify(results.debug, null, 2)
+            }}</pre>
           </div>
         </div>
       </section>
@@ -190,7 +204,9 @@
             <button @click="updateProfile" class="btn-primary mb-3">
               Mettre à jour
             </button>
-            <pre v-if="results.updateProfile" class="result-box">{{ JSON.stringify(results.updateProfile, null, 2) }}</pre>
+            <pre v-if="results.updateProfile" class="result-box">{{
+              JSON.stringify(results.updateProfile, null, 2)
+            }}</pre>
           </div>
 
           <!-- Change Password -->
@@ -221,8 +237,8 @@
                 class="input-field"
                 autocomplete="new-password"
               />
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 class="btn-primary w-full"
                 :disabled="!currentUser"
                 :class="{ 'opacity-50 cursor-not-allowed': !currentUser }"
@@ -230,7 +246,9 @@
                 Changer le mot de passe
               </button>
             </form>
-            <pre v-if="results.changePassword" class="result-box">{{ JSON.stringify(results.changePassword, null, 2) }}</pre>
+            <pre v-if="results.changePassword" class="result-box">{{
+              JSON.stringify(results.changePassword, null, 2)
+            }}</pre>
           </div>
         </div>
       </section>
@@ -264,13 +282,19 @@
                 class="input-field"
               />
               <div class="grid grid-cols-2 gap-2">
-                <select v-model="observationForms.list.sortBy" class="input-field">
+                <select
+                  v-model="observationForms.list.sortBy"
+                  class="input-field"
+                >
                   <option value="">Trier par...</option>
                   <option value="createdAt">Date de création</option>
                   <option value="updatedAt">Date de modification</option>
                   <option value="title">Titre</option>
                 </select>
-                <select v-model="observationForms.list.order" class="input-field">
+                <select
+                  v-model="observationForms.list.order"
+                  class="input-field"
+                >
                   <option value="desc">Décroissant</option>
                   <option value="asc">Croissant</option>
                 </select>
@@ -279,7 +303,9 @@
             <button @click="getObservations" class="btn-primary mb-3">
               Récupérer
             </button>
-            <pre v-if="results.observations" class="result-box">{{ JSON.stringify(results.observations, null, 2) }}</pre>
+            <pre v-if="results.observations" class="result-box">{{
+              JSON.stringify(results.observations, null, 2)
+            }}</pre>
           </div>
 
           <!-- Create Observation -->
@@ -301,7 +327,9 @@
 
               <!-- Date d'observation -->
               <div class="space-y-1">
-                <label class="text-sm text-gray-400">📅 Date de l'observation (optionnel)</label>
+                <label class="text-sm text-gray-400"
+                  >📅 Date de l'observation (optionnel)</label
+                >
                 <input
                   v-model="observationForms.create.date"
                   type="datetime-local"
@@ -311,15 +339,17 @@
 
               <!-- Type d'observation -->
               <div class="space-y-1">
-                <label class="text-sm text-gray-400">🏷️ Type d'observation</label>
+                <label class="text-sm text-gray-400"
+                  >🏷️ Type d'observation</label
+                >
                 <select
                   v-model="observationForms.create.type"
                   class="input-field"
                 >
                   <option value="">Sélectionner un type...</option>
-                  <option 
-                    v-for="option in OBSERVATION_TYPE_OPTIONS" 
-                    :key="option.value" 
+                  <option
+                    v-for="option in OBSERVATION_TYPE_OPTIONS"
+                    :key="option.value"
                     :value="option.value"
                     :title="option.description"
                   >
@@ -330,7 +360,9 @@
 
               <!-- Tags personnalisés -->
               <div class="space-y-1">
-                <label class="text-sm text-gray-400">🔖 Tags personnalisés</label>
+                <label class="text-sm text-gray-400"
+                  >🔖 Tags personnalisés</label
+                >
                 <input
                   v-model="observationForms.create.newTag"
                   type="text"
@@ -338,18 +370,26 @@
                   class="input-field"
                   @keypress.enter.prevent="addTagToCreate"
                 />
-                <div v-if="observationForms.create.tags.length > 0" class="flex flex-wrap gap-2 mt-2">
+                <div
+                  v-if="observationForms.create.tags.length > 0"
+                  class="flex flex-wrap gap-2 mt-2"
+                >
                   <span
                     v-for="(tag, index) in observationForms.create.tags"
                     :key="index"
                     class="px-2 py-1 bg-violet-500/20 text-violet-400 rounded text-sm flex items-center gap-1"
                   >
                     {{ tag }}
-                    <button @click="removeTagFromCreate(index)" class="hover:text-red-400">×</button>
+                    <button
+                      @click="removeTagFromCreate(index)"
+                      class="hover:text-red-400"
+                    >
+                      ×
+                    </button>
                   </span>
                 </div>
               </div>
-              
+
               <!-- Localisation GPS -->
               <div class="space-y-2">
                 <label class="text-sm text-gray-400">📍 Localisation GPS</label>
@@ -369,14 +409,17 @@
                     class="input-field flex-1"
                   />
                 </div>
-                <button 
-                  @click="getGeolocation" 
+                <button
+                  @click="getGeolocation"
                   class="btn-secondary w-full text-sm"
                   type="button"
                 >
                   📍 Utiliser ma position actuelle
                 </button>
-                <p v-if="observationForms.create.locationError" class="text-red-400 text-xs">
+                <p
+                  v-if="observationForms.create.locationError"
+                  class="text-red-400 text-xs"
+                >
                   {{ observationForms.create.locationError }}
                 </p>
               </div>
@@ -395,31 +438,42 @@
                   Formats acceptés: JPEG, PNG, WebP. Max: 10 MB
                 </p>
                 <div v-if="observationForms.create.imagePreview" class="mt-2">
-                  <img 
-                    :src="observationForms.create.imagePreview" 
-                    alt="Preview" 
+                  <img
+                    :src="observationForms.create.imagePreview"
+                    alt="Preview"
                     class="w-full h-40 object-cover rounded-lg"
                   />
                 </div>
               </div>
             </div>
-            <button 
-              @click="createObservation" 
+            <button
+              @click="createObservation"
               class="btn-primary mb-3 w-full"
               :disabled="!observationForms.create.imageFile || !currentUser"
-              :class="{ 'opacity-50 cursor-not-allowed': !observationForms.create.imageFile || !currentUser }"
+              :class="{
+                'opacity-50 cursor-not-allowed':
+                  !observationForms.create.imageFile || !currentUser,
+              }"
             >
-              {{ observationForms.create.imageFile ? 'Créer l\'observation' : 'Sélectionnez une photo d\'abord' }}
+              {{
+                observationForms.create.imageFile
+                  ? "Créer l'observation"
+                  : "Sélectionnez une photo d'abord"
+              }}
             </button>
             <p v-if="!currentUser" class="text-yellow-400 text-sm mb-3">
               ⚠️ Vous devez être connecté pour créer une observation
             </p>
-            <pre v-if="results.createObservation" class="result-box">{{ JSON.stringify(results.createObservation, null, 2) }}</pre>
+            <pre v-if="results.createObservation" class="result-box">{{
+              JSON.stringify(results.createObservation, null, 2)
+            }}</pre>
           </div>
 
           <!-- Get One -->
           <div class="api-card">
-            <h3 class="text-lg font-semibold mb-3">Récupérer une observation</h3>
+            <h3 class="text-lg font-semibold mb-3">
+              Récupérer une observation
+            </h3>
             <div class="space-y-2 mb-3">
               <input
                 v-model="observationForms.getOne.id"
@@ -431,7 +485,9 @@
             <button @click="getOneObservation" class="btn-primary mb-3">
               Récupérer
             </button>
-            <pre v-if="results.oneObservation" class="result-box">{{ JSON.stringify(results.oneObservation, null, 2) }}</pre>
+            <pre v-if="results.oneObservation" class="result-box">{{
+              JSON.stringify(results.oneObservation, null, 2)
+            }}</pre>
           </div>
 
           <!-- Update Observation -->
@@ -478,7 +534,9 @@
               </select>
               <!-- Tags personnalisés -->
               <div class="space-y-1">
-                <label class="text-sm text-gray-400">🔖 Tags personnalisés</label>
+                <label class="text-sm text-gray-400"
+                  >🔖 Tags personnalisés</label
+                >
                 <input
                   v-model="observationForms.update.newTag"
                   type="text"
@@ -486,14 +544,22 @@
                   class="input-field"
                   @keypress.enter.prevent="addTagToUpdate"
                 />
-                <div v-if="observationForms.update.tags.length > 0" class="flex flex-wrap gap-2 mt-2">
+                <div
+                  v-if="observationForms.update.tags.length > 0"
+                  class="flex flex-wrap gap-2 mt-2"
+                >
                   <span
                     v-for="(tag, index) in observationForms.update.tags"
                     :key="index"
                     class="px-2 py-1 bg-violet-500/20 text-violet-400 rounded text-sm flex items-center gap-1"
                   >
                     {{ tag }}
-                    <button @click="removeTagFromUpdate(index)" class="hover:text-red-400">×</button>
+                    <button
+                      @click="removeTagFromUpdate(index)"
+                      class="hover:text-red-400"
+                    >
+                      ×
+                    </button>
                   </span>
                 </div>
               </div>
@@ -517,12 +583,16 @@
             <button @click="updateObservation" class="btn-primary mb-3">
               Modifier
             </button>
-            <pre v-if="results.updateObservation" class="result-box">{{ JSON.stringify(results.updateObservation, null, 2) }}</pre>
+            <pre v-if="results.updateObservation" class="result-box">{{
+              JSON.stringify(results.updateObservation, null, 2)
+            }}</pre>
           </div>
 
           <!-- Delete Observation -->
           <div class="api-card">
-            <h3 class="text-lg font-semibold mb-3">Supprimer une observation</h3>
+            <h3 class="text-lg font-semibold mb-3">
+              Supprimer une observation
+            </h3>
             <div class="space-y-2 mb-3">
               <input
                 v-model="observationForms.delete.id"
@@ -534,7 +604,9 @@
             <button @click="deleteObservation" class="btn-danger mb-3">
               Supprimer
             </button>
-            <pre v-if="results.deleteObservation" class="result-box">{{ JSON.stringify(results.deleteObservation, null, 2) }}</pre>
+            <pre v-if="results.deleteObservation" class="result-box">{{
+              JSON.stringify(results.deleteObservation, null, 2)
+            }}</pre>
           </div>
         </div>
       </section>
@@ -571,7 +643,9 @@
             <button @click="getComments" class="btn-primary mb-3">
               Récupérer
             </button>
-            <pre v-if="results.comments" class="result-box">{{ JSON.stringify(results.comments, null, 2) }}</pre>
+            <pre v-if="results.comments" class="result-box">{{
+              JSON.stringify(results.comments, null, 2)
+            }}</pre>
           </div>
 
           <!-- Create Comment -->
@@ -594,7 +668,9 @@
             <button @click="createComment" class="btn-primary mb-3">
               Créer
             </button>
-            <pre v-if="results.createComment" class="result-box">{{ JSON.stringify(results.createComment, null, 2) }}</pre>
+            <pre v-if="results.createComment" class="result-box">{{
+              JSON.stringify(results.createComment, null, 2)
+            }}</pre>
           </div>
 
           <!-- Delete Comment -->
@@ -611,7 +687,9 @@
             <button @click="deleteComment" class="btn-danger mb-3">
               Supprimer
             </button>
-            <pre v-if="results.deleteComment" class="result-box">{{ JSON.stringify(results.deleteComment, null, 2) }}</pre>
+            <pre v-if="results.deleteComment" class="result-box">{{
+              JSON.stringify(results.deleteComment, null, 2)
+            }}</pre>
           </div>
         </div>
       </section>
@@ -622,14 +700,17 @@
         <div class="api-card">
           <div class="bg-blue-900/30 border border-blue-500/30 rounded-lg p-4">
             <p class="text-blue-200 text-sm">
-              ✨ <strong>Migration vers Cloudinary !</strong><br>
-              Les images sont maintenant stockées sur Cloudinary avec des URLs publiques directes.<br>
-              <br>
-              📸 Les images sont gérées directement via les observations :<br>
-              • <strong>Upload</strong> : Lors de la création d'une observation<br>
-              • <strong>Affichage</strong> : URLs directes HTTPS (pas besoin d'authentification)<br>
-              • <strong>Suppression</strong> : Via l'observation<br>
-              <br>
+              ✨ <strong>Migration vers Cloudinary !</strong><br />
+              Les images sont maintenant stockées sur Cloudinary avec des URLs
+              publiques directes.<br />
+              <br />
+              📸 Les images sont gérées directement via les observations :<br />
+              • <strong>Upload</strong> : Lors de la création d'une
+              observation<br />
+              • <strong>Affichage</strong> : URLs directes HTTPS (pas besoin
+              d'authentification)<br />
+              • <strong>Suppression</strong> : Via l'observation<br />
+              <br />
               🔗 Consultez la section "Observations" pour gérer les images.
             </p>
           </div>
@@ -646,7 +727,9 @@
             <button @click="getAdminStats" class="btn-primary mb-3">
               Récupérer
             </button>
-            <pre v-if="results.adminStats" class="result-box">{{ JSON.stringify(results.adminStats, null, 2) }}</pre>
+            <pre v-if="results.adminStats" class="result-box">{{
+              JSON.stringify(results.adminStats, null, 2)
+            }}</pre>
           </div>
 
           <!-- Get All Users -->
@@ -682,12 +765,16 @@
             <button @click="getAllUsers" class="btn-primary mb-3">
               Récupérer
             </button>
-            <pre v-if="results.allUsers" class="result-box">{{ JSON.stringify(results.allUsers, null, 2) }}</pre>
+            <pre v-if="results.allUsers" class="result-box">{{
+              JSON.stringify(results.allUsers, null, 2)
+            }}</pre>
           </div>
 
           <!-- Update User Role -->
           <div class="api-card">
-            <h3 class="text-lg font-semibold mb-3">Modifier le rôle d'un utilisateur</h3>
+            <h3 class="text-lg font-semibold mb-3">
+              Modifier le rôle d'un utilisateur
+            </h3>
             <div class="space-y-2 mb-3">
               <input
                 v-model="adminForms.updateRole.userId"
@@ -704,12 +791,16 @@
             <button @click="updateUserRole" class="btn-primary mb-3">
               Modifier le rôle
             </button>
-            <pre v-if="results.updateUserRole" class="result-box">{{ JSON.stringify(results.updateUserRole, null, 2) }}</pre>
+            <pre v-if="results.updateUserRole" class="result-box">{{
+              JSON.stringify(results.updateUserRole, null, 2)
+            }}</pre>
           </div>
 
           <!-- Delete Observation (Admin) -->
           <div class="api-card">
-            <h3 class="text-lg font-semibold mb-3">Supprimer une observation (Admin)</h3>
+            <h3 class="text-lg font-semibold mb-3">
+              Supprimer une observation (Admin)
+            </h3>
             <div class="space-y-2 mb-3">
               <input
                 v-model="adminForms.deleteObservation.id"
@@ -721,12 +812,16 @@
             <button @click="deleteObservationAdmin" class="btn-danger mb-3">
               Supprimer
             </button>
-            <pre v-if="results.deleteObservationAdmin" class="result-box">{{ JSON.stringify(results.deleteObservationAdmin, null, 2) }}</pre>
+            <pre v-if="results.deleteObservationAdmin" class="result-box">{{
+              JSON.stringify(results.deleteObservationAdmin, null, 2)
+            }}</pre>
           </div>
 
           <!-- Delete Comment (Admin) -->
           <div class="api-card">
-            <h3 class="text-lg font-semibold mb-3">Supprimer un commentaire (Admin)</h3>
+            <h3 class="text-lg font-semibold mb-3">
+              Supprimer un commentaire (Admin)
+            </h3>
             <div class="space-y-2 mb-3">
               <input
                 v-model="adminForms.deleteComment.id"
@@ -738,7 +833,9 @@
             <button @click="deleteCommentAdmin" class="btn-danger mb-3">
               Supprimer
             </button>
-            <pre v-if="results.deleteCommentAdmin" class="result-box">{{ JSON.stringify(results.deleteCommentAdmin, null, 2) }}</pre>
+            <pre v-if="results.deleteCommentAdmin" class="result-box">{{
+              JSON.stringify(results.deleteCommentAdmin, null, 2)
+            }}</pre>
           </div>
 
           <!-- Get User Details -->
@@ -755,7 +852,9 @@
             <button @click="getUserDetails" class="btn-primary mb-3">
               Récupérer
             </button>
-            <pre v-if="results.userDetails" class="result-box">{{ JSON.stringify(results.userDetails, null, 2) }}</pre>
+            <pre v-if="results.userDetails" class="result-box">{{
+              JSON.stringify(results.userDetails, null, 2)
+            }}</pre>
           </div>
         </div>
       </section>
@@ -769,42 +868,45 @@
             <h3 class="text-lg font-semibold mb-3">Connexion WebSocket</h3>
             <div class="space-y-3">
               <div class="flex gap-2">
-                <button 
-                  @click="connectWs" 
+                <button
+                  @click="connectWs"
                   class="btn-primary flex-1"
                   :disabled="wsConnected"
                 >
                   🔌 Connecter
                 </button>
-                <button 
-                  @click="disconnectWs" 
+                <button
+                  @click="disconnectWs"
                   class="btn-danger flex-1"
                   :disabled="!wsConnected"
                 >
                   🔴 Déconnecter
                 </button>
               </div>
-              
-              <div class="flex items-center justify-between p-3 bg-black/30 rounded-lg">
+
+              <div
+                class="flex items-center justify-between p-3 bg-black/30 rounded-lg"
+              >
                 <span class="text-sm text-gray-400">Statut:</span>
-                <span 
+                <span
                   :class="[
                     'px-3 py-1 rounded-full text-sm font-semibold',
-                    wsConnected 
-                      ? 'bg-green-500/20 text-green-400' 
-                      : 'bg-red-500/20 text-red-400'
+                    wsConnected
+                      ? 'bg-green-500/20 text-green-400'
+                      : 'bg-red-500/20 text-red-400',
                   ]"
                 >
-                  {{ wsConnected ? '🟢 Connecté' : '🔴 Déconnecté' }}
+                  {{ wsConnected ? "🟢 Connecté" : "🔴 Déconnecté" }}
                 </span>
               </div>
 
-              <div class="text-xs text-gray-500">
-                URL: {{ wsUrl }}
-              </div>
+              <div class="text-xs text-gray-500">URL: {{ wsUrl }}</div>
 
               <!-- Erreur de connexion -->
-              <div v-if="wsError && !wsConnected" class="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+              <div
+                v-if="wsError && !wsConnected"
+                class="p-3 bg-red-500/10 border border-red-500/30 rounded-lg"
+              >
                 <p class="text-sm text-red-400">⚠️ {{ wsError }}</p>
                 <p class="text-xs text-gray-500 mt-1">
                   💡 Assurez-vous que le backend est démarré
@@ -817,17 +919,27 @@
           <div class="api-card">
             <h3 class="text-lg font-semibold mb-3">Canaux (Channels)</h3>
             <div class="space-y-2">
-              <div class="flex items-center justify-between p-2 bg-black/30 rounded">
+              <div
+                class="flex items-center justify-between p-2 bg-black/30 rounded"
+              >
                 <div>
-                  <span class="font-mono text-violet-mystique">observations</span>
-                  <p class="text-xs text-gray-500">Créations/Modifs/Suppressions d'observations</p>
+                  <span class="font-mono text-violet-mystique"
+                    >observations</span
+                  >
+                  <p class="text-xs text-gray-500">
+                    Créations/Modifs/Suppressions d'observations
+                  </p>
                 </div>
                 <span class="text-xs text-green-400">📡 Auto</span>
               </div>
-              <div class="flex items-center justify-between p-2 bg-black/30 rounded">
+              <div
+                class="flex items-center justify-between p-2 bg-black/30 rounded"
+              >
                 <div>
                   <span class="font-mono text-violet-mystique">comments</span>
-                  <p class="text-xs text-gray-500">Créations/Modifs/Suppressions de commentaires</p>
+                  <p class="text-xs text-gray-500">
+                    Créations/Modifs/Suppressions de commentaires
+                  </p>
                 </div>
                 <span class="text-xs text-green-400">📡 Auto</span>
               </div>
@@ -840,34 +952,53 @@
           <!-- Messages -->
           <div class="api-card md:col-span-2">
             <div class="flex justify-between items-center mb-3">
-              <h3 class="text-lg font-semibold">Messages en temps réel ({{ wsMessages.length }})</h3>
+              <h3 class="text-lg font-semibold">
+                Messages en temps réel ({{ wsMessages.length }})
+              </h3>
               <button @click="clearWsMessages" class="btn-secondary">
                 🗑️ Effacer
               </button>
             </div>
-            
+
             <div class="result-box max-h-96 overflow-y-auto">
-              <div v-if="wsMessages.length === 0" class="text-center text-gray-500 py-8">
+              <div
+                v-if="wsMessages.length === 0"
+                class="text-center text-gray-500 py-8"
+              >
                 <p class="text-2xl mb-2">📭</p>
                 <p>Aucun message reçu</p>
-                <p class="text-xs mt-2">Créez une observation ou un commentaire pour voir les événements en temps réel</p>
+                <p class="text-xs mt-2">
+                  Créez une observation ou un commentaire pour voir les
+                  événements en temps réel
+                </p>
               </div>
-              <div v-for="(msg, index) in wsMessages" :key="index" class="mb-3 pb-3 border-b border-gray-700 last:border-0">
+              <div
+                v-for="(msg, index) in wsMessages"
+                :key="index"
+                class="mb-3 pb-3 border-b border-gray-700 last:border-0"
+              >
                 <div class="flex items-center justify-between mb-2">
-                  <span 
+                  <span
                     :class="[
                       'px-2 py-1 rounded text-xs font-mono',
-                      msg.type?.includes('created') ? 'bg-green-500/20 text-green-400' :
-                      msg.type?.includes('updated') ? 'bg-blue-500/20 text-blue-400' :
-                      msg.type?.includes('deleted') ? 'bg-red-500/20 text-red-400' :
-                      'bg-gray-500/20 text-gray-400'
+                      msg.type?.includes('created')
+                        ? 'bg-green-500/20 text-green-400'
+                        : msg.type?.includes('updated')
+                          ? 'bg-blue-500/20 text-blue-400'
+                          : msg.type?.includes('deleted')
+                            ? 'bg-red-500/20 text-red-400'
+                            : 'bg-gray-500/20 text-gray-400',
                     ]"
                   >
                     {{ msg.type }}
                   </span>
-                  <span class="text-xs text-gray-500">{{ msg.timestamp || msg.receivedAt }}</span>
+                  <span class="text-xs text-gray-500">{{
+                    msg.timestamp || msg.receivedAt
+                  }}</span>
                 </div>
-                <pre class="text-sm bg-black/30 p-2 rounded overflow-x-auto">{{ JSON.stringify(msg.data, null, 2) }}</pre>
+                <pre class="text-sm bg-black/30 p-2 rounded overflow-x-auto">{{
+                  JSON.stringify(msg.data, null, 2)
+                }}</pre>
               </div>
             </div>
           </div>
@@ -911,15 +1042,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { authService } from '../services/authService'
-import { userService } from '../services/userService'
-import { observationService } from '../services/observationService'
-import { commentService } from '../services/commentService'
-import { imageService } from '../services/imageService'
-import { adminService } from '../services/adminService'
-import { statsService } from '../services/statsService'
-import { useWebSocket } from '../composables/useWebSocket'
+import { ref, computed, onMounted } from "vue";
+import { authService } from "../services/authService";
+import { userService } from "../services/userService";
+import { observationService } from "../services/observationService";
+import { commentService } from "../services/commentService";
+import { imageService } from "../services/imageService";
+import { adminService } from "../services/adminService";
+import { statsService } from "../services/statsService";
+import { useWebSocket } from "../composables/useWebSocket";
 
 // Import des utilitaires
 import {
@@ -939,127 +1070,134 @@ import {
   isAdmin,
   canAccessAdminPanel,
   formatDate,
-  formatRelativeTime
-} from '../utils'
+  formatRelativeTime,
+} from "../utils";
 
-import { OBSERVATION_TYPE_OPTIONS } from '../constants/observationTypes'
+import { OBSERVATION_TYPE_OPTIONS } from "../constants/observationTypes";
 
 // Configuration
-const apiUrl = computed(() => import.meta.env.VITE_API_BASE_URL)
-const wsUrl = computed(() => import.meta.env.VITE_WS_URL)
+const apiUrl = computed(() => import.meta.env.VITE_API_BASE_URL);
+const wsUrl = computed(() => import.meta.env.VITE_WS_URL);
 
 // État
-const healthStatus = ref(null)
-const results = ref({})
-const observationImageInput = ref(null)
+const healthStatus = ref(null);
+const results = ref({});
+const observationImageInput = ref(null);
 
 // Récupérer l'utilisateur depuis le localStorage avec les utilitaires
-const currentUser = ref(getUserData())
-const currentToken = ref(getAuthToken())
+const currentUser = ref(getUserData());
+const currentToken = ref(getAuthToken());
 
 // WebSocket
-const { connected: wsConnected, messages: wsMessages, error: wsError, connect, disconnect, clearMessages } = useWebSocket()
+const {
+  connected: wsConnected,
+  messages: wsMessages,
+  error: wsError,
+  connect,
+  disconnect,
+  clearMessages,
+} = useWebSocket();
 
 // Sections
 const sections = [
-  { id: 'health', name: 'Santé', icon: '🏥' },
-  { id: 'auth', name: 'Auth', icon: '🔐' },
-  { id: 'users', name: 'Users', icon: '👤' },
-  { id: 'observations', name: 'Obs', icon: '🛸' },
-  { id: 'comments', name: 'Comm', icon: '💬' },
-  { id: 'images', name: 'Images', icon: '🖼️' },
-  { id: 'admin', name: 'Admin', icon: '👑' },
-  { id: 'websocket', name: 'WS', icon: '🔌' }
-]
+  { id: "health", name: "Santé", icon: "🏥" },
+  { id: "auth", name: "Auth", icon: "🔐" },
+  { id: "users", name: "Users", icon: "👤" },
+  { id: "observations", name: "Obs", icon: "🛸" },
+  { id: "comments", name: "Comm", icon: "💬" },
+  { id: "images", name: "Images", icon: "🖼️" },
+  { id: "admin", name: "Admin", icon: "👑" },
+  { id: "websocket", name: "WS", icon: "🔌" },
+];
 
 // Formulaires
 const authForms = ref({
-  login: { email: 'admin@phenom.app', password: 'Admin123!' },
-  register: { name: '', email: '', password: '' }
-})
+  login: { email: "admin@phenom.app", password: "Admin123!" },
+  register: { name: "", email: "", password: "" },
+});
 
 const userForms = ref({
-  update: { name: '', bio: '' },
-  password: { currentPassword: '', newPassword: '', confirmPassword: '' }
-})
+  update: { name: "", bio: "" },
+  password: { currentPassword: "", newPassword: "", confirmPassword: "" },
+});
 
 const observationForms = ref({
-  list: { 
-    page: 1, 
-    limit: 10, 
-    search: '', 
-    sortBy: 'createdAt', 
-    order: 'desc' 
+  list: {
+    page: 1,
+    limit: 10,
+    search: "",
+    sortBy: "createdAt",
+    order: "desc",
   },
   create: {
-    title: '',
-    description: '',
-    date: '',
-    type: '',
+    title: "",
+    description: "",
+    date: "",
+    type: "",
     tags: [],
-    newTag: '',
+    newTag: "",
     longitude: null,
     latitude: null,
     imageFile: null,
     imagePreview: null,
-    locationError: ''
+    locationError: "",
   },
-  getOne: { id: '' },
+  getOne: { id: "" },
   update: {
-    id: '',
-    title: '',
-    description: '',
-    date: '',
-    type: '',
+    id: "",
+    title: "",
+    description: "",
+    date: "",
+    type: "",
     tags: [],
-    newTag: '',
+    newTag: "",
     longitude: null,
-    latitude: null
+    latitude: null,
   },
-  delete: { id: '' }
-})
+  delete: { id: "" },
+});
 
 const commentForms = ref({
-  list: { 
-    observationId: '', 
-    page: 1, 
-    limit: 10 
+  list: {
+    observationId: "",
+    page: 1,
+    limit: 10,
   },
-  create: { observationId: '', text: '' },
-  delete: { id: '' }
-})
+  create: { observationId: "", text: "" },
+  delete: { id: "" },
+});
 
 const adminForms = ref({
-  users: { 
-    page: 1, 
-    limit: 10, 
-    search: '', 
-    role: '' 
+  users: {
+    page: 1,
+    limit: 10,
+    search: "",
+    role: "",
   },
-  updateRole: { userId: '', role: '' },
-  deleteObservation: { id: '' },
-  deleteComment: { id: '' },
-  userDetails: { id: '' }
-})
+  updateRole: { userId: "", role: "" },
+  deleteObservation: { id: "" },
+  deleteComment: { id: "" },
+  userDetails: { id: "" },
+});
 
 // Méthodes - Santé & Stats
 async function checkHealth() {
   try {
-    const response = await statsService.health()
-    results.value.health = response
-    healthStatus.value = response.status
+    const response = await statsService.health();
+    results.value.health = response;
+    healthStatus.value = response.status;
   } catch (error) {
-    results.value.health = { error: error.message }
-    healthStatus.value = 'error'
+    results.value.health = { error: error.message };
+    healthStatus.value = "error";
   }
 }
 
 async function getPublicStats() {
   try {
-    const response = await statsService.getPublicStats()
-    results.value.publicStats = response
+    const response = await statsService.getPublicStats();
+    results.value.publicStats = response;
   } catch (error) {
-    results.value.publicStats = { error: error.message }
+    results.value.publicStats = { error: error.message };
   }
 }
 
@@ -1068,107 +1206,116 @@ async function testLogin() {
   try {
     // Valider l'email et le mot de passe avant l'envoi
     if (!validateEmail(authForms.value.login.email)) {
-      results.value.login = { error: 'Email invalide' }
-      return
+      results.value.login = { error: "Email invalide" };
+      return;
     }
-    
-    const response = await authService.login(authForms.value.login)
-    results.value.login = response
-    
-    console.log('📦 Réponse login complète:', response)
-    
+
+    const response = await authService.login(authForms.value.login);
+    results.value.login = response;
+
+    console.log("📦 Réponse login complète:", response);
+
     // Stocker le token et l'utilisateur avec les utilitaires
-    const token = response.data?.accessToken || response.data?.token
-    const user = response.data?.user
-    
+    const token = response.data?.accessToken || response.data?.token;
+    const user = response.data?.user;
+
     if (token) {
-      currentToken.value = token
-      saveAuthToken(token)
-      console.log('✅ Token stocké:', token.substring(0, 20) + '...')
-      
+      currentToken.value = token;
+      saveAuthToken(token);
+      console.log("✅ Token stocké:", token.substring(0, 20) + "...");
+
       // Stocker aussi le refreshToken
       if (response.data?.refreshToken) {
-        localStorage.setItem('refreshToken', response.data.refreshToken)
+        localStorage.setItem("refreshToken", response.data.refreshToken);
       }
     } else {
-      console.error('❌ Aucun token trouvé dans la réponse')
+      console.error("❌ Aucun token trouvé dans la réponse");
     }
-    
+
     // Récupérer et stocker les infos utilisateur avec formatage
     if (user) {
-      const formattedUser = formatUserForDisplay(user)
-      currentUser.value = formattedUser
-      saveUserData(formattedUser)
-      console.log('✅ Utilisateur stocké:', formattedUser.name)
+      const formattedUser = formatUserForDisplay(user);
+      currentUser.value = formattedUser;
+      saveUserData(formattedUser);
+      console.log("✅ Utilisateur stocké:", formattedUser.name);
     } else {
-      console.error('❌ Aucun utilisateur trouvé dans la réponse')
+      console.error("❌ Aucun utilisateur trouvé dans la réponse");
     }
-    
-    console.log('✅ Connecté avec succès')
+
+    console.log("✅ Connecté avec succès");
   } catch (error) {
-    console.error('❌ Erreur login:', error)
-    results.value.login = { error: error.response?.data || error.message }
+    console.error("❌ Erreur login:", error);
+    results.value.login = { error: error.response?.data || error.message };
   }
 }
 
 async function testRegister() {
   try {
     // Valider les données avant l'envoi
-    const validation = validateUserData(authForms.value.register, false)
+    const validation = validateUserData(authForms.value.register, false);
     if (!validation.valid) {
-      results.value.register = { error: validation.errors }
-      return
+      results.value.register = { error: validation.errors };
+      return;
     }
-    
+
     // Nettoyer les données
-    const cleanData = sanitizeUserData(authForms.value.register)
-    const response = await authService.register(cleanData)
-    results.value.register = response
+    const cleanData = sanitizeUserData(authForms.value.register);
+    const response = await authService.register(cleanData);
+    results.value.register = response;
   } catch (error) {
-    results.value.register = { error: error.response?.data || error.message }
+    results.value.register = { error: error.response?.data || error.message };
   }
 }
 
 async function getProfile() {
   try {
-    const response = await authService.getProfile()
-    results.value.profile = response
+    const response = await authService.getProfile();
+    results.value.profile = response;
   } catch (error) {
-    results.value.profile = { error: error.response?.data || error.message }
+    results.value.profile = { error: error.response?.data || error.message };
   }
 }
 
 function debugLocalStorage() {
-  const token = getAuthToken()
-  const refreshToken = localStorage.getItem('refreshToken')
-  const user = getUserData()
-  
+  const token = getAuthToken();
+  const refreshToken = localStorage.getItem("refreshToken");
+  const user = getUserData();
+
   results.value.debug = {
-    token: token ? token.substring(0, 30) + '... (' + token.length + ' chars)' : 'null',
-    refreshToken: refreshToken ? refreshToken.substring(0, 30) + '... (' + refreshToken.length + ' chars)' : 'null',
+    token: token
+      ? token.substring(0, 30) + "... (" + token.length + " chars)"
+      : "null",
+    refreshToken: refreshToken
+      ? refreshToken.substring(0, 30) +
+        "... (" +
+        refreshToken.length +
+        " chars)"
+      : "null",
     user: user,
     currentUser: currentUser.value,
-    currentToken: currentToken.value ? currentToken.value.substring(0, 30) + '...' : 'null',
+    currentToken: currentToken.value
+      ? currentToken.value.substring(0, 30) + "..."
+      : "null",
     isAdmin: isAdmin(user),
-    canAccessAdmin: canAccessAdminPanel(user)
-  }
-  
-  console.log('🔍 Debug localStorage:', results.value.debug)
+    canAccessAdmin: canAccessAdminPanel(user),
+  };
+
+  console.log("🔍 Debug localStorage:", results.value.debug);
 }
 
 async function testLogout() {
   try {
-    const response = await authService.logout()
-    results.value.logout = response
-    
+    const response = await authService.logout();
+    results.value.logout = response;
+
     // Nettoyer toutes les données d'authentification avec l'utilitaire
-    currentToken.value = null
-    currentUser.value = null
-    clearAuthData()
-    
-    console.log('👋 Déconnecté avec succès')
+    currentToken.value = null;
+    currentUser.value = null;
+    clearAuthData();
+
+    console.log("👋 Déconnecté avec succès");
   } catch (error) {
-    results.value.logout = { error: error.response?.data || error.message }
+    results.value.logout = { error: error.response?.data || error.message };
   }
 }
 
@@ -1176,189 +1323,222 @@ async function testLogout() {
 async function updateProfile() {
   try {
     // Valider les données
-    const validation = validateUserData(userForms.value.update, true)
+    const validation = validateUserData(userForms.value.update, true);
     if (!validation.valid) {
-      results.value.updateProfile = { error: validation.errors }
-      return
+      results.value.updateProfile = { error: validation.errors };
+      return;
     }
-    
+
     // Nettoyer les données
-    const cleanData = sanitizeUserData(userForms.value.update)
-    const response = await userService.updateMe(cleanData)
-    results.value.updateProfile = response
-    
+    const cleanData = sanitizeUserData(userForms.value.update);
+    const response = await userService.updateMe(cleanData);
+    results.value.updateProfile = response;
+
     // Mettre à jour l'utilisateur courant
     if (response.success && response.data) {
-      const formattedUser = formatUserForDisplay(response.data)
-      currentUser.value = formattedUser
-      saveUserData(formattedUser)
+      const formattedUser = formatUserForDisplay(response.data);
+      currentUser.value = formattedUser;
+      saveUserData(formattedUser);
     }
   } catch (error) {
-    results.value.updateProfile = { error: error.response?.data || error.message }
+    results.value.updateProfile = {
+      error: error.response?.data || error.message,
+    };
   }
 }
 
 async function changePassword() {
   try {
     // Validation côté client avec les utilitaires
-    const { currentPassword, newPassword, confirmPassword } = userForms.value.password
-    
+    const { currentPassword, newPassword, confirmPassword } =
+      userForms.value.password;
+
     if (!currentPassword || !newPassword || !confirmPassword) {
       results.value.changePassword = {
         error: {
           success: false,
-          error: 'Tous les champs sont requis'
-        }
-      }
-      return
+          error: "Tous les champs sont requis",
+        },
+      };
+      return;
     }
-    
+
     // Utiliser validatePasswordMatch
     if (!validatePasswordMatch(newPassword, confirmPassword)) {
       results.value.changePassword = {
         error: {
           success: false,
-          error: 'Les mots de passe ne correspondent pas'
-        }
-      }
-      return
+          error: "Les mots de passe ne correspondent pas",
+        },
+      };
+      return;
     }
-    
+
     // Utiliser validatePassword
     if (!validatePassword(newPassword)) {
       results.value.changePassword = {
         error: {
           success: false,
-          error: 'Le nouveau mot de passe doit contenir au moins 6 caractères'
-        }
-      }
-      return
+          error: "Le nouveau mot de passe doit contenir au moins 6 caractères",
+        },
+      };
+      return;
     }
-    
+
     // Debug: vérifier le token
-    const token = getAuthToken()
-    console.log('🔑 Token présent:', !!token)
-    console.log('📝 Données envoyées:', { currentPassword: '***', newPassword: '***', confirmPassword: '***' })
-    
-    const response = await userService.changePassword(userForms.value.password)
-    results.value.changePassword = response
-    
+    const token = getAuthToken();
+    console.log("🔑 Token présent:", !!token);
+    console.log("📝 Données envoyées:", {
+      currentPassword: "***",
+      newPassword: "***",
+      confirmPassword: "***",
+    });
+
+    const response = await userService.changePassword(userForms.value.password);
+    results.value.changePassword = response;
+
     // Réinitialiser le formulaire en cas de succès
     if (response.success) {
-      userForms.value.password = { currentPassword: '', newPassword: '', confirmPassword: '' }
-      console.log('✅ Mot de passe changé avec succès')
+      userForms.value.password = {
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      };
+      console.log("✅ Mot de passe changé avec succès");
     }
   } catch (error) {
-    console.error('❌ Erreur changement mot de passe:', error)
-    results.value.changePassword = { error: error.response?.data || error.message }
+    console.error("❌ Erreur changement mot de passe:", error);
+    results.value.changePassword = {
+      error: error.response?.data || error.message,
+    };
   }
 }
 
 // Méthodes - Gestion des tags
 function addTagToCreate() {
-  const tag = observationForms.value.create.newTag.trim()
-  if (tag && tag.length >= 2 && tag.length <= 30 && !observationForms.value.create.tags.includes(tag)) {
-    observationForms.value.create.tags.push(tag)
-    observationForms.value.create.newTag = ''
+  const tag = observationForms.value.create.newTag.trim();
+  if (
+    tag &&
+    tag.length >= 2 &&
+    tag.length <= 30 &&
+    !observationForms.value.create.tags.includes(tag)
+  ) {
+    observationForms.value.create.tags.push(tag);
+    observationForms.value.create.newTag = "";
   }
 }
 
 function removeTagFromCreate(index) {
-  observationForms.value.create.tags.splice(index, 1)
+  observationForms.value.create.tags.splice(index, 1);
 }
 
 function addTagToUpdate() {
-  const tag = observationForms.value.update.newTag.trim()
-  if (tag && tag.length >= 2 && tag.length <= 30 && !observationForms.value.update.tags.includes(tag)) {
-    observationForms.value.update.tags.push(tag)
-    observationForms.value.update.newTag = ''
+  const tag = observationForms.value.update.newTag.trim();
+  if (
+    tag &&
+    tag.length >= 2 &&
+    tag.length <= 30 &&
+    !observationForms.value.update.tags.includes(tag)
+  ) {
+    observationForms.value.update.tags.push(tag);
+    observationForms.value.update.newTag = "";
   }
 }
 
 function removeTagFromUpdate(index) {
-  observationForms.value.update.tags.splice(index, 1)
+  observationForms.value.update.tags.splice(index, 1);
 }
 
 // Méthodes - Géolocalisation et upload
 function getGeolocation() {
-  observationForms.value.create.locationError = ''
-  
+  observationForms.value.create.locationError = "";
+
   if (!navigator.geolocation) {
-    observationForms.value.create.locationError = '❌ Géolocalisation non supportée par ce navigateur'
-    return
+    observationForms.value.create.locationError =
+      "❌ Géolocalisation non supportée par ce navigateur";
+    return;
   }
 
-  observationForms.value.create.locationError = '🔄 Détection en cours...'
-  
+  observationForms.value.create.locationError = "🔄 Détection en cours...";
+
   navigator.geolocation.getCurrentPosition(
     (position) => {
-      observationForms.value.create.longitude = position.coords.longitude
-      observationForms.value.create.latitude = position.coords.latitude
-      observationForms.value.create.locationError = `✅ Position détectée: ${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)}`
+      observationForms.value.create.longitude = position.coords.longitude;
+      observationForms.value.create.latitude = position.coords.latitude;
+      observationForms.value.create.locationError = `✅ Position détectée: ${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)}`;
     },
     (error) => {
-      let errorMsg = '❌ '
+      let errorMsg = "❌ ";
       switch (error.code) {
         case error.PERMISSION_DENIED:
-          errorMsg += 'Permission refusée. Autorisez la géolocalisation dans les paramètres.'
-          break
+          errorMsg +=
+            "Permission refusée. Autorisez la géolocalisation dans les paramètres.";
+          break;
         case error.POSITION_UNAVAILABLE:
-          errorMsg += 'Position non disponible.'
-          break
+          errorMsg += "Position non disponible.";
+          break;
         case error.TIMEOUT:
-          errorMsg += 'Délai de détection dépassé.'
-          break
+          errorMsg += "Délai de détection dépassé.";
+          break;
         default:
-          errorMsg += 'Erreur inconnue.'
+          errorMsg += "Erreur inconnue.";
       }
-      observationForms.value.create.locationError = errorMsg
+      observationForms.value.create.locationError = errorMsg;
     },
     {
       enableHighAccuracy: true,
       timeout: 10000,
-      maximumAge: 0
-    }
-  )
+      maximumAge: 0,
+    },
+  );
 }
 
 function handleObservationImageSelect(event) {
-  const file = event.target.files[0]
-  if (!file) return
+  const file = event.target.files[0];
+  if (!file) return;
 
   // Validation du fichier
-  const validTypes = ['image/jpeg', 'image/png', 'image/webp']
-  const maxSize = 10 * 1024 * 1024 // 10 MB
+  const validTypes = ["image/jpeg", "image/png", "image/webp"];
+  const maxSize = 10 * 1024 * 1024; // 10 MB
 
   if (!validTypes.includes(file.type)) {
-    results.value.createObservation = { error: 'Format non valide. Utilisez JPEG, PNG ou WebP.' }
-    event.target.value = ''
-    return
+    results.value.createObservation = {
+      error: "Format non valide. Utilisez JPEG, PNG ou WebP.",
+    };
+    event.target.value = "";
+    return;
   }
 
   if (file.size > maxSize) {
-    results.value.createObservation = { error: 'Fichier trop volumineux. Max: 10 MB.' }
-    event.target.value = ''
-    return
+    results.value.createObservation = {
+      error: "Fichier trop volumineux. Max: 10 MB.",
+    };
+    event.target.value = "";
+    return;
   }
 
   // Stocker le fichier
-  observationForms.value.create.imageFile = file
+  observationForms.value.create.imageFile = file;
 
   // Créer un aperçu
-  const reader = new FileReader()
+  const reader = new FileReader();
   reader.onload = (e) => {
-    observationForms.value.create.imagePreview = e.target.result
-  }
-  reader.readAsDataURL(file)
+    observationForms.value.create.imagePreview = e.target.result;
+  };
+  reader.readAsDataURL(file);
 }
 
 // Méthodes - Observations
 async function getObservations() {
   try {
-    const response = await observationService.getAll(observationForms.value.list)
-    results.value.observations = response
+    const response = await observationService.getAll(
+      observationForms.value.list,
+    );
+    results.value.observations = response;
   } catch (error) {
-    results.value.observations = { error: error.response?.data || error.message }
+    results.value.observations = {
+      error: error.response?.data || error.message,
+    };
   }
 }
 
@@ -1366,229 +1546,274 @@ async function createObservation() {
   try {
     // Validation
     if (!observationForms.value.create.imageFile) {
-      results.value.createObservation = { error: 'Une photo est requise' }
-      return
+      results.value.createObservation = { error: "Une photo est requise" };
+      return;
     }
-    
-    if (!observationForms.value.create.longitude || !observationForms.value.create.latitude) {
-      results.value.createObservation = { error: 'La localisation GPS est requise' }
-      return
+
+    if (
+      !observationForms.value.create.longitude ||
+      !observationForms.value.create.latitude
+    ) {
+      results.value.createObservation = {
+        error: "La localisation GPS est requise",
+      };
+      return;
     }
 
     // Étape 1: Créer l'observation SANS image
-    results.value.createObservation = { status: 'Création de l\'observation...' }
-    
+    results.value.createObservation = {
+      status: "Création de l'observation...",
+    };
+
     const observationData = {
       title: observationForms.value.create.title,
       description: observationForms.value.create.description,
       location: {
-        type: 'Point',
+        type: "Point",
         coordinates: [
           observationForms.value.create.longitude,
-          observationForms.value.create.latitude
-        ]
-      }
-    }
+          observationForms.value.create.latitude,
+        ],
+      },
+    };
 
     // Ajouter les champs optionnels s'ils sont remplis
     if (observationForms.value.create.date) {
-      observationData.date = observationForms.value.create.date
+      observationData.date = observationForms.value.create.date;
     }
     if (observationForms.value.create.type) {
-      observationData.type = observationForms.value.create.type
+      observationData.type = observationForms.value.create.type;
     }
     if (observationForms.value.create.tags.length > 0) {
-      observationData.tags = observationForms.value.create.tags
+      observationData.tags = observationForms.value.create.tags;
     }
-    
-    const observationResponse = await observationService.create(observationData)
-    const observationId = observationResponse.data?.id || observationResponse.data?._id
-    
+
+    const observationResponse =
+      await observationService.create(observationData);
+    const observationId =
+      observationResponse.data?.id || observationResponse.data?._id;
+
     // Étape 2: Uploader l'image pour cette observation
-    results.value.createObservation = { status: 'Upload de l\'image...' }
-    
-    await imageService.uploadToObservation(observationId, observationForms.value.create.imageFile)
-    
+    results.value.createObservation = { status: "Upload de l'image..." };
+
+    await imageService.uploadToObservation(
+      observationId,
+      observationForms.value.create.imageFile,
+    );
+
     // Récupérer l'observation complète avec l'image
-    const finalObservation = await observationService.getById(observationId)
-    results.value.createObservation = finalObservation
-    
+    const finalObservation = await observationService.getById(observationId);
+    results.value.createObservation = finalObservation;
+
     // Reset du formulaire
     observationForms.value.create = {
-      title: '',
-      description: '',
-      date: '',
-      type: '',
+      title: "",
+      description: "",
+      date: "",
+      type: "",
       tags: [],
-      newTag: '',
+      newTag: "",
       longitude: null,
       latitude: null,
       imageFile: null,
       imagePreview: null,
-      locationError: ''
-    }
-    
+      locationError: "",
+    };
   } catch (error) {
-    results.value.createObservation = { error: error.response?.data || error.message }
+    results.value.createObservation = {
+      error: error.response?.data || error.message,
+    };
   }
 }
 
 async function getOneObservation() {
   try {
-    const response = await observationService.getById(observationForms.value.getOne.id)
-    results.value.oneObservation = response
+    const response = await observationService.getById(
+      observationForms.value.getOne.id,
+    );
+    results.value.oneObservation = response;
   } catch (error) {
-    results.value.oneObservation = { error: error.response?.data || error.message }
+    results.value.oneObservation = {
+      error: error.response?.data || error.message,
+    };
   }
 }
 
 async function updateObservation() {
   try {
-    const { id, longitude, latitude, newTag, ...data } = observationForms.value.update
-    
+    const { id, longitude, latitude, newTag, ...data } =
+      observationForms.value.update;
+
     // Ajouter les coordonnées si fournies
     if (longitude !== null && latitude !== null) {
       data.location = {
-        type: 'Point',
-        coordinates: [longitude, latitude]
-      }
+        type: "Point",
+        coordinates: [longitude, latitude],
+      };
     }
-    
-    const response = await observationService.update(id, data)
-    results.value.updateObservation = response
+
+    const response = await observationService.update(id, data);
+    results.value.updateObservation = response;
   } catch (error) {
-    results.value.updateObservation = { error: error.response?.data || error.message }
+    results.value.updateObservation = {
+      error: error.response?.data || error.message,
+    };
   }
 }
 
 async function deleteObservation() {
   try {
-    const response = await observationService.delete(observationForms.value.delete.id)
-    results.value.deleteObservation = response
+    const response = await observationService.delete(
+      observationForms.value.delete.id,
+    );
+    results.value.deleteObservation = response;
   } catch (error) {
-    results.value.deleteObservation = { error: error.response?.data || error.message }
+    results.value.deleteObservation = {
+      error: error.response?.data || error.message,
+    };
   }
 }
 
 // Méthodes - Comments
 async function getComments() {
   try {
-    const { observationId, page, limit } = commentForms.value.list
-    const params = { page, limit }
-    const response = await commentService.getByObservation(observationId, params)
-    results.value.comments = response
+    const { observationId, page, limit } = commentForms.value.list;
+    const params = { page, limit };
+    const response = await commentService.getByObservation(
+      observationId,
+      params,
+    );
+    results.value.comments = response;
   } catch (error) {
-    results.value.comments = { error: error.response?.data || error.message }
+    results.value.comments = { error: error.response?.data || error.message };
   }
 }
 
 async function createComment() {
   try {
-    const { observationId, text } = commentForms.value.create
-    const response = await commentService.create(observationId, text)
-    results.value.createComment = response
+    const { observationId, text } = commentForms.value.create;
+    const response = await commentService.create(observationId, text);
+    results.value.createComment = response;
   } catch (error) {
-    results.value.createComment = { error: error.response?.data || error.message }
+    results.value.createComment = {
+      error: error.response?.data || error.message,
+    };
   }
 }
 
 async function deleteComment() {
   try {
-    const response = await commentService.delete(commentForms.value.delete.id)
-    results.value.deleteComment = response
+    const response = await commentService.delete(commentForms.value.delete.id);
+    results.value.deleteComment = response;
   } catch (error) {
-    results.value.deleteComment = { error: error.response?.data || error.message }
+    results.value.deleteComment = {
+      error: error.response?.data || error.message,
+    };
   }
 }
 
 // Méthodes - Admin
 async function getAdminStats() {
   try {
-    const response = await adminService.getStats()
-    results.value.adminStats = response
+    const response = await adminService.getStats();
+    results.value.adminStats = response;
   } catch (error) {
-    results.value.adminStats = { error: error.response?.data || error.message }
+    results.value.adminStats = { error: error.response?.data || error.message };
   }
 }
 
 async function getAllUsers() {
   try {
-    const params = adminForms.value.users
-    const response = await adminService.getUsers(params)
-    results.value.allUsers = response
+    const params = adminForms.value.users;
+    const response = await adminService.getUsers(params);
+    results.value.allUsers = response;
   } catch (error) {
-    results.value.allUsers = { error: error.response?.data || error.message }
+    results.value.allUsers = { error: error.response?.data || error.message };
   }
 }
 
 async function updateUserRole() {
   try {
-    const { userId, role } = adminForms.value.updateRole
-    const response = await adminService.updateUserRole(userId, role)
-    results.value.updateUserRole = response
+    const { userId, role } = adminForms.value.updateRole;
+    const response = await adminService.updateUserRole(userId, role);
+    results.value.updateUserRole = response;
   } catch (error) {
-    results.value.updateUserRole = { error: error.response?.data || error.message }
+    results.value.updateUserRole = {
+      error: error.response?.data || error.message,
+    };
   }
 }
 
 async function deleteObservationAdmin() {
   try {
-    const response = await adminService.deleteObservation(adminForms.value.deleteObservation.id)
-    results.value.deleteObservationAdmin = response
+    const response = await adminService.deleteObservation(
+      adminForms.value.deleteObservation.id,
+    );
+    results.value.deleteObservationAdmin = response;
   } catch (error) {
-    results.value.deleteObservationAdmin = { error: error.response?.data || error.message }
+    results.value.deleteObservationAdmin = {
+      error: error.response?.data || error.message,
+    };
   }
 }
 
 async function deleteCommentAdmin() {
   try {
-    const response = await adminService.deleteComment(adminForms.value.deleteComment.id)
-    results.value.deleteCommentAdmin = response
+    const response = await adminService.deleteComment(
+      adminForms.value.deleteComment.id,
+    );
+    results.value.deleteCommentAdmin = response;
   } catch (error) {
-    results.value.deleteCommentAdmin = { error: error.response?.data || error.message }
+    results.value.deleteCommentAdmin = {
+      error: error.response?.data || error.message,
+    };
   }
 }
 
 async function getUserDetails() {
   try {
-    const response = await adminService.getUserDetails(adminForms.value.userDetails.id)
-    results.value.userDetails = response
+    const response = await adminService.getUserDetails(
+      adminForms.value.userDetails.id,
+    );
+    results.value.userDetails = response;
   } catch (error) {
-    results.value.userDetails = { error: error.response?.data || error.message }
+    results.value.userDetails = {
+      error: error.response?.data || error.message,
+    };
   }
 }
 
 // Méthodes - WebSocket
 function connectWs() {
   // Pas besoin de token pour WsMini PubSub (canaux en lecture seule)
-  connect()
+  connect();
 }
 
 function disconnectWs() {
-  disconnect()
+  disconnect();
 }
 
 function clearWsMessages() {
-  clearMessages()
+  clearMessages();
 }
 
 // Utilitaires
 function scrollToSection(sectionId) {
-  document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' })
+  document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" });
 }
 
 // Lifecycle
 onMounted(() => {
-  checkHealth()
-  
+  checkHealth();
+
   // Charger l'utilisateur depuis localStorage avec l'utilitaire
-  const savedUser = getUserData()
+  const savedUser = getUserData();
   if (savedUser) {
-    currentUser.value = savedUser
-    console.log('👤 Utilisateur chargé:', savedUser.name)
-    console.log('🔑 Est admin:', isAdmin(savedUser))
+    currentUser.value = savedUser;
+    console.log("👤 Utilisateur chargé:", savedUser.name);
+    console.log("🔑 Est admin:", isAdmin(savedUser));
   }
-})
+});
 </script>
 
 <style scoped>
@@ -1700,6 +1925,6 @@ onMounted(() => {
   overflow-x: auto;
   max-height: 300px;
   overflow-y: auto;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
 }
 </style>

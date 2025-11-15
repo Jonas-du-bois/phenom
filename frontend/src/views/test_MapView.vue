@@ -4,180 +4,252 @@
 
     <!-- Controls overlay -->
     <div class="map-controls">
-      <button class="control-btn" @click="centerOnUser" :disabled="loadingLocation">
+      <button
+        class="control-btn"
+        @click="centerOnUser"
+        :disabled="loadingLocation"
+        title="Ma position"
+      >
         <svg v-if="!loadingLocation" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"/>
+          <path
+            fill-rule="evenodd"
+            d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+          />
         </svg>
         <svg v-else class="animate-spin" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
         </svg>
       </button>
-    </div>
-
-    <!-- Observation popup (mobile) -->
-    <transition name="slide-up">
-      <div v-if="selectedObservation" class="observation-popup">
-        <button class="close-popup" @click="closePopup">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
-        </button>
-
-        <div class="popup-content">
-          <img
-            v-if="selectedObservation.images?.[0]"
-            :src="selectedObservation.images[0].url"
-            :alt="selectedObservation.title"
-            class="popup-image"
-          />
-          
-          <h3 class="popup-title">{{ selectedObservation.title }}</h3>
-          <p class="popup-type">{{ getObservationTypeLabel(selectedObservation.type) }}</p>
-          <p class="popup-description">{{ selectedObservation.description }}</p>
-          
-          <div class="popup-meta">
-            <test-BaseAvatar
-              :src="selectedObservation.userId?.avatar"
-              :name="selectedObservation.userId?.name || 'Anonyme'"
-              size="sm"
-            />
-            <span class="meta-name">{{ selectedObservation.userId?.name || 'Anonyme' }}</span>
-            <span class="meta-separator">•</span>
-            <span class="meta-date">{{ formatDate(selectedObservation.createdAt) }}</span>
-          </div>
-
-          <test-BaseButton
-            fullWidth
-            @click="navigateToDetail(selectedObservation._id)"
-          >
-            Voir les détails
-          </test-BaseButton>
-        </div>
+      
+      <div v-if="observations.length" class="observations-count">
+        {{ observations.length }} observation(s)
       </div>
-    </transition>
+    </div>
 
     <!-- Loading -->
     <div v-if="loading" class="map-loading">
       <test-BaseLoading size="lg" text="Chargement de la carte..." />
+    </div>
+    
+    <!-- Error -->
+    <div v-if="error" class="map-error">
+      <p>{{ error }}</p>
+      <test-BaseButton @click="loadObservations">Réessayer</test-BaseButton>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useMap } from '../composables/useMap'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
+import 'leaflet.markercluster'
+import 'leaflet.markercluster/dist/MarkerCluster.css'
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import { observationService } from '../services/observationService'
-import { OBSERVATION_TYPES } from '../constants/observationTypes'
+import { getObservationLabel } from '../constants/observationTypes'
 import TestBaseButton from '../components/test_BaseButton.vue'
 import TestBaseLoading from '../components/test_BaseLoading.vue'
-import TestBaseAvatar from '../components/test_BaseAvatar.vue'
-
-const router = useRouter()
 
 const mapContainer = ref(null)
+const map = ref(null)
+const markerClusterGroup = ref(null)
 const observations = ref([])
-const selectedObservation = ref(null)
 const loading = ref(true)
 const loadingLocation = ref(false)
+const error = ref(null)
 
-const {
-  map,
-  initMap,
-  addMarkers,
-  getUserLocation,
-  centerOnUser: mapCenterOnUser,
-  fitBounds
-} = useMap()
+const createCustomIcon = (type) => {
+  const color = getTypeColor(type)
+  return L.divIcon({
+    className: 'custom-marker',
+    html: `<div style="background: ${color}; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
+      <span style="color: white; font-size: 16px;">🛸</span>
+    </div>`,
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
+  })
+}
 
-onMounted(async () => {
-  try {
-    // Initialiser la carte
-    await initMap(mapContainer.value)
-    
-    // Charger les observations
-    const response = await observationService.getAll({ limit: 1000 })
-    observations.value = response.data || []
-    
-    // Créer les markers
-    const markers = observations.value
-      .filter(obs => obs.location?.coordinates)
-      .map(obs => ({
-        id: obs._id,
-        position: {
-          lat: obs.location.coordinates[1],
-          lng: obs.location.coordinates[0]
-        },
-        title: obs.title,
-        popup: createPopupContent(obs),
-        onClick: () => selectObservation(obs)
-      }))
-    
-    addMarkers(markers)
-    
-    // Ajuster la vue pour voir tous les markers
-    if (markers.length > 0) {
-      const bounds = markers.map(m => m.position)
-      fitBounds(bounds)
-    }
-    
-    loading.value = false
-  } catch (error) {
-    console.error('Erreur chargement carte:', error)
-    loading.value = false
+const getTypeColor = (type) => {
+  const colors = {
+    WAV: '#8B5CF6',
+    TCH: '#3B82F6',
+    OBS: '#10B981',
+    RAY: '#F59E0B',
+    ANI: '#EF4444',
+    HUM: '#EC4899',
   }
-})
+  return colors[type] || '#6B7280'
+}
+
+const formatDate = (date) => {
+  return new Date(date).toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  })
+}
 
 const createPopupContent = (obs) => {
-  const type = getObservationTypeLabel(obs.type)
-  const author = obs.userId?.name || 'Anonyme'
+  const imageHtml = obs.images?.[0]
+    ? `<img src="${obs.images[0].url}" alt="${obs.title}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;" />`
+    : ''
+    
   return `
-    <div style="min-width: 200px;">
-      <h4 style="margin: 0 0 0.5rem; font-size: 1rem; font-weight: 600;">${obs.title}</h4>
-      <p style="margin: 0 0 0.5rem; color: #667eea; font-size: 0.875rem;">${type}</p>
-      <p style="margin: 0; color: #6b7280; font-size: 0.875rem;">Par ${author}</p>
+    <div style="min-width: 250px; max-width: 300px;">
+      ${imageHtml}
+      <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #111827;">${obs.title}</h3>
+      <p style="margin: 0 0 8px 0; font-size: 12px; color: #6B7280; font-weight: 500;">${getObservationLabel(obs.type)}</p>
+      <p style="margin: 0 0 12px 0; font-size: 14px; color: #374151; line-height: 1.5;">${obs.description.slice(0, 150)}${obs.description.length > 150 ? '...' : ''}</p>
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 12px; color: #6B7280;">
+        <span>👤 ${obs.userId?.name || 'Anonyme'}</span>
+        <span>•</span>
+        <span>📅 ${formatDate(obs.createdAt)}</span>
+      </div>
+      <button onclick="window.location.href='/#/observations/${obs._id}'" style="width: 100%; padding: 8px 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer;">
+        Voir les détails
+      </button>
     </div>
   `
 }
 
-const selectObservation = (obs) => {
-  selectedObservation.value = obs
+const initializeMap = () => {
+  if (!mapContainer.value) return
+  
+  console.log('🗺️ Initialisation de la carte Leaflet...')
+  
+  // Créer la carte
+  map.value = L.map(mapContainer.value).setView([46.603354, 1.888334], 6)
+  
+  // Ajouter les tuiles OpenStreetMap
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 19,
+  }).addTo(map.value)
+  
+  // Créer le groupe de clusters
+  markerClusterGroup.value = L.markerClusterGroup({
+    chunkedLoading: true,
+    spiderfyOnMaxZoom: true,
+    showCoverageOnHover: false,
+    zoomToBoundsOnClick: true,
+    maxClusterRadius: 80,
+    iconCreateFunction: (cluster) => {
+      const count = cluster.getChildCount()
+      let size = 'small'
+      if (count > 10) size = 'medium'
+      if (count > 50) size = 'large'
+      
+      return L.divIcon({
+        html: `<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 40px; height: 40px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 14px;">${count}</div>`,
+        className: 'marker-cluster',
+        iconSize: L.point(40, 40),
+      })
+    }
+  })
+  
+  map.value.addLayer(markerClusterGroup.value)
+  console.log('✅ Carte initialisée avec succès')
 }
 
-const closePopup = () => {
-  selectedObservation.value = null
-}
-
-const centerOnUser = async () => {
-  loadingLocation.value = true
+const loadObservations = async () => {
+  loading.value = true
+  error.value = null
+  
   try {
-    await getUserLocation()
-    mapCenterOnUser()
-  } catch (error) {
-    console.error('Erreur géolocalisation:', error)
+    console.log('🔍 Chargement des observations...')
+    const data = await observationService.getAll()
+    observations.value = data
+    console.log(`✅ ${observations.value.length} observation(s) chargée(s)`)
+    
+    // Nettoyer les anciens marqueurs
+    if (markerClusterGroup.value) {
+      markerClusterGroup.value.clearLayers()
+    }
+    
+    // Ajouter les nouveaux marqueurs
+    const validObservations = observations.value.filter(
+      obs => obs.location?.coordinates && obs.location.coordinates.length === 2
+    )
+    
+    console.log(`📍 ${validObservations.length} observation(s) avec coordonnées valides`)
+    
+    validObservations.forEach(obs => {
+      const [lng, lat] = obs.location.coordinates
+      const marker = L.marker([lat, lng], {
+        icon: createCustomIcon(obs.type)
+      })
+      
+      marker.bindPopup(createPopupContent(obs), {
+        maxWidth: 300,
+        className: 'custom-popup'
+      })
+      
+      markerClusterGroup.value.addLayer(marker)
+    })
+    
+    // Ajuster la vue pour voir tous les marqueurs
+    if (validObservations.length > 0) {
+      const bounds = validObservations.map(obs => [
+        obs.location.coordinates[1],
+        obs.location.coordinates[0]
+      ])
+      map.value.fitBounds(bounds, { padding: [50, 50] })
+    }
+    
+  } catch (err) {
+    console.error('❌ Erreur chargement observations:', err)
+    error.value = 'Impossible de charger les observations'
   } finally {
-    loadingLocation.value = false
+    loading.value = false
   }
 }
 
-const navigateToDetail = (id) => {
-  router.push(`/observations/${id}`)
+const centerOnUser = () => {
+  loadingLocation.value = true
+  
+  if (!navigator.geolocation) {
+    console.warn('⚠️ Géolocalisation non disponible')
+    loadingLocation.value = false
+    return
+  }
+  
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      const { latitude, longitude } = position.coords
+      console.log(`📍 Position: ${latitude}, ${longitude}`)
+      map.value.setView([latitude, longitude], 13)
+      loadingLocation.value = false
+    },
+    (err) => {
+      console.error('❌ Erreur géolocalisation:', err)
+      loadingLocation.value = false
+    }
+  )
 }
 
-const getObservationTypeLabel = (type) => {
-  const found = OBSERVATION_TYPES.find(t => t.value === type)
-  return found ? found.label : type
-}
-
-const formatDate = (date) => {
-  if (!date) return ''
-  const d = new Date(date)
-  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
-}
+onMounted(() => {
+  initializeMap()
+  loadObservations()
+})
 
 onUnmounted(() => {
-  // Cleanup map if needed
+  if (map.value) {
+    map.value.remove()
+  }
 })
 </script>
 
@@ -185,7 +257,7 @@ onUnmounted(() => {
 .map-view {
   position: relative;
   width: 100%;
-  height: calc(100vh - 4rem); /* Adjust for header */
+  height: calc(100vh - 4rem);
   overflow: hidden;
 }
 
@@ -234,133 +306,28 @@ onUnmounted(() => {
   height: 1.5rem;
 }
 
+.observations-count {
+  background: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #667eea;
+  text-align: center;
+}
+
 .animate-spin {
   animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.observation-popup {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: white;
-  border-radius: 1.5rem 1.5rem 0 0;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
-  max-height: 70vh;
-  overflow-y: auto;
-  z-index: 1001;
-  padding: 1.5rem;
-}
-
-@media (min-width: 768px) {
-  .observation-popup {
-    left: auto;
-    right: 1rem;
-    bottom: 2rem;
-    max-width: 400px;
-    border-radius: 1rem;
-    max-height: 80vh;
+  from {
+    transform: rotate(0deg);
   }
-}
-
-.close-popup {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  width: 2rem;
-  height: 2rem;
-  background: #f3f4f6;
-  border: none;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  color: #6b7280;
-}
-
-.close-popup:hover {
-  background: #e5e7eb;
-  color: #111827;
-}
-
-.close-popup svg {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-.popup-content {
-  margin-top: 0.5rem;
-}
-
-.popup-image {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  border-radius: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.popup-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #111827;
-  margin: 0 0 0.5rem;
-}
-
-.popup-type {
-  color: #667eea;
-  font-size: 0.875rem;
-  font-weight: 500;
-  margin: 0 0 0.75rem;
-}
-
-.popup-description {
-  color: #6b7280;
-  font-size: 0.9375rem;
-  line-height: 1.6;
-  margin: 0 0 1rem;
-}
-
-.popup-meta {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.meta-name {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #374151;
-}
-
-.meta-separator {
-  color: #d1d5db;
-  font-size: 0.875rem;
-}
-
-.meta-date {
-  font-size: 0.875rem;
-  color: #6b7280;
-}
-
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: transform 0.3s ease-out;
-}
-
-.slide-up-enter-from,
-.slide-up-leave-to {
-  transform: translateY(100%);
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .map-loading {
@@ -375,13 +342,48 @@ onUnmounted(() => {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
+.map-error {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.map-error p {
+  margin: 0 0 1rem;
+  color: #ef4444;
+  font-weight: 500;
+}
+
 @media (max-width: 640px) {
   .map-view {
     height: calc(100vh - 3.5rem);
   }
-  
+
   .map-controls {
-    bottom: 5rem; /* Above bottom nav */
+    bottom: 5rem;
   }
+}
+
+/* Leaflet popup styling */
+:deep(.custom-popup .leaflet-popup-content-wrapper) {
+  border-radius: 12px;
+  padding: 0;
+  overflow: hidden;
+}
+
+:deep(.custom-popup .leaflet-popup-content) {
+  margin: 0;
+  padding: 16px;
+}
+
+:deep(.custom-popup .leaflet-popup-tip) {
+  background: white;
 }
 </style>

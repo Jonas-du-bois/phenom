@@ -12,22 +12,35 @@
     <div v-else-if="observation" class="observation-detail">
       <!-- Image Carousel -->
       <div class="image-carousel">
-        <div v-if="observation.images && observation.images.length > 0" class="carousel-container">
+        <div
+          v-if="observation.images && observation.images.length > 0"
+          class="carousel-container"
+        >
           <img
             :src="observation.images[currentImageIndex].url"
             :alt="observation.title"
             class="carousel-image"
           />
-          
+
           <div v-if="observation.images.length > 1" class="carousel-controls">
             <button class="carousel-btn" @click="previousImage">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
             </button>
             <button class="carousel-btn" @click="nextImage">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5l7 7-7 7"
+                />
               </svg>
             </button>
           </div>
@@ -52,7 +65,9 @@
       <div class="observation-content">
         <!-- Header -->
         <div class="obs-header">
-          <div class="obs-type-badge">{{ getObservationTypeLabel(observation.type) }}</div>
+          <div class="obs-type-badge">
+            {{ getObservationTypeLabel(observation.type) }}
+          </div>
           <h1 class="obs-title">{{ observation.title }}</h1>
         </div>
 
@@ -66,7 +81,9 @@
             @click="navigateToProfile(observation.userId?._id)"
           />
           <div class="meta-info">
-            <p class="author-name">{{ observation.userId?.name || 'Anonyme' }}</p>
+            <p class="author-name">
+              {{ observation.userId?.name || "Anonyme" }}
+            </p>
             <p class="meta-date">{{ formatDate(observation.createdAt) }}</p>
           </div>
 
@@ -74,12 +91,22 @@
           <div v-if="isOwner" class="obs-actions">
             <button class="action-btn" @click="editObservation">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                />
               </svg>
             </button>
             <button class="action-btn delete" @click="confirmDelete">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                />
               </svg>
             </button>
           </div>
@@ -94,7 +121,10 @@
         <div v-if="observation.location" class="obs-location">
           <div class="location-header">
             <svg class="location-icon" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"/>
+              <path
+                fill-rule="evenodd"
+                d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+              />
             </svg>
             <span class="location-title">Localisation</span>
           </div>
@@ -103,8 +133,10 @@
 
         <!-- Comments -->
         <div class="comments-section">
-          <h3 class="section-title">Commentaires ({{ observation.comments?.length || 0 }})</h3>
-          
+          <h3 class="section-title">
+            Commentaires ({{ observation.comments?.length || 0 }})
+          </h3>
+
           <!-- Comment form -->
           <div class="comment-form">
             <test-BaseAvatar
@@ -133,7 +165,11 @@
 
           <!-- Comments list -->
           <div class="comments-list">
-            <div v-for="comment in observation.comments" :key="comment._id" class="comment-item">
+            <div
+              v-for="comment in observation.comments"
+              :key="comment._id"
+              class="comment-item"
+            >
               <test-BaseAvatar
                 :src="comment.userId?.avatar"
                 :name="comment.userId?.name || 'Anonyme'"
@@ -141,14 +177,21 @@
               />
               <div class="comment-content">
                 <div class="comment-header">
-                  <span class="comment-author">{{ comment.userId?.name || 'Anonyme' }}</span>
-                  <span class="comment-date">{{ formatDate(comment.createdAt) }}</span>
+                  <span class="comment-author">{{
+                    comment.userId?.name || "Anonyme"
+                  }}</span>
+                  <span class="comment-date">{{
+                    formatDate(comment.createdAt)
+                  }}</span>
                 </div>
                 <p class="comment-text">{{ comment.text }}</p>
               </div>
             </div>
 
-            <div v-if="!observation.comments || observation.comments.length === 0" class="no-comments">
+            <div
+              v-if="!observation.comments || observation.comments.length === 0"
+              class="no-comments"
+            >
               <p>Aucun commentaire pour le moment</p>
             </div>
           </div>
@@ -162,14 +205,21 @@
       title="Supprimer l'observation"
       size="sm"
     >
-      <p>Êtes-vous sûr de vouloir supprimer cette observation ? Cette action est irréversible.</p>
-      
+      <p>
+        Êtes-vous sûr de vouloir supprimer cette observation ? Cette action est
+        irréversible.
+      </p>
+
       <template #footer>
         <div class="modal-actions">
           <test-BaseButton variant="outline" @click="showDeleteModal = false">
             Annuler
           </test-BaseButton>
-          <test-BaseButton variant="danger" :loading="deleting" @click="deleteObservation">
+          <test-BaseButton
+            variant="danger"
+            :loading="deleting"
+            @click="deleteObservation"
+          >
             Supprimer
           </test-BaseButton>
         </div>
@@ -179,148 +229,154 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { useAuth } from '../composables/useAuth'
-import { useMap } from '../composables/useMap'
-import { observationService } from '../services/observationService'
-import { commentService } from '../services/commentService'
-import { OBSERVATION_TYPES } from '../constants/observationTypes'
-import TestBaseLoading from '../components/test_BaseLoading.vue'
-import TestBaseButton from '../components/test_BaseButton.vue'
-import TestBaseAvatar from '../components/test_BaseAvatar.vue'
-import TestBaseModal from '../components/test_BaseModal.vue'
+import { ref, computed, onMounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import { useAuth } from "../composables/useAuth";
+import { useMap } from "../composables/useMap";
+import { observationService } from "../services/observationService";
+import { commentService } from "../services/commentService";
+import { OBSERVATION_TYPES } from "../constants/observationTypes";
+import TestBaseLoading from "../components/test_BaseLoading.vue";
+import TestBaseButton from "../components/test_BaseButton.vue";
+import TestBaseAvatar from "../components/test_BaseAvatar.vue";
+import TestBaseModal from "../components/test_BaseModal.vue";
 
-const router = useRouter()
-const route = useRoute()
-const { user: currentUser } = useAuth()
+const router = useRouter();
+const route = useRoute();
+const { user: currentUser } = useAuth();
 
-const observation = ref(null)
-const loading = ref(true)
-const error = ref(null)
-const currentImageIndex = ref(0)
-const newComment = ref('')
-const addingComment = ref(false)
-const showDeleteModal = ref(false)
-const deleting = ref(false)
-const mapContainer = ref(null)
+const observation = ref(null);
+const loading = ref(true);
+const error = ref(null);
+const currentImageIndex = ref(0);
+const newComment = ref("");
+const addingComment = ref(false);
+const showDeleteModal = ref(false);
+const deleting = ref(false);
+const mapContainer = ref(null);
 
-const { initMap, addMarker } = useMap()
+const { initMap, addMarker } = useMap();
 
 const isOwner = computed(() => {
-  return currentUser.value && observation.value && 
-         currentUser.value._id === observation.value.userId?._id
-})
+  return (
+    currentUser.value &&
+    observation.value &&
+    currentUser.value._id === observation.value.userId?._id
+  );
+});
 
 onMounted(async () => {
-  await loadObservation()
-})
+  await loadObservation();
+});
 
 const loadObservation = async () => {
-  loading.value = true
-  error.value = null
-  
+  loading.value = true;
+  error.value = null;
+
   try {
-    const response = await observationService.getById(route.params.id)
-    observation.value = response.data
-    
+    const response = await observationService.getById(route.params.id);
+    observation.value = response.data;
+
     // Initialize map if location exists
     if (observation.value.location?.coordinates && mapContainer.value) {
       setTimeout(async () => {
-        await initMap(mapContainer.value)
-        const coords = observation.value.location.coordinates
+        await initMap(mapContainer.value);
+        const coords = observation.value.location.coordinates;
         addMarker({
           id: observation.value._id,
           position: { lat: coords[1], lng: coords[0] },
-          title: observation.value.title
-        })
-      }, 100)
+          title: observation.value.title,
+        });
+      }, 100);
     }
   } catch (err) {
-    console.error('Erreur chargement observation:', err)
-    error.value = 'Impossible de charger l\'observation'
+    console.error("Erreur chargement observation:", err);
+    error.value = "Impossible de charger l'observation";
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 const previousImage = () => {
   if (observation.value.images.length > 0) {
-    currentImageIndex.value = (currentImageIndex.value - 1 + observation.value.images.length) % observation.value.images.length
+    currentImageIndex.value =
+      (currentImageIndex.value - 1 + observation.value.images.length) %
+      observation.value.images.length;
   }
-}
+};
 
 const nextImage = () => {
   if (observation.value.images.length > 0) {
-    currentImageIndex.value = (currentImageIndex.value + 1) % observation.value.images.length
+    currentImageIndex.value =
+      (currentImageIndex.value + 1) % observation.value.images.length;
   }
-}
+};
 
 const getObservationTypeLabel = (type) => {
-  const found = OBSERVATION_TYPES.find(t => t.value === type)
-  return found ? found.label : type
-}
+  const found = OBSERVATION_TYPES.find((t) => t.value === type);
+  return found ? found.label : type;
+};
 
 const formatDate = (date) => {
-  if (!date) return ''
-  const d = new Date(date)
-  return d.toLocaleDateString('fr-FR', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
+  if (!date) return "";
+  const d = new Date(date);
+  return d.toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
 
 const navigateToProfile = (userId) => {
   if (userId) {
-    router.push(`/profile/${userId}`)
+    router.push(`/profile/${userId}`);
   }
-}
+};
 
 const addComment = async () => {
-  if (!newComment.value.trim()) return
-  
-  addingComment.value = true
-  
+  if (!newComment.value.trim()) return;
+
+  addingComment.value = true;
+
   try {
     await commentService.create(observation.value._id, {
-      text: newComment.value
-    })
-    
+      text: newComment.value,
+    });
+
     // Reload observation to get updated comments
-    await loadObservation()
-    newComment.value = ''
+    await loadObservation();
+    newComment.value = "";
   } catch (err) {
-    console.error('Erreur ajout commentaire:', err)
+    console.error("Erreur ajout commentaire:", err);
   } finally {
-    addingComment.value = false
+    addingComment.value = false;
   }
-}
+};
 
 const editObservation = () => {
-  router.push(`/observations/${observation.value._id}/edit`)
-}
+  router.push(`/observations/${observation.value._id}/edit`);
+};
 
 const confirmDelete = () => {
-  showDeleteModal.value = true
-}
+  showDeleteModal.value = true;
+};
 
 const deleteObservation = async () => {
-  deleting.value = true
-  
+  deleting.value = true;
+
   try {
-    await observationService.delete(observation.value._id)
-    router.push('/feed')
+    await observationService.delete(observation.value._id);
+    router.push("/feed");
   } catch (err) {
-    console.error('Erreur suppression:', err)
-    alert('Erreur lors de la suppression')
+    console.error("Erreur suppression:", err);
+    alert("Erreur lors de la suppression");
   } finally {
-    deleting.value = false
-    showDeleteModal.value = false
+    deleting.value = false;
+    showDeleteModal.value = false;
   }
-}
+};
 </script>
 
 <style scoped>

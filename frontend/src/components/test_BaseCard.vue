@@ -31,7 +31,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed } from "vue";
 
 const props = defineProps({
   title: String,
@@ -39,43 +39,43 @@ const props = defineProps({
   image: String,
   imageAlt: {
     type: String,
-    default: ''
+    default: "",
   },
   variant: {
     type: String,
-    default: 'default',
-    validator: (value) => ['default', 'elevated', 'outlined'].includes(value)
+    default: "default",
+    validator: (value) => ["default", "elevated", "outlined"].includes(value),
   },
   clickable: Boolean,
   hoverable: {
     type: Boolean,
-    default: true
+    default: true,
   },
   padding: {
     type: String,
-    default: 'md',
-    validator: (value) => ['none', 'sm', 'md', 'lg'].includes(value)
-  }
-})
+    default: "md",
+    validator: (value) => ["none", "sm", "md", "lg"].includes(value),
+  },
+});
 
-const emit = defineEmits(['click'])
+const emit = defineEmits(["click"]);
 
 const cardClasses = computed(() => {
   return [
     `card-${props.variant}`,
     `card-padding-${props.padding}`,
     {
-      'card-clickable': props.clickable,
-      'card-hoverable': props.hoverable
-    }
-  ]
-})
+      "card-clickable": props.clickable,
+      "card-hoverable": props.hoverable,
+    },
+  ];
+});
 
 const handleClick = (event) => {
   if (props.clickable) {
-    emit('click', event)
+    emit("click", event);
   }
-}
+};
 </script>
 
 <style scoped>
@@ -193,15 +193,15 @@ const handleClick = (event) => {
   .card {
     border-radius: 0.5rem;
   }
-  
+
   .card-title {
     font-size: 1rem;
   }
-  
+
   .card-padding-md .card-content {
     padding: 1rem;
   }
-  
+
   .card-padding-lg .card-content {
     padding: 1.5rem;
   }
@@ -213,19 +213,19 @@ const handleClick = (event) => {
     background: #1f2937;
     border-color: #374151;
   }
-  
+
   .card-title {
     color: #f3f4f6;
   }
-  
+
   .card-subtitle {
     color: #9ca3af;
   }
-  
+
   .card-body {
     color: #d1d5db;
   }
-  
+
   .card-footer {
     border-top-color: #374151;
   }

@@ -127,12 +127,22 @@ class ObservationService {
       throw new Error('OBSERVATION_NOT_FOUND');
     }
 
-    // Supprimer toutes les images associées
+    // Supprimer toutes les images associées sur Cloudinary
     try {
       const imageService = (await import('./image.service.js')).default;
-      await imageService.deleteAllImagesForObservation(observationId);
+      const deletedImages = await imageService.deleteAllImagesForObservation(observationId);
+      console.log(`✅ ${deletedImages} image(s) supprimée(s) de Cloudinary`);
     } catch (error) {
-      console.error(`Erreur lors de la suppression des images: ${error.message}`);
+      console.error(`❌ Erreur lors de la suppression des images: ${error.message}`);
+    }
+
+    // Supprimer tous les commentaires associés
+    try {
+      const Comment = (await import('../models/Comment.js')).default;
+      const deleteResult = await Comment.deleteMany({ observationId });
+      console.log(`✅ ${deleteResult.deletedCount} commentaire(s) supprimé(s)`);
+    } catch (error) {
+      console.error(`❌ Erreur lors de la suppression des commentaires: ${error.message}`);
     }
 
     // Publier l'événement via WebSocket

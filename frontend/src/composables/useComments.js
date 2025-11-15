@@ -3,19 +3,22 @@
  * Centralise la logique métier liée aux commentaires
  */
 
-import { ref, computed } from 'vue'
-import { commentService } from '../services/commentService'
+import { ref, computed } from "vue";
+import { commentService } from "../services/commentService";
 
 export function useComments() {
   // État - stocke les commentaires par observation ID
-  const commentsByObservation = ref({})
-  const loading = ref(false)
-  const error = ref(null)
+  const commentsByObservation = ref({});
+  const loading = ref(false);
+  const error = ref(null);
 
   // Statistiques calculées
   const totalComments = computed(() => {
-    return Object.values(commentsByObservation.value).reduce((sum, comments) => sum + comments.length, 0)
-  })
+    return Object.values(commentsByObservation.value).reduce(
+      (sum, comments) => sum + comments.length,
+      0,
+    );
+  });
 
   /**
    * Charge les commentaires d'une observation
@@ -25,34 +28,43 @@ export function useComments() {
    */
   const loadComments = async (observationId, params = { limit: 100 }) => {
     try {
-      loading.value = true
-      error.value = null
-      
-      const response = await commentService.getByObservation(observationId, params)
-      
+      loading.value = true;
+      error.value = null;
+
+      const response = await commentService.getByObservation(
+        observationId,
+        params,
+      );
+
       // Gérer différentes structures de réponse
-      let comments = []
+      let comments = [];
       if (response.data) {
-        comments = response.data
+        comments = response.data;
       } else if (response.comments) {
-        comments = response.comments
+        comments = response.comments;
       } else if (Array.isArray(response)) {
-        comments = response
+        comments = response;
       }
-      
-      commentsByObservation.value[observationId] = comments
-      
-      console.log(`✅ Commentaires chargés pour ${observationId}:`, comments.length)
-      return comments
+
+      commentsByObservation.value[observationId] = comments;
+
+      console.log(
+        `✅ Commentaires chargés pour ${observationId}:`,
+        comments.length,
+      );
+      return comments;
     } catch (err) {
-      console.error(`❌ Erreur lors du chargement des commentaires pour ${observationId}:`, err)
-      error.value = err.response?.data?.message || err.message
-      commentsByObservation.value[observationId] = []
-      return []
+      console.error(
+        `❌ Erreur lors du chargement des commentaires pour ${observationId}:`,
+        err,
+      );
+      error.value = err.response?.data?.message || err.message;
+      commentsByObservation.value[observationId] = [];
+      return [];
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
   /**
    * Charge les commentaires pour plusieurs observations
@@ -60,11 +72,14 @@ export function useComments() {
    * @param {Object} params - Paramètres de requête
    * @returns {Promise<void>}
    */
-  const loadCommentsForObservations = async (observationIds, params = { limit: 100 }) => {
+  const loadCommentsForObservations = async (
+    observationIds,
+    params = { limit: 100 },
+  ) => {
     for (const id of observationIds) {
-      await loadComments(id, params)
+      await loadComments(id, params);
     }
-  }
+  };
 
   /**
    * Crée un commentaire
@@ -74,28 +89,28 @@ export function useComments() {
    */
   const createComment = async (observationId, text) => {
     try {
-      loading.value = true
-      error.value = null
-      
-      const response = await commentService.create(observationId, text)
-      const comment = response.data || response
-      
+      loading.value = true;
+      error.value = null;
+
+      const response = await commentService.create(observationId, text);
+      const comment = response.data || response;
+
       // Ajouter à la liste locale
       if (!commentsByObservation.value[observationId]) {
-        commentsByObservation.value[observationId] = []
+        commentsByObservation.value[observationId] = [];
       }
-      commentsByObservation.value[observationId].push(comment)
-      
-      console.log('✅ Commentaire créé:', comment._id || comment.id)
-      return comment
+      commentsByObservation.value[observationId].push(comment);
+
+      console.log("✅ Commentaire créé:", comment._id || comment.id);
+      return comment;
     } catch (err) {
-      console.error('❌ Erreur lors de la création du commentaire:', err)
-      error.value = err.response?.data?.message || err.message
-      return null
+      console.error("❌ Erreur lors de la création du commentaire:", err);
+      error.value = err.response?.data?.message || err.message;
+      return null;
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
   /**
    * Supprime un commentaire
@@ -105,28 +120,29 @@ export function useComments() {
    */
   const deleteComment = async (commentId, observationId = null) => {
     try {
-      loading.value = true
-      error.value = null
-      
-      await commentService.delete(commentId)
-      
+      loading.value = true;
+      error.value = null;
+
+      await commentService.delete(commentId);
+
       // Retirer de la liste locale si observationId fourni
       if (observationId && commentsByObservation.value[observationId]) {
-        commentsByObservation.value[observationId] = commentsByObservation.value[observationId].filter(
-          c => c._id !== commentId
-        )
+        commentsByObservation.value[observationId] =
+          commentsByObservation.value[observationId].filter(
+            (c) => c._id !== commentId,
+          );
       }
-      
-      console.log('✅ Commentaire supprimé:', commentId)
-      return true
+
+      console.log("✅ Commentaire supprimé:", commentId);
+      return true;
     } catch (err) {
-      console.error('❌ Erreur lors de la suppression du commentaire:', err)
-      error.value = err.response?.data?.message || err.message
-      return false
+      console.error("❌ Erreur lors de la suppression du commentaire:", err);
+      error.value = err.response?.data?.message || err.message;
+      return false;
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
   /**
    * Ajoute un commentaire à la liste (temps réel WebSocket)
@@ -135,16 +151,18 @@ export function useComments() {
    */
   const addComment = (observationId, comment) => {
     if (!commentsByObservation.value[observationId]) {
-      commentsByObservation.value[observationId] = []
+      commentsByObservation.value[observationId] = [];
     }
-    
+
     // Vérifier si le commentaire n'existe pas déjà
-    const exists = commentsByObservation.value[observationId].some(c => c._id === comment._id)
+    const exists = commentsByObservation.value[observationId].some(
+      (c) => c._id === comment._id,
+    );
     if (!exists) {
-      commentsByObservation.value[observationId].push(comment)
-      console.log('✅ Commentaire ajouté:', comment._id)
+      commentsByObservation.value[observationId].push(comment);
+      console.log("✅ Commentaire ajouté:", comment._id);
     }
-  }
+  };
 
   /**
    * Supprime un commentaire de la liste (temps réel WebSocket)
@@ -153,12 +171,12 @@ export function useComments() {
    */
   const removeComment = (observationId, commentId) => {
     if (commentsByObservation.value[observationId]) {
-      commentsByObservation.value[observationId] = commentsByObservation.value[observationId].filter(
-        c => c._id !== commentId
-      )
-      console.log('✅ Commentaire retiré de la liste:', commentId)
+      commentsByObservation.value[observationId] = commentsByObservation.value[
+        observationId
+      ].filter((c) => c._id !== commentId);
+      console.log("✅ Commentaire retiré de la liste:", commentId);
     }
-  }
+  };
 
   /**
    * Récupère les commentaires d'une observation depuis l'état
@@ -166,8 +184,8 @@ export function useComments() {
    * @returns {Array} Liste des commentaires
    */
   const getComments = (observationId) => {
-    return commentsByObservation.value[observationId] || []
-  }
+    return commentsByObservation.value[observationId] || [];
+  };
 
   /**
    * Compte le nombre de commentaires pour une observation
@@ -175,33 +193,33 @@ export function useComments() {
    * @returns {number} Nombre de commentaires
    */
   const getCommentCount = (observationId) => {
-    return commentsByObservation.value[observationId]?.length || 0
-  }
+    return commentsByObservation.value[observationId]?.length || 0;
+  };
 
   /**
    * Nettoie les commentaires d'une observation
    * @param {string} observationId - ID de l'observation
    */
   const clearComments = (observationId) => {
-    delete commentsByObservation.value[observationId]
-  }
+    delete commentsByObservation.value[observationId];
+  };
 
   /**
    * Nettoie tous les commentaires
    */
   const clearAllComments = () => {
-    commentsByObservation.value = {}
-  }
+    commentsByObservation.value = {};
+  };
 
   return {
     // État
     commentsByObservation,
     loading,
     error,
-    
+
     // Statistiques
     totalComments,
-    
+
     // Méthodes
     loadComments,
     loadCommentsForObservations,
@@ -212,6 +230,6 @@ export function useComments() {
     getComments,
     getCommentCount,
     clearComments,
-    clearAllComments
-  }
+    clearAllComments,
+  };
 }

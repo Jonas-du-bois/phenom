@@ -10,8 +10,18 @@
             @click="close"
             aria-label="Fermer"
           >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
 
@@ -38,47 +48,50 @@
 </template>
 
 <script setup>
-import { watch } from 'vue'
+import { watch } from "vue";
 
 const props = defineProps({
   modelValue: Boolean,
   title: String,
   size: {
     type: String,
-    default: 'md',
-    validator: (value) => ['sm', 'md', 'lg', 'xl', 'full'].includes(value)
+    default: "md",
+    validator: (value) => ["sm", "md", "lg", "xl", "full"].includes(value),
   },
   closable: {
     type: Boolean,
-    default: true
+    default: true,
   },
   closeOnOverlay: {
     type: Boolean,
-    default: true
-  }
-})
+    default: true,
+  },
+});
 
-const emit = defineEmits(['update:modelValue', 'close'])
+const emit = defineEmits(["update:modelValue", "close"]);
 
 const close = () => {
-  emit('update:modelValue', false)
-  emit('close')
-}
+  emit("update:modelValue", false);
+  emit("close");
+};
 
 const handleOverlayClick = () => {
   if (props.closeOnOverlay) {
-    close()
+    close();
   }
-}
+};
 
 // Prevent body scroll when modal is open
-watch(() => props.modelValue, (newValue) => {
-  if (newValue) {
-    document.body.style.overflow = 'hidden'
-  } else {
-    document.body.style.overflow = ''
-  }
-})
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    if (newValue) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+  },
+);
 </script>
 
 <style scoped>
@@ -101,7 +114,9 @@ watch(() => props.modelValue, (newValue) => {
 .modal-container {
   background: white;
   border-radius: 1rem;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
   position: relative;
   width: 100%;
   max-height: 90vh;
@@ -193,7 +208,9 @@ watch(() => props.modelValue, (newValue) => {
 
 .modal-enter-active .modal-container,
 .modal-leave-active .modal-container {
-  transition: transform 0.3s, opacity 0.3s;
+  transition:
+    transform 0.3s,
+    opacity 0.3s;
 }
 
 .modal-enter-from,
@@ -213,36 +230,36 @@ watch(() => props.modelValue, (newValue) => {
     padding: 0;
     align-items: flex-end;
   }
-  
+
   .modal-container {
     max-width: 100%;
     max-height: 95vh;
     border-radius: 1rem 1rem 0 0;
     margin: 0;
   }
-  
+
   .modal-full {
     max-height: 100vh;
     border-radius: 0;
   }
-  
+
   .modal-header {
     padding: 1.25rem 1.25rem 0.75rem;
   }
-  
+
   .modal-body {
     padding: 1.25rem;
   }
-  
+
   .modal-footer {
     padding: 0.75rem 1.25rem 1.25rem;
     flex-direction: column-reverse;
   }
-  
+
   .modal-footer > * {
     width: 100%;
   }
-  
+
   /* Slide up animation on mobile */
   .modal-enter-from .modal-container,
   .modal-leave-to .modal-container {
@@ -255,21 +272,21 @@ watch(() => props.modelValue, (newValue) => {
   .modal-container {
     background: #1f2937;
   }
-  
+
   .modal-header,
   .modal-footer {
     border-color: #374151;
   }
-  
+
   .modal-title {
     color: #f3f4f6;
   }
-  
+
   .modal-close {
     background: rgba(255, 255, 255, 0.05);
     color: #9ca3af;
   }
-  
+
   .modal-close:hover {
     background: rgba(255, 255, 255, 0.1);
     color: #f3f4f6;

@@ -9,16 +9,16 @@
 defineProps({
   variant: {
     type: String,
-    default: 'primary',
-    validator: (value) => ['primary', 'secondary', 'white'].includes(value)
+    default: "primary",
+    validator: (value) => ["primary", "secondary", "white"].includes(value),
   },
   size: {
     type: String,
-    default: 'md',
-    validator: (value) => ['sm', 'md', 'lg', 'xl'].includes(value)
+    default: "md",
+    validator: (value) => ["sm", "md", "lg", "xl"].includes(value),
   },
-  text: String
-})
+  text: String,
+});
 </script>
 
 <style scoped>

@@ -1,27 +1,26 @@
 /**
  * Store Pinia pour l'administration
  */
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { defineStore } from "pinia";
+import { ref } from "vue";
 
-export const useAdminStore = defineStore('admin', () => {
-  const pendingPosts = ref([])
-  const users = ref([])
-  const stats = ref({})
-  const loading = ref(false)
+export const useAdminStore = defineStore("admin", () => {
+  const pendingPosts = ref([]);
+  const users = ref([]);
+  const stats = ref({});
+  const loading = ref(false);
 
   const fetchUsers = async () => {
     // Récupération utilisateurs
-  }
-
+  };
 
   const deleteUser = async (userId) => {
     // Suppression
-  }
+  };
 
   const fetchStats = async () => {
     // Récupération statistiques
-  }
+  };
 
   return {
     pendingPosts,
@@ -34,6 +33,6 @@ export const useAdminStore = defineStore('admin', () => {
     fetchUsers,
     suspendUser,
     deleteUser,
-    fetchStats
-  }
-})
+    fetchStats,
+  };
+});

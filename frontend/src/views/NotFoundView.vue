@@ -5,13 +5,14 @@
         <div class="ufo">🛸</div>
         <div class="beam"></div>
       </div>
-      
+
       <h1 class="error-code">404</h1>
       <h2 class="error-title">Page non trouvée</h2>
       <p class="error-message">
-        Désolé, la page que vous recherchez semble avoir été enlevée par des extraterrestres... 👽
+        Désolé, la page que vous recherchez semble avoir été enlevée par des
+        extraterrestres... 👽
       </p>
-      
+
       <div class="actions">
         <button @click="goHome" class="btn-primary">
           🏠 Retour à l'accueil
@@ -25,17 +26,17 @@
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router'
+import { useRouter } from "vue-router";
 
-const router = useRouter()
+const router = useRouter();
 
 const goHome = () => {
-  router.push('/')
-}
+  router.push("/");
+};
 
 const goBack = () => {
-  router.back()
-}
+  router.back();
+};
 </script>
 
 <style scoped>
@@ -67,7 +68,8 @@ const goBack = () => {
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0) rotate(-5deg);
   }
   50% {
@@ -89,7 +91,8 @@ const goBack = () => {
 }
 
 @keyframes beam-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.3;
     transform: translateX(-50%) scaleY(1);
   }
@@ -166,19 +169,19 @@ const goBack = () => {
   .error-code {
     font-size: 5rem;
   }
-  
+
   .error-title {
     font-size: 1.5rem;
   }
-  
+
   .error-message {
     font-size: 1rem;
   }
-  
+
   .actions {
     flex-direction: column;
   }
-  
+
   .btn-primary,
   .btn-secondary {
     width: 100%;

@@ -9,7 +9,7 @@
       <!-- Step 1: Information -->
       <div v-show="currentStep === 1" class="step">
         <h2 class="step-title">Informations de l'observation</h2>
-        
+
         <test-BaseInput
           v-model="form.title"
           label="Titre *"
@@ -20,17 +20,31 @@
 
         <div class="form-group">
           <label class="form-label">Type d'observation *</label>
-          <div class="type-grid">
-            <button
+          <select
+            v-model="form.type"
+            class="select-input"
+            :class="{ error: errors.type }"
+          >
+            <option value="">Sélectionnez un type...</option>
+            <option
               v-for="type in observationTypes"
               :key="type.value"
-              :class="['type-btn', { active: form.type === type.value }]"
-              @click="form.type = type.value"
+              :value="type.value"
             >
-              <span class="type-icon">{{ type.icon }}</span>
-              <span class="type-label">{{ type.label }}</span>
-            </button>
-          </div>
+              {{ type.label }}
+            </option>
+          </select>
+          <p
+            v-if="
+              form.type &&
+              observationTypes.find((t) => t.value === form.type)?.description
+            "
+            class="text-sm text-gray-400 mt-1"
+          >
+            {{
+              observationTypes.find((t) => t.value === form.type)?.description
+            }}
+          </p>
           <p v-if="errors.type" class="error-text">{{ errors.type }}</p>
         </div>
 
@@ -44,16 +58,20 @@
             class="textarea"
             :class="{ error: errors.description }"
           ></textarea>
-          <p v-if="errors.description" class="error-text">{{ errors.description }}</p>
+          <p v-if="errors.description" class="error-text">
+            {{ errors.description }}
+          </p>
         </div>
       </div>
 
       <!-- Step 2: Location -->
       <div v-show="currentStep === 2" class="step">
         <h2 class="step-title">Localisation</h2>
-        
+
         <div class="location-info">
-          <p class="info-text">Sélectionnez l'emplacement de votre observation sur la carte</p>
+          <p class="info-text">
+            Sélectionnez l'emplacement de votre observation sur la carte
+          </p>
         </div>
 
         <div id="create-map" ref="mapContainer" class="mini-map"></div>
@@ -66,7 +84,10 @@
         >
           <template #icon-left>
             <svg fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"/>
+              <path
+                fill-rule="evenodd"
+                d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+              />
             </svg>
           </template>
           Utiliser ma position actuelle
@@ -78,7 +99,7 @@
       <!-- Step 3: Photos -->
       <div v-show="currentStep === 3" class="step">
         <h2 class="step-title">Photos</h2>
-        
+
         <div class="upload-zone" @click="triggerFileInput">
           <input
             ref="fileInput"
@@ -88,35 +109,66 @@
             hidden
             @change="handleFileSelect"
           />
-          
+
           <div v-if="selectedFiles.length === 0" class="upload-placeholder">
-            <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            <svg
+              class="upload-icon"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4v16m8-8H4"
+              />
             </svg>
             <p class="upload-text">Ajoutez des photos</p>
             <p class="upload-hint">Cliquez pour sélectionner (optionnel)</p>
           </div>
 
           <div v-else class="preview-grid">
-            <div v-for="(file, index) in selectedFiles" :key="index" class="preview-item">
-              <img :src="file.preview" :alt="`Photo ${index + 1}`" class="preview-image" />
+            <div
+              v-for="(file, index) in selectedFiles"
+              :key="index"
+              class="preview-item"
+            >
+              <img
+                :src="file.preview"
+                :alt="`Photo ${index + 1}`"
+                class="preview-image"
+              />
               <button class="remove-btn" @click.stop="removeFile(index)">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
-            
+
             <button class="add-more-btn" @click.stop="triggerFileInput">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 4v16m8-8H4"
+                />
               </svg>
               <span>Ajouter</span>
             </button>
           </div>
         </div>
 
-        <p v-if="uploadProgress > 0 && uploadProgress < 100" class="upload-progress">
+        <p
+          v-if="uploadProgress > 0 && uploadProgress < 100"
+          class="upload-progress"
+        >
           Upload en cours: {{ uploadProgress }}%
         </p>
       </div>
@@ -132,11 +184,7 @@
           Précédent
         </test-BaseButton>
 
-        <test-BaseButton
-          v-if="currentStep < 3"
-          @click="nextStep"
-          fullWidth
-        >
+        <test-BaseButton v-if="currentStep < 3" @click="nextStep" fullWidth>
           Suivant
         </test-BaseButton>
 
@@ -154,247 +202,252 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useMap } from '../composables/useMap'
-import { useImageUpload } from '../composables/useImageUpload'
-import { observationService } from '../services/observationService'
-import { OBSERVATION_TYPE_OPTIONS } from '../constants/observationTypes'
-import TestBaseInput from '../components/test_BaseInput.vue'
-import TestBaseButton from '../components/test_BaseButton.vue'
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useRouter } from "vue-router";
+import { useMap } from "../composables/useMap";
+import { useImageUpload } from "../composables/useImageUpload";
+import { observationService } from "../services/observationService";
+import { OBSERVATION_TYPE_OPTIONS } from "../constants/observationTypes";
+import TestBaseInput from "../components/test_BaseInput.vue";
+import TestBaseButton from "../components/test_BaseButton.vue";
 
-const router = useRouter()
+const router = useRouter();
 
-const currentStep = ref(1)
-const submitting = ref(false)
-const loadingLocation = ref(false)
+const currentStep = ref(1);
+const submitting = ref(false);
+const loadingLocation = ref(false);
 
 const form = ref({
-  title: '',
-  type: '',
-  description: '',
-  location: null
-})
+  title: "",
+  type: "",
+  description: "",
+  location: null,
+});
 
-const errors = ref({})
-const selectedFiles = ref([])
-const fileInput = ref(null)
-const mapContainer = ref(null)
+const errors = ref({});
+const selectedFiles = ref([]);
+const fileInput = ref(null);
+const mapContainer = ref(null);
 
 // Utiliser les types backend compatibles (codes à 3 lettres)
-const observationTypes = OBSERVATION_TYPE_OPTIONS
+const observationTypes = OBSERVATION_TYPE_OPTIONS;
 
-function getTypeIcon(type) {
-  const icons = {
-    ufo: '🛸',
-    entity: '👽',
-    light: '💡',
-    sound: '🔊',
-    trace: '👣',
-    other: '❓'
-  }
-  return icons[type] || '📍'
-}
-
-const { initMap, getUserLocation, map } = useMap()
-const { uploadProgress } = useImageUpload()
+const { initMap, getUserLocation, map } = useMap();
+const { uploadProgress } = useImageUpload();
 
 const progress = computed(() => {
-  return (currentStep.value / 3) * 100
-})
+  return (currentStep.value / 3) * 100;
+});
 
 onMounted(async () => {
   // Map will be initialized when step 2 is shown
-})
+});
 
 const nextStep = async () => {
   if (validateStep(currentStep.value)) {
-    currentStep.value++
-    
+    currentStep.value++;
+
     // Initialize map on step 2
     if (currentStep.value === 2 && mapContainer.value && !map.value) {
       // Wait for next tick to ensure DOM is ready
-      await new Promise(resolve => setTimeout(resolve, 100))
-      
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       // Create Leaflet map
       if (window.L) {
-        const leafletMap = window.L.map(mapContainer.value).setView([46.603354, 1.888334], 6)
-        
+        const leafletMap = window.L.map(mapContainer.value).setView(
+          [46.603354, 1.888334],
+          6,
+        );
+
         // Add tile layer
-        window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© OpenStreetMap contributors'
-        }).addTo(leafletMap)
-        
+        window.L.tileLayer(
+          "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+          {
+            attribution: "© OpenStreetMap contributors",
+          },
+        ).addTo(leafletMap);
+
         // Initialize map in composable
-        initMap(leafletMap)
-        
+        initMap(leafletMap);
+
         // Add click listener to set location
-        leafletMap.on('click', (e) => {
+        leafletMap.on("click", (e) => {
           form.value.location = {
-            type: 'Point',
-            coordinates: [e.latlng.lng, e.latlng.lat]
-          }
-          
+            type: "Point",
+            coordinates: [e.latlng.lng, e.latlng.lat],
+          };
+
           // Add marker at clicked location
           // Remove old marker if exists
           if (window.locationMarker) {
-            leafletMap.removeLayer(window.locationMarker)
+            leafletMap.removeLayer(window.locationMarker);
           }
-          
-          window.locationMarker = window.L.marker([e.latlng.lat, e.latlng.lng]).addTo(leafletMap)
-        })
+
+          window.locationMarker = window.L.marker([
+            e.latlng.lat,
+            e.latlng.lng,
+          ]).addTo(leafletMap);
+        });
       }
     }
   }
-}
+};
 
 const previousStep = () => {
   if (currentStep.value > 1) {
-    currentStep.value--
+    currentStep.value--;
   }
-}
+};
 
 const validateStep = (step) => {
-  errors.value = {}
-  
+  errors.value = {};
+
   if (step === 1) {
     if (!form.value.title.trim()) {
-      errors.value.title = 'Le titre est requis'
+      errors.value.title = "Le titre est requis";
     }
     if (!form.value.type) {
-      errors.value.type = 'Sélectionnez un type d\'observation'
+      errors.value.type = "Sélectionnez un type d'observation";
     }
     if (!form.value.description.trim()) {
-      errors.value.description = 'La description est requise'
+      errors.value.description = "La description est requise";
     }
   }
-  
+
   if (step === 2) {
     if (!form.value.location) {
-      errors.value.location = 'Sélectionnez un emplacement sur la carte'
+      errors.value.location = "Sélectionnez un emplacement sur la carte";
     }
   }
-  
-  return Object.keys(errors.value).length === 0
-}
+
+  return Object.keys(errors.value).length === 0;
+};
 
 const useCurrentLocation = async () => {
-  loadingLocation.value = true
+  loadingLocation.value = true;
   try {
-    await getUserLocation()
+    await getUserLocation();
     const userLoc = await new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(resolve, reject)
-    })
-    
+      navigator.geolocation.getCurrentPosition(resolve, reject);
+    });
+
     const coords = {
       lat: userLoc.coords.latitude,
-      lng: userLoc.coords.longitude
-    }
-    
+      lng: userLoc.coords.longitude,
+    };
+
     form.value.location = {
-      type: 'Point',
-      coordinates: [coords.lng, coords.lat]
-    }
-    
+      type: "Point",
+      coordinates: [coords.lng, coords.lat],
+    };
+
     // Add marker
     if (window.L && map.value) {
       if (window.locationMarker) {
-        map.value.removeLayer(window.locationMarker)
+        map.value.removeLayer(window.locationMarker);
       }
-      window.locationMarker = window.L.marker([coords.lat, coords.lng]).addTo(map.value)
-      map.value.setView([coords.lat, coords.lng], 13)
+      window.locationMarker = window.L.marker([coords.lat, coords.lng]).addTo(
+        map.value,
+      );
+      map.value.setView([coords.lat, coords.lng], 13);
     }
   } catch (error) {
-    console.error('Erreur géolocalisation:', error)
-    errors.value.location = 'Impossible d\'obtenir votre position'
+    console.error("Erreur géolocalisation:", error);
+    errors.value.location = "Impossible d'obtenir votre position";
   } finally {
-    loadingLocation.value = false
+    loadingLocation.value = false;
   }
-}
+};
 
 const triggerFileInput = () => {
-  fileInput.value?.click()
-}
+  fileInput.value?.click();
+};
 
 const handleFileSelect = (event) => {
-  const files = Array.from(event.target.files)
-  
-  files.forEach(file => {
-    const reader = new FileReader()
+  const files = Array.from(event.target.files);
+
+  files.forEach((file) => {
+    const reader = new FileReader();
     reader.onload = (e) => {
       selectedFiles.value.push({
         file,
-        preview: e.target.result
-      })
-    }
-    reader.readAsDataURL(file)
-  })
-  
+        preview: e.target.result,
+      });
+    };
+    reader.readAsDataURL(file);
+  });
+
   // Reset input
-  event.target.value = ''
-}
+  event.target.value = "";
+};
 
 const removeFile = (index) => {
-  selectedFiles.value.splice(index, 1)
-}
+  selectedFiles.value.splice(index, 1);
+};
 
 const submitObservation = async () => {
-  if (!validateStep(2)) return
-  
-  submitting.value = true
-  
+  if (!validateStep(2)) return;
+
+  submitting.value = true;
+
   try {
     // Create observation
     const obsData = {
       title: form.value.title,
       type: form.value.type,
       description: form.value.description,
-      location: form.value.location
-    }
-    
-    console.log('📤 Données observation:', obsData)
-    
-    const response = await observationService.create(obsData)
-    console.log('📥 Réponse création:', response)
-    
-    const observationId = response.data._id
-    
+      location: form.value.location,
+    };
+
+    console.log("📤 Données observation:", obsData);
+
+    const response = await observationService.create(obsData);
+    console.log("📥 Réponse création:", response);
+
+    const observationId = response.data._id;
+
     // Upload images if any
     if (selectedFiles.value.length > 0) {
-      const formData = new FormData()
-      selectedFiles.value.forEach(({ file }) => {
-        formData.append('images', file)
-      })
-      
-      await observationService.addImages(observationId, formData)
+      console.log(`📸 Upload de ${selectedFiles.value.length} image(s)...`);
+      const formData = new FormData();
+      selectedFiles.value.forEach(({ file }, index) => {
+        console.log(`  - Image ${index + 1}: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`);
+        formData.append("images", file);
+      });
+
+      const uploadResponse = await observationService.addImages(observationId, formData);
+      console.log('✅ Images uploadées:', uploadResponse);
     }
-    
+
     // Redirect to observation detail
-    router.push(`/observations/${observationId}`)
+    router.push(`/observations/${observationId}`);
   } catch (error) {
-    console.error('Erreur création observation:', error)
-    console.error('Détails erreur:', error.response?.data)
-    console.error('Details validation:', error.response?.data?.details)
-    
+    console.error("Erreur création observation:", error);
+    console.error("Détails erreur:", error.response?.data);
+    console.error("Details validation:", error.response?.data?.details);
+
     // Afficher les erreurs de validation
     if (error.response?.data?.details) {
-      error.response.data.details.forEach(detail => {
-        console.error(`❌ ${detail.field}: ${detail.message}`)
-      })
+      error.response.data.details.forEach((detail) => {
+        console.error(`❌ ${detail.field}: ${detail.message}`);
+      });
     }
-    
-    errors.value.submit = error.response?.data?.message || error.message || 'Erreur lors de la création'
+
+    errors.value.submit =
+      error.response?.data?.message ||
+      error.message ||
+      "Erreur lors de la création";
   } finally {
-    submitting.value = false
+    submitting.value = false;
   }
-}
+};
 
 onUnmounted(() => {
   // Cleanup
-  selectedFiles.value.forEach(file => {
-    URL.revokeObjectURL(file.preview)
-  })
-})
+  selectedFiles.value.forEach((file) => {
+    URL.revokeObjectURL(file.preview);
+  });
+});
 </script>
 
 <style scoped>
@@ -457,50 +510,29 @@ onUnmounted(() => {
   margin-bottom: 0.5rem;
 }
 
-.type-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
-}
-
-@media (min-width: 640px) {
-  .type-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-.type-btn {
-  padding: 1rem;
+.select-input {
+  width: 100%;
+  padding: 0.75rem;
   border: 2px solid #e5e7eb;
-  background: white;
   border-radius: 0.75rem;
-  cursor: pointer;
+  font-size: 1rem;
   transition: all 0.2s;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
+  background: white;
+  cursor: pointer;
 }
 
-.type-btn:hover {
+.select-input:hover {
   border-color: #667eea;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
-.type-btn.active {
+.select-input:focus {
+  outline: none;
   border-color: #667eea;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-.type-icon {
-  font-size: 2rem;
-}
-
-.type-label {
-  font-size: 0.875rem;
-  font-weight: 500;
+.select-input.error {
+  border-color: #ef4444;
 }
 
 .textarea {
@@ -677,11 +709,11 @@ onUnmounted(() => {
   .create-container {
     padding: 1rem;
   }
-  
+
   .step-title {
     font-size: 1.5rem;
   }
-  
+
   .preview-grid {
     grid-template-columns: repeat(2, 1fr);
   }

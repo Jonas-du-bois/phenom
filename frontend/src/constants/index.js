@@ -7,5 +7,5 @@ export {
   OBSERVATION_TYPE_OPTIONS,
   getObservationLabel,
   getObservationDescription,
-  isValidObservationType
-} from './observationTypes'
+  isValidObservationType,
+} from "./observationTypes";

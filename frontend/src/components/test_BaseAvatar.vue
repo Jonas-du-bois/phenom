@@ -8,77 +8,81 @@
       @error="handleError"
     />
     <span v-else class="avatar-initials">{{ initials }}</span>
-    
-    <span v-if="status" class="avatar-status" :class="`status-${status}`"></span>
+
+    <span
+      v-if="status"
+      class="avatar-status"
+      :class="`status-${status}`"
+    ></span>
   </div>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref } from "vue";
 
 const props = defineProps({
   src: String,
   alt: {
     type: String,
-    default: 'Avatar'
+    default: "Avatar",
   },
   name: String,
   size: {
     type: String,
-    default: 'md',
-    validator: (value) => ['xs', 'sm', 'md', 'lg', 'xl'].includes(value)
+    default: "md",
+    validator: (value) => ["xs", "sm", "md", "lg", "xl"].includes(value),
   },
   status: {
     type: String,
-    validator: (value) => ['online', 'offline', 'away', 'busy'].includes(value)
+    validator: (value) => ["online", "offline", "away", "busy"].includes(value),
   },
   rounded: {
     type: Boolean,
-    default: true
-  }
-})
+    default: true,
+  },
+});
 
-const imageError = ref(false)
+const imageError = ref(false);
 
 const avatarClasses = computed(() => {
   return [
     `avatar-${props.size}`,
     {
-      'avatar-rounded': props.rounded,
-      'avatar-square': !props.rounded
-    }
-  ]
-})
+      "avatar-rounded": props.rounded,
+      "avatar-square": !props.rounded,
+    },
+  ];
+});
 
 const avatarStyle = computed(() => {
   if (imageError.value || !props.src) {
     // Generate color from name
     const colors = [
-      'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-      'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-      'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-      'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-    ]
-    const index = (props.name?.charCodeAt(0) || 0) % colors.length
-    return { background: colors[index] }
+      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+      "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+      "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
+      "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+    ];
+    const index = (props.name?.charCodeAt(0) || 0) % colors.length;
+    return { background: colors[index] };
   }
-  return {}
-})
+  return {};
+});
 
 const initials = computed(() => {
-  if (!props.name) return '?'
-  
-  const names = props.name.trim().split(' ')
+  if (!props.name) return "?";
+
+  const names = props.name.trim().split(" ");
   if (names.length >= 2) {
-    return (names[0][0] + names[1][0]).toUpperCase()
+    return (names[0][0] + names[1][0]).toUpperCase();
   }
-  return names[0].substring(0, 2).toUpperCase()
-})
+  return names[0].substring(0, 2).toUpperCase();
+});
 
 const handleError = () => {
-  imageError.value = true
-}
+  imageError.value = true;
+};
 </script>
 
 <style scoped>

@@ -18,18 +18,40 @@
             v-model="searchQuery"
             @keyup.enter="handleSearch"
           />
-          <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          <svg
+            class="search-icon"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
           </svg>
         </div>
 
         <!-- User menu -->
         <div class="header-actions">
           <button class="btn-icon" @click="showNotifications = true">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+              />
             </svg>
-            <span v-if="notificationCount" class="badge">{{ notificationCount }}</span>
+            <span v-if="notificationCount" class="badge">{{
+              notificationCount
+            }}</span>
           </button>
 
           <test-BaseAvatar
@@ -63,8 +85,18 @@
 
         <!-- Create button (sidebar) -->
         <button class="btn-create" @click="navigateTo('/create')">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"
+            />
           </svg>
           <span>Nouvelle observation</span>
         </button>
@@ -95,8 +127,18 @@
 
       <!-- Floating create button (mobile) -->
       <button class="fab" @click="navigateTo('/create')">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        <svg
+          class="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 4v16m8-8H4"
+          />
         </svg>
       </button>
     </nav>
@@ -104,57 +146,102 @@
 </template>
 
 <script setup>
-import { ref, computed, h } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { useAuth } from '../composables/useAuth'
-import TestBaseAvatar from './test_BaseAvatar.vue'
+import { ref, computed, h } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import { useAuth } from "../composables/useAuth";
+import TestBaseAvatar from "./test_BaseAvatar.vue";
 
-const router = useRouter()
-const route = useRoute()
-const { user } = useAuth()
+const router = useRouter();
+const route = useRoute();
+const { user } = useAuth();
 
-const searchQuery = ref('')
-const showNotifications = ref(false)
-const notificationCount = ref(3)
+const searchQuery = ref("");
+const showNotifications = ref(false);
+const notificationCount = ref(3);
 
 // Navigation items
 const navItems = [
   {
-    path: '/feed',
-    label: 'Feed',
-    icon: () => h('svg', { class: 'w-6 h-6', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' }, [
-      h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-width': '2', d: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10' })
-    ])
+    path: "/feed",
+    label: "Feed",
+    icon: () =>
+      h(
+        "svg",
+        {
+          class: "w-6 h-6",
+          fill: "none",
+          stroke: "currentColor",
+          viewBox: "0 0 24 24",
+        },
+        [
+          h("path", {
+            "stroke-linecap": "round",
+            "stroke-linejoin": "round",
+            "stroke-width": "2",
+            d: "M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10",
+          }),
+        ],
+      ),
   },
   {
-    path: '/map',
-    label: 'Carte',
-    icon: () => h('svg', { class: 'w-6 h-6', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' }, [
-      h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-width': '2', d: 'M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7' })
-    ])
+    path: "/map",
+    label: "Carte",
+    icon: () =>
+      h(
+        "svg",
+        {
+          class: "w-6 h-6",
+          fill: "none",
+          stroke: "currentColor",
+          viewBox: "0 0 24 24",
+        },
+        [
+          h("path", {
+            "stroke-linecap": "round",
+            "stroke-linejoin": "round",
+            "stroke-width": "2",
+            d: "M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7",
+          }),
+        ],
+      ),
   },
   {
-    path: '/profile',
-    label: 'Profil',
-    icon: () => h('svg', { class: 'w-6 h-6', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' }, [
-      h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-width': '2', d: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' })
-    ])
-  }
-]
+    path: "/profile",
+    label: "Profil",
+    icon: () =>
+      h(
+        "svg",
+        {
+          class: "w-6 h-6",
+          fill: "none",
+          stroke: "currentColor",
+          viewBox: "0 0 24 24",
+        },
+        [
+          h("path", {
+            "stroke-linecap": "round",
+            "stroke-linejoin": "round",
+            "stroke-width": "2",
+            d: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z",
+          }),
+        ],
+      ),
+  },
+];
 
 const isActive = (path) => {
-  return route.path.startsWith(path)
-}
+  return route.path.startsWith(path);
+};
 
 const navigateTo = (path) => {
-  router.push(path)
-}
+  router.push(path);
+};
 
 const handleSearch = () => {
   if (searchQuery.value.trim()) {
-    router.push({ path: '/feed', query: { q: searchQuery.value } })
+    router.push({ path: "/feed", query: { q: searchQuery.value } });
   }
-}
+};
 </script>
 
 <style scoped>
@@ -433,7 +520,7 @@ const handleSearch = () => {
   .logo-text {
     display: inline;
   }
-  
+
   .header-content {
     padding: 1rem 1.5rem;
   }
@@ -443,15 +530,15 @@ const handleSearch = () => {
   .app-sidebar {
     display: none;
   }
-  
+
   .desktop-only {
     display: none !important;
   }
-  
+
   .mobile-only {
     display: flex;
   }
-  
+
   .app-content {
     padding-bottom: calc(4rem + env(safe-area-inset-bottom));
   }

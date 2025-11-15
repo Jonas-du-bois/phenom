@@ -1,12 +1,12 @@
 /**
  * Composable pour accès caméra
  */
-import { ref } from 'vue'
+import { ref } from "vue";
 
 export function useCamera() {
-  const stream = ref(null)
-  const error = ref(null)
-  const isActive = ref(false)
+  const stream = ref(null);
+  const error = ref(null);
+  const isActive = ref(false);
 
   // Méthodes pour accéder à la caméra et capturer
 
@@ -16,6 +16,6 @@ export function useCamera() {
     isActive,
     startCamera: () => {},
     stopCamera: () => {},
-    capturePhoto: () => {}
-  }
+    capturePhoto: () => {},
+  };
 }

@@ -15,9 +15,11 @@
             size="xl"
             class="profile-avatar"
           />
-          <h1 class="profile-name">{{ profileUser.name || 'Utilisateur' }}</h1>
-          <p v-if="profileUser.email" class="profile-email">{{ profileUser.email }}</p>
-          
+          <h1 class="profile-name">{{ profileUser.name || "Utilisateur" }}</h1>
+          <p v-if="profileUser.email" class="profile-email">
+            {{ profileUser.email }}
+          </p>
+
           <div class="profile-stats">
             <div class="stat-item">
               <span class="stat-value">{{ userObservations.length }}</span>
@@ -40,8 +42,18 @@
           >
             <template #icon-left>
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
               </svg>
             </template>
             Paramètres
@@ -74,7 +86,10 @@
             <span class="empty-icon">🛸</span>
             <h3>Aucune observation</h3>
             <p v-if="isOwnProfile">Créez votre première observation !</p>
-            <test-BaseButton v-if="isOwnProfile" @click="router.push('/create')">
+            <test-BaseButton
+              v-if="isOwnProfile"
+              @click="router.push('/create')"
+            >
               Créer une observation
             </test-BaseButton>
           </div>
@@ -89,8 +104,10 @@
             clickable
             @click="router.push(`/observations/${obs._id}`)"
           >
-            <p class="observation-description">{{ truncateText(obs.description, 100) }}</p>
-            
+            <p class="observation-description">
+              {{ truncateText(obs.description, 100) }}
+            </p>
+
             <template #footer>
               <div class="observation-footer">
                 <span class="footer-date">{{ formatDate(obs.createdAt) }}</span>
@@ -122,7 +139,7 @@
       <div class="settings-content">
         <div class="setting-section">
           <h3 class="section-title">Informations personnelles</h3>
-          
+
           <test-BaseInput
             v-model="settingsForm.name"
             label="Nom"
@@ -141,7 +158,7 @@
 
         <div class="setting-section">
           <h3 class="section-title">Sécurité</h3>
-          
+
           <test-BaseButton
             variant="outline"
             fullWidth
@@ -153,12 +170,8 @@
 
         <div class="setting-section danger-zone">
           <h3 class="section-title">Zone de danger</h3>
-          
-          <test-BaseButton
-            variant="danger"
-            fullWidth
-            @click="handleLogout"
-          >
+
+          <test-BaseButton variant="danger" fullWidth @click="handleLogout">
             Se déconnecter
           </test-BaseButton>
         </div>
@@ -205,7 +218,10 @@
 
       <template #footer>
         <div class="modal-actions">
-          <test-BaseButton variant="outline" @click="showChangePassword = false">
+          <test-BaseButton
+            variant="outline"
+            @click="showChangePassword = false"
+          >
             Annuler
           </test-BaseButton>
           <test-BaseButton :loading="changingPassword" @click="changePassword">
@@ -218,180 +234,180 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { useAuth } from '../composables/useAuth'
-import { observationService } from '../services/observationService'
-import { userService } from '../services/userService'
-import { OBSERVATION_TYPES } from '../constants/observationTypes'
-import TestBaseLoading from '../components/test_BaseLoading.vue'
-import TestBaseButton from '../components/test_BaseButton.vue'
-import TestBaseAvatar from '../components/test_BaseAvatar.vue'
-import TestBaseCard from '../components/test_BaseCard.vue'
-import TestBaseModal from '../components/test_BaseModal.vue'
-import TestBaseInput from '../components/test_BaseInput.vue'
+import { ref, computed, onMounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import { useAuth } from "../composables/useAuth";
+import { observationService } from "../services/observationService";
+import { userService } from "../services/userService";
+import { OBSERVATION_TYPES } from "../constants/observationTypes";
+import TestBaseLoading from "../components/test_BaseLoading.vue";
+import TestBaseButton from "../components/test_BaseButton.vue";
+import TestBaseAvatar from "../components/test_BaseAvatar.vue";
+import TestBaseCard from "../components/test_BaseCard.vue";
+import TestBaseModal from "../components/test_BaseModal.vue";
+import TestBaseInput from "../components/test_BaseInput.vue";
 
-const router = useRouter()
-const route = useRoute()
-const { user: currentUser, logout } = useAuth()
+const router = useRouter();
+const route = useRoute();
+const { user: currentUser, logout } = useAuth();
 
-const loading = ref(true)
-const profileUser = ref({})
-const userObservations = ref([])
-const activeTab = ref('observations')
-const showSettings = ref(false)
-const showChangePassword = ref(false)
-const savingSettings = ref(false)
-const changingPassword = ref(false)
+const loading = ref(true);
+const profileUser = ref({});
+const userObservations = ref([]);
+const activeTab = ref("observations");
+const showSettings = ref(false);
+const showChangePassword = ref(false);
+const savingSettings = ref(false);
+const changingPassword = ref(false);
 
 const settingsForm = ref({
-  name: '',
-  email: ''
-})
+  name: "",
+  email: "",
+});
 
 const passwordForm = ref({
-  current: '',
-  new: '',
-  confirm: ''
-})
+  current: "",
+  new: "",
+  confirm: "",
+});
 
-const passwordErrors = ref({})
+const passwordErrors = ref({});
 
 const isOwnProfile = computed(() => {
-  return !route.params.userId || route.params.userId === currentUser.value?._id
-})
+  return !route.params.userId || route.params.userId === currentUser.value?._id;
+});
 
 const totalComments = computed(() => {
   return userObservations.value.reduce((total, obs) => {
-    return total + (obs.comments?.length || 0)
-  }, 0)
-})
+    return total + (obs.comments?.length || 0);
+  }, 0);
+});
 
 const memberSince = computed(() => {
-  if (!profileUser.value.createdAt) return 'N/A'
-  const date = new Date(profileUser.value.createdAt)
-  return date.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })
-})
+  if (!profileUser.value.createdAt) return "N/A";
+  const date = new Date(profileUser.value.createdAt);
+  return date.toLocaleDateString("fr-FR", { month: "short", year: "numeric" });
+});
 
 onMounted(async () => {
-  await loadProfile()
-})
+  await loadProfile();
+});
 
 const loadProfile = async () => {
-  loading.value = true
-  
+  loading.value = true;
+
   try {
     // Load user profile
     if (isOwnProfile.value) {
-      profileUser.value = currentUser.value
-      settingsForm.value.name = currentUser.value.name
-      settingsForm.value.email = currentUser.value.email
+      profileUser.value = currentUser.value;
+      settingsForm.value.name = currentUser.value.name;
+      settingsForm.value.email = currentUser.value.email;
     } else {
-      const userResponse = await userService.getById(route.params.userId)
-      profileUser.value = userResponse.data
+      const userResponse = await userService.getById(route.params.userId);
+      profileUser.value = userResponse.data;
     }
 
     // Load user observations
     const obsResponse = await observationService.getAll({
       userId: isOwnProfile.value ? currentUser.value._id : route.params.userId,
-      limit: 100
-    })
-    userObservations.value = obsResponse.data || []
+      limit: 100,
+    });
+    userObservations.value = obsResponse.data || [];
   } catch (error) {
-    console.error('Erreur chargement profil:', error)
+    console.error("Erreur chargement profil:", error);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 const getFirstImage = (observation) => {
-  return observation.images?.[0]?.url || null
-}
+  return observation.images?.[0]?.url || null;
+};
 
 const getObservationTypeLabel = (type) => {
-  const found = OBSERVATION_TYPES.find(t => t.value === type)
-  return found ? found.label : type
-}
+  const found = OBSERVATION_TYPES.find((t) => t.value === type);
+  return found ? found.label : type;
+};
 
 const truncateText = (text, maxLength) => {
-  if (!text) return ''
-  if (text.length <= maxLength) return text
-  return text.substring(0, maxLength) + '...'
-}
+  if (!text) return "";
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + "...";
+};
 
 const formatDate = (date) => {
-  if (!date) return ''
-  const d = new Date(date)
-  return d.toLocaleDateString('fr-FR', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric'
-  })
-}
+  if (!date) return "";
+  const d = new Date(date);
+  return d.toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+};
 
 const saveSettings = async () => {
-  savingSettings.value = true
-  
+  savingSettings.value = true;
+
   try {
     await userService.update(currentUser.value._id, {
-      name: settingsForm.value.name
-    })
-    
+      name: settingsForm.value.name,
+    });
+
     // Update local user
-    currentUser.value.name = settingsForm.value.name
-    profileUser.value.name = settingsForm.value.name
-    
-    showSettings.value = false
+    currentUser.value.name = settingsForm.value.name;
+    profileUser.value.name = settingsForm.value.name;
+
+    showSettings.value = false;
   } catch (error) {
-    console.error('Erreur sauvegarde paramètres:', error)
+    console.error("Erreur sauvegarde paramètres:", error);
   } finally {
-    savingSettings.value = false
+    savingSettings.value = false;
   }
-}
+};
 
 const changePassword = async () => {
-  passwordErrors.value = {}
-  
+  passwordErrors.value = {};
+
   if (!passwordForm.value.current) {
-    passwordErrors.value.current = 'Requis'
-    return
+    passwordErrors.value.current = "Requis";
+    return;
   }
-  
+
   if (!passwordForm.value.new || passwordForm.value.new.length < 6) {
-    passwordErrors.value.new = 'Minimum 6 caractères'
-    return
+    passwordErrors.value.new = "Minimum 6 caractères";
+    return;
   }
-  
+
   if (passwordForm.value.new !== passwordForm.value.confirm) {
-    passwordErrors.value.confirm = 'Les mots de passe ne correspondent pas'
-    return
+    passwordErrors.value.confirm = "Les mots de passe ne correspondent pas";
+    return;
   }
-  
-  changingPassword.value = true
-  
+
+  changingPassword.value = true;
+
   try {
     await userService.changePassword({
       currentPassword: passwordForm.value.current,
-      newPassword: passwordForm.value.new
-    })
-    
-    passwordForm.value = { current: '', new: '', confirm: '' }
-    showChangePassword.value = false
-    alert('Mot de passe changé avec succès')
+      newPassword: passwordForm.value.new,
+    });
+
+    passwordForm.value = { current: "", new: "", confirm: "" };
+    showChangePassword.value = false;
+    alert("Mot de passe changé avec succès");
   } catch (error) {
-    console.error('Erreur changement mot de passe:', error)
-    passwordErrors.value.current = 'Mot de passe incorrect'
+    console.error("Erreur changement mot de passe:", error);
+    passwordErrors.value.current = "Mot de passe incorrect";
   } finally {
-    changingPassword.value = false
+    changingPassword.value = false;
   }
-}
+};
 
 const handleLogout = async () => {
-  if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
-    await logout()
-    router.push('/auth')
+  if (confirm("Voulez-vous vraiment vous déconnecter ?")) {
+    await logout();
+    router.push("/auth");
   }
-}
+};
 </script>
 
 <style scoped>
@@ -513,7 +529,7 @@ const handleLogout = async () => {
 }
 
 .tab-btn.active::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 0;
@@ -630,7 +646,7 @@ const handleLogout = async () => {
   .profile-stats {
     gap: 1rem;
   }
-  
+
   .stat-value {
     font-size: 1.25rem;
   }

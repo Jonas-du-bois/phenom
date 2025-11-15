@@ -1,5 +1,8 @@
 <template>
-  <div class="input-wrapper" :class="{ 'input-error': error, 'input-disabled': disabled }">
+  <div
+    class="input-wrapper"
+    :class="{ 'input-error': error, 'input-disabled': disabled }"
+  >
     <label v-if="label" :for="id" class="input-label">
       {{ label }}
       <span v-if="required" class="text-red-500">*</span>
@@ -27,9 +30,23 @@
       />
 
       <!-- Icon (right) / Clear button -->
-      <span v-if="modelValue && clearable" class="input-icon-right cursor-pointer" @click="clear">
-        <svg class="w-5 h-5 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+      <span
+        v-if="modelValue && clearable"
+        class="input-icon-right cursor-pointer"
+        @click="clear"
+      >
+        <svg
+          class="w-5 h-5 text-gray-400 hover:text-gray-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
         </svg>
       </span>
       <span v-else-if="$slots.iconRight" class="input-icon-right">
@@ -44,17 +61,17 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed } from "vue";
 
 const props = defineProps({
   id: {
     type: String,
-    default: () => `input-${Math.random().toString(36).substr(2, 9)}`
+    default: () => `input-${Math.random().toString(36).substr(2, 9)}`,
   },
   modelValue: [String, Number],
   type: {
     type: String,
-    default: 'text'
+    default: "text",
   },
   label: String,
   placeholder: String,
@@ -63,36 +80,36 @@ const props = defineProps({
   disabled: Boolean,
   required: Boolean,
   clearable: Boolean,
-  autocomplete: String
-})
+  autocomplete: String,
+});
 
-const emit = defineEmits(['update:modelValue', 'blur', 'focus'])
+const emit = defineEmits(["update:modelValue", "blur", "focus"]);
 
 const inputClasses = computed(() => {
   return [
-    'input-field',
+    "input-field",
     {
-      'input-with-icon-left': !!props.$slots?.icon,
-      'input-with-icon-right': !!props.$slots?.iconRight || props.clearable
-    }
-  ]
-})
+      "input-with-icon-left": !!props.$slots?.icon,
+      "input-with-icon-right": !!props.$slots?.iconRight || props.clearable,
+    },
+  ];
+});
 
 const handleInput = (event) => {
-  emit('update:modelValue', event.target.value)
-}
+  emit("update:modelValue", event.target.value);
+};
 
 const handleBlur = (event) => {
-  emit('blur', event)
-}
+  emit("blur", event);
+};
 
 const handleFocus = (event) => {
-  emit('focus', event)
-}
+  emit("focus", event);
+};
 
 const clear = () => {
-  emit('update:modelValue', '')
-}
+  emit("update:modelValue", "");
+};
 </script>
 
 <style scoped>
@@ -199,11 +216,11 @@ const clear = () => {
     padding: 0.875rem 1rem;
     min-height: 3rem;
   }
-  
+
   .input-with-icon-left {
     padding-left: 3rem;
   }
-  
+
   .input-with-icon-right {
     padding-right: 3rem;
   }
@@ -214,13 +231,13 @@ const clear = () => {
   .input-label {
     color: #e5e7eb;
   }
-  
+
   .input-field {
     background: #1f2937;
     border-color: #374151;
     color: #f3f4f6;
   }
-  
+
   .input-field:focus {
     border-color: #818cf8;
   }

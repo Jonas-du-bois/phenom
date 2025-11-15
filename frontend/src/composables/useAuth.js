@@ -2,138 +2,138 @@
  * Composable pour la gestion de l'authentification
  * KISS: Simple, focus sur les actions essentielles
  */
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { authService } from '../services/authService'
+import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
+import { authService } from "../services/authService";
 
-const user = ref(null)
-const token = ref(localStorage.getItem('token') || null)
-const loading = ref(false)
-const error = ref(null)
+const user = ref(null);
+const token = ref(localStorage.getItem("token") || null);
+const loading = ref(false);
+const error = ref(null);
 
 export function useAuth() {
-  const router = useRouter()
+  const router = useRouter();
 
   // État
-  const isAuthenticated = computed(() => !!token.value && !!user.value)
-  const isAdmin = computed(() => user.value?.role === 'admin')
+  const isAuthenticated = computed(() => !!token.value && !!user.value);
+  const isAdmin = computed(() => user.value?.role === "admin");
 
   /**
    * Connexion
    */
   const login = async (email, password) => {
     try {
-      loading.value = true
-      error.value = null
+      loading.value = true;
+      error.value = null;
 
-      const response = await authService.login({ email, password })
-      
-      console.log('🔍 Response complète:', response)
-      console.log('🔍 response.data:', response.data)
-      
+      const response = await authService.login({ email, password });
+
+      console.log("🔍 Response complète:", response);
+      console.log("🔍 response.data:", response.data);
+
       // authService retourne response.data du backend: { success: true, data: { user, accessToken, refreshToken } }
       // Donc response.data contient { user, accessToken, refreshToken }
-      const { user: userData, accessToken } = response.data
-      
-      console.log('🔍 userData:', userData)
-      console.log('🔍 accessToken:', accessToken)
-      
-      token.value = accessToken
-      user.value = userData
-      
-      localStorage.setItem('token', accessToken)
-      localStorage.setItem('user', JSON.stringify(userData))
+      const { user: userData, accessToken } = response.data;
 
-      return true
+      console.log("🔍 userData:", userData);
+      console.log("🔍 accessToken:", accessToken);
+
+      token.value = accessToken;
+      user.value = userData;
+
+      localStorage.setItem("token", accessToken);
+      localStorage.setItem("user", JSON.stringify(userData));
+
+      return true;
     } catch (err) {
-      console.error('❌ Erreur login:', err)
-      error.value = err.response?.data?.message || 'Erreur de connexion'
-      return false
+      console.error("❌ Erreur login:", err);
+      error.value = err.response?.data?.message || "Erreur de connexion";
+      return false;
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
   /**
    * Inscription
    */
   const register = async (name, email, password) => {
     try {
-      loading.value = true
-      error.value = null
+      loading.value = true;
+      error.value = null;
 
-      const response = await authService.register({ name, email, password })
-      
+      const response = await authService.register({ name, email, password });
+
       // authService retourne déjà response.data qui contient: { success: true, data: { user, accessToken, refreshToken } }
       // Donc on accède directement à response.data (pas response.data.data)
-      const { user: userData, accessToken } = response.data
-      
-      token.value = accessToken
-      user.value = userData
-      
-      localStorage.setItem('token', accessToken)
-      localStorage.setItem('user', JSON.stringify(userData))
+      const { user: userData, accessToken } = response.data;
 
-      return true
+      token.value = accessToken;
+      user.value = userData;
+
+      localStorage.setItem("token", accessToken);
+      localStorage.setItem("user", JSON.stringify(userData));
+
+      return true;
     } catch (err) {
-      console.error('❌ Erreur register:', err)
-      error.value = err.response?.data?.message || 'Erreur d\'inscription'
-      return false
+      console.error("❌ Erreur register:", err);
+      error.value = err.response?.data?.message || "Erreur d'inscription";
+      return false;
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
   /**
    * Déconnexion
    */
   const logout = () => {
-    token.value = null
-    user.value = null
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    router.push('/auth')
-  }
+    token.value = null;
+    user.value = null;
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    router.push("/auth");
+  };
 
   /**
    * Charger le profil utilisateur
    */
   const loadProfile = async () => {
     try {
-      loading.value = true
-      const response = await authService.getProfile()
+      loading.value = true;
+      const response = await authService.getProfile();
       // Backend retourne: { success: true, data: { user } }
-      user.value = response.data
-      localStorage.setItem('user', JSON.stringify(user.value))
+      user.value = response.data;
+      localStorage.setItem("user", JSON.stringify(user.value));
     } catch (err) {
-      console.error('Erreur de chargement du profil:', err)
+      console.error("Erreur de chargement du profil:", err);
       // Si le token est invalide, déconnecter
       if (err.response?.status === 401) {
-        logout()
+        logout();
       }
     } finally {
-      loading.value = false
+      loading.value = false;
     }
-  }
+  };
 
   /**
    * Initialiser depuis localStorage
    */
   const init = () => {
-    const savedUser = localStorage.getItem('user')
+    const savedUser = localStorage.getItem("user");
     if (savedUser && token.value) {
       try {
-        user.value = JSON.parse(savedUser)
+        user.value = JSON.parse(savedUser);
       } catch (e) {
-        console.error('Erreur parsing user:', e)
-        logout()
+        console.error("Erreur parsing user:", e);
+        logout();
       }
     }
-  }
+  };
 
   // Auto-init
   if (!user.value && token.value) {
-    init()
+    init();
   }
 
   return {
@@ -150,6 +150,6 @@ export function useAuth() {
     register,
     logout,
     loadProfile,
-    init
-  }
+    init,
+  };
 }

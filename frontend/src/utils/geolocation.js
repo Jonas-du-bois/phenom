@@ -8,8 +8,8 @@
 const DEFAULT_GEOLOCATION_OPTIONS = {
   enableHighAccuracy: true,
   timeout: 10000,
-  maximumAge: 0
-}
+  maximumAge: 0,
+};
 
 /**
  * Récupère la position GPS actuelle de l'utilisateur
@@ -19,11 +19,11 @@ const DEFAULT_GEOLOCATION_OPTIONS = {
 export const getCurrentPosition = (options = {}) => {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
-      reject(new Error('Géolocalisation non supportée par ce navigateur'))
-      return
+      reject(new Error("Géolocalisation non supportée par ce navigateur"));
+      return;
     }
 
-    const mergedOptions = { ...DEFAULT_GEOLOCATION_OPTIONS, ...options }
+    const mergedOptions = { ...DEFAULT_GEOLOCATION_OPTIONS, ...options };
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -35,32 +35,33 @@ export const getCurrentPosition = (options = {}) => {
           altitudeAccuracy: position.coords.altitudeAccuracy,
           heading: position.coords.heading,
           speed: position.coords.speed,
-          timestamp: position.timestamp
-        })
+          timestamp: position.timestamp,
+        });
       },
       (error) => {
-        let errorMessage = 'Erreur de géolocalisation'
-        
+        let errorMessage = "Erreur de géolocalisation";
+
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            errorMessage = 'Permission refusée. Autorisez la géolocalisation dans les paramètres.'
-            break
+            errorMessage =
+              "Permission refusée. Autorisez la géolocalisation dans les paramètres.";
+            break;
           case error.POSITION_UNAVAILABLE:
-            errorMessage = 'Position non disponible.'
-            break
+            errorMessage = "Position non disponible.";
+            break;
           case error.TIMEOUT:
-            errorMessage = 'Délai de détection dépassé.'
-            break
+            errorMessage = "Délai de détection dépassé.";
+            break;
           default:
-            errorMessage = 'Erreur inconnue.'
+            errorMessage = "Erreur inconnue.";
         }
-        
-        reject(new Error(errorMessage))
+
+        reject(new Error(errorMessage));
       },
-      mergedOptions
-    )
-  })
-}
+      mergedOptions,
+    );
+  });
+};
 
 /**
  * Surveille la position GPS en temps réel
@@ -72,12 +73,12 @@ export const getCurrentPosition = (options = {}) => {
 export const watchPosition = (onSuccess, onError, options = {}) => {
   if (!navigator.geolocation) {
     if (onError) {
-      onError(new Error('Géolocalisation non supportée par ce navigateur'))
+      onError(new Error("Géolocalisation non supportée par ce navigateur"));
     }
-    return null
+    return null;
   }
 
-  const mergedOptions = { ...DEFAULT_GEOLOCATION_OPTIONS, ...options }
+  const mergedOptions = { ...DEFAULT_GEOLOCATION_OPTIONS, ...options };
 
   return navigator.geolocation.watchPosition(
     (position) => {
@@ -87,18 +88,18 @@ export const watchPosition = (onSuccess, onError, options = {}) => {
           longitude: position.coords.longitude,
           accuracy: position.coords.accuracy,
           altitude: position.coords.altitude,
-          timestamp: position.timestamp
-        })
+          timestamp: position.timestamp,
+        });
       }
     },
     (error) => {
       if (onError) {
-        onError(new Error(getGeolocationErrorMessage(error)))
+        onError(new Error(getGeolocationErrorMessage(error)));
       }
     },
-    mergedOptions
-  )
-}
+    mergedOptions,
+  );
+};
 
 /**
  * Arrête la surveillance de position
@@ -106,9 +107,9 @@ export const watchPosition = (onSuccess, onError, options = {}) => {
  */
 export const clearPositionWatch = (watchId) => {
   if (watchId && navigator.geolocation) {
-    navigator.geolocation.clearWatch(watchId)
+    navigator.geolocation.clearWatch(watchId);
   }
-}
+};
 
 /**
  * Génère une URL OpenStreetMap avec marqueur
@@ -117,10 +118,10 @@ export const clearPositionWatch = (watchId) => {
  * @returns {string} URL OpenStreetMap
  */
 export const getOpenStreetMapUrl = (coordinates, zoom = 15) => {
-  const [lng, lat] = coordinates
+  const [lng, lat] = coordinates;
   // mlat/mlon ajoute un marqueur, #map définit le zoom et le centre
-  return `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=${zoom}/${lat}/${lng}`
-}
+  return `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=${zoom}/${lat}/${lng}`;
+};
 
 /**
  * Génère une URL Google Maps avec marqueur
@@ -129,9 +130,9 @@ export const getOpenStreetMapUrl = (coordinates, zoom = 15) => {
  * @returns {string} URL Google Maps
  */
 export const getGoogleMapsUrl = (coordinates, zoom = 15) => {
-  const [lng, lat] = coordinates
-  return `https://www.google.com/maps?q=${lat},${lng}&z=${zoom}`
-}
+  const [lng, lat] = coordinates;
+  return `https://www.google.com/maps?q=${lat},${lng}&z=${zoom}`;
+};
 
 /**
  * Calcule la distance entre deux points GPS (formule de Haversine)
@@ -140,20 +141,22 @@ export const getGoogleMapsUrl = (coordinates, zoom = 15) => {
  * @returns {number} Distance en kilomètres
  */
 export const calculateDistance = (point1, point2) => {
-  const R = 6371 // Rayon de la Terre en km
-  const dLat = toRadians(point2.latitude - point1.latitude)
-  const dLon = toRadians(point2.longitude - point1.longitude)
-  
-  const a = 
+  const R = 6371; // Rayon de la Terre en km
+  const dLat = toRadians(point2.latitude - point1.latitude);
+  const dLon = toRadians(point2.longitude - point1.longitude);
+
+  const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRadians(point1.latitude)) * Math.cos(toRadians(point2.latitude)) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2)
-  
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-  const distance = R * c
-  
-  return distance
-}
+    Math.cos(toRadians(point1.latitude)) *
+      Math.cos(toRadians(point2.latitude)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const distance = R * c;
+
+  return distance;
+};
 
 /**
  * Formate les coordonnées GPS en format lisible
@@ -163,8 +166,8 @@ export const calculateDistance = (point1, point2) => {
  * @returns {string} Coordonnées formatées
  */
 export const formatCoordinates = (latitude, longitude, precision = 6) => {
-  return `${latitude.toFixed(precision)}°, ${longitude.toFixed(precision)}°`
-}
+  return `${latitude.toFixed(precision)}°, ${longitude.toFixed(precision)}°`;
+};
 
 /**
  * Vérifie si des coordonnées sont valides
@@ -174,12 +177,14 @@ export const formatCoordinates = (latitude, longitude, precision = 6) => {
  */
 export const isValidCoordinates = (latitude, longitude) => {
   return (
-    typeof latitude === 'number' &&
-    typeof longitude === 'number' &&
-    latitude >= -90 && latitude <= 90 &&
-    longitude >= -180 && longitude <= 180
-  )
-}
+    typeof latitude === "number" &&
+    typeof longitude === "number" &&
+    latitude >= -90 &&
+    latitude <= 90 &&
+    longitude >= -180 &&
+    longitude <= 180
+  );
+};
 
 /**
  * Convertit des degrés en radians
@@ -187,8 +192,8 @@ export const isValidCoordinates = (latitude, longitude) => {
  * @returns {number} Radians
  */
 const toRadians = (degrees) => {
-  return degrees * (Math.PI / 180)
-}
+  return degrees * (Math.PI / 180);
+};
 
 /**
  * Récupère le message d'erreur de géolocalisation
@@ -198,20 +203,20 @@ const toRadians = (degrees) => {
 const getGeolocationErrorMessage = (error) => {
   switch (error.code) {
     case error.PERMISSION_DENIED:
-      return 'Permission refusée. Autorisez la géolocalisation dans les paramètres.'
+      return "Permission refusée. Autorisez la géolocalisation dans les paramètres.";
     case error.POSITION_UNAVAILABLE:
-      return 'Position non disponible.'
+      return "Position non disponible.";
     case error.TIMEOUT:
-      return 'Délai de détection dépassé.'
+      return "Délai de détection dépassé.";
     default:
-      return 'Erreur inconnue.'
+      return "Erreur inconnue.";
   }
-}
+};
 
 /**
  * Vérifie si la géolocalisation est supportée
  * @returns {boolean} true si supportée
  */
 export const isGeolocationSupported = () => {
-  return 'geolocation' in navigator
-}
+  return "geolocation" in navigator;
+};

@@ -14,8 +14,8 @@ const observationIdValidation = [
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 10 * 1024 * 1024,
-    files: 1
+    fileSize: 10 * 1024 * 1024, // 10MB par fichier
+    files: 10 // Maximum 10 fichiers par upload
   },
   fileFilter: (req, file, cb) => {
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
@@ -112,7 +112,7 @@ const upload = multer({
  *       404:
  *         description: Observation non trouvée
  */
-router.post('/observations/:observationId/images', authenticate, upload.single('image'), imageController.uploadImage);
+router.post('/observations/:observationId/images', authenticate, upload.array('images', 10), imageController.uploadImage);
 
 /**
  * @swagger

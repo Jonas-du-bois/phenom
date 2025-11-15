@@ -11,8 +11,8 @@ export {
   getInitials,
   formatNumber,
   formatFileSize,
-  truncate
-} from './formatters'
+  truncate,
+} from "./formatters";
 
 // Image Helpers (Cloudinary)
 export {
@@ -20,8 +20,8 @@ export {
   getPlaceholderImage,
   handleImageError,
   validateImageFile,
-  createImagePreview
-} from './imageHelpers'
+  createImagePreview,
+} from "./imageHelpers";
 
 // Geolocation
 export {
@@ -33,8 +33,8 @@ export {
   calculateDistance,
   formatCoordinates,
   isValidCoordinates,
-  isGeolocationSupported
-} from './geolocation'
+  isGeolocationSupported,
+} from "./geolocation";
 
 // Validators
 export {
@@ -46,8 +46,8 @@ export {
   validateTag,
   validateCoordinates,
   validateDate,
-  validateForm
-} from './validators'
+  validateForm,
+} from "./validators";
 
 // Observation Helpers
 export {
@@ -63,8 +63,8 @@ export {
   calculateObservationStats,
   validateObservationData,
   extractUniqueTags,
-  findSimilarObservations
-} from './observationHelpers'
+  findSimilarObservations,
+} from "./observationHelpers";
 
 // User Helpers
 export {
@@ -80,8 +80,8 @@ export {
   sortUsers,
   calculateUserStats,
   sanitizeUserData,
-  generateDefaultAvatar
-} from './userHelpers'
+  generateDefaultAvatar,
+} from "./userHelpers";
 
 // Comment Helpers
 export {
@@ -97,8 +97,8 @@ export {
   formatCommentForDisplay,
   isRecentComment,
   sanitizeCommentContent,
-  getTopCommenters
-} from './commentHelpers'
+  getTopCommenters,
+} from "./commentHelpers";
 
 // Storage
 export {
@@ -135,8 +135,8 @@ export {
   clearAllCache,
   getStorageSize,
   clearAuthData,
-  STORAGE_KEYS
-} from './storage'
+  STORAGE_KEYS,
+} from "./storage";
 
 // Permissions
 export {
@@ -158,6 +158,5 @@ export {
   getUserPermissions,
   hasAllPermissions,
   hasAnyPermission,
-  getPermissionErrorMessage
-} from './permissions'
-
+  getPermissionErrorMessage,
+} from "./permissions";

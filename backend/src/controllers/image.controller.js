@@ -7,14 +7,17 @@ import { publishObservationEvent } from '../config/websocket.js';
  */
 class ImageController {
   /**
-   * Upload une image pour une observation
+   * Upload une ou plusieurs images pour une observation
    */
   async uploadImage(req, res, next) {
     try {
       const { observationId } = req.params;
       const userId = req.user._id;
 
-      if (!req.file) {
+      // Gérer plusieurs fichiers
+      const files = req.files || (req.file ? [req.file] : []);
+
+      if (!files || files.length === 0) {
         return errorResponse(res, 'Aucune image fournie', 400);
       }
 
@@ -29,28 +32,40 @@ class ImageController {
         return errorResponse(res, 'Non autorisé', 403);
       }
 
-      const imageData = await imageService.uploadImage(
-        req.file.buffer,
-        req.file.originalname,
-        req.file.mimetype,
-        observationId
-      );
+      // Upload toutes les images
+      const uploadedImages = [];
 
-      observation.images.push({
-        publicId: imageData.publicId,
-        url: imageData.url,
-        size: imageData.size,
-        format: imageData.format,
-        width: imageData.width,
-        height: imageData.height
-      });
+      for (const file of files) {
+        const imageData = await imageService.uploadImage(
+          file.buffer,
+          file.originalname,
+          file.mimetype,
+          observationId
+        );
+
+        observation.images.push({
+          publicId: imageData.publicId,
+          url: imageData.url,
+          size: imageData.size,
+          format: imageData.format,
+          width: imageData.width,
+          height: imageData.height
+        });
+
+        uploadedImages.push(imageData);
+      }
+
       await observation.save();
 
       // Publier un événement WebSocket pour notifier que l'observation a été mise à jour avec une image
       const populatedObservation = await Observation.findById(observationId).populate('userId', 'name email');
       publishObservationEvent('observation:updated', populatedObservation.toObject());
 
-      return successResponse(res, imageData, 'Image uploadée avec succès', 201);
+      const message = uploadedImages.length === 1
+        ? 'Image uploadée avec succès'
+        : `${uploadedImages.length} images uploadées avec succès`;
+
+      return successResponse(res, uploadedImages, message, 201);
     } catch (error) {
       next(error);
     }
