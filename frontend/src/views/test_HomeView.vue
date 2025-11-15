@@ -162,7 +162,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { observationService } from '../services/observationService'
-import { OBSERVATION_TYPES, getObservationTypeLabel } from '../constants/observationTypes'
+import { OBSERVATION_TYPE_OPTIONS, getObservationLabel } from '../constants/observationTypes'
 import TestBaseButton from '../components/test_BaseButton.vue'
 import TestBaseAvatar from '../components/test_BaseAvatar.vue'
 import TestBaseLoading from '../components/test_BaseLoading.vue'
@@ -178,7 +178,7 @@ const stats = ref({
 
 const recentObservations = ref([])
 const loadingRecent = ref(false)
-const observationTypes = OBSERVATION_TYPES
+const observationTypes = OBSERVATION_TYPE_OPTIONS
 
 const navigateTo = (path) => {
   router.push(path)
