@@ -4,7 +4,7 @@
       <test-BaseLoading size="lg" text="Chargement du profil..." />
     </div>
 
-    <div v-else class="profile-container">
+  <PageContainer class="profile-container" :maxWidth="1100">
       <!-- Profile Header -->
       <div class="profile-header">
         <div class="header-background"></div>
@@ -128,7 +128,7 @@
           </div>
         </div>
       </div>
-    </div>
+  </PageContainer>
 
     <!-- Settings Modal -->
     <test-BaseModal
@@ -234,6 +234,7 @@
 </template>
 
 <script setup>
+import PageContainer from "../components/PageContainer.vue";
 import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useAuth } from "../composables/useAuth";
@@ -411,9 +412,9 @@ const handleLogout = async () => {
 </script>
 
 <style scoped>
-.profile-view {
+  .profile-view {
   min-height: 100vh;
-  background: #f9fafb;
+  background: var(--phenom-bg-primary);
 }
 
 .loading-container {
@@ -423,15 +424,30 @@ const handleLogout = async () => {
   justify-content: center;
 }
 
+.profile-container {
+  position: relative;
+  max-width: 1100px;
+  margin: 2rem auto;
+  padding: var(--phenom-space-4);
+  background: var(--phenom-surface-glass-base);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--phenom-border-medium);
+  border-radius: var(--phenom-radius-2xl);
+  box-shadow: var(--phenom-shadow-lg);
+}
+
 .profile-header {
   position: relative;
-  background: white;
+  background: transparent;
   margin-bottom: 1rem;
+  border-radius: calc(var(--phenom-radius-2xl) - 4px);
+  overflow: hidden;
 }
 
 .header-background {
   height: 150px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--phenom-primary) 0%, var(--phenom-primary-dark) 100%);
 }
 
 @media (min-width: 768px) {
@@ -443,13 +459,13 @@ const handleLogout = async () => {
 .header-content {
   position: relative;
   text-align: center;
-  padding: 0 1.5rem 2rem;
+  padding: 0 var(--phenom-space-4) var(--phenom-space-6);
 }
 
 .profile-avatar {
   margin-top: -4rem;
   margin-bottom: 1rem;
-  border: 4px solid white;
+  border: 4px solid var(--phenom-surface-glass-base);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
@@ -472,8 +488,9 @@ const handleLogout = async () => {
   gap: 2rem;
   margin-bottom: 1.5rem;
   padding: 1.5rem;
-  background: #f9fafb;
-  border-radius: 0.75rem;
+  background: var(--phenom-surface-glass-strong);
+  border-radius: var(--phenom-radius-lg);
+  border: 1px solid var(--phenom-border-medium);
 }
 
 .stat-item {
@@ -502,9 +519,9 @@ const handleLogout = async () => {
 .profile-tabs {
   display: flex;
   gap: 0.5rem;
-  padding: 0 1rem;
-  background: white;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 0 var(--phenom-space-4);
+  background: var(--phenom-surface-glass-base);
+  border-bottom: 1px solid var(--phenom-border-medium);
   overflow-x: auto;
 }
 
@@ -539,7 +556,7 @@ const handleLogout = async () => {
 }
 
 .tab-content {
-  padding: 1.5rem;
+  padding: var(--phenom-space-4);
 }
 
 .observations-grid {

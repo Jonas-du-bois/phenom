@@ -83,7 +83,7 @@
       </div>
 
       <!-- Content Container -->
-      <div class="content-container">
+  <PageContainer class="content-container" :maxWidth="1100">
         <!-- Header Card -->
         <div class="header-card">
           <h1 class="obs-title">{{ observation.title }}</h1>
@@ -232,7 +232,7 @@
             </div>
           </div>
         </div>
-      </div>
+  </PageContainer>
     </div>
 
     <!-- Delete confirmation modal -->
@@ -276,6 +276,7 @@ import TestBaseLoading from "../components/test_BaseLoading.vue";
 import TestBaseButton from "../components/test_BaseButton.vue";
 import TestBaseAvatar from "../components/test_BaseAvatar.vue";
 import TestBaseModal from "../components/test_BaseModal.vue";
+import PageContainer from "../components/PageContainer.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -447,6 +448,15 @@ const loadObservation = async () => {
           ]).addTo(mapInstance)
           
           marker.bindPopup(`<b>${observation.value.title}</b>`).openPopup()
+
+          // Prevent popup clicks/scrolls from propagating to the map (avoid modal closing when interacting)
+          marker.on('popupopen', (e) => {
+            const popupEl = e.popup?.getElement?.() || document.querySelector('.leaflet-popup')
+            if (popupEl) {
+              L.DomEvent.disableClickPropagation(popupEl)
+              L.DomEvent.disableScrollPropagation(popupEl)
+            }
+          })
         } catch (err) {
           console.error('Erreur initialisation map:', err)
         }

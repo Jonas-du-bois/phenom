@@ -48,7 +48,7 @@
     </div>
 
     <!-- Liste des observations -->
-    <div class="feed-content">
+  <PageContainer class="feed-content" :maxWidth="1100">
       <div v-if="loading && items.length === 0" class="loading-container">
         <test-BaseLoading size="lg" text="Chargement des observations..." />
       </div>
@@ -62,7 +62,7 @@
         </test-BaseButton>
       </div>
 
-      <div v-else class="observations-grid">
+        <div v-else class="observations-grid">
         <div
           v-for="obs in items"
           :key="obs._id"
@@ -124,7 +124,7 @@
             </div>
           </div>
         </div>
-      </div>
+        </div>
 
       <!-- Loading indicator pour scroll infini -->
       <div v-if="loading && items.length > 0" class="loading-more">
@@ -135,13 +135,14 @@
       <div v-if="!hasMore && items.length > 0" class="end-message">
         <span>✨ Vous avez tout vu !</span>
       </div>
-    </div>
+  </PageContainer>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, watch } from "vue";
 import { useRouter } from "vue-router";
+import PageContainer from "../components/PageContainer.vue";
 import { useInfiniteScroll } from "../composables/useInfiniteScroll";
 import { observationService } from "../services/observationService";
 import { OBSERVATION_TYPE_OPTIONS, getObservationLabel } from "../constants/observationTypes";

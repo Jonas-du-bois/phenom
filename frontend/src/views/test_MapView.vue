@@ -235,12 +235,19 @@ const loadObservationsInBounds = async () => {
       marker.bindPopup(popup)
       
       // Ajouter l'événement click sur le popup après ouverture
-      marker.on('popupopen', () => {
+      marker.on('popupopen', (e) => {
+        const popupEl = e.popup?.getElement?.() || document.querySelector('.leaflet-popup')
+        if (popupEl) {
+          // Empêcher la propagation des événements (click/scroll) de la popup vers la carte
+          L.DomEvent.disableClickPropagation(popupEl)
+          L.DomEvent.disableScrollPropagation(popupEl)
+        }
+
         setTimeout(() => {
-          const detailBtn = document.querySelector('.popup-detail-btn')
+          const detailBtn = popupEl?.querySelector('.popup-detail-btn') || document.querySelector('.popup-detail-btn')
           if (detailBtn) {
-            detailBtn.addEventListener('click', (e) => {
-              const obsId = e.target.getAttribute('data-obs-id')
+            detailBtn.addEventListener('click', (ev) => {
+              const obsId = ev.target.getAttribute('data-obs-id')
               window.location.href = `/#/observations/${obsId}`
             })
           }
@@ -342,6 +349,24 @@ const handleObservationCreated = (obs) => {
       maxWidth: 300,
       className: 'custom-popup'
     })
+
+    marker.on('popupopen', (e) => {
+      const popupEl = e.popup?.getElement?.() || document.querySelector('.leaflet-popup')
+      if (popupEl) {
+        L.DomEvent.disableClickPropagation(popupEl)
+        L.DomEvent.disableScrollPropagation(popupEl)
+      }
+
+      setTimeout(() => {
+        const detailBtn = popupEl?.querySelector('.popup-detail-btn') || document.querySelector('.popup-detail-btn')
+        if (detailBtn) {
+          detailBtn.addEventListener('click', (ev) => {
+            const obsId = ev.target.getAttribute('data-obs-id')
+            window.location.href = `/#/observations/${obsId}`
+          })
+        }
+      }, 100)
+    })
     
     markerClusterGroup.value.addLayer(marker)
     console.log('✅ Nouvelle observation ajoutée à la carte')
@@ -373,6 +398,24 @@ const handleObservationUpdated = (obs) => {
           maxWidth: 300,
           className: 'custom-popup'
         })
+
+  marker.on('popupopen', (e) => {
+          const popupEl = e.popup?.getElement?.() || document.querySelector('.leaflet-popup')
+          if (popupEl) {
+            L.DomEvent.disableClickPropagation(popupEl)
+            L.DomEvent.disableScrollPropagation(popupEl)
+          }
+
+          setTimeout(() => {
+            const detailBtn = popupEl?.querySelector('.popup-detail-btn') || document.querySelector('.popup-detail-btn')
+            if (detailBtn) {
+              detailBtn.addEventListener('click', (ev) => {
+                const obsId = ev.target.getAttribute('data-obs-id')
+                window.location.href = `/#/observations/${obsId}`
+              })
+            }
+          }, 100)
+        })
         
         markerClusterGroup.value.addLayer(marker)
       }
@@ -402,6 +445,24 @@ const handleObservationDeleted = (data) => {
         marker.bindPopup(createPopupContent(obs), {
           maxWidth: 300,
           className: 'custom-popup'
+        })
+
+        marker.on('popupopen', (e) => {
+          const popupEl = e.popup?.getElement?.() || document.querySelector('.leaflet-popup')
+          if (popupEl) {
+            L.DomEvent.disableClickPropagation(popupEl)
+            L.DomEvent.disableScrollPropagation(popupEl)
+          }
+
+          setTimeout(() => {
+            const detailBtn = popupEl?.querySelector('.popup-detail-btn') || document.querySelector('.popup-detail-btn')
+            if (detailBtn) {
+              detailBtn.addEventListener('click', (ev) => {
+                const obsId = ev.target.getAttribute('data-obs-id')
+                window.location.href = `/#/observations/${obsId}`
+              })
+            }
+          }, 100)
         })
         
         markerClusterGroup.value.addLayer(marker)

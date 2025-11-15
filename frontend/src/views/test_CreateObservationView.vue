@@ -5,7 +5,7 @@
       <div class="progress-fill" :style="{ width: `${progress}%` }"></div>
     </div>
 
-    <div class="create-container">
+  <PageContainer class="create-container" :maxWidth="700">
       <!-- Step 1: Information -->
       <div v-show="currentStep === 1" class="step">
         <h2 class="step-title">Informations de l'observation</h2>
@@ -197,13 +197,14 @@
           Publier l'observation
         </test-BaseButton>
       </div>
-    </div>
+  </PageContainer>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
+import PageContainer from "../components/PageContainer.vue";
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useMap } from "../composables/useMap";
@@ -453,8 +454,8 @@ onUnmounted(() => {
 
 <style scoped>
 .create-view {
-  min-height: 100vh;
-  background: #f9fafb;
+    min-height: 100vh;
+    background: var(--phenom-bg-primary);
 }
 
 .progress-bar {
@@ -472,9 +473,15 @@ onUnmounted(() => {
 }
 
 .create-container {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 1.5rem;
+    max-width: 700px;
+    margin: 2rem auto;
+    padding: 1.5rem;
+    background: var(--phenom-surface-glass-base);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--phenom-border-medium);
+    border-radius: var(--phenom-radius-2xl);
+    box-shadow: var(--phenom-shadow-lg);
 }
 
 .step {
@@ -493,10 +500,10 @@ onUnmounted(() => {
 }
 
 .step-title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #111827;
-  margin: 0 0 1.5rem;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--phenom-text-primary);
+    margin: 0 0 1.5rem;
 }
 
 .form-group {

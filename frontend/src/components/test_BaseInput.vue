@@ -61,7 +61,7 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, useSlots } from "vue";
 
 const props = defineProps({
   id: {
@@ -85,12 +85,14 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue", "blur", "focus"]);
 
+const slots = useSlots();
+
 const inputClasses = computed(() => {
   return [
     "input-field",
     {
-      "input-with-icon-left": !!props.$slots?.icon,
-      "input-with-icon-right": !!props.$slots?.iconRight || props.clearable,
+      "input-with-icon-left": !!slots.icon,
+      "input-with-icon-right": !!slots.iconRight || props.clearable,
     },
   ];
 });
@@ -147,6 +149,7 @@ const clear = () => {
   outline: none;
   font-family: inherit;
   font-weight: 500;
+  box-sizing: border-box; /* Ensure padding is included in width and prevents overlap */
 }
 
 .input-field:focus {
@@ -168,11 +171,12 @@ const clear = () => {
 
 /* With icons */
 .input-with-icon-left {
-  padding-left: 2.75rem;
+  /* Make space for icon + extra gap so text does not overlap */
+  padding-left: 3rem;
 }
 
 .input-with-icon-right {
-  padding-right: 2.75rem;
+  padding-right: 3rem;
 }
 
 .input-icon-left,
@@ -181,17 +185,19 @@ const clear = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 1.5rem;
+  height: 1.5rem;
   color: var(--phenom-text-tertiary);
 }
 
 .input-icon-left {
-  left: 1rem;
+  left: 0.75rem; /* inside the padding, centered */
+  pointer-events: none; /* left icon shouldn't block clicks */
 }
 
 .input-icon-right {
-  right: 1rem;
+  right: 0.75rem; /* inside the padding, centered */
+  pointer-events: auto;
 }
 
 /* Error state */
@@ -224,11 +230,11 @@ const clear = () => {
   }
 
   .input-with-icon-left {
-    padding-left: 3rem;
+    padding-left: 3.5rem; /* add a touch more space on mobile */
   }
 
   .input-with-icon-right {
-    padding-right: 3rem;
+    padding-right: 3.5rem; /* add a touch more space on mobile */
   }
 }
 </style>

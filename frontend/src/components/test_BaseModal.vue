@@ -2,7 +2,14 @@
   <Teleport to="body">
     <Transition name="modal">
       <div v-if="modelValue" class="modal-overlay" @click="handleOverlayClick">
-        <div class="modal-container" :class="`modal-${size}`" @click.stop>
+        <div
+          class="modal-container"
+          :class="`modal-${size}`"
+          @click.stop
+          @pointerdown.stop
+          @mousedown.stop
+          @touchstart.stop
+        >
           <!-- Close button -->
           <button
             v-if="closable"

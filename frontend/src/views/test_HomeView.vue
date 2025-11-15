@@ -35,7 +35,8 @@
     </section>
 
     <!-- Stats Section -->
-    <section class="stats-section">
+    <PageContainer :maxWidth="1100">
+      <section class="stats-section">
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-icon">👁️</div>
@@ -58,10 +59,12 @@
           <div class="stat-label">Pays</div>
         </div>
       </div>
-    </section>
+      </section>
+    </PageContainer>
 
     <!-- Categories Section -->
-    <section class="categories-section">
+    <PageContainer :maxWidth="1100">
+      <section class="categories-section">
       <h2 class="section-title">Types d'observations</h2>
       <div class="categories-grid">
         <div 
@@ -82,10 +85,12 @@
           </div>
         </div>
       </div>
-    </section>
+      </section>
+    </PageContainer>
 
     <!-- Recent Observations Preview -->
-    <section class="recent-section">
+    <PageContainer :maxWidth="1100">
+      <section class="recent-section">
       <div class="section-header">
         <h2 class="section-title">Dernières observations</h2>
         <test-BaseButton variant="ghost" @click="navigateTo('/feed')">
@@ -140,10 +145,12 @@
         <span class="empty-icon">🌌</span>
         <p>Aucune observation pour le moment</p>
       </div>
-    </section>
+      </section>
+    </PageContainer>
 
     <!-- CTA Section -->
-    <section class="cta-section">
+    <PageContainer :maxWidth="1100">
+      <section class="cta-section">
       <div class="cta-content">
         <h2 class="cta-title">Prêt à partager votre expérience ?</h2>
         <p class="cta-description">
@@ -154,7 +161,8 @@
           Créer votre première observation
         </test-BaseButton>
       </div>
-    </section>
+      </section>
+    </PageContainer>
   </div>
 </template>
 
@@ -166,6 +174,7 @@ import { OBSERVATION_TYPE_OPTIONS, getObservationLabel } from '../constants/obse
 import TestBaseButton from '../components/test_BaseButton.vue'
 import TestBaseAvatar from '../components/test_BaseAvatar.vue'
 import TestBaseLoading from '../components/test_BaseLoading.vue'
+import PageContainer from '../components/PageContainer.vue'
 
 const router = useRouter()
 
