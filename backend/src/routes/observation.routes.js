@@ -135,6 +135,51 @@ router.get(
 
 /**
  * @swagger
+ * /api/v1/observations/popular-types:
+ *   get:
+ *     summary: Récupère les types d'observations les plus populaires
+ *     tags: [Observations]
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 20
+ *           default: 6
+ *         description: Nombre de types à retourner
+ *     responses:
+ *       200:
+ *         description: Types populaires récupérés avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       type:
+ *                         type: string
+ *                         example: WAV
+ *                       count:
+ *                         type: integer
+ *                         example: 156
+ *       500:
+ *         description: Erreur serveur
+ */
+router.get(
+  '/popular-types',
+  observationController.getPopularTypes
+);
+
+/**
+ * @swagger
  * /api/v1/observations:
  *   get:
  *     summary: Récupère la liste des observations avec filtres

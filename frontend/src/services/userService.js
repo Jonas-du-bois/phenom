@@ -49,14 +49,16 @@ export const userService = {
   },
 
   /**
-   * Met à jour un utilisateur par ID
+   * Met à jour un utilisateur par ID (DEPRECATED - utiliser updateMe)
    * @param {string} userId - ID de l'utilisateur
    * @param {Object} userData - Données à mettre à jour
    * @returns {Promise} Profil mis à jour
+   * @deprecated Utiliser updateMe() à la place
    */
   async update(userId, userData) {
     try {
-      const response = await api.put(`/users/${userId}`, userData);
+      // Rediriger vers /users/me pour éviter les 404
+      const response = await api.put("/users/me", userData);
       return response.data;
     } catch (error) {
       console.error("Erreur lors de la mise à jour de l'utilisateur:", error);
@@ -111,6 +113,20 @@ export const userService = {
       return response.data;
     } catch (error) {
       console.error("Erreur lors de la suppression du compte:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Récupère les statistiques de l'utilisateur connecté
+   * @returns {Promise} Statistiques (observationsCount, commentsCount)
+   */
+  async getUserStats() {
+    try {
+      const response = await api.get("/users/me/stats");
+      return response.data;
+    } catch (error) {
+      console.error("Erreur lors de la récupération des statistiques:", error);
       throw error;
     }
   },

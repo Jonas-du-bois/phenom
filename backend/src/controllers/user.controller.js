@@ -24,6 +24,24 @@ class UserController {
   }
 
   /**
+   * Récupère les statistiques de l'utilisateur connecté
+   * GET /users/me/stats
+   */
+  async getUserStats(req, res, next) {
+    try {
+      const userId = req.user._id;
+      const stats = await userService.getUserStats(userId);
+
+      return successResponse(res, stats);
+    } catch (error) {
+      if (error.message === 'USER_NOT_FOUND') {
+        return notFoundResponse(res, 'Utilisateur non trouvé');
+      }
+      next(error);
+    }
+  }
+
+  /**
    * Met à jour le profil de l'utilisateur connecté
    * PUT /users/me
    */

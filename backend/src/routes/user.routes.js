@@ -46,6 +46,47 @@ router.get(
 
 /**
  * @swagger
+ * /api/v1/users/me/stats:
+ *   get:
+ *     summary: Récupère les statistiques de l'utilisateur connecté
+ *     tags: [Utilisateurs]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Statistiques récupérées avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     observationsCount:
+ *                       type: integer
+ *                       example: 42
+ *                     commentsCount:
+ *                       type: integer
+ *                       example: 127
+ *       401:
+ *         description: Non authentifié
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get(
+  '/me/stats',
+  authenticate,
+  userController.getUserStats
+);
+
+/**
+ * @swagger
  * /api/v1/users/me:
  *   put:
  *     summary: Met à jour le profil de l'utilisateur connecté

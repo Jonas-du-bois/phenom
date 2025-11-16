@@ -366,7 +366,7 @@ const handleSearch = () => {
 
 /* Sidebar (desktop) */
 .app-sidebar {
-  width: 240px;
+  width: 280px;
   padding: 1.5rem 1rem;
   display: flex;
   flex-direction: column;
@@ -384,12 +384,13 @@ const handleSearch = () => {
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
+  gap: 1rem;
+  padding: 0.875rem 1.25rem;
   border-radius: var(--phenom-radius-lg);
   text-decoration: none;
   color: var(--phenom-text-secondary);
   font-weight: 500;
+  font-size: 0.9375rem;
   transition: var(--phenom-transition-base);
   border: 1px solid transparent;
 }

@@ -520,23 +520,41 @@ onUnmounted(() => {
 
 .select-input {
   width: 100%;
-  padding: 0.75rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--phenom-border-medium);
+  border-radius: var(--phenom-radius-lg);
   font-size: 1rem;
-  transition: all 0.2s;
-  background: white;
+  transition: var(--phenom-transition-base);
+  background: var(--phenom-surface-glass-strong);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--phenom-text-primary);
+  font-weight: 500;
   cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+  background-position: right 0.75rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5rem;
+  padding-right: 2.5rem;
+}
+
+.select-input option {
+  background: var(--phenom-bg-primary);
+  color: var(--phenom-text-primary);
+  font-weight: 500;
+  padding: 0.5rem;
 }
 
 .select-input:hover {
-  border-color: #667eea;
+  border-color: var(--phenom-primary);
 }
 
 .select-input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: var(--phenom-primary);
+  box-shadow: 0 0 0 3px rgba(123, 63, 242, 0.15);
+  background: var(--phenom-surface-glass-active);
 }
 
 .select-input.error {
@@ -545,19 +563,30 @@ onUnmounted(() => {
 
 .textarea {
   width: 100%;
-  padding: 0.75rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--phenom-border-medium);
+  border-radius: var(--phenom-radius-lg);
   font-size: 1rem;
   font-family: inherit;
   resize: vertical;
-  transition: all 0.2s;
+  transition: var(--phenom-transition-base);
+  background: var(--phenom-surface-glass-strong);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--phenom-text-primary);
+  font-weight: 500;
+}
+
+.textarea::placeholder {
+  color: var(--phenom-text-placeholder);
+  font-weight: 400;
 }
 
 .textarea:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: var(--phenom-primary);
+  box-shadow: 0 0 0 3px rgba(123, 63, 242, 0.15);
+  background: var(--phenom-surface-glass-active);
 }
 
 .textarea.error {

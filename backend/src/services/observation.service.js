@@ -269,6 +269,37 @@ class ObservationService {
       observationsByMonth
     };
   }
+
+  /**
+   * Récupère les types d'observations les plus populaires
+   * @param {number} limit - Nombre de types à retourner
+   * @returns {Array} Types populaires avec leurs comptages
+   */
+  async getPopularObservationTypes(limit = 6) {
+    const popularTypes = await Observation.aggregate([
+      {
+        $group: {
+          _id: '$type',
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { count: -1 }
+      },
+      {
+        $limit: limit
+      },
+      {
+        $project: {
+          type: '$_id',
+          count: 1,
+          _id: 0
+        }
+      }
+    ]);
+
+    return popularTypes;
+  }
 }
 
 export default new ObservationService();

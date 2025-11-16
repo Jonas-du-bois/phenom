@@ -137,13 +137,6 @@
               </svg>
               <span>{{ observation.comments?.length || 0 }} commentaires</span>
             </div>
-            <div class="stat-item">
-              <svg class="stat-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
-              <span>{{ observation.stats?.views || 0 }} vues</span>
-            </div>
           </div>
         </div>
 
@@ -206,11 +199,13 @@
               :key="comment._id"
               class="comment-item"
             >
-              <test-BaseAvatar
-                :src="comment.userId?.avatar"
-                :name="comment.userId?.name || 'Anonyme'"
-                size="sm"
-              />
+              <div class="comment-avatar-badge">
+                <test-BaseAvatar
+                  :src="comment.userId?.avatar"
+                  :name="comment.userId?.name || 'Anonyme'"
+                  size="sm"
+                />
+              </div>
               <div class="comment-content">
                 <div class="comment-header">
                   <span class="comment-author">{{
@@ -949,9 +944,10 @@ const deleteObservation = async () => {
 }
 
 .comment-item {
+  position: relative;
   display: flex;
   gap: var(--phenom-space-3);
-  padding-bottom: var(--phenom-space-6);
+  padding: var(--phenom-space-6) 0;
   border-bottom: 1px solid var(--phenom-border-medium);
 }
 
@@ -960,13 +956,25 @@ const deleteObservation = async () => {
   padding-bottom: 0;
 }
 
+.comment-avatar-badge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: var(--phenom-bg-primary);
+  padding: 0.25rem;
+  border-radius: 50%;
+  box-shadow: var(--phenom-shadow-md);
+  z-index: 1;
+}
+
 .comment-content {
   flex: 1;
   background: var(--phenom-surface-glass-strong);
   border: 1px solid var(--phenom-border-medium);
-  padding: var(--phenom-space-4);
+  padding: var(--phenom-space-4) var(--phenom-space-4) var(--phenom-space-4) 3rem;
   border-radius: var(--phenom-radius-xl);
   box-shadow: var(--phenom-shadow-sm);
+  margin-left: 1.5rem;
 }
 
 .comment-header {

@@ -87,12 +87,23 @@ export function useAuth() {
   /**
    * Déconnexion
    */
-  const logout = () => {
-    token.value = null;
-    user.value = null;
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    router.push("/auth");
+  const logout = async () => {
+    try {
+      // Appeler le backend pour invalider le token
+      await authService.logout();
+    } catch (error) {
+      console.error("❌ Erreur lors de la déconnexion:", error);
+      // Continuer quand même avec la déconnexion locale
+    } finally {
+      // Nettoyer le state local
+      token.value = null;
+      user.value = null;
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      
+      // Redirection vers la page d'authentification
+      router.push("/auth");
+    }
   };
 
   /**

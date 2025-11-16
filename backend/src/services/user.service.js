@@ -32,6 +32,28 @@ class UserService {
   }
 
   /**
+   * Récupère les statistiques d'un utilisateur
+   * @param {string} userId - ID de l'utilisateur
+   * @returns {Object} Statistiques de l'utilisateur
+   */
+  async getUserStats(userId) {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error('USER_NOT_FOUND');
+    }
+
+    const [observationsCount, commentsCount] = await Promise.all([
+      Observation.countDocuments({ userId }),
+      Comment.countDocuments({ userId })
+    ]);
+
+    return {
+      observationsCount,
+      commentsCount
+    };
+  }
+
+  /**
    * Met à jour le profil de l'utilisateur
    * @param {string} userId - ID de l'utilisateur
    * @param {Object} updateData - Données à mettre à jour

@@ -72,4 +72,14 @@ export const observationService = {
     const response = await apiClient.get("/observations/stats");
     return response.data;
   },
+
+  /**
+   * Récupère les types d'observations les plus populaires
+   */
+  async getPopularTypes(limit = 6) {
+    const response = await apiClient.get("/observations/popular-types", {
+      params: { limit }
+    });
+    return response.data;
+  },
 };

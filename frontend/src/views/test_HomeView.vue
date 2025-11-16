@@ -34,41 +34,13 @@
       </div>
     </section>
 
-    <!-- Stats Section -->
-    <PageContainer :maxWidth="1100" noBackground>
-      <section class="stats-section">
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon">👁️</div>
-          <div class="stat-value">{{ stats.totalObservations || 0 }}</div>
-          <div class="stat-label">Observations</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">👥</div>
-          <div class="stat-value">{{ stats.totalUsers || 0 }}</div>
-          <div class="stat-label">Observateurs</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">💬</div>
-          <div class="stat-value">{{ stats.totalComments || 0 }}</div>
-          <div class="stat-label">Commentaires</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">🌍</div>
-          <div class="stat-value">{{ stats.totalCountries || '∞' }}</div>
-          <div class="stat-label">Pays</div>
-        </div>
-      </div>
-      </section>
-    </PageContainer>
-
     <!-- Categories Section -->
     <PageContainer :maxWidth="1100" noBackground>
       <section class="categories-section">
       <h2 class="section-title">Types d'observations</h2>
       <div class="categories-grid">
         <div 
-          v-for="type in observationTypes" 
+          v-for="type in popularTypes.length > 0 ? popularTypes : observationTypes.slice(0, 6)" 
           :key="type.value"
           class="category-card"
           @click="navigateToFeedWithFilter(type.value)"
@@ -78,6 +50,7 @@
             <h3 class="category-title">{{ type.label }}</h3>
           </div>
           <p class="category-description">{{ type.description }}</p>
+          <div v-if="type.count" class="category-count">{{ type.count }} observations</div>
           <div class="category-arrow">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
@@ -178,15 +151,9 @@ import PageContainer from '../components/PageContainer.vue'
 
 const router = useRouter()
 
-const stats = ref({
-  totalObservations: 0,
-  totalUsers: 0,
-  totalComments: 0,
-  totalCountries: 0
-})
-
 const recentObservations = ref([])
 const loadingRecent = ref(false)
+const popularTypes = ref([])
 const observationTypes = OBSERVATION_TYPE_OPTIONS
 
 const navigateTo = (path) => {
@@ -241,27 +208,11 @@ const formatDate = (date) => {
   })
 }
 
-const loadStats = async () => {
-  try {
-    const response = await observationService.getStats()
-    stats.value = response.data || response
-  } catch (error) {
-    console.error('Erreur chargement stats:', error)
-    // Valeurs par défaut en cas d'erreur
-    stats.value = {
-      totalObservations: 0,
-      totalUsers: 0,
-      totalComments: 0,
-      totalCountries: 0
-    }
-  }
-}
-
 const loadRecentObservations = async () => {
   loadingRecent.value = true
   try {
     const response = await observationService.getAll({
-      limit: 6,
+      limit: 5,
       sort: '-createdAt'
     })
     recentObservations.value = response.data || response || []
@@ -272,9 +223,28 @@ const loadRecentObservations = async () => {
   }
 }
 
+const loadPopularTypes = async () => {
+  try {
+    const response = await observationService.getPopularTypes(6)
+    const types = response.data || []
+    
+    // Filtrer pour n'afficher que les types qui existent dans OBSERVATION_TYPE_OPTIONS
+    popularTypes.value = types
+      .map(item => {
+        const found = observationTypes.find(t => t.value === item.type)
+        return found ? { ...found, count: item.count } : null
+      })
+      .filter(Boolean)
+  } catch (error) {
+    console.error('Erreur chargement types populaires:', error)
+    // Fallback: afficher tous les types
+    popularTypes.value = observationTypes.slice(0, 6)
+  }
+}
+
 onMounted(() => {
-  loadStats()
   loadRecentObservations()
+  loadPopularTypes()
 })
 </script>
 

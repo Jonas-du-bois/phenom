@@ -22,11 +22,11 @@
 
           <div class="profile-stats">
             <div class="stat-item">
-              <span class="stat-value">{{ userObservations.length }}</span>
+              <span class="stat-value">{{ userStats.observationsCount }}</span>
               <span class="stat-label">Observations</span>
             </div>
             <div class="stat-item">
-              <span class="stat-value">{{ totalComments }}</span>
+              <span class="stat-value">{{ userStats.commentsCount }}</span>
               <span class="stat-label">Commentaires</span>
             </div>
             <div class="stat-item">
@@ -68,13 +68,6 @@
           @click="activeTab = 'observations'"
         >
           Observations
-        </button>
-        <button
-          v-if="isOwnProfile"
-          :class="['tab-btn', { active: activeTab === 'favorites' }]"
-          @click="activeTab = 'favorites'"
-        >
-          Favoris
         </button>
       </div>
 
@@ -118,15 +111,6 @@
             </template>
           </test-BaseCard>
         </div>
-
-        <!-- Favorites Tab (for own profile) -->
-        <div v-show="activeTab === 'favorites'" class="favorites-content">
-          <div class="empty-state">
-            <span class="empty-icon">⭐</span>
-            <h3>Fonctionnalité à venir</h3>
-            <p>Les favoris seront disponibles prochainement</p>
-          </div>
-        </div>
       </div>
   </PageContainer>
 
@@ -137,6 +121,35 @@
       size="md"
     >
       <div class="settings-content">
+        <div class="setting-section">
+          <h3 class="section-title">Photo de profil</h3>
+          
+          <div class="avatar-upload-section">
+            <test-BaseAvatar
+              :src="profileUser.avatar"
+              :name="profileUser.name || 'U'"
+              size="xl"
+            />
+            <div class="avatar-actions">
+              <input
+                ref="avatarInput"
+                type="file"
+                accept="image/*"
+                hidden
+                @change="handleAvatarChange"
+              />
+              <test-BaseButton
+                variant="outline"
+                size="sm"
+                @click="$refs.avatarInput.click()"
+                :loading="uploadingAvatar"
+              >
+                Changer la photo
+              </test-BaseButton>
+            </div>
+          </div>
+        </div>
+
         <div class="setting-section">
           <h3 class="section-title">Informations personnelles</h3>
 
@@ -260,6 +273,8 @@ const showSettings = ref(false);
 const showChangePassword = ref(false);
 const savingSettings = ref(false);
 const changingPassword = ref(false);
+const uploadingAvatar = ref(false);
+const avatarInput = ref(null);
 
 const settingsForm = ref({
   name: "",
@@ -278,10 +293,10 @@ const isOwnProfile = computed(() => {
   return !route.params.userId || route.params.userId === currentUser.value?._id;
 });
 
-const totalComments = computed(() => {
-  return userObservations.value.reduce((total, obs) => {
-    return total + (obs.comments?.length || 0);
-  }, 0);
+// Statistiques de l'utilisateur
+const userStats = ref({
+  observationsCount: 0,
+  commentsCount: 0
 });
 
 const memberSince = computed(() => {
@@ -303,6 +318,10 @@ const loadProfile = async () => {
       profileUser.value = currentUser.value;
       settingsForm.value.name = currentUser.value.name;
       settingsForm.value.email = currentUser.value.email;
+
+      // Charger les statistiques de l'utilisateur connecté
+      const statsResponse = await userService.getUserStats();
+      userStats.value = statsResponse.data;
     } else {
       const userResponse = await userService.getById(route.params.userId);
       profileUser.value = userResponse.data;
@@ -314,6 +333,13 @@ const loadProfile = async () => {
       limit: 100,
     });
     userObservations.value = obsResponse.data || [];
+
+    // Pour les autres utilisateurs, compter manuellement
+    if (!isOwnProfile.value) {
+      userStats.value.observationsCount = userObservations.value.length;
+      // Pour les commentaires, on n'a pas l'info pour les autres utilisateurs
+      userStats.value.commentsCount = 0;
+    }
   } catch (error) {
     console.error("Erreur chargement profil:", error);
   } finally {
@@ -350,7 +376,7 @@ const saveSettings = async () => {
   savingSettings.value = true;
 
   try {
-    await userService.update(currentUser.value._id, {
+    await userService.updateMe({
       name: settingsForm.value.name,
     });
 
@@ -407,6 +433,49 @@ const handleLogout = async () => {
   if (confirm("Voulez-vous vraiment vous déconnecter ?")) {
     await logout();
     router.push("/auth");
+  }
+};
+
+const handleAvatarChange = async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // Vérifier le type de fichier
+  if (!file.type.startsWith('image/')) {
+    alert('Veuillez sélectionner une image');
+    return;
+  }
+
+  // Vérifier la taille (max 5MB)
+  if (file.size > 5 * 1024 * 1024) {
+    alert('L\'image est trop volumineuse (max 5MB)');
+    return;
+  }
+
+  uploadingAvatar.value = true;
+
+  try {
+    const response = await userService.updateAvatar(file);
+    
+    // Mettre à jour l'avatar localement
+    if (response.data?.avatar) {
+      currentUser.value.avatar = response.data.avatar;
+      profileUser.value.avatar = response.data.avatar;
+      
+      // Mettre à jour dans localStorage
+      const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+      storedUser.avatar = response.data.avatar;
+      localStorage.setItem('user', JSON.stringify(storedUser));
+    }
+  } catch (error) {
+    console.error('Erreur upload avatar:', error);
+    alert('Erreur lors du changement de photo');
+  } finally {
+    uploadingAvatar.value = false;
+    // Reset input
+    if (avatarInput.value) {
+      avatarInput.value.value = '';
+    }
   }
 };
 </script>
@@ -472,12 +541,12 @@ const handleLogout = async () => {
 .profile-name {
   font-size: 1.875rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--phenom-text-primary);
   margin: 0 0 0.25rem;
 }
 
 .profile-email {
-  color: #6b7280;
+  color: var(--phenom-text-secondary);
   font-size: 0.9375rem;
   margin: 0 0 1.5rem;
 }
@@ -635,6 +704,21 @@ const handleLogout = async () => {
   gap: 2rem;
 }
 
+.avatar-upload-section {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem;
+  background: var(--phenom-bg-secondary);
+  border-radius: var(--phenom-radius-lg);
+}
+
+.avatar-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
 .setting-section {
   display: flex;
   flex-direction: column;
@@ -649,7 +733,7 @@ const handleLogout = async () => {
 .section-title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--phenom-text-primary);
   margin: 0;
 }
 

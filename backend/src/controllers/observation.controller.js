@@ -139,6 +139,21 @@ class ObservationController {
       next(error);
     }
   }
+
+  /**
+   * Récupère les types d'observations les plus populaires
+   * GET /observations/popular-types
+   */
+  async getPopularTypes(req, res, next) {
+    try {
+      const limit = parseInt(req.query.limit) || 6;
+      const popularTypes = await observationService.getPopularObservationTypes(limit);
+
+      return successResponse(res, popularTypes);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default new ObservationController();
