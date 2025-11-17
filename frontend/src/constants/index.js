@@ -7,5 +7,6 @@ export {
   OBSERVATION_TYPE_OPTIONS,
   getObservationLabel,
   getObservationDescription,
+  getObservationColor,
   isValidObservationType,
 } from "./observationTypes";

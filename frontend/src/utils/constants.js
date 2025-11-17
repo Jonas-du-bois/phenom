@@ -2,17 +2,6 @@
  * Constantes de l'application
  */
 
-// Types d'observations
-export const OBSERVATION_TYPES = [
-  "Formation",
-  "Disc",
-  "Sphere",
-  "Triangle",
-  "Cigar",
-  "Light",
-  "Unknown",
-];
-
 // Statuts admin
 export const ADMIN_STATUS = {
   PENDING: "pending",
@@ -26,18 +15,7 @@ export const USER_ROLES = {
   ADMIN: "admin",
 };
 
-// Couleurs des badges selon type
-export const TYPE_COLORS = {
-  Formation: "#7B3FF2",
-  Disc: "#3B82F6",
-  Sphere: "#8B5CF6",
-  Triangle: "#EC4899",
-  Cigar: "#F59E0B",
-  Light: "#10B981",
-  Unknown: "#6B7280",
-};
-
-// Limites
+// Limites de validation
 export const LIMITS = {
   TITLE_MIN_LENGTH: 5,
   TITLE_MAX_LENGTH: 100,
