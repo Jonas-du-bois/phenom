@@ -12,21 +12,21 @@ const router = createRouter({
     {
       path: "/auth",
       name: "auth",
-      component: () => import("../views/test_AuthPage.vue"),
+      component: () => import("../views/AuthPage.vue"),
       meta: { requiresAuth: false },
     },
 
     // Main app routes (protected)
     {
       path: "/",
-      component: () => import("../components/test_AppLayout.vue"),
+      component: () => import("../views/OldHomeView.vue"),
       meta: { requiresAuth: true },
       children: [
         {
           path: "",
           redirect: "/home",
         },
-        {
+        /* {
           path: "home",
           name: "home",
           component: () => import("../views/test_HomeView.vue"),
@@ -55,7 +55,7 @@ const router = createRouter({
           path: "profile/:userId?",
           name: "profile",
           component: () => import("../views/test_UserProfileView.vue"),
-        },
+        }, */
       ],
     },
 
@@ -63,7 +63,7 @@ const router = createRouter({
     {
       path: "/old-home",
       name: "old-home",
-      component: () => import("../views/HomeView.vue"),
+      component: () => import("../views/OldHomeView.vue"),
     },
     {
       path: "/test",
