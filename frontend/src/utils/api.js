@@ -7,7 +7,7 @@ import axios from "axios";
 // VITE_API_BASE_URL = https://phenom-backend.onrender.com
 // VITE_API_PREFIX = /api/v1
 // Résultat = https://phenom-backend.onrender.com/api/v1
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL; //|| 'http://localhost:3000'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL; //|| 'https://phenom-backend.onrender.com'
 const API_PREFIX = import.meta.env.VITE_API_PREFIX; //|| '/api/v1'
 const API_URL = `${API_BASE_URL}${API_PREFIX}`;
 

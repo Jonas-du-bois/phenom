@@ -17,7 +17,7 @@ export const createWebSocketServer = (server) => {
   console.log(`🔐 CORS Origins configuré: ${corsOrigin}`);
 
   wss = new WSServerPubSub({
-    origins: corsOrigin,
+    origins: corsOrigin.split(';').map(origin => origin.trim()),
     maxNbOfClients: 1000,
     maxInputSize: 100000,
     pingTimeout: 30000,
