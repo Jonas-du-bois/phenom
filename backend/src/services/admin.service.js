@@ -150,6 +150,15 @@ class AdminService {
       throw new Error('OBSERVATION_NOT_FOUND');
     }
 
+    // Supprimer toutes les images associées sur Cloudinary
+    try {
+      const imageService = (await import('./image.service.js')).default;
+      const deletedImages = await imageService.deleteAllImagesForObservation(observationId);
+      console.log(`✅ [Admin] ${deletedImages} image(s) supprimée(s) de Cloudinary`);
+    } catch (error) {
+      console.error(`❌ [Admin] Erreur lors de la suppression des images: ${error.message}`);
+    }
+
     // Supprimer tous les commentaires associés
     await Comment.deleteMany({ observationId });
 

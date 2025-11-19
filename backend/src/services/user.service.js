@@ -134,6 +134,26 @@ class UserService {
       throw new Error('USER_NOT_FOUND');
     }
 
+    // Récupérer toutes les observations de l'utilisateur
+    const observations = await Observation.find({ userId }).select('_id');
+
+    // Supprimer les images Cloudinary pour chaque observation
+    if (observations.length > 0) {
+      try {
+        const imageService = (await import('./image.service.js')).default;
+        let totalDeletedImages = 0;
+
+        for (const observation of observations) {
+          const deletedImages = await imageService.deleteAllImagesForObservation(observation._id.toString());
+          totalDeletedImages += deletedImages;
+        }
+
+        console.log(`✅ [DeleteAccount] ${totalDeletedImages} image(s) supprimée(s) de Cloudinary pour ${observations.length} observation(s)`);
+      } catch (error) {
+        console.error(`❌ [DeleteAccount] Erreur lors de la suppression des images: ${error.message}`);
+      }
+    }
+
     // Supprimer toutes les observations de l'utilisateur
     await Observation.deleteMany({ userId });
 

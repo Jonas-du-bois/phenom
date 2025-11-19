@@ -156,28 +156,46 @@ class ObservationService {
    * @returns {Object} Observation supprimée
    */
   async deleteObservation(observationId) {
-    const observation = await Observation.findByIdAndDelete(observationId);
-
-    if (!observation) {
+    // Vérifier que l'observation existe
+    const observationCheck = await Observation.findById(observationId);
+    if (!observationCheck) {
       throw new Error('OBSERVATION_NOT_FOUND');
     }
 
-    // Supprimer toutes les images associées sur Cloudinary
+    // Utiliser une transaction pour garantir l'atomicité
+    const session = await Observation.startSession();
+    let observation;
+
+    try {
+      await session.startTransaction();
+
+      // Supprimer l'observation dans la transaction
+      observation = await Observation.findByIdAndDelete(observationId, { session });
+
+      // Supprimer tous les commentaires associés dans la transaction
+      const Comment = (await import('../models/Comment.js')).default;
+      const deleteResult = await Comment.deleteMany({ observationId }, { session });
+      console.log(`✅ ${deleteResult.deletedCount} commentaire(s) supprimé(s)`);
+
+      // Valider la transaction
+      await session.commitTransaction();
+    } catch (error) {
+      // Annuler la transaction en cas d'erreur
+      await session.abortTransaction();
+      console.error(`❌ Erreur lors de la suppression (transaction annulée): ${error.message}`);
+      throw error;
+    } finally {
+      session.endSession();
+    }
+
+    // Supprimer les images Cloudinary après la transaction (externe à MongoDB)
     try {
       const imageService = (await import('./image.service.js')).default;
       const deletedImages = await imageService.deleteAllImagesForObservation(observationId);
       console.log(`✅ ${deletedImages} image(s) supprimée(s) de Cloudinary`);
     } catch (error) {
-      console.error(`❌ Erreur lors de la suppression des images: ${error.message}`);
-    }
-
-    // Supprimer tous les commentaires associés
-    try {
-      const Comment = (await import('../models/Comment.js')).default;
-      const deleteResult = await Comment.deleteMany({ observationId });
-      console.log(`✅ ${deleteResult.deletedCount} commentaire(s) supprimé(s)`);
-    } catch (error) {
-      console.error(`❌ Erreur lors de la suppression des commentaires: ${error.message}`);
+      console.error(`❌ Erreur lors de la suppression des images Cloudinary: ${error.message}`);
+      console.warn(`⚠️ L'observation a été supprimée mais ${observationCheck.images?.length || 0} image(s) pourrai(en)t être orpheline(s) sur Cloudinary`);
     }
 
     // Publier l'événement via WebSocket
