@@ -16,6 +16,7 @@ const apiClient = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true, // Envoyer les cookies HttpOnly avec chaque requête
 });
 
 // Intercepteur pour ajouter le token
@@ -51,47 +52,101 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
-// Intercepteur pour gérer les erreurs
+// Variable pour éviter les appels multiples de refresh
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
+// Intercepteur pour gérer les erreurs et le refresh token automatique
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
-    // Gestion des erreurs globales
+  async (error) => {
+    const originalRequest = error.config;
+
+    // Si erreur 401 et pas déjà une tentative de refresh
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      // Ne pas refresh pour les routes d'auth
+      if (originalRequest.url?.includes('/auth/login') || 
+          originalRequest.url?.includes('/auth/signup') ||
+          originalRequest.url?.includes('/auth/refresh-token')) {
+        return Promise.reject(error);
+      }
+
+      if (isRefreshing) {
+        // Mettre la requête en file d'attente
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then(token => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return apiClient(originalRequest);
+        }).catch(err => Promise.reject(err));
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        // Appeler refresh-token (le cookie HttpOnly est envoyé automatiquement)
+        const response = await apiClient.post('/auth/refresh-token');
+        const { accessToken } = response.data.data;
+
+        // Mettre à jour le token stocké
+        localStorage.setItem('token', accessToken);
+        
+        // Mettre à jour le header pour la requête originale
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+        
+        processQueue(null, accessToken);
+        
+        return apiClient(originalRequest);
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+        
+        // Refresh échoué - déconnecter l'utilisateur
+        console.error('🔒 Session expirée - refresh échoué');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        if (window.location.pathname !== '/auth') {
+          window.location.href = '/auth';
+        }
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
+    // Gestion des autres erreurs
     if (error.response) {
-      // Erreur de réponse du serveur
       const status = error.response.status;
       const message = error.response.data?.message || error.message;
 
       switch (status) {
-        case 401:
-          // Non autorisé - token invalide ou expiré
-          if (!error.config.url?.includes("/auth/login")) {
-            console.error("🔒 Session expirée - redirection nécessaire");
-            localStorage.removeItem("token");
-            localStorage.removeItem("user");
-            // Rediriger vers login si nécessaire
-            if (window.location.pathname !== "/auth") {
-              window.location.href = "/auth";
-            }
-          }
-          break;
         case 403:
-          console.error("🚫 Accès refusé:", message);
+          console.error('🚫 Accès refusé:', message);
           break;
         case 404:
-          console.error("❌ Ressource non trouvée:", error.config.url);
+          console.error('❌ Ressource non trouvée:', error.config.url);
           break;
         case 500:
-          console.error("💥 Erreur serveur:", message);
+          console.error('💥 Erreur serveur:', message);
           break;
         default:
           console.error(`⚠️ Erreur ${status}:`, message);
       }
     } else if (error.request) {
-      // Erreur réseau - pas de réponse reçue
-      console.error("🌐 Erreur réseau - serveur injoignable");
+      console.error('🌐 Erreur réseau - serveur injoignable');
     } else {
-      // Autre erreur
-      console.error("❌ Erreur:", error.message);
+      console.error('❌ Erreur:', error.message);
     }
 
     return Promise.reject(error);

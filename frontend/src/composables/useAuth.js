@@ -31,8 +31,8 @@ export function useAuth() {
       console.log("🔍 Response complète:", response);
       console.log("🔍 response.data:", response.data);
 
-      // authService retourne response.data du backend: { success: true, data: { user, accessToken, refreshToken } }
-      // Donc response.data contient { user, accessToken, refreshToken }
+      // authService retourne response.data du backend: { success: true, data: { user, accessToken } }
+      // Note: le refreshToken est maintenant stocké dans un cookie HttpOnly (non accessible en JS)
       const { user: userData, accessToken } = response.data;
 
       console.log("🔍 userData:", userData);
@@ -64,8 +64,8 @@ export function useAuth() {
 
       const response = await authService.register({ name, email, password });
 
-      // authService retourne déjà response.data qui contient: { success: true, data: { user, accessToken, refreshToken } }
-      // Donc on accède directement à response.data (pas response.data.data)
+      // authService retourne response.data: { success: true, data: { user, accessToken } }
+      // Note: le refreshToken est maintenant stocké dans un cookie HttpOnly (non accessible en JS)
       const { user: userData, accessToken } = response.data;
 
       token.value = accessToken;

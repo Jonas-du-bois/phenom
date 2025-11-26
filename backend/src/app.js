@@ -18,6 +18,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
+import mongoSanitize from 'express-mongo-sanitize';
+import cookieParser from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './config/swagger.js';
 import { connectDB } from './config/database.js';
@@ -80,6 +82,12 @@ app.use(compression());
 // Body parser
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Cookie parser pour les refresh tokens HttpOnly
+app.use(cookieParser());
+
+// Protection contre les injections NoSQL MongoDB
+app.use(mongoSanitize());
 
 // Rate limiting global
 app.use(generalLimiter);
