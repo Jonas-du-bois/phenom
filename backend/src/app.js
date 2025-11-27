@@ -50,7 +50,7 @@ import { generalLimiter } from './middleware/rateLimiter.js';
 import {
   createWebSocketServer
 } from './config/websocket.js';
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync } from 'fs';
 import { join } from 'path';
 import yaml from 'js-yaml';
 
