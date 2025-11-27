@@ -1,8 +1,9 @@
 /**
  * Configuration et wrapper pour les appels API
- * Updated: 2025-11-27 - Fix token key consistency
+ * Updated: 2025-11-27 - Fix token parsing from localStorage
  */
 import axios from "axios";
+import { getAuthToken, saveAuthToken, removeAuthToken, removeUserData } from "./storage.js";
 
 // Construire l'URL complète de l'API
 // VITE_API_BASE_URL = https://phenom-backend.onrender.com
@@ -20,12 +21,10 @@ const apiClient = axios.create({
   withCredentials: true, // Envoyer les cookies HttpOnly avec chaque requête
 });
 
-// Clé de stockage du token (doit correspondre à storage.js)
-const TOKEN_KEY = "phenom_auth_token";
-
 // Intercepteur pour ajouter le token
 apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem(TOKEN_KEY);
+  // Utiliser getAuthToken() qui fait JSON.parse correctement
+  const token = getAuthToken();
 
   console.log("🔧 Interceptor request:", {
     url: config.url,
@@ -104,8 +103,8 @@ apiClient.interceptors.response.use(
         const response = await apiClient.post('/auth/refresh-token');
         const { accessToken } = response.data.data;
 
-        // Mettre à jour le token stocké (utiliser la même clé que storage.js)
-        localStorage.setItem(TOKEN_KEY, accessToken);
+        // Mettre à jour le token stocké avec la fonction de storage.js
+        saveAuthToken(accessToken);
         
         // Mettre à jour le header pour la requête originale
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
@@ -118,8 +117,8 @@ apiClient.interceptors.response.use(
         
         // Refresh échoué - déconnecter l'utilisateur
         console.error('🔒 Session expirée - refresh échoué');
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem('phenom_user_data');
+        removeAuthToken();
+        removeUserData();
         
         // Ne pas rediriger si on est sur /old-home (page de test)
         if (window.location.pathname !== '/auth' && window.location.pathname !== '/old-home') {
