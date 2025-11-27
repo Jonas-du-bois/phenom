@@ -1,9 +1,15 @@
 import mongoose from 'mongoose';
 
 /**
- * Configure et connecte à MongoDB (local ou Atlas)
- * Charge automatiquement les variables depuis phenom/.env
- * Images stockées sur Cloudinary (plus besoin de GridFS)
+ * @file database.js
+ * @description MongoDB connection configuration using Mongoose.
+ * Supports local MongoDB and MongoDB Atlas.
+ * Images are handled via Cloudinary, so GridFS is not needed.
+ */
+
+/**
+ * Connects to MongoDB (local or Atlas).
+ * Automatically loads variables from .env.
  * @returns {Promise<void>}
  */
 const connectDB = async () => {
@@ -13,13 +19,13 @@ const connectDB = async () => {
       : process.env.MONGODB_URI;
 
     if (!uri) {
-      throw new Error('MONGODB_URI non défini dans .env');
+      throw new Error('MONGODB_URI is not defined in .env');
     }
 
-    // Détection si Atlas ou local
+    // Detect if connecting to Atlas or local
     const isAtlas = uri.includes('mongodb+srv://');
 
-    // Désactiver autoIndex en production (performances + sécurité)
+    // Disable autoIndex in production for performance and security
     mongoose.set('autoIndex', process.env.NODE_ENV !== 'production');
 
     const options = {
@@ -27,50 +33,50 @@ const connectDB = async () => {
       minPoolSize: 5,
       socketTimeoutMS: 45000,
       serverSelectionTimeoutMS: 10000,
-      // Ne pas forcer IPv4 pour Atlas (supporte IPv6)
+      // Do not force IPv4 for Atlas (supports IPv6)
       ...(isAtlas ? {} : { family: 4 })
     };
 
     await mongoose.connect(uri, options);
 
     const connectionType = isAtlas ? 'MongoDB Atlas (Cloud)' : `MongoDB Local (${mongoose.connection.host})`;
-    console.log(`✅ ${connectionType} connecté avec succès`);
+    console.log(`✅ ${connectionType} connected successfully`);
     console.log(`   Database: ${mongoose.connection.name}`);
-    console.log(`   AutoIndex: ${mongoose.get('autoIndex') ? 'activé (dev)' : 'désactivé (prod)'}`);
+    console.log(`   AutoIndex: ${mongoose.get('autoIndex') ? 'enabled (dev)' : 'disabled (prod)'}`);
     console.log('   Images: Cloudinary (CDN)');
 
-    // Gestion des événements de connexion
+    // Connection event handling
     mongoose.connection.on('error', (err) => {
-      console.error('❌ Erreur MongoDB:', err);
+      console.error('❌ MongoDB Error:', err);
     });
 
     mongoose.connection.on('disconnected', () => {
-      console.warn('⚠️  MongoDB déconnecté');
+      console.warn('⚠️  MongoDB disconnected');
     });
 
-    // Gestion de la fermeture propre
+    // Graceful shutdown
     process.on('SIGINT', async () => {
       await mongoose.connection.close();
-      console.log('🔌 Connexion MongoDB fermée (SIGINT)');
+      console.log('🔌 MongoDB connection closed (SIGINT)');
       process.exit(0);
     });
 
   } catch (error) {
-    console.error('❌ Erreur de connexion MongoDB:', error.message);
+    console.error('❌ MongoDB Connection Error:', error.message);
     process.exit(1);
   }
 };
 
 /**
- * Ferme la connexion à MongoDB
+ * Closes the MongoDB connection.
  * @returns {Promise<void>}
  */
 const disconnectDB = async () => {
   try {
     await mongoose.connection.close();
-    console.log('🔌 Connexion MongoDB fermée');
+    console.log('🔌 MongoDB connection closed');
   } catch (error) {
-    console.error('❌ Erreur lors de la fermeture:', error.message);
+    console.error('❌ Error closing connection:', error.message);
     throw error;
   }
 };

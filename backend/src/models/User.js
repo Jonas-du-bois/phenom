@@ -1,6 +1,12 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
+/**
+ * @file User.js
+ * @description Mongoose model for User entity.
+ * Handles user schema definition, password hashing middleware, and helper methods.
+ */
+
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -21,7 +27,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Le mot de passe est requis'],
     minlength: [6, 'Le mot de passe doit contenir au moins 6 caractères'],
-    select: false // Ne pas retourner le password par défaut
+    select: false // Password is excluded from query results by default for security
   },
   role: {
     type: String,
@@ -46,10 +52,12 @@ const userSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Index pour optimiser les recherches (email déjà unique dans le schéma)
+// Create index for optimizing sort by creation date
 userSchema.index({ createdAt: -1 });
 
-// Hash le mot de passe avant de sauvegarder
+/**
+ * Pre-save middleware to hash the password if modified.
+ */
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
     return next();
@@ -64,12 +72,19 @@ userSchema.pre('save', async function (next) {
   }
 });
 
-// Méthode pour comparer les mots de passe
+/**
+ * Compares a candidate password with the user's hashed password.
+ * @param {string} candidatePassword - The password to check.
+ * @returns {Promise<boolean>} - True if match, false otherwise.
+ */
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Méthode pour retourner l'objet user sans le password
+/**
+ * Returns a plain object representation of the user without sensitive data (password).
+ * @returns {Object} - The user object without password.
+ */
 userSchema.methods.toSafeObject = function () {
   const obj = this.toObject();
   delete obj.password;

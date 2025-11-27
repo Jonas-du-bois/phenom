@@ -1,5 +1,11 @@
 import mongoose from 'mongoose';
 
+/**
+ * @file Observation.js
+ * @description Mongoose model for Observation entity.
+ * Stores data about UFO/Phenomenon observations, including geolocation, images, and description.
+ */
+
 const observationSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -19,17 +25,17 @@ const observationSchema = new mongoose.Schema({
     publicId: {
       type: String,
       required: true,
-      comment: 'Cloudinary public_id'
+      comment: 'Cloudinary public_id or unique identifier'
     },
     url: {
       type: String,
       required: true,
-      comment: 'URL Cloudinary complète (HTTPS)'
+      comment: 'Full URL (HTTPS)'
     },
     size: {
       type: Number,
       required: true,
-      comment: 'Taille en octets'
+      comment: 'Size in bytes'
     },
     format: {
       type: String,
@@ -38,11 +44,11 @@ const observationSchema = new mongoose.Schema({
     },
     width: {
       type: Number,
-      comment: 'Largeur en pixels'
+      comment: 'Width in pixels'
     },
     height: {
       type: Number,
-      comment: 'Hauteur en pixels'
+      comment: 'Height in pixels'
     },
     uploadedAt: {
       type: Date,
@@ -103,14 +109,14 @@ const observationSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
-// Index géospatial pour les recherches par proximité
+// Geospatial index for proximity searches
 observationSchema.index({ location: '2dsphere' });
 observationSchema.index({ userId: 1, createdAt: -1 });
 observationSchema.index({ createdAt: -1 });
 observationSchema.index({ type: 1 });
 observationSchema.index({ tags: 1 });
 
-// Index de recherche textuelle
+// Text search index
 observationSchema.index({
   title: 'text',
   description: 'text',
@@ -123,7 +129,7 @@ observationSchema.index({
   }
 });
 
-// Virtual pour le nombre de commentaires
+// Virtual property for the number of comments
 observationSchema.virtual('commentsCount', {
   ref: 'Comment',
   localField: '_id',
@@ -131,7 +137,7 @@ observationSchema.virtual('commentsCount', {
   count: true
 });
 
-// Virtual pour la liste des commentaires
+// Virtual property for the list of comments
 observationSchema.virtual('comments', {
   ref: 'Comment',
   localField: '_id',

@@ -1,7 +1,12 @@
 /**
- * @desc Classe de base pour les erreurs personnalisées
+ * @file errors.js
+ * @description Custom error classes for handling HTTP errors appropriately.
  */
-class CustomError extends Error {
+
+/**
+ * Base class for custom errors.
+ */
+export class CustomError extends Error {
   constructor(message, statusCode) {
     super(message);
     this.statusCode = statusCode;
@@ -11,37 +16,37 @@ class CustomError extends Error {
 }
 
 /**
- * @desc Erreur pour les ressources non trouvées (404)
+ * Error for not found resources (404).
  */
 export class NotFoundError extends CustomError {
-  constructor(message = 'Ressource non trouvée') {
+  constructor(message = 'Resource not found') {
     super(message, 404);
   }
 }
 
 /**
- * @desc Erreur pour les requêtes invalides (400)
+ * Error for bad requests (400).
  */
 export class BadRequestError extends CustomError {
-  constructor(message = 'Requête invalide') {
+  constructor(message = 'Bad request') {
     super(message, 400);
   }
 }
 
 /**
- * @desc Erreur pour les problèmes d'authentification (401)
+ * Error for authentication failures (401).
  */
 export class UnauthorizedError extends CustomError {
-  constructor(message = 'Non authentifié') {
+  constructor(message = 'Not authenticated') {
     super(message, 401);
   }
 }
 
 /**
- * @desc Erreur pour les problèmes d'autorisation (403)
+ * Error for authorization failures (403).
  */
 export class ForbiddenError extends CustomError {
-  constructor(message = 'Accès interdit') {
+  constructor(message = 'Access forbidden') {
     super(message, 403);
   }
 }

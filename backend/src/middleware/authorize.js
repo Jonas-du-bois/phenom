@@ -1,21 +1,27 @@
 /**
- * Middleware d'autorisation par rôle
- * Vérifie que l'utilisateur authentifié a les permissions nécessaires
- * @param {...string} roles - Rôles autorisés
+ * @file authorize.js
+ * @description Role-based and ownership-based authorization middleware.
+ */
+
+/**
+ * Middleware for role-based authorization.
+ * Verifies that the authenticated user has one of the allowed roles.
+ * @param {...string} roles - Allowed roles (e.g., 'admin', 'user').
+ * @returns {Function} Express middleware function.
  */
 export const authorize = (...roles) => {
   return (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({
         success: false,
-        error: 'Authentification requise'
+        error: 'Authentication required'
       });
     }
 
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,
-        error: 'Accès interdit: permissions insuffisantes'
+        error: 'Access forbidden: Insufficient permissions'
       });
     }
 
@@ -24,8 +30,9 @@ export const authorize = (...roles) => {
 };
 
 /**
- * Middleware pour vérifier que l'utilisateur est propriétaire de la ressource
- * @param {Function} getResourceOwnerId - Fonction qui retourne l'ID du propriétaire
+ * Middleware to check if the user is the owner of the resource or an admin.
+ * @param {Function} getResourceOwnerId - Function that returns a Promise resolving to the owner's ID from the request.
+ * @returns {Function} Express middleware function.
  */
 export const isOwnerOrAdmin = (getResourceOwnerId) => {
   return async (req, res, next) => {
@@ -33,30 +40,30 @@ export const isOwnerOrAdmin = (getResourceOwnerId) => {
       if (!req.user) {
         return res.status(401).json({
           success: false,
-          error: 'Authentification requise'
+          error: 'Authentication required'
         });
       }
 
-      // Les admins ont accès à tout
+      // Admins have access to everything
       if (req.user.role === 'admin') {
         return next();
       }
 
-      // Récupérer l'ID du propriétaire de la ressource
+      // Get resource owner ID
       const ownerId = await getResourceOwnerId(req);
 
       if (!ownerId) {
         return res.status(404).json({
           success: false,
-          error: 'Ressource non trouvée'
+          error: 'Resource not found'
         });
       }
 
-      // Vérifier si l'utilisateur est le propriétaire
+      // Check if user is the owner
       if (ownerId.toString() !== req.user._id.toString()) {
         return res.status(403).json({
           success: false,
-          error: 'Accès interdit: vous n\'êtes pas le propriétaire de cette ressource'
+          error: 'Access forbidden: You are not the owner of this resource'
         });
       }
 
@@ -64,7 +71,7 @@ export const isOwnerOrAdmin = (getResourceOwnerId) => {
     } catch (error) {
       return res.status(500).json({
         success: false,
-        error: 'Erreur lors de la vérification des permissions'
+        error: 'Error checking permissions'
       });
     }
   };
