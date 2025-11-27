@@ -1,3 +1,4 @@
+import { NotFoundError } from '../utils/errors.js';
 import Observation from '../models/Observation.js';
 import { getPaginationParams, createPaginationMeta } from '../utils/pagination.js';
 import { publishObservationEvent } from '../config/websocket.js';
@@ -101,7 +102,7 @@ class ObservationService {
       });
 
     if (!observation) {
-      throw new Error('OBSERVATION_NOT_FOUND');
+      throw new NotFoundError('Observation non trouvée');
     }
 
     return observation;
@@ -141,7 +142,7 @@ class ObservationService {
     ).populate('userId', 'name email');
 
     if (!observation) {
-      throw new Error('OBSERVATION_NOT_FOUND');
+      throw new NotFoundError('Observation non trouvée');
     }
 
     // Publier l'événement via WebSocket
@@ -156,12 +157,6 @@ class ObservationService {
    * @returns {Object} Observation supprimée
    */
   async deleteObservation(observationId) {
-    // Vérifier que l'observation existe
-    const observationCheck = await Observation.findById(observationId);
-    if (!observationCheck) {
-      throw new Error('OBSERVATION_NOT_FOUND');
-    }
-
     // Utiliser une transaction pour garantir l'atomicité
     const session = await Observation.startSession();
     let observation;
@@ -172,6 +167,12 @@ class ObservationService {
       // Supprimer l'observation dans la transaction
       observation = await Observation.findByIdAndDelete(observationId, { session });
 
+      if (!observation) {
+        // Annuler la transaction si l'observation n'existe pas
+        await session.abortTransaction();
+        throw new NotFoundError('Observation non trouvée');
+      }
+
       // Supprimer tous les commentaires associés dans la transaction
       const Comment = (await import('../models/Comment.js')).default;
       const deleteResult = await Comment.deleteMany({ observationId }, { session });
@@ -180,10 +181,12 @@ class ObservationService {
       // Valider la transaction
       await session.commitTransaction();
     } catch (error) {
-      // Annuler la transaction en cas d'erreur
-      await session.abortTransaction();
+      // Annuler la transaction en cas d'erreur (sauf si c'est notre NotFoundError)
+      if (session.inTransaction()) {
+        await session.abortTransaction();
+      }
       console.error(`❌ Erreur lors de la suppression (transaction annulée): ${error.message}`);
-      throw error;
+      throw error; // Renvoyer l'erreur originale (ou notre NotFoundError)
     } finally {
       session.endSession();
     }
@@ -195,7 +198,7 @@ class ObservationService {
       console.log(`✅ ${deletedImages} image(s) supprimée(s) de Cloudinary`);
     } catch (error) {
       console.error(`❌ Erreur lors de la suppression des images Cloudinary: ${error.message}`);
-      console.warn(`⚠️ L'observation a été supprimée mais ${observationCheck.images?.length || 0} image(s) pourrai(en)t être orpheline(s) sur Cloudinary`);
+      console.warn(`⚠️ L'observation a été supprimée mais ${observation.images?.length || 0} image(s) pourrai(en)t être orpheline(s) sur Cloudinary`);
     }
 
     // Publier l'événement via WebSocket
@@ -211,7 +214,10 @@ class ObservationService {
    */
   async getObservationOwnerId(observationId) {
     const observation = await Observation.findById(observationId).select('userId');
-    return observation?.userId;
+    if (!observation) {
+      throw new NotFoundError('Observation non trouvée pour vérification de propriété');
+    }
+    return observation.userId;
   }
 
   /**

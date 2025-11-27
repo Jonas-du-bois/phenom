@@ -70,12 +70,33 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' }
 }));
 
-app.use(cors({
-  origin: process.env.CORS_ORIGIN?.split(',') || '*',
+// Configuration CORS sécurisée
+// En production, CORS_ORIGIN ne doit pas être vide ou non défini.
+if (process.env.NODE_ENV === 'production' && !process.env.CORS_ORIGIN) {
+  console.error('❌ Erreur critique : La variable d\'environnement CORS_ORIGIN n\'est pas définie en production.');
+  console.error('Le serveur ne peut pas démarrer avec une configuration CORS non sécurisée.');
+  console.error('Veuillez définir CORS_ORIGIN avec les domaines autorisés (séparés par des virgules).');
+  process.exit(1); // Arrêter le processus
+}
+
+// Les origines autorisées, provenant de la variable d'environnement
+const allowedOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim()) : [];
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Autoriser les requêtes sans origine (ex: Postman) et les origines de la liste blanche
+    if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Cet origine n\'est pas autorisé par la politique CORS.'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization']
-}));
+};
+
+app.use(cors(corsOptions));
 
 app.use(compression());
 

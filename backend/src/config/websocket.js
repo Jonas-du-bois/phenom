@@ -1,4 +1,7 @@
 import { WSServerPubSub } from 'wsmini';
+import { verifyToken } from '../config/jwt.js';
+import User from '../models/User.js';
+import url from 'url';
 
 /**
  * Instance du serveur WebSocket
@@ -13,11 +16,20 @@ let wss = null;
 export const createWebSocketServer = (server) => {
   console.log('🔌 Configuration du serveur WebSocket avec WsMini...');
 
-  const corsOrigin = process.env.CORS_ORIGIN || '*';
-  console.log(`🔐 CORS Origins configuré: ${corsOrigin}`);
+  // Valider la configuration CORS pour la production
+  if (process.env.NODE_ENV === 'production' && !process.env.CORS_ORIGIN) {
+    console.error('❌ Erreur critique : La variable d\'environnement CORS_ORIGIN n\'est pas définie pour le serveur WebSocket en production.');
+    console.error('Veuillez définir CORS_ORIGIN.');
+    process.exit(1);
+  }
+
+  const corsOrigin = process.env.CORS_ORIGIN || '';
+  const allowedOrigins = corsOrigin.split(',').map(origin => origin.trim()).filter(Boolean);
+
+  console.log(`🔐 CORS Origins configuré pour WebSocket: ${allowedOrigins.join(', ')}`);
 
   wss = new WSServerPubSub({
-    origins: corsOrigin.split(';').map(origin => origin.trim()),
+    origins: allowedOrigins.includes('*') ? ['*'] : allowedOrigins,
     maxNbOfClients: 1000,
     maxInputSize: 100000,
     pingTimeout: 30000,
@@ -28,15 +40,57 @@ export const createWebSocketServer = (server) => {
   wss.addChannel('observations', {
     usersCanPub: false,
     usersCanSub: true
+    // TODO: Ajouter une logique d'autorisation si nécessaire
   });
 
   wss.addChannel('comments', {
     usersCanPub: false,
     usersCanSub: true
+    // TODO: Ajouter une logique d'autorisation si nécessaire
   });
 
   // Démarrer avec le serveur HTTP existant
   wss.start({ server });
+
+  // Hook pour l'authentification lors de la connexion
+  // Basé sur l'hypothèse que wss.httpServer est le serveur sous-jacent de 'ws'
+  if (wss.httpServer) {
+    wss.httpServer.on('upgrade', async (request, socket, head) => {
+      console.log('Tentative de mise à niveau WebSocket...');
+      const { query } = url.parse(request.url, true);
+      const token = query.token;
+
+      if (!token) {
+        console.log('❌ Authentification WebSocket échouée: token manquant.');
+        socket.destroy();
+        return;
+      }
+
+      try {
+        const decoded = verifyToken(token);
+        const user = await User.findById(decoded.userId).select('-password');
+
+        if (!user) {
+          console.log('❌ Authentification WebSocket échouée: utilisateur non trouvé.');
+          socket.destroy();
+          return;
+        }
+
+        // Stocker l'utilisateur sur la requête pour le passer au client
+        request.user = user;
+        console.log(`✅ Utilisateur ${user.username} authentifié pour WebSocket.`);
+
+        // Laisser wsmini gérer la mise à niveau finale
+        wss.handleUpgrade(request, socket, head, (ws) => {
+          wss.emit('connection', ws, request);
+        });
+
+      } catch (error) {
+        console.log('❌ Authentification WebSocket échouée: token invalide ou expiré.', error.message);
+        socket.destroy();
+      }
+    });
+  }
 
   console.log('✅ Serveur WebSocket configuré et démarré (PubSub)');
   console.log('📡 WebSocket disponible sur le même port que le serveur HTTP');

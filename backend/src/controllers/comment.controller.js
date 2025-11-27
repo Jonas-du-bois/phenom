@@ -1,7 +1,8 @@
 import commentService from '../services/comment.service.js';
-import { successResponse, createdResponse, notFoundResponse } from '../utils/response.js';
+import { successResponse, createdResponse } from '../utils/response.js';
 import { paginatedResponse } from '../utils/pagination.js';
 import { publishCommentEvent } from '../config/websocket.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 
 /**
  * Contrôleur des commentaires
@@ -11,88 +12,59 @@ class CommentController {
    * Récupère les commentaires d'une observation
    * GET /observations/:id/comments
    */
-  async getComments(req, res, next) {
-    try {
-      const { comments, pagination } = await commentService.getCommentsByObservation(
-        req.params.id,
-        req.query
-      );
-
-      return res.status(200).json(
-        paginatedResponse(comments, pagination.total, pagination.page, pagination.limit)
-      );
-    } catch (error) {
-      if (error.message === 'OBSERVATION_NOT_FOUND') {
-        return notFoundResponse(res, 'Observation non trouvée');
-      }
-      next(error);
-    }
-  }
+  getComments = asyncHandler(async (req, res) => {
+    const { comments, pagination } = await commentService.getCommentsByObservation(
+      req.params.id,
+      req.query
+    );
+    return res.status(200).json(
+      paginatedResponse(comments, pagination.total, pagination.page, pagination.limit)
+    );
+  });
 
   /**
    * Crée un nouveau commentaire
    * POST /observations/:id/comments
    */
-  async createComment(req, res, next) {
-    try {
-      const comment = await commentService.createComment(
-        req.params.id,
-        req.body,
-        req.user._id
-      );
+  createComment = asyncHandler(async (req, res) => {
+    const comment = await commentService.createComment(
+      req.params.id,
+      req.body,
+      req.user._id
+    );
 
-      // Publier l'événement WebSocket
-      publishCommentEvent('comment:created', comment);
+    // Publier l'événement WebSocket
+    publishCommentEvent('comment:created', comment);
 
-      return createdResponse(res, comment, 'Commentaire ajouté avec succès');
-    } catch (error) {
-      if (error.message === 'OBSERVATION_NOT_FOUND') {
-        return notFoundResponse(res, 'Observation non trouvée');
-      }
-      next(error);
-    }
-  }
+    return createdResponse(res, comment, 'Commentaire ajouté avec succès');
+  });
 
   /**
    * Met à jour un commentaire
    * PUT /comments/:id
    */
-  async updateComment(req, res, next) {
-    try {
-      const comment = await commentService.updateComment(req.params.id, req.body);
+  updateComment = asyncHandler(async (req, res) => {
+    const comment = await commentService.updateComment(req.params.id, req.body);
 
-      // Publier l'événement WebSocket
-      publishCommentEvent('comment:updated', comment);
+    // Publier l'événement WebSocket
+    publishCommentEvent('comment:updated', comment);
 
-      return successResponse(res, comment, 'Commentaire mis à jour avec succès');
-    } catch (error) {
-      if (error.message === 'COMMENT_NOT_FOUND') {
-        return notFoundResponse(res, 'Commentaire non trouvé');
-      }
-      next(error);
-    }
-  }
+    return successResponse(res, comment, 'Commentaire mis à jour avec succès');
+  });
 
   /**
    * Supprime un commentaire
    * DELETE /comments/:id
    */
-  async deleteComment(req, res, next) {
-    try {
-      const commentId = req.params.id;
-      await commentService.deleteComment(commentId);
+  deleteComment = asyncHandler(async (req, res) => {
+    const commentId = req.params.id;
+    await commentService.deleteComment(commentId);
 
-      // Publier l'événement WebSocket
-      publishCommentEvent('comment:deleted', { _id: commentId });
+    // Publier l'événement WebSocket
+    publishCommentEvent('comment:deleted', { _id: commentId });
 
-      return successResponse(res, {}, 'Commentaire supprimé avec succès');
-    } catch (error) {
-      if (error.message === 'COMMENT_NOT_FOUND') {
-        return notFoundResponse(res, 'Commentaire non trouvé');
-      }
-      next(error);
-    }
-  }
+    return successResponse(res, {}, 'Commentaire supprimé avec succès');
+  });
 }
 
 export default new CommentController();

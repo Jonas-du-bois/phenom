@@ -1,3 +1,5 @@
+import { CustomError } from '../utils/errors.js';
+
 /**
  * Middleware de gestion centralisée des erreurs
  */
@@ -12,6 +14,14 @@ export const errorHandler = (err, req, res, _next) => {
     path: req.path,
     method: req.method
   });
+
+  // Gérer les erreurs personnalisées
+  if (err instanceof CustomError) {
+    return res.status(err.statusCode).json({
+      success: false,
+      error: err.message
+    });
+  }
 
   // Erreur de validation Mongoose
   if (err.name === 'ValidationError') {

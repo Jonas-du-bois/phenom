@@ -1,6 +1,7 @@
 import Comment from '../models/Comment.js';
 import Observation from '../models/Observation.js';
 import { getPaginationParams, createPaginationMeta } from '../utils/pagination.js';
+import { NotFoundError } from '../utils/errors.js';
 
 /**
  * Service de gestion des commentaires
@@ -9,13 +10,13 @@ class CommentService {
   /**
    * Valide qu'une observation existe
    * @param {string} observationId - ID de l'observation
-   * @throws {Error} Si l'observation n'existe pas
+   * @throws {NotFoundError} Si l'observation n'existe pas
    * @private
    */
   async _validateObservationExists(observationId) {
     const observation = await Observation.findById(observationId);
     if (!observation) {
-      throw new Error('OBSERVATION_NOT_FOUND');
+      throw new NotFoundError('Observation non trouvée');
     }
     return observation;
   }
@@ -94,7 +95,7 @@ class CommentService {
     ).populate('userId', 'name email avatar');
 
     if (!comment) {
-      throw new Error('COMMENT_NOT_FOUND');
+      throw new NotFoundError('Commentaire non trouvé');
     }
 
     // Le WebSocket sera publié dans le contrôleur
@@ -110,7 +111,7 @@ class CommentService {
     const comment = await Comment.findByIdAndDelete(commentId);
 
     if (!comment) {
-      throw new Error('COMMENT_NOT_FOUND');
+      throw new NotFoundError('Commentaire non trouvé');
     }
 
     // Le WebSocket sera publié dans le contrôleur
@@ -124,6 +125,9 @@ class CommentService {
    */
   async getCommentOwnerId(commentId) {
     const comment = await Comment.findById(commentId).select('userId');
+    if (!comment) {
+      throw new NotFoundError('Commentaire non trouvé pour vérification de propriété');
+    }
     return comment?.userId;
   }
 
