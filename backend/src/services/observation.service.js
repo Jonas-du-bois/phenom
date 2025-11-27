@@ -4,29 +4,31 @@ import { getPaginationParams, createPaginationMeta } from '../utils/pagination.j
 import { publishObservationEvent } from '../config/websocket.js';
 
 /**
- * Service de gestion des observations
+ * @file observation.service.js
+ * @description Service for managing observations.
+ * Handles CRUD operations, geospatial queries, and statistics for observations.
  */
 class ObservationService {
   /**
-   * Récupère la liste des observations avec filtres et pagination
-   * @param {Object} filters - Filtres de recherche
-   * @returns {Object} Liste paginée d'observations
+   * Retrieves a list of observations with filters and pagination.
+   * @param {Object} filters - Search filters (type, search text, location).
+   * @returns {Object} Paginated list of observations.
    */
   async getObservations(filters = {}) {
     const { page, limit, skip } = getPaginationParams(filters);
     const query = {};
 
-    // Filtre par type d'observation
+    // Filter by observation type
     if (filters.type) {
       query.type = filters.type;
     }
 
-    // Filtre de recherche textuelle
+    // Text search filter
     if (filters.search) {
       query.$text = { $search: filters.search };
     }
 
-    // Filtre géographique par zone (bounding box) - pour la carte
+    // Geospatial filter by bounding box (for map view)
     if (filters.minLat && filters.maxLat && filters.minLng && filters.maxLng) {
       const minLng = parseFloat(filters.minLng);
       const maxLng = parseFloat(filters.maxLng);
@@ -38,17 +40,17 @@ class ObservationService {
           $geometry: {
             type: 'Polygon',
             coordinates: [[
-              [minLng, minLat], // Coin sud-ouest
-              [maxLng, minLat], // Coin sud-est
-              [maxLng, maxLat], // Coin nord-est
-              [minLng, maxLat], // Coin nord-ouest
-              [minLng, minLat]  // Retour au point de départ (fermeture du polygone)
+              [minLng, minLat], // Southwest
+              [maxLng, minLat], // Southeast
+              [maxLng, maxLat], // Northeast
+              [minLng, maxLat], // Northwest
+              [minLng, minLat]  // Close loop
             ]]
           }
         }
       };
     }
-    // Filtre géographique (proximité) - pour la recherche à proximité
+    // Geospatial filter by proximity (radius search)
     else if (filters.lat && filters.lng && filters.radius) {
       const radiusInMeters = parseFloat(filters.radius) * 1000;
       query.location = {
@@ -62,12 +64,12 @@ class ObservationService {
       };
     }
 
-    // Gestion du tri
+    // Sorting
     const sortBy = filters.sortBy || 'createdAt';
     const order = filters.order === 'asc' ? 1 : -1;
     const sortOptions = { [sortBy]: order };
 
-    // Exécuter la requête avec pagination
+    // Execute query with pagination
     const [observations, total] = await Promise.all([
       Observation.find(query)
         .populate('userId', 'name email')
@@ -85,9 +87,9 @@ class ObservationService {
   }
 
   /**
-   * Récupère une observation par son ID
-   * @param {string} observationId - ID de l'observation
-   * @returns {Object} Observation
+   * Retrieves an observation by its ID.
+   * @param {string} observationId - Observation ID.
+   * @returns {Object} The observation document.
    */
   async getObservationById(observationId) {
     const observation = await Observation.findById(observationId)
@@ -102,17 +104,17 @@ class ObservationService {
       });
 
     if (!observation) {
-      throw new NotFoundError('Observation non trouvée');
+      throw new NotFoundError('Observation not found');
     }
 
     return observation;
   }
 
   /**
-   * Crée une nouvelle observation
-   * @param {Object} observationData - Données de l'observation
-   * @param {string} userId - ID de l'utilisateur créateur
-   * @returns {Object} Observation créée
+   * Creates a new observation.
+   * @param {Object} observationData - Observation data.
+   * @param {string} userId - ID of the user creating the observation.
+   * @returns {Object} Created observation.
    */
   async createObservation(observationData, userId) {
     const observation = await Observation.create({
@@ -122,17 +124,17 @@ class ObservationService {
 
     const populatedObservation = await observation.populate('userId', 'name email');
 
-    // Publier l'événement via WebSocket
+    // Publish event via WebSocket
     publishObservationEvent('observation:created', populatedObservation.toObject());
 
     return populatedObservation;
   }
 
   /**
-   * Met à jour une observation
-   * @param {string} observationId - ID de l'observation
-   * @param {Object} updateData - Données à mettre à jour
-   * @returns {Object} Observation mise à jour
+   * Updates an existing observation.
+   * @param {string} observationId - Observation ID.
+   * @param {Object} updateData - Data to update.
+   * @returns {Object} Updated observation.
    */
   async updateObservation(observationId, updateData) {
     const observation = await Observation.findByIdAndUpdate(
@@ -142,103 +144,103 @@ class ObservationService {
     ).populate('userId', 'name email');
 
     if (!observation) {
-      throw new NotFoundError('Observation non trouvée');
+      throw new NotFoundError('Observation not found');
     }
 
-    // Publier l'événement via WebSocket
+    // Publish event via WebSocket
     publishObservationEvent('observation:updated', observation.toObject());
 
     return observation;
   }
 
   /**
-   * Supprime une observation
-   * @param {string} observationId - ID de l'observation
-   * @returns {Object} Observation supprimée
+   * Deletes an observation.
+   * @param {string} observationId - Observation ID.
+   * @returns {Object} Deleted observation.
    */
   async deleteObservation(observationId) {
-    // Utiliser une transaction pour garantir l'atomicité
+    // Use transaction for atomicity
     const session = await Observation.startSession();
     let observation;
 
     try {
       await session.startTransaction();
 
-      // Supprimer l'observation dans la transaction
+      // Delete observation within transaction
       observation = await Observation.findByIdAndDelete(observationId, { session });
 
       if (!observation) {
-        // Annuler la transaction si l'observation n'existe pas
+        // Abort transaction if observation doesn't exist
         await session.abortTransaction();
-        throw new NotFoundError('Observation non trouvée');
+        throw new NotFoundError('Observation not found');
       }
 
-      // Supprimer tous les commentaires associés dans la transaction
+      // Delete associated comments within transaction
       const Comment = (await import('../models/Comment.js')).default;
       const deleteResult = await Comment.deleteMany({ observationId }, { session });
-      console.log(`✅ ${deleteResult.deletedCount} commentaire(s) supprimé(s)`);
+      console.log(`✅ ${deleteResult.deletedCount} comment(s) deleted`);
 
-      // Valider la transaction
+      // Commit transaction
       await session.commitTransaction();
     } catch (error) {
-      // Annuler la transaction en cas d'erreur (sauf si c'est notre NotFoundError)
+      // Abort transaction on error (unless it's our NotFoundError)
       if (session.inTransaction()) {
         await session.abortTransaction();
       }
-      console.error(`❌ Erreur lors de la suppression (transaction annulée): ${error.message}`);
-      throw error; // Renvoyer l'erreur originale (ou notre NotFoundError)
+      console.error(`❌ Error during deletion (transaction aborted): ${error.message}`);
+      throw error;
     } finally {
       session.endSession();
     }
 
-    // Supprimer les images Cloudinary après la transaction (externe à MongoDB)
+    // Delete images from Cloudinary after transaction (external to MongoDB)
     try {
       const imageService = (await import('./image.service.js')).default;
       const deletedImages = await imageService.deleteAllImagesForObservation(observationId);
-      console.log(`✅ ${deletedImages} image(s) supprimée(s) de Cloudinary`);
+      console.log(`✅ ${deletedImages} image(s) deleted from Cloudinary`);
     } catch (error) {
-      console.error(`❌ Erreur lors de la suppression des images Cloudinary: ${error.message}`);
-      console.warn(`⚠️ L'observation a été supprimée mais ${observation.images?.length || 0} image(s) pourrai(en)t être orpheline(s) sur Cloudinary`);
+      console.error(`❌ Error deleting images from Cloudinary: ${error.message}`);
+      console.warn(`⚠️ Observation deleted but ${observation.images?.length || 0} image(s) might be orphaned on Cloudinary`);
     }
 
-    // Publier l'événement via WebSocket
+    // Publish event via WebSocket
     publishObservationEvent('observation:deleted', { observationId });
 
     return observation;
   }
 
   /**
-   * Récupère le propriétaire d'une observation
-   * @param {string} observationId - ID de l'observation
-   * @returns {string} ID du propriétaire
+   * Retrieves the owner ID of an observation.
+   * @param {string} observationId - Observation ID.
+   * @returns {string} Owner ID.
    */
   async getObservationOwnerId(observationId) {
     const observation = await Observation.findById(observationId).select('userId');
     if (!observation) {
-      throw new NotFoundError('Observation non trouvée pour vérification de propriété');
+      throw new NotFoundError('Observation not found for ownership check');
     }
     return observation.userId;
   }
 
   /**
-   * Recherche d'observations à proximité
-   * @param {number} latitude - Latitude
-   * @param {number} longitude - Longitude
-   * @param {number} radius - Rayon en km
-   * @param {Object} query - Paramètres de pagination
-   * @returns {Object} Observations paginées
+   * Searches for observations nearby a location.
+   * @param {number} latitude - Latitude.
+   * @param {number} longitude - Longitude.
+   * @param {number} radius - Radius in km.
+   * @param {Object} query - Pagination parameters.
+   * @returns {Object} Paginated observations.
    */
   async getNearbyObservations(latitude, longitude, radius, query) {
     const { page, limit, skip } = getPaginationParams(query);
     const radiusInMeters = parseFloat(radius) * 1000;
 
-    // Utiliser $geoWithin au lieu de $near pour permettre skip/limit
+    // Use $geoWithin instead of $near to allow skip/limit
     const geoQuery = {
       location: {
         $geoWithin: {
           $centerSphere: [
             [parseFloat(longitude), parseFloat(latitude)],
-            radiusInMeters / 6378100 // Rayon de la Terre en mètres
+            radiusInMeters / 6378100 // Earth radius in meters
           ]
         }
       }
@@ -260,8 +262,8 @@ class ObservationService {
   }
 
   /**
-   * Récupère les statistiques publiques des observations
-   * @returns {Object} Statistiques
+   * Retrieves public statistics about observations.
+   * @returns {Object} Statistics.
    */
   async getObservationStats() {
     const [
@@ -295,9 +297,9 @@ class ObservationService {
   }
 
   /**
-   * Récupère les types d'observations les plus populaires
-   * @param {number} limit - Nombre de types à retourner
-   * @returns {Array} Types populaires avec leurs comptages
+   * Retrieves the most popular observation types.
+   * @param {number} limit - Number of types to return.
+   * @returns {Array} Popular types with counts.
    */
   async getPopularObservationTypes(limit = 6) {
     const popularTypes = await Observation.aggregate([

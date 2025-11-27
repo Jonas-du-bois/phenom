@@ -1,5 +1,11 @@
 import mongoose from 'mongoose';
 
+/**
+ * @file Comment.js
+ * @description Mongoose model for Comment entity.
+ * Represents user comments on observations.
+ */
+
 const commentSchema = new mongoose.Schema({
   text: {
     type: String,
@@ -30,10 +36,10 @@ const commentSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Index pour optimiser les requêtes
-commentSchema.index({ observationId: 1, createdAt: -1 });
-commentSchema.index({ userId: 1 });
-commentSchema.index({ createdAt: -1 });
+// Indexes for query optimization
+commentSchema.index({ observationId: 1, createdAt: -1 }); // Get comments for an observation, sorted by date
+commentSchema.index({ userId: 1 }); // Get comments by user
+commentSchema.index({ createdAt: -1 }); // Get latest comments globally
 
 const Comment = mongoose.model('Comment', commentSchema);
 

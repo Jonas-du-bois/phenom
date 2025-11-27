@@ -2,68 +2,79 @@ import authService from '../services/auth.service.js';
 import userService from '../services/user.service.js';
 import { successResponse, createdResponse, errorResponse, unauthorizedResponse } from '../utils/response.js';
 
-// Configuration des cookies pour le refresh token
+// Configuration for refresh token cookies
 const REFRESH_TOKEN_COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
   sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 jours en millisecondes
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
   path: '/api/v1/auth'
 };
 
 /**
- * Contrôleur d'authentification
+ * @file auth.controller.js
+ * @description Authentication controller.
+ * Handles HTTP requests for signup, login, logout, token refresh, and password management.
  */
 class AuthController {
   /**
-   * Inscription d'un nouvel utilisateur
+   * Registers a new user.
    * POST /auth/signup
+   * @param {Object} req - Express request object
+   * @param {Object} res - Express response object
+   * @param {Function} next - Express next middleware function
    */
   async signup(req, res, next) {
     try {
       const result = await authService.signup(req.body);
 
-      // Définir le refresh token dans un cookie HttpOnly
+      // Set refresh token in HttpOnly cookie
       res.cookie('refreshToken', result.refreshToken, REFRESH_TOKEN_COOKIE_OPTIONS);
 
-      // Ne pas inclure le refreshToken dans la réponse JSON
+      // Do not include refreshToken in JSON response
       const { refreshToken, ...responseData } = result;
 
-      return createdResponse(res, responseData, 'Inscription réussie');
+      return createdResponse(res, responseData, 'Registration successful');
     } catch (error) {
       if (error.message === 'EMAIL_ALREADY_EXISTS') {
-        return errorResponse(res, 'Cet email est déjà utilisé', 400);
+        return errorResponse(res, 'This email is already in use', 400);
       }
       next(error);
     }
   }
 
   /**
-   * Connexion d'un utilisateur
+   * Authenticates a user.
    * POST /auth/login
+   * @param {Object} req - Express request object
+   * @param {Object} res - Express response object
+   * @param {Function} next - Express next middleware function
    */
   async login(req, res, next) {
     try {
       const result = await authService.login(req.body);
 
-      // Définir le refresh token dans un cookie HttpOnly
+      // Set refresh token in HttpOnly cookie
       res.cookie('refreshToken', result.refreshToken, REFRESH_TOKEN_COOKIE_OPTIONS);
 
-      // Ne pas inclure le refreshToken dans la réponse JSON
+      // Do not include refreshToken in JSON response
       const { refreshToken, ...responseData } = result;
 
-      return successResponse(res, responseData, 'Connexion réussie');
+      return successResponse(res, responseData, 'Login successful');
     } catch (error) {
       if (error.message === 'INVALID_CREDENTIALS') {
-        return unauthorizedResponse(res, 'Email ou mot de passe incorrect');
+        return unauthorizedResponse(res, 'Incorrect email or password');
       }
       next(error);
     }
   }
 
   /**
-   * Récupère le profil de l'utilisateur connecté
+   * Retrieves the profile of the logged-in user.
    * GET /auth/me
+   * @param {Object} req - Express request object
+   * @param {Object} res - Express response object
+   * @param {Function} next - Express next middleware function
    */
   async getProfile(req, res, next) {
     try {
@@ -72,18 +83,20 @@ class AuthController {
       return successResponse(res, user);
     } catch (error) {
       if (error.message === 'USER_NOT_FOUND') {
-        return errorResponse(res, 'Utilisateur non trouvé', 404);
+        return errorResponse(res, 'User not found', 404);
       }
       next(error);
     }
   }
 
   /**
-   * Déconnexion (supprime le cookie refresh token)
+   * Logs out a user (clears refresh token cookie).
    * POST /auth/logout
+   * @param {Object} req - Express request object
+   * @param {Object} res - Express response object
    */
   async logout(req, res) {
-    // Supprimer le cookie du refresh token
+    // Clear refresh token cookie
     res.clearCookie('refreshToken', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -91,48 +104,54 @@ class AuthController {
       path: '/api/v1/auth'
     });
 
-    return successResponse(res, null, 'Déconnexion réussie');
+    return successResponse(res, null, 'Logout successful');
   }
 
   /**
-   * Rafraîchit le token JWT
+   * Refreshes the JWT token.
    * POST /auth/refresh-token
+   * @param {Object} req - Express request object
+   * @param {Object} res - Express response object
+   * @param {Function} next - Express next middleware function
    */
   async refreshToken(req, res, next) {
     try {
-      // Lire le refresh token depuis le cookie HttpOnly
+      // Read refresh token from HttpOnly cookie
       const refreshToken = req.cookies.refreshToken;
       const tokens = await authService.refreshToken(refreshToken);
 
-      // Mettre à jour le cookie avec le nouveau refresh token
+      // Update cookie with new refresh token
       res.cookie('refreshToken', tokens.refreshToken, REFRESH_TOKEN_COOKIE_OPTIONS);
 
-      // Ne retourner que l'access token dans la réponse
-      return successResponse(res, { accessToken: tokens.accessToken }, 'Token rafraîchi avec succès');
+      // Return only access token in response
+      return successResponse(res, { accessToken: tokens.accessToken }, 'Token refreshed successfully');
     } catch (error) {
       if (error.message === 'REFRESH_TOKEN_REQUIRED') {
-        return errorResponse(res, 'Le refresh token est requis', 400);
+        return errorResponse(res, 'Refresh token required', 400);
       }
       if (error.message === 'INVALID_REFRESH_TOKEN') {
-        // Supprimer le cookie invalide
+        // Clear invalid cookie
         res.clearCookie('refreshToken', {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
           path: '/api/v1/auth'
         });
-        return unauthorizedResponse(res, 'Refresh token invalide ou expiré');
+        return unauthorizedResponse(res, 'Invalid or expired refresh token');
       }
       if (error.message === 'USER_NOT_FOUND') {
-        return unauthorizedResponse(res, 'Utilisateur non trouvé');
+        return unauthorizedResponse(res, 'User not found');
       }
       next(error);
     }
   }
 
   /**
-   * Demande de réinitialisation du mot de passe
+   * Requests a password reset.
    * POST /auth/forgot-password
+   * @param {Object} req - Express request object
+   * @param {Object} res - Express response object
+   * @param {Function} next - Express next middleware function
    */
   async forgotPassword(req, res, next) {
     try {
@@ -146,21 +165,24 @@ class AuthController {
   }
 
   /**
-   * Réinitialise le mot de passe
+   * Resets the password.
    * POST /auth/reset-password
+   * @param {Object} req - Express request object
+   * @param {Object} res - Express response object
+   * @param {Function} next - Express next middleware function
    */
   async resetPassword(req, res, next) {
     try {
       const { token, newPassword } = req.body;
       await authService.resetPassword(token, newPassword);
 
-      return successResponse(res, null, 'Mot de passe réinitialisé avec succès');
+      return successResponse(res, null, 'Password reset successfully');
     } catch (error) {
       if (error.message === 'INVALID_RESET_TOKEN') {
-        return unauthorizedResponse(res, 'Token de réinitialisation invalide ou expiré');
+        return unauthorizedResponse(res, 'Invalid or expired reset token');
       }
       if (error.message === 'USER_NOT_FOUND') {
-        return unauthorizedResponse(res, 'Utilisateur non trouvé');
+        return unauthorizedResponse(res, 'User not found');
       }
       next(error);
     }

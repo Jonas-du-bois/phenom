@@ -16,8 +16,8 @@ const router = express.Router();
  * @swagger
  * /api/v1/auth/signup:
  *   post:
- *     summary: Inscription d'un nouvel utilisateur
- *     tags: [Authentification]
+ *     summary: Register a new user
+ *     tags: [Authentication]
  *     requestBody:
  *       required: true
  *       content:
@@ -33,18 +33,18 @@ const router = express.Router();
  *                 type: string
  *                 minLength: 3
  *                 maxLength: 50
- *                 example: Jean Dupont
+ *                 example: John Doe
  *               email:
  *                 type: string
  *                 format: email
- *                 example: jean.dupont@example.com
+ *                 example: john.doe@example.com
  *               password:
  *                 type: string
  *                 minLength: 6
- *                 example: motdepasse123
+ *                 example: password123
  *     responses:
  *       201:
- *         description: Utilisateur créé avec succès
+ *         description: User created successfully
  *         content:
  *           application/json:
  *             schema:
@@ -55,7 +55,7 @@ const router = express.Router();
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: Utilisateur créé avec succès
+ *                   example: Registration successful
  *                 data:
  *                   type: object
  *                   properties:
@@ -68,13 +68,13 @@ const router = express.Router();
  *                       type: string
  *                       example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
  *       400:
- *         description: Données invalides
+ *         description: Invalid data
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
  *       409:
- *         description: Email déjà utilisé
+ *         description: Email already in use
  *         content:
  *           application/json:
  *             schema:
@@ -92,8 +92,8 @@ router.post(
  * @swagger
  * /api/v1/auth/login:
  *   post:
- *     summary: Connexion d'un utilisateur
- *     tags: [Authentification]
+ *     summary: User login
+ *     tags: [Authentication]
  *     requestBody:
  *       required: true
  *       content:
@@ -107,13 +107,13 @@ router.post(
  *               email:
  *                 type: string
  *                 format: email
- *                 example: jean.dupont@example.com
+ *                 example: john.doe@example.com
  *               password:
  *                 type: string
- *                 example: motdepasse123
+ *                 example: password123
  *     responses:
  *       200:
- *         description: Connexion réussie
+ *         description: Login successful
  *         content:
  *           application/json:
  *             schema:
@@ -124,7 +124,7 @@ router.post(
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: Connexion réussie
+ *                   example: Login successful
  *                 data:
  *                   type: object
  *                   properties:
@@ -137,19 +137,19 @@ router.post(
  *                       type: string
  *                       example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
  *       400:
- *         description: Données invalides
+ *         description: Invalid data
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
  *       401:
- *         description: Email ou mot de passe incorrect
+ *         description: Incorrect email or password
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
  *       429:
- *         description: Trop de tentatives de connexion
+ *         description: Too many login attempts
  *         content:
  *           application/json:
  *             schema:
@@ -167,13 +167,13 @@ router.post(
  * @swagger
  * /api/v1/auth/logout:
  *   post:
- *     summary: Déconnexion d'un utilisateur
- *     tags: [Authentification]
+ *     summary: Logout user
+ *     tags: [Authentication]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Déconnexion réussie
+ *         description: Logout successful
  *         content:
  *           application/json:
  *             schema:
@@ -184,9 +184,9 @@ router.post(
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: Déconnexion réussie
+ *                   example: Logout successful
  *       401:
- *         description: Non authentifié
+ *         description: Not authenticated
  *         content:
  *           application/json:
  *             schema:
@@ -200,7 +200,7 @@ router.post(
 
 /**
  * @route   GET /api/v1/auth/me
- * @desc    Récupère le profil de l'utilisateur connecté
+ * @desc    Get current user profile
  * @access  Private
  */
 router.get(
@@ -211,7 +211,7 @@ router.get(
 
 /**
  * @route   POST /api/v1/auth/refresh-token
- * @desc    Rafraîchit le token JWT avec un refresh token valide
+ * @desc    Refresh JWT token using a valid refresh token
  * @access  Public
  */
 router.post(
@@ -221,7 +221,7 @@ router.post(
 
 /**
  * @route   POST /api/v1/auth/forgot-password
- * @desc    Demande de réinitialisation du mot de passe
+ * @desc    Request password reset
  * @access  Public
  */
 router.post(
@@ -234,7 +234,7 @@ router.post(
 
 /**
  * @route   POST /api/v1/auth/reset-password
- * @desc    Réinitialise le mot de passe avec un token
+ * @desc    Reset password using a token
  * @access  Public
  */
 router.post(

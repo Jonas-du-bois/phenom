@@ -1,5 +1,5 @@
 // ===================================================================
-// IMPORTANT : Charger .env AVANT tous les autres imports
+// IMPORTANT: Load .env BEFORE any other imports
 // ===================================================================
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
@@ -11,7 +11,7 @@ const envPath = resolve(__dirname, '../../.env');
 dotenv.config({ path: envPath });
 
 // ===================================================================
-// Imports après chargement de .env
+// Imports after .env loading
 // ===================================================================
 import express from 'express';
 import cors from 'cors';
@@ -34,15 +34,15 @@ import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import yaml from 'js-yaml';
 
-// Fonction utilitaire pour résoudre les chemins de fichiers
-// Compatible avec le développement local et le déploiement Render
+// Utility function to resolve file paths
+// Compatible with local development and Render deployment
 const resolveFilePath = (relativePath) => {
   const localPath = join(__dirname, relativePath);
   if (existsSync(localPath)) {
     return localPath;
   }
 
-  // Fallback pour Render ou autres environnements
+  // Fallback for Render or other environments
   const alternativePath = join(process.cwd(), 'src', relativePath);
   if (existsSync(alternativePath)) {
     return alternativePath;
@@ -51,44 +51,44 @@ const resolveFilePath = (relativePath) => {
   return null;
 };
 
-// Valider la configuration JWT
+// Validate JWT configuration
 validateJwtConfig();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const API_PREFIX = process.env.API_PREFIX || '/api/v1';
 
-// Middleware de logging
+// Logging middleware
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 } else {
   app.use(morgan('combined'));
 }
 
-// Middleware de sécurité
+// Security middleware
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' }
 }));
 
-// Configuration CORS sécurisée
-// En production, CORS_ORIGIN ne doit pas être vide ou non défini.
+// Secure CORS configuration
+// In production, CORS_ORIGIN must not be empty or undefined.
 if (process.env.NODE_ENV === 'production' && !process.env.CORS_ORIGIN) {
-  console.error('❌ Erreur critique : La variable d\'environnement CORS_ORIGIN n\'est pas définie en production.');
-  console.error('Le serveur ne peut pas démarrer avec une configuration CORS non sécurisée.');
-  console.error('Veuillez définir CORS_ORIGIN avec les domaines autorisés (séparés par des virgules).');
-  process.exit(1); // Arrêter le processus
+  console.error('❌ Critical Error: CORS_ORIGIN environment variable is not defined in production.');
+  console.error('Server cannot start with insecure CORS configuration.');
+  console.error('Please define CORS_ORIGIN with allowed domains (comma separated).');
+  process.exit(1);
 }
 
-// Les origines autorisées, provenant de la variable d'environnement
+// Allowed origins from environment variable
 const allowedOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim()) : [];
 
 const corsOptions = {
   origin: (origin, callback) => {
-    // Autoriser les requêtes sans origine (ex: Postman) et les origines de la liste blanche
+    // Allow requests without origin (e.g. Postman) and allowed origins
     if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Cet origine n\'est pas autorisé par la politique CORS.'));
+      callback(new Error('This origin is not allowed by CORS policy.'));
     }
   },
   credentials: true,
@@ -104,16 +104,16 @@ app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Cookie parser pour les refresh tokens HttpOnly
+// Cookie parser for HttpOnly refresh tokens
 app.use(cookieParser());
 
-// Protection contre les injections NoSQL MongoDB
+// Protection against MongoDB NoSQL injection
 app.use(mongoSanitize());
 
-// Rate limiting global
+// Global Rate limiting
 app.use(generalLimiter);
 
-// Route de santé
+// Health check route
 app.get('/health', (req, res) => {
   res.status(200).json({
     success: true,
@@ -125,7 +125,7 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Route de base
+// Base route
 app.get('/', (req, res) => {
   res.json({
     success: true,
@@ -140,8 +140,8 @@ app.get('/', (req, res) => {
   });
 });
 
-// Documentation Swagger
-// Page d'accueil de la documentation
+// Swagger Documentation
+// Documentation homepage
 app.get('/api-docs', (req, res) => {
   const htmlPath = resolveFilePath('public/docs/index.html');
 
@@ -157,7 +157,7 @@ app.get('/api-docs', (req, res) => {
   }
 });
 
-// Documentation REST (Swagger)
+// REST Documentation (Swagger)
 app.use('/api-docs/rest', swaggerUi.serve);
 app.get('/api-docs/rest', swaggerUi.setup(swaggerSpec, {
   customCss: '.swagger-ui .topbar { display: none }',
@@ -165,9 +165,9 @@ app.get('/api-docs/rest', swaggerUi.setup(swaggerSpec, {
   customfavIcon: '/favicon.ico'
 }));
 
-// Documentation WebSocket (AsyncAPI) - Page HTML avec iframe vers AsyncAPI Studio
+// WebSocket Documentation (AsyncAPI) - HTML page with iframe to AsyncAPI Studio
 app.get('/api-docs/websocket', (req, res) => {
-  // Définir un CSP qui autorise l'iframe vers studio.asyncapi.com
+  // CSP allowing iframe to studio.asyncapi.com
   const csp = 'default-src \'self\'; script-src \'self\'; style-src \'self\' \'unsafe-inline\'; frame-src https://studio.asyncapi.com; img-src \'self\' data:; connect-src \'self\' https://studio.asyncapi.com';
   res.setHeader('Content-Security-Policy', csp);
 
@@ -183,7 +183,7 @@ app.get('/api-docs/websocket', (req, res) => {
   }
 });
 
-// Servir le loader JS pour la page WebSocket
+// Serve loader JS for WebSocket page
 app.get('/api-docs/websocket/loader.js', (req, res) => {
   res.setHeader('Content-Type', 'application/javascript');
 
@@ -196,10 +196,10 @@ app.get('/api-docs/websocket/loader.js', (req, res) => {
   }
 });
 
-// Endpoint pour servir la spec AsyncAPI en JSON (parsée depuis YAML)
+// Endpoint to serve AsyncAPI spec in JSON (parsed from YAML)
 app.get('/api-docs/websocket/spec', (req, res) => {
   try {
-    // Ajouter les en-têtes CORS pour permettre à AsyncAPI Studio d'accéder à la spec
+    // Add CORS headers to allow AsyncAPI Studio to access the spec
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -220,13 +220,13 @@ app.get('/api-docs/websocket/spec', (req, res) => {
   } catch (err) {
     res.status(500).json({
       success: false,
-      message: 'Erreur lors du chargement de la spec AsyncAPI',
+      message: 'Error loading AsyncAPI spec',
       error: err.message
     });
   }
 });
 
-// Gérer les requêtes OPTIONS pour CORS preflight
+// Handle OPTIONS requests for CORS preflight
 app.options('/api-docs/websocket/spec', (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -234,81 +234,82 @@ app.options('/api-docs/websocket/spec', (req, res) => {
   res.status(204).end();
 });
 
-// Endpoint pour exporter le spec OpenAPI en JSON
+// Endpoint to export OpenAPI spec in JSON
 app.get('/openapi.json', (req, res) => {
   try {
     res.setHeader('Content-Type', 'application/json');
-    // swaggerSpec est l'objet retourné par swagger-jsdoc
+    // swaggerSpec is the object returned by swagger-jsdoc
     res.status(200).send(swaggerSpec);
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Impossible de générer le spec OpenAPI', error: err.message });
+    res.status(500).json({ success: false, message: 'Unable to generate OpenAPI spec', error: err.message });
   }
 });
 
-// Routes API
+// API Routes
 app.use(API_PREFIX, routes);
 
-// Gestion des routes non trouvées
+// Handle 404
 app.use(notFound);
 
-// Gestion centralisée des erreurs
+// Centralized error handling
 app.use(errorHandler);
 
-// Démarrage du serveur
+// Start server
 const startServer = async () => {
   try {
-    // Connexion à MongoDB
+    // Connect to MongoDB
     await connectDB();
 
-    // Créer le serveur HTTP SANS le faire écouter immédiatement
+    // Create HTTP server WITHOUT listening immediately
     const http = await import('http');
     const server = http.createServer(app);
 
-    // Créer et démarrer le serveur WebSocket (wss.start() est appelé à l'intérieur)
+    // Create and start WebSocket server (wss.start() is called inside)
     createWebSocketServer(server);
 
-    // Maintenant, faire écouter le serveur HTTP (avec WebSocket attaché)
+    // Now make the HTTP server listen (with WebSocket attached)
     server.listen(PORT, '0.0.0.0', () => {
       console.log('='.repeat(50));
-      console.log('🚀 Serveur Phenom API démarré avec succès');
+      console.log('🚀 Phenom API Server started successfully');
       console.log('='.repeat(50));
-      console.log(`📍 Environnement: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`🔗 URL: http://localhost:${PORT} ou https://phenom-backend.onrender.com/`);
-      console.log(`📚 Documentation: http://localhost:${PORT}/api-docs ou https://phenom-backend.onrender.com/api-docs`);
-      console.log(`🏥 Health check: http://localhost:${PORT}/health ou https://phenom-backend.onrender.com/health`);
-      console.log(`🔌 API Endpoints: http://localhost:${PORT}${API_PREFIX} ou https://phenom-backend.onrender.com${API_PREFIX}`);
-      console.log(`🔌 WebSocket: ws://localhost:${PORT} (même port que HTTP)`);
+      console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`🔗 URL: http://localhost:${PORT} or https://phenom-backend.onrender.com/`);
+      console.log(`📚 Documentation: http://localhost:${PORT}/api-docs or https://phenom-backend.onrender.com/api-docs`);
+      console.log(`🏥 Health check: http://localhost:${PORT}/health or https://phenom-backend.onrender.com/health`);
+      console.log(`🔌 API Endpoints: http://localhost:${PORT}${API_PREFIX} or https://phenom-backend.onrender.com${API_PREFIX}`);
+      console.log(`🔌 WebSocket: ws://localhost:${PORT} (same port as HTTP)`);
       console.log('='.repeat(50));
     });
 
   } catch (error) {
-    console.error('❌ Erreur lors du démarrage du serveur:', error.message);
+    console.error('❌ Error starting server:', error.message);
     process.exit(1);
   }
 };
 
-// Gestion des erreurs non capturées
+// Unhandled Rejection
 process.on('unhandledRejection', (err) => {
   console.error('❌ Unhandled Rejection:', err);
   process.exit(1);
 });
 
+// Uncaught Exception
 process.on('uncaughtException', (err) => {
   console.error('❌ Uncaught Exception:', err);
   process.exit(1);
 });
 
 process.on('SIGTERM', async () => {
-  console.log('👋 SIGTERM reçu, fermeture gracieuse...');
+  console.log('👋 SIGTERM received, graceful shutdown...');
   process.exit(0);
 });
 
 process.on('SIGINT', async () => {
-  console.log('\n👋 SIGINT reçu, fermeture gracieuse...');
+  console.log('\n👋 SIGINT received, graceful shutdown...');
   process.exit(0);
 });
 
-// Démarrer le serveur uniquement si ce n'est pas un import
+// Start server only if not in test mode
 if (process.env.NODE_ENV !== 'test') {
   startServer();
 }
