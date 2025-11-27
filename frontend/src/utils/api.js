@@ -1,5 +1,6 @@
 /**
  * Configuration et wrapper pour les appels API
+ * Updated: 2025-11-27 - Fix token key consistency
  */
 import axios from "axios";
 
