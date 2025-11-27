@@ -4,11 +4,31 @@
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
+import { existsSync } from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const envPath = resolve(__dirname, '../../.env');
-dotenv.config({ path: envPath });
+
+// Try multiple .env paths for different environments
+const envPaths = [
+  resolve(__dirname, '../.env'),      // backend/.env
+  resolve(__dirname, '../../.env'),   // root .env
+  resolve(process.cwd(), '.env'),     // current working directory
+];
+
+let envLoaded = false;
+for (const envPath of envPaths) {
+  if (existsSync(envPath)) {
+    dotenv.config({ path: envPath });
+    console.log(`✅ Loaded .env from: ${envPath}`);
+    envLoaded = true;
+    break;
+  }
+}
+
+if (!envLoaded) {
+  console.log('ℹ️ No .env file found - using environment variables from system');
+}
 
 // ===================================================================
 // Imports after .env loading
@@ -82,21 +102,37 @@ if (process.env.NODE_ENV === 'production' && !process.env.CORS_ORIGIN) {
 // Allowed origins from environment variable
 const allowedOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim()) : [];
 
+// Log CORS config for debugging
+console.log('🔒 CORS Configuration:');
+console.log('   Allowed origins:', allowedOrigins.length > 0 ? allowedOrigins : 'NONE (will reject all cross-origin requests)');
+
 const corsOptions = {
   origin: (origin, callback) => {
-    // Allow requests without origin (e.g. Postman) and allowed origins
-    if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('This origin is not allowed by CORS policy.'));
+    // Allow requests without origin (e.g. Postman, curl, server-to-server)
+    if (!origin) {
+      return callback(null, true);
     }
+    
+    // Allow if wildcard or origin is in the list
+    if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    // Reject with a proper CORS error (false instead of Error to avoid 500)
+    console.warn(`⚠️ CORS blocked origin: ${origin}`);
+    console.warn(`   Allowed origins: ${allowedOrigins.join(', ')}`);
+    return callback(null, false);
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
 };
 
 app.use(cors(corsOptions));
+
+// Handle preflight requests explicitly
+app.options('*', cors(corsOptions));
 
 app.use(compression());
 
