@@ -1,5 +1,6 @@
 import observationService from '../services/observation.service.js';
-import { successResponse, createdResponse } from '../utils/response.js';
+import imageService from '../services/image.service.js';
+import { successResponse, createdResponse, errorResponse } from '../utils/response.js';
 import { paginatedResponse } from '../utils/pagination.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
@@ -30,10 +31,84 @@ class ObservationController {
   /**
    * Crée une nouvelle observation
    * POST /observations
+   *
+   * Supporte le paramètre optionnel `generateAiImage` (boolean) :
+   * - Si true et aucune image fournie, génère une illustration via l'IA Gemini
+   * - L'image générée sera marquée avec source: 'ai' dans la réponse
    */
   createObservation = asyncHandler(async (req, res) => {
-    const observation = await observationService.createObservation(req.body, req.user._id);
+    const { generateAiImage, ...observationData } = req.body;
+
+    // Créer l'observation
+    let observation = await observationService.createObservation(observationData, req.user._id);
+
+    // Si demandé, générer une image IA (uniquement si aucune image n'est déjà présente)
+    if (generateAiImage === true && (!observation.images || observation.images.length === 0)) {
+      try {
+        console.log(`🎨 Génération d'image IA demandée pour l'observation ${observation._id}`);
+
+        const aiImage = await imageService.generateAiImage(observationData, observation._id.toString());
+
+        // Ajouter l'image à l'observation
+        observation = await observationService.updateObservation(observation._id, {
+          images: [aiImage]
+        });
+
+        console.log(`✅ Image IA ajoutée à l'observation ${observation._id}`);
+      } catch (aiError) {
+        // Log l'erreur mais ne bloque pas la création de l'observation
+        console.error('⚠️ Échec génération image IA (observation créée sans image):', aiError.message);
+      }
+    }
+
     return createdResponse(res, observation, 'Observation créée avec succès');
+  });
+
+  /**
+   * Génère une image IA pour une observation existante
+   * POST /observations/:id/generate-ai-image
+   *
+   * Nécessite d'être propriétaire de l'observation ou admin
+   */
+  generateAiImage = asyncHandler(async (req, res) => {
+    const observationId = req.params.id;
+
+    // Récupérer l'observation
+    const observation = await observationService.getObservationById(observationId);
+
+    if (!observation) {
+      return errorResponse(res, 'Observation non trouvée', 404);
+    }
+
+    console.log(`🎨 Génération d'image IA demandée pour l'observation ${observationId}`);
+
+    try {
+      // Générer l'image IA
+      const aiImage = await imageService.generateAiImage(
+        {
+          title: observation.title,
+          description: observation.description,
+          type: observation.type,
+          tags: observation.tags,
+          location: observation.location
+        },
+        observationId
+      );
+
+      // Ajouter l'image à la liste des images existantes
+      const updatedImages = [...(observation.images || []), aiImage];
+
+      const updatedObservation = await observationService.updateObservation(observationId, {
+        images: updatedImages
+      });
+
+      console.log(`✅ Image IA générée et ajoutée à l'observation ${observationId}`);
+
+      return successResponse(res, updatedObservation, 'Image IA générée avec succès');
+    } catch (error) {
+      console.error('❌ Échec génération image IA:', error.message);
+      return errorResponse(res, `Échec de la génération d'image IA: ${error.message}`, 500);
+    }
   });
 
   /**

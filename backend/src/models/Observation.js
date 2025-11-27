@@ -53,6 +53,12 @@ const observationSchema = new mongoose.Schema({
     uploadedAt: {
       type: Date,
       default: Date.now
+    },
+    source: {
+      type: String,
+      enum: ['user', 'ai'],
+      default: 'user',
+      comment: 'Origin of the image: user upload or AI-generated'
     }
   }],
   location: {

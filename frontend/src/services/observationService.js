@@ -82,4 +82,16 @@ export const observationService = {
     });
     return response.data;
   },
+
+  /**
+   * Génère une image IA pour une observation existante
+   * @param {string} observationId - ID de l'observation
+   * @returns {Promise} Observation mise à jour avec l'image IA
+   */
+  async generateAiImage(observationId) {
+    console.log('🎨 Génération image IA pour observation:', observationId);
+    const response = await apiClient.post(`/observations/${observationId}/generate-ai-image`);
+    console.log('✅ Image IA générée:', response.data);
+    return response.data;
+  },
 };

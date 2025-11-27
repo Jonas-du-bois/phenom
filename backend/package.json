@@ -17,7 +17,9 @@
     "export:swagger": "node scripts/export-swagger.js",
     "create-admin": "node scripts/create-admin.js",
     "check-db": "node scripts/check-db-connection.js",
-    "migrate-to-atlas": "node scripts/migrate-to-atlas.js"
+    "migrate-to-atlas": "node scripts/migrate-to-atlas.js",
+    "generate-ai-images": "node scripts/generate-ai-images.js",
+    "generate-ai-images:dry": "node scripts/generate-ai-images.js --dry-run"
   },
   "keywords": [
     "ufo",

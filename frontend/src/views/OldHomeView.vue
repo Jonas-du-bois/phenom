@@ -424,42 +424,89 @@
                 </p>
               </div>
 
-              <!-- Upload d'image -->
+              <!-- Upload d'image OU génération IA -->
               <div class="space-y-2">
-                <label class="text-sm text-gray-400">📷 Photo (requise)</label>
-                <input
-                  ref="observationImageInput"
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  @change="handleObservationImageSelect"
-                  class="input-field"
-                />
-                <p class="text-xs text-gray-500">
-                  Formats acceptés: JPEG, PNG, WebP. Max: 10 MB
-                </p>
-                <div v-if="observationForms.create.imagePreview" class="mt-2">
-                  <img
-                    :src="observationForms.create.imagePreview"
-                    alt="Preview"
-                    class="w-full h-40 object-cover rounded-lg"
+                <label class="text-sm text-gray-400">📷 Image</label>
+                
+                <!-- Toggle entre upload et IA -->
+                <div class="flex gap-2 mb-2">
+                  <button
+                    type="button"
+                    @click="observationForms.create.generateAiImage = false"
+                    :class="[
+                      'flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                      !observationForms.create.generateAiImage
+                        ? 'bg-violet-600 text-white'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    ]"
+                  >
+                    📷 Upload photo
+                  </button>
+                  <button
+                    type="button"
+                    @click="observationForms.create.generateAiImage = true; observationForms.create.imageFile = null; observationForms.create.imagePreview = null;"
+                    :class="[
+                      'flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                      observationForms.create.generateAiImage
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    ]"
+                  >
+                    🤖 Générer par IA
+                  </button>
+                </div>
+
+                <!-- Upload classique -->
+                <div v-if="!observationForms.create.generateAiImage">
+                  <input
+                    ref="observationImageInput"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    @change="handleObservationImageSelect"
+                    class="input-field"
                   />
+                  <p class="text-xs text-gray-500 mt-1">
+                    Formats acceptés: JPEG, PNG, WebP. Max: 10 MB
+                  </p>
+                  <div v-if="observationForms.create.imagePreview" class="mt-2">
+                    <img
+                      :src="observationForms.create.imagePreview"
+                      alt="Preview"
+                      class="w-full h-40 object-cover rounded-lg"
+                    />
+                  </div>
+                </div>
+
+                <!-- Info génération IA -->
+                <div v-else class="p-3 bg-gradient-to-r from-purple-900/30 to-pink-900/30 border border-purple-500/30 rounded-lg">
+                  <p class="text-purple-200 text-sm">
+                    ✨ <strong>Génération IA avec Gemini</strong><br/>
+                    <span class="text-xs text-purple-300">
+                      Une illustration sera automatiquement générée à partir du titre, de la description et du type d'observation.
+                      L'image sera marquée avec <code class="bg-black/30 px-1 rounded">source: 'ai'</code>.
+                    </span>
+                  </p>
                 </div>
               </div>
             </div>
             <button
               @click="createObservation"
               class="btn-primary mb-3 w-full"
-              :disabled="!observationForms.create.imageFile || !currentUser"
+              :disabled="(!observationForms.create.imageFile && !observationForms.create.generateAiImage) || !currentUser"
               :class="{
                 'opacity-50 cursor-not-allowed':
-                  !observationForms.create.imageFile || !currentUser,
+                  (!observationForms.create.imageFile && !observationForms.create.generateAiImage) || !currentUser,
               }"
             >
-              {{
-                observationForms.create.imageFile
-                  ? "Créer l'observation"
-                  : "Sélectionnez une photo d'abord"
-              }}
+              <span v-if="observationForms.create.generateAiImage">
+                🤖 Créer avec image IA
+              </span>
+              <span v-else-if="observationForms.create.imageFile">
+                Créer l'observation
+              </span>
+              <span v-else>
+                Sélectionnez une photo ou activez l'IA
+              </span>
             </button>
             <p v-if="!currentUser" class="text-yellow-400 text-sm mb-3">
               ⚠️ Vous devez être connecté pour créer une observation
@@ -606,6 +653,35 @@
             </button>
             <pre v-if="results.deleteObservation" class="result-box">{{
               JSON.stringify(results.deleteObservation, null, 2)
+            }}</pre>
+          </div>
+
+          <!-- Generate AI Image -->
+          <div class="api-card">
+            <h3 class="text-lg font-semibold mb-3">
+              🤖 Générer une image IA
+            </h3>
+            <p class="text-sm text-gray-400 mb-3">
+              Génère une image IA pour une observation existante sans image, basée sur son titre, description et type.
+            </p>
+            <div class="space-y-2 mb-3">
+              <input
+                v-model="observationForms.generateAi.id"
+                type="text"
+                placeholder="ID de l'observation"
+                class="input-field"
+              />
+            </div>
+            <button 
+              @click="generateAiImageForObservation" 
+              class="btn-primary mb-3 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700"
+              :disabled="aiImageLoading"
+            >
+              <span v-if="aiImageLoading">⏳ Génération en cours...</span>
+              <span v-else>🤖 Générer l'image</span>
+            </button>
+            <pre v-if="results.generateAiImage" class="result-box">{{
+              JSON.stringify(results.generateAiImage, null, 2)
             }}</pre>
           </div>
         </div>
@@ -1083,6 +1159,7 @@ const wsUrl = computed(() => import.meta.env.VITE_WS_URL);
 const healthStatus = ref(null);
 const results = ref({});
 const observationImageInput = ref(null);
+const aiImageLoading = ref(false);
 
 // Récupérer l'utilisateur depuis le localStorage avec les utilitaires
 const currentUser = ref(getUserData());
@@ -1141,6 +1218,10 @@ const observationForms = ref({
     imageFile: null,
     imagePreview: null,
     locationError: "",
+    generateAiImage: false,
+  },
+  generateAi: {
+    id: "",
   },
   getOne: { id: "" },
   update: {
@@ -1544,9 +1625,11 @@ async function getObservations() {
 
 async function createObservation() {
   try {
+    const useAiImage = observationForms.value.create.generateAiImage;
+
     // Validation
-    if (!observationForms.value.create.imageFile) {
-      results.value.createObservation = { error: "Une photo est requise" };
+    if (!useAiImage && !observationForms.value.create.imageFile) {
+      results.value.createObservation = { error: "Une photo est requise (ou activez la génération IA)" };
       return;
     }
 
@@ -1560,9 +1643,9 @@ async function createObservation() {
       return;
     }
 
-    // Étape 1: Créer l'observation SANS image
+    // Étape 1: Créer l'observation
     results.value.createObservation = {
-      status: "Création de l'observation...",
+      status: useAiImage ? "🤖 Création de l'observation + génération IA en cours..." : "Création de l'observation...",
     };
 
     const observationData = {
@@ -1588,18 +1671,25 @@ async function createObservation() {
       observationData.tags = observationForms.value.create.tags;
     }
 
+    // Si génération IA, ajouter le flag
+    if (useAiImage) {
+      observationData.generateAiImage = true;
+    }
+
     const observationResponse =
       await observationService.create(observationData);
     const observationId =
       observationResponse.data?.id || observationResponse.data?._id;
 
-    // Étape 2: Uploader l'image pour cette observation
-    results.value.createObservation = { status: "Upload de l'image..." };
+    // Étape 2: Si upload classique, uploader l'image
+    if (!useAiImage && observationForms.value.create.imageFile) {
+      results.value.createObservation = { status: "Upload de l'image..." };
 
-    await imageService.uploadToObservation(
-      observationId,
-      observationForms.value.create.imageFile,
-    );
+      await imageService.uploadToObservation(
+        observationId,
+        observationForms.value.create.imageFile,
+      );
+    }
 
     // Récupérer l'observation complète avec l'image
     const finalObservation = await observationService.getById(observationId);
@@ -1618,6 +1708,7 @@ async function createObservation() {
       imageFile: null,
       imagePreview: null,
       locationError: "",
+      generateAiImage: false,
     };
   } catch (error) {
     results.value.createObservation = {
@@ -1671,6 +1762,23 @@ async function deleteObservation() {
     results.value.deleteObservation = {
       error: error.response?.data || error.message,
     };
+  }
+}
+
+// Générer une image IA pour une observation existante
+async function generateAiImageForObservation() {
+  try {
+    aiImageLoading.value = true;
+    const response = await observationService.generateAiImage(
+      observationForms.value.generateAi.id,
+    );
+    results.value.generateAiImage = response;
+  } catch (error) {
+    results.value.generateAiImage = {
+      error: error.response?.data || error.message,
+    };
+  } finally {
+    aiImageLoading.value = false;
   }
 }
 

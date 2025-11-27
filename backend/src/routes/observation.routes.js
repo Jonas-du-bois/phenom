@@ -613,4 +613,75 @@ router.delete(
   observationController.deleteObservation
 );
 
+/**
+ * @swagger
+ * /api/v1/observations/{id}/generate-ai-image:
+ *   post:
+ *     summary: Génère une image IA pour une observation existante
+ *     description: |
+ *       Utilise l'API Gemini pour générer une illustration basée sur le titre,
+ *       la description et le type de l'observation. L'image est uploadée sur Cloudinary
+ *       et ajoutée à la liste des images de l'observation avec `source: 'ai'`.
+ *
+ *       Nécessite d'être le propriétaire de l'observation ou administrateur.
+ *     tags: [Observations]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de l'observation (MongoDB ObjectId)
+ *         example: 507f1f77bcf86cd799439011
+ *     responses:
+ *       200:
+ *         description: Image IA générée et ajoutée avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Image IA générée avec succès
+ *                 data:
+ *                   $ref: '#/components/schemas/Observation'
+ *       400:
+ *         description: ID invalide
+ *       401:
+ *         description: Non authentifié
+ *       403:
+ *         description: Non autorisé (pas propriétaire ni admin)
+ *       404:
+ *         description: Observation non trouvée
+ *       500:
+ *         description: Erreur lors de la génération de l'image IA
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Échec de la génération d'image IA: GEMINI_API_KEY non configurée"
+ */
+router.post(
+  '/:id/generate-ai-image',
+  authenticate,
+  idParamValidation,
+  validate,
+  isOwnerOrAdmin(async (req) => {
+    return await observationService.getObservationOwnerId(req.params.id);
+  }),
+  observationController.generateAiImage
+);
+
 export default router;
