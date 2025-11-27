@@ -19,9 +19,12 @@ const apiClient = axios.create({
   withCredentials: true, // Envoyer les cookies HttpOnly avec chaque requête
 });
 
+// Clé de stockage du token (doit correspondre à storage.js)
+const TOKEN_KEY = "phenom_auth_token";
+
 // Intercepteur pour ajouter le token
 apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem(TOKEN_KEY);
 
   console.log("🔧 Interceptor request:", {
     url: config.url,
@@ -100,8 +103,8 @@ apiClient.interceptors.response.use(
         const response = await apiClient.post('/auth/refresh-token');
         const { accessToken } = response.data.data;
 
-        // Mettre à jour le token stocké
-        localStorage.setItem('token', accessToken);
+        // Mettre à jour le token stocké (utiliser la même clé que storage.js)
+        localStorage.setItem(TOKEN_KEY, accessToken);
         
         // Mettre à jour le header pour la requête originale
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
@@ -114,9 +117,11 @@ apiClient.interceptors.response.use(
         
         // Refresh échoué - déconnecter l'utilisateur
         console.error('🔒 Session expirée - refresh échoué');
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        if (window.location.pathname !== '/auth') {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem('phenom_user_data');
+        
+        // Ne pas rediriger si on est sur /old-home (page de test)
+        if (window.location.pathname !== '/auth' && window.location.pathname !== '/old-home') {
           window.location.href = '/auth';
         }
         return Promise.reject(refreshError);

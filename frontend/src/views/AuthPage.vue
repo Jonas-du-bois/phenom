@@ -186,8 +186,6 @@
 import { ref, reactive } from "vue";
 import { useRouter } from "vue-router";
 import { useAuth } from "../composables/useAuth";
-import BaseInput from "../components/BaseInput.vue";
-import BaseButton from "../components/BaseButton.vue";
 
 const router = useRouter();
 const { login, register, loading, error: authError } = useAuth();

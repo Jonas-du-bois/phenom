@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from "vue-router";
 
-// Check if user is authenticated
+// Check if user is authenticated (use same key as storage.js)
 const isAuthenticated = () => {
-  return !!localStorage.getItem("token");
+  return !!localStorage.getItem("phenom_auth_token");
 };
 
 const router = createRouter({
@@ -59,11 +59,12 @@ const router = createRouter({
       ],
     },
 
-    // Old HomeView route (keep for compatibility)
+    // Old HomeView route (keep for compatibility) - No auth required for testing
     {
       path: "/old-home",
       name: "old-home",
       component: () => import("../views/OldHomeView.vue"),
+      meta: { requiresAuth: false },
     },
     {
       path: "/test",
