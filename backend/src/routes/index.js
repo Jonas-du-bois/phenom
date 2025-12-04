@@ -5,28 +5,17 @@ import observationRoutes from './observation.routes.js';
 import commentRoutes from './comment.routes.js';
 import adminRoutes from './admin.routes.js';
 import imageRoutes from './image.routes.js';
-import sightingRoutes from './sighting.routes.js';
 import filterRoutes from './filter.routes.js';
-import statisticsRoutes from './statistics.routes.js';
 
 const router = express.Router();
 
 // ============================================
-// PHENOM SEARCH COMPATIBLE ROUTES (Public)
+// PHENOM API - Unified Observation Routes
+// Compatible with both Phenom App and Phenom Search
 // ============================================
 
-// Routes des sightings (format Phenom Search)
-router.use('/sightings', sightingRoutes);
-
-// Routes des filtres (format Phenom Search)
+// Routes des filtres (valeurs disponibles pour l'UI)
 router.use('/filters', filterRoutes);
-
-// Routes des statistiques (format Phenom Search)
-router.use('/statistics', statisticsRoutes);
-
-// ============================================
-// PHENOM APP ROUTES (Social features)
-// ============================================
 
 // Routes d'authentification
 router.use('/auth', authRoutes);
@@ -37,7 +26,9 @@ router.use('/users', userRoutes);
 // Routes des images
 router.use('/', imageRoutes);
 
-// Routes des observations (CRUD avec auth)
+// Routes des observations (CRUD + filtres avancés + statistiques)
+// Public: GET (lecture)
+// Protected: POST/PUT/DELETE (création/modification/suppression)
 router.use('/observations', observationRoutes);
 
 // Routes des commentaires

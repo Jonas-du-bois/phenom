@@ -12,6 +12,7 @@ import {
 } from '../validators/observation.validator.js';
 import { createLimiter } from '../middleware/rateLimiter.js';
 import observationService from '../services/observation.service.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 
 const router = express.Router();
 
@@ -135,6 +136,85 @@ router.get(
 
 /**
  * @swagger
+ * /api/v1/observations/statistics:
+ *   get:
+ *     summary: Statistiques globales détaillées (format Phenom Search)
+ *     tags: [Observations]
+ *     description: |
+ *       Retourne des statistiques complètes sur le dataset d'observations,
+ *       compatibles avec le format Phenom Search API.
+ *     responses:
+ *       200:
+ *         description: Statistiques récupérées avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     totalSightings:
+ *                       type: integer
+ *                       example: 18116
+ *                     credibilityStats:
+ *                       type: object
+ *                       properties:
+ *                         min:
+ *                           type: integer
+ *                         max:
+ *                           type: integer
+ *                         avg:
+ *                           type: string
+ *                     strangenessStats:
+ *                       type: object
+ *                       properties:
+ *                         min:
+ *                           type: integer
+ *                         max:
+ *                           type: integer
+ *                         avg:
+ *                           type: string
+ *                     durationStats:
+ *                       type: object
+ *                       properties:
+ *                         min:
+ *                           type: integer
+ *                         max:
+ *                           type: integer
+ *                         avg:
+ *                           type: string
+ *                     topCountries:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           country:
+ *                             type: string
+ *                           count:
+ *                             type: integer
+ *                     observerTypeDistribution:
+ *                       type: object
+ *                     ufoShapeDistribution:
+ *                       type: object
+ *                     sightingsWithCoordinates:
+ *                       type: integer
+ *                     sightingsWithImages:
+ *                       type: integer
+ */
+router.get('/statistics', asyncHandler(async (req, res) => {
+  const stats = await observationService.getStatistics();
+  return res.status(200).json({
+    success: true,
+    data: stats
+  });
+}));
+
+/**
+ * @swagger
  * /api/v1/observations/popular-types:
  *   get:
  *     summary: Récupère les types d'observations les plus populaires
@@ -182,7 +262,17 @@ router.get(
  * @swagger
  * /api/v1/observations:
  *   get:
- *     summary: Récupère la liste des observations avec filtres
+ *     summary: Récupère la liste des observations avec filtres avancés
+ *     description: |
+ *       Endpoint unifié pour récupérer les observations avec pagination et filtres.
+ *       Compatible avec le format Phenom Search API.
+ *       
+ *       **Fonctionnalités:**
+ *       - Pagination flexible (page/limit ou offset/limit)
+ *       - Filtres par pays, locale, dates, credibility, strangeness
+ *       - Filtres par types d'observateurs, formes d'OVNI, phénomènes
+ *       - Recherche textuelle dans la description et le lieu
+ *       - Tri personnalisable
  *     tags: [Observations]
  *     parameters:
  *       - in: query
@@ -197,14 +287,20 @@ router.get(
  *         schema:
  *           type: integer
  *           minimum: 1
- *           maximum: 100
- *           default: 10
+ *           maximum: 500
+ *           default: 50
  *         description: Nombre d'observations par page
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *         description: Position de départ (alternative à page)
  *       - in: query
  *         name: sortBy
  *         schema:
  *           type: string
- *           enum: [createdAt, updatedAt, title]
+ *           enum: [createdAt, updatedAt, date, credibility, strangeness]
  *           default: createdAt
  *         description: Champ de tri
  *       - in: query
@@ -218,7 +314,95 @@ router.get(
  *         name: search
  *         schema:
  *           type: string
- *         description: Recherche dans le titre et la description
+ *         description: Recherche textuelle dans description et location
+ *       - in: query
+ *         name: country
+ *         schema:
+ *           type: string
+ *         description: Filtrer par pays (recherche partielle)
+ *       - in: query
+ *         name: locale
+ *         schema:
+ *           type: string
+ *         description: Type de localité (CITY, RURAL, MOUNTAIN, etc.)
+ *       - in: query
+ *         name: startYear
+ *         schema:
+ *           type: integer
+ *         description: Année minimum
+ *       - in: query
+ *         name: endYear
+ *         schema:
+ *           type: integer
+ *         description: Année maximum
+ *       - in: query
+ *         name: minCredibility
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *           maximum: 15
+ *         description: Crédibilité minimale (0-15)
+ *       - in: query
+ *         name: maxCredibility
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *           maximum: 15
+ *         description: Crédibilité maximale (0-15)
+ *       - in: query
+ *         name: minStrangeness
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *           maximum: 10
+ *         description: Étrangeté minimale (0-10)
+ *       - in: query
+ *         name: maxStrangeness
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *           maximum: 10
+ *         description: Étrangeté maximale (0-10)
+ *       - in: query
+ *         name: minDuration
+ *         schema:
+ *           type: integer
+ *         description: Durée minimale (secondes)
+ *       - in: query
+ *         name: maxDuration
+ *         schema:
+ *           type: integer
+ *         description: Durée maximale (secondes)
+ *       - in: query
+ *         name: observerType
+ *         schema:
+ *           type: string
+ *         description: Code(s) d'observateur séparés par virgule (ex "GND,MIL")
+ *       - in: query
+ *         name: ufoShape
+ *         schema:
+ *           type: string
+ *         description: Code(s) de forme séparés par virgule (ex "SCR,CIG")
+ *       - in: query
+ *         name: phenomenon
+ *         schema:
+ *           type: string
+ *         description: Code(s) de phénomène séparés par virgule (ex "RAY,LND")
+ *       - in: query
+ *         name: hasCoordinates
+ *         schema:
+ *           type: boolean
+ *         description: Filtrer par présence de coordonnées GPS
+ *       - in: query
+ *         name: hasImages
+ *         schema:
+ *           type: boolean
+ *         description: Filtrer par présence d'images
+ *       - in: query
+ *         name: userId
+ *         schema:
+ *           type: string
+ *         description: Filtrer par utilisateur (MongoDB ObjectId)
  *     responses:
  *       200:
  *         description: Observations récupérées avec succès
@@ -245,13 +429,17 @@ router.get(
  *                           example: 1
  *                         limit:
  *                           type: integer
- *                           example: 10
+ *                           example: 50
  *                         total:
  *                           type: integer
  *                           example: 234
- *                         pages:
+ *                         totalPages:
  *                           type: integer
- *                           example: 24
+ *                           example: 5
+ *                         hasNextPage:
+ *                           type: boolean
+ *                         hasPrevPage:
+ *                           type: boolean
  *       400:
  *         description: Paramètres invalides
  *         content:
@@ -271,6 +459,14 @@ router.get(
  * /api/v1/observations:
  *   post:
  *     summary: Crée une nouvelle observation
+ *     description: |
+ *       Crée une nouvelle observation d'OVNI/phénomène.
+ *       Utilise le format Phenom Search compatible pour la structure de données.
+ *       
+ *       **Champs requis:** date, location, country, description, coordinates
+ *       
+ *       **Fonctionnalités sociales:** Les images peuvent être ajoutées via l'endpoint dédié
+ *       après la création de l'observation.
  *     tags: [Observations]
  *     security:
  *       - bearerAuth: []
@@ -281,42 +477,86 @@ router.get(
  *           schema:
  *             type: object
  *             required:
- *               - title
- *               - description
+ *               - date
  *               - location
+ *               - country
+ *               - description
+ *               - coordinates
  *             properties:
- *               title:
+ *               date:
  *                 type: string
- *                 minLength: 3
- *                 maxLength: 100
- *                 example: OVNI triangulaire au-dessus de Lausanne
+ *                 description: Date de l'observation (YYYY-MM-DD)
+ *                 example: "2024-03-15"
+ *               time:
+ *                 type: string
+ *                 description: Heure de l'observation (HH:MM)
+ *                 example: "22:30"
+ *               location:
+ *                 type: string
+ *                 description: Lieu de l'observation
+ *                 example: "Lausanne, Vaud"
+ *               country:
+ *                 type: string
+ *                 description: Pays
+ *                 example: "Suisse"
+ *               locale:
+ *                 type: string
+ *                 enum: [Town & City, Rural, Mountains, Farmlands, Coastal, Desert, Forest, Lake/River, Ocean, Airport, Military Base, Unknown]
+ *                 example: "Town & City"
+ *               coordinates:
+ *                 type: object
+ *                 required:
+ *                   - lat
+ *                   - lng
+ *                 properties:
+ *                   lat:
+ *                     type: number
+ *                     minimum: -90
+ *                     maximum: 90
+ *                     example: 46.5197
+ *                   lng:
+ *                     type: number
+ *                     minimum: -180
+ *                     maximum: 180
+ *                     example: 6.6323
  *               description:
  *                 type: string
  *                 minLength: 10
- *                 maxLength: 2000
- *                 example: J'ai observé un objet triangulaire lumineux se déplaçant silencieusement
- *               location:
- *                 type: object
- *                 required:
- *                   - type
- *                   - coordinates
- *                 properties:
- *                   type:
- *                     type: string
- *                     enum: [Point]
- *                     example: Point
- *                   coordinates:
- *                     type: array
- *                     items:
- *                       type: number
- *                     minItems: 2
- *                     maxItems: 2
- *                     example: [6.6323, 46.5197]
- *                     description: "[longitude, latitude] au format WGS84"
- *               imageUrl:
- *                 type: string
- *                 format: uri
- *                 example: https://example.com/image.jpg
+ *                 maxLength: 5000
+ *                 example: "J'ai observé un objet triangulaire lumineux se déplaçant silencieusement au-dessus de la ville pendant environ 2 minutes."
+ *               credibility:
+ *                 type: integer
+ *                 minimum: 0
+ *                 maximum: 15
+ *                 default: 5
+ *                 description: Score de crédibilité (0-15)
+ *               strangeness:
+ *                 type: integer
+ *                 minimum: 0
+ *                 maximum: 10
+ *                 default: 5
+ *                 description: Score d'étrangeté (0-10)
+ *               duration:
+ *                 type: integer
+ *                 description: Durée en secondes
+ *                 example: 120
+ *               observerTypes:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   enum: [GND, MIL, CIV, HQO, SCI, CST, SEA, NWS]
+ *                 example: ["GND", "CIV"]
+ *               ufoShapes:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   enum: [SCR, CIG, DLT, NLT, FBL, FIG, PRB, NFO]
+ *                 example: ["DLT"]
+ *               phenomena:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 example: ["NTL", "HST"]
  *     responses:
  *       201:
  *         description: |
@@ -426,6 +666,9 @@ router.get(
  * /api/v1/observations/{id}:
  *   put:
  *     summary: Met à jour une observation
+ *     description: |
+ *       Met à jour une observation existante. Seul le propriétaire ou un admin peut modifier.
+ *       Utilise le format Phenom Search compatible.
  *     tags: [Observations]
  *     security:
  *       - bearerAuth: []
@@ -444,31 +687,55 @@ router.get(
  *           schema:
  *             type: object
  *             properties:
- *               title:
+ *               date:
  *                 type: string
- *                 minLength: 3
- *                 maxLength: 100
- *                 example: OVNI triangulaire (mis à jour)
+ *                 description: Date de l'observation (YYYY-MM-DD)
+ *                 example: "2024-03-15"
+ *               time:
+ *                 type: string
+ *                 example: "22:30"
+ *               location:
+ *                 type: string
+ *                 example: "Lausanne, Vaud"
+ *               country:
+ *                 type: string
+ *                 example: "Suisse"
+ *               locale:
+ *                 type: string
+ *                 enum: [Town & City, Rural, Mountains, Farmlands, Coastal, Desert, Forest, Lake/River, Ocean, Airport, Military Base, Unknown]
+ *               coordinates:
+ *                 type: object
+ *                 properties:
+ *                   lat:
+ *                     type: number
+ *                   lng:
+ *                     type: number
  *               description:
  *                 type: string
  *                 minLength: 10
- *                 maxLength: 2000
- *                 example: Description mise à jour de l'observation
- *               location:
- *                 type: object
- *                 properties:
- *                   type:
- *                     type: string
- *                     enum: [Point]
- *                   coordinates:
- *                     type: array
- *                     items:
- *                       type: number
- *                     minItems: 2
- *                     maxItems: 2
- *               imageUrl:
- *                 type: string
- *                 format: uri
+ *                 maxLength: 5000
+ *               credibility:
+ *                 type: integer
+ *                 minimum: 0
+ *                 maximum: 15
+ *               strangeness:
+ *                 type: integer
+ *                 minimum: 0
+ *                 maximum: 10
+ *               duration:
+ *                 type: integer
+ *               observerTypes:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               ufoShapes:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               phenomena:
+ *                 type: array
+ *                 items:
+ *                   type: string
  *     responses:
  *       200:
  *         description: |
