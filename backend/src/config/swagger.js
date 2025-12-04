@@ -272,11 +272,11 @@ Tous les endpoints REST sont documentés ci-dessous avec leurs schémas de requ�
         description: 'Authentification et gestion de compte'
       },
       {
-        name: 'Users',
+        name: 'Utilisateurs',
         description: 'Gestion du profil utilisateur'
       },
       {
-        name: 'Comments',
+        name: 'Commentaires',
         description: 'Gestion des commentaires sur les observations'
       },
       {

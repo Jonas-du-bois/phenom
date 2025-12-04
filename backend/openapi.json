@@ -1,9 +1,9 @@
 {
-  "openapi": "3.2.4",
+  "openapi": "3.0.0",
   "info": {
     "title": "Phenom API",
-    "version": "3.2.4",
-    "description": "API REST et WebSocket pour l'application d'observations OVNI Phenom.\n\n---\n\n## � Démarrage rapide\n\n### API REST\nTous les endpoints REST sont documentés ci-dessous avec leurs schémas de requête/réponse.\n\n**Base URL** : `/api/v1`\n\n**Authentification** : Bearer Token JWT (voir section \"Authentification\")\n\n### WebSocket Temps Réel\n\nL'API Phenom intègre un serveur WebSocket utilisant **WsMini** pour les mises à jour en temps réel.\n\n**URLs WebSocket** :\n- 🔧 **Développement** : `ws://localhost:3000`\n- 🌐 **Production** : `wss://phenom-backend.onrender.com`\n\n⚠️ **Important** : Le WebSocket utilise le **même port** que l'API REST.\n\n---\n\n## 🔌 Guide WebSocket\n\n### 1️⃣ Connexion\n\n```javascript\n// Détecter automatiquement l'environnement\nconst wsUrl = import.meta.env.PROD \n  ? 'wss://phenom-backend.onrender.com'\n  : 'ws://localhost:3000';\n\nconst ws = new WebSocket(wsUrl);\n\nws.onopen = () => {\n  console.log('✅ Connecté au WebSocket Phenom');\n};\n```\n\n### 2️⃣ Abonnement aux canaux\n\n**Canal `observations`** - Mises à jour des observations OVNI\n```javascript\nws.send(JSON.stringify({ \n  action: 'subscribe', \n  channel: 'observations' \n}));\n```\n\n**Événements disponibles** :\n- 🆕 `observation:created` - Nouvelle observation publiée\n- ✏️ `observation:updated` - Observation modifiée\n- 🗑️ `observation:deleted` - Observation supprimée\n\n**Canal `comments`** - Mises à jour des commentaires\n```javascript\nws.send(JSON.stringify({ \n  action: 'subscribe', \n  channel: 'comments' \n}));\n```\n\n**Événements disponibles** :\n- 🆕 `comment:created` - Nouveau commentaire posté\n- ✏️ `comment:updated` - Commentaire modifié\n- 🗑️ `comment:deleted` - Commentaire supprimé\n\n### 3️⃣ Réception des messages\n\n```javascript\nws.onmessage = (event) => {\n  const message = JSON.parse(event.data);\n  \n  switch(message.type) {\n    case 'observation:created':\n      console.log('Nouvelle observation:', message.data);\n      break;\n    case 'comment:created':\n      console.log('Nouveau commentaire:', message.data);\n      break;\n    // ... autres événements\n  }\n};\n```\n\n### 4️⃣ Format des messages\n\nTous les messages WebSocket suivent ce format standardisé :\n\n```json\n{\n  \"type\": \"observation:created\",\n  \"data\": {\n    \"_id\": \"507f1f77bcf86cd799439011\",\n    \"title\": \"OVNI triangulaire\",\n    \"description\": \"...\",\n    \"location\": { \"type\": \"Point\", \"coordinates\": [6.6323, 46.5197] },\n    \"userId\": \"507f191e810c19729de860ea\",\n    \"createdAt\": \"2025-11-03T12:34:56.789Z\"\n  },\n  \"timestamp\": \"2025-11-03T12:34:56.789Z\"\n}\n```\n\n### 5️⃣ Gestion des erreurs\n\n```javascript\nws.onerror = (error) => {\n  console.error('❌ Erreur WebSocket:', error);\n};\n\nws.onclose = (event) => {\n  console.log('🔌 Connexion WebSocket fermée', event.code);\n  // Implémenter reconnexion automatique si nécessaire\n};\n```\n\n---\n\n## 📚 Ressources\n\n- 📖 [Documentation technique complète](backend/src/config/WEBSOCKET_README.md)\n- 🔗 [WsMini - Librairie utilisée](https://github.com/Chabloz/WsMini)\n- 🔐 Note : Les clients peuvent **uniquement s'abonner** aux canaux. Seul le serveur publie des événements.\n",
+    "version": "1.0.0",
+    "description": "API REST et WebSocket pour l'application d'observations OVNI Phenom.\n\n## 🚀 Démarrage rapide\n\n### API REST\nTous les endpoints REST sont documentés ci-dessous avec leurs schémas de requête/réponse.\n\n**Base URL** : `/api/v1`\n\n**Authentification** : Bearer Token JWT (voir section \"Authentification\")\n",
     "contact": {
       "name": "Équipe Phenom",
       "email": "contact@phenom.app"
@@ -19,7 +19,7 @@
         "type": "http",
         "scheme": "bearer",
         "bearerFormat": "JWT",
-        "description": "Token JWT pour l'authentification"
+        "description": "Token JWT pour l'authentification. Utilisez ce schéma pour les routes nécessitant une authentification."
       }
     },
     "schemas": {
@@ -73,38 +73,166 @@
       },
       "Observation": {
         "type": "object",
+        "description": "Observation OVNI (format Phenom App avec support Phenom Search)",
         "properties": {
           "_id": {
             "type": "string"
           },
-          "title": {
+          "date": {
             "type": "string",
-            "example": "OVNI triangulaire"
+            "description": "Date de l'observation (YYYY-MM-DD)",
+            "example": "2024-03-15"
+          },
+          "time": {
+            "type": "string",
+            "description": "Heure de l'observation (HH:MM)",
+            "example": "22:30"
+          },
+          "location": {
+            "type": "string",
+            "description": "Lieu de l'observation",
+            "example": "Lausanne, Vaud"
+          },
+          "country": {
+            "type": "string",
+            "example": "Suisse"
+          },
+          "locale": {
+            "type": "string",
+            "description": "Type de localité",
+            "enum": [
+              "CITY",
+              "RURAL",
+              "MOUNTAIN",
+              "DESERT",
+              "OCEAN",
+              "FOREST",
+              "COAST",
+              "LAKE"
+            ],
+            "example": "CITY"
+          },
+          "coordinates": {
+            "type": "object",
+            "properties": {
+              "lat": {
+                "type": "number",
+                "example": 46.5197
+              },
+              "lng": {
+                "type": "number",
+                "example": 6.6323
+              }
+            }
           },
           "description": {
             "type": "string",
-            "example": "Observation d'un objet triangulaire lumineux"
+            "example": "Observation d'un objet triangulaire lumineux au-dessus de la ville"
+          },
+          "credibility": {
+            "type": "integer",
+            "description": "Score de crédibilité (0-15)",
+            "minimum": 0,
+            "maximum": 15,
+            "example": 8
+          },
+          "strangeness": {
+            "type": "integer",
+            "description": "Score d'étrangeté (0-10)",
+            "minimum": 0,
+            "maximum": 10,
+            "example": 6
+          },
+          "duration": {
+            "type": "integer",
+            "description": "Durée en secondes",
+            "example": 120
+          },
+          "observerTypes": {
+            "type": "array",
+            "description": "Types d'observateurs",
+            "items": {
+              "type": "string",
+              "enum": [
+                "GND",
+                "MIL",
+                "PIL",
+                "SCI",
+                "POL",
+                "AST",
+                "MTR",
+                "RAD"
+              ]
+            },
+            "example": [
+              "GND",
+              "CIV"
+            ]
+          },
+          "ufoShapes": {
+            "type": "array",
+            "description": "Formes observées",
+            "items": {
+              "type": "string",
+              "enum": [
+                "SPH",
+                "DSK",
+                "TRI",
+                "CIG",
+                "LGT",
+                "OVL",
+                "RCT",
+                "OTH"
+              ]
+            },
+            "example": [
+              "TRI"
+            ]
+          },
+          "phenomena": {
+            "type": "array",
+            "description": "Phénomènes observés",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "NTL",
+              "HST"
+            ]
           },
           "images": {
             "type": "array",
+            "description": "Images stockées sur Cloudinary",
             "items": {
               "type": "object",
               "properties": {
-                "imageId": {
+                "publicId": {
                   "type": "string",
-                  "example": "67890abcdef"
+                  "description": "Public ID Cloudinary",
+                  "example": "phenom/observations/507f1f77bcf86cd799439011_1699876543210"
                 },
-                "imageUrl": {
+                "url": {
                   "type": "string",
-                  "example": "/api/v1/images/67890abcdef"
+                  "description": "URL HTTPS publique sur Cloudinary",
+                  "example": "https://res.cloudinary.com/dgsfd1fic/image/upload/v1699876543/phenom/observations/507f1f77bcf86cd799439011_1699876543210.jpg"
                 },
                 "size": {
                   "type": "number",
-                  "example": 524288
+                  "description": "Taille en octets (après compression)",
+                  "example": 245678
                 },
                 "format": {
                   "type": "string",
-                  "example": "image/jpeg"
+                  "description": "Format de l'image",
+                  "example": "jpg"
+                },
+                "width": {
+                  "type": "number",
+                  "example": 1920
+                },
+                "height": {
+                  "type": "number",
+                  "example": 1080
                 },
                 "uploadedAt": {
                   "type": "string",
@@ -113,29 +241,16 @@
               }
             }
           },
-          "location": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "type": "string",
-                "enum": [
-                  "Point"
-                ]
-              },
-              "coordinates": {
-                "type": "array",
-                "items": {
-                  "type": "number"
-                },
-                "example": [
-                  6.6323,
-                  46.5197
-                ]
-              }
-            }
-          },
           "userId": {
             "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "phenom_app",
+              "phenom_search_scrape"
+            ],
+            "example": "phenom_app"
           },
           "createdAt": {
             "type": "string",
@@ -168,201 +283,25 @@
             "format": "date-time"
           }
         }
-      },
-      "WebSocketMessage": {
-        "type": "object",
-        "description": "**Message générique WebSocket** - Format standard pour tous les événements temps réel",
-        "properties": {
-          "type": {
-            "type": "string",
-            "enum": [
-              "observation:created",
-              "observation:updated",
-              "observation:deleted",
-              "comment:created",
-              "comment:updated",
-              "comment:deleted"
-            ],
-            "example": "observation:created",
-            "description": "Type d'événement WebSocket"
-          },
-          "data": {
-            "type": "object",
-            "description": "Données de l'événement (observation ou commentaire complet)"
-          },
-          "timestamp": {
-            "type": "string",
-            "format": "date-time",
-            "example": "2025-11-03T12:34:56.789Z",
-            "description": "Horodatage de l'événement (ISO 8601)"
-          }
-        },
-        "required": [
-          "type",
-          "data",
-          "timestamp"
-        ],
-        "example": {
-          "type": "observation:created",
-          "data": {
-            "_id": "507f1f77bcf86cd799439011",
-            "title": "OVNI triangulaire",
-            "description": "Observation d'un objet triangulaire lumineux",
-            "location": {
-              "type": "Point",
-              "coordinates": [
-                6.6323,
-                46.5197
-              ]
-            },
-            "userId": "507f191e810c19729de860ea",
-            "createdAt": "2025-11-03T12:34:56.789Z"
-          },
-          "timestamp": "2025-11-03T12:34:56.789Z"
-        }
-      },
-      "WebSocketObservationCreated": {
-        "type": "object",
-        "description": "**WebSocket : Observation créée** - Émis lorsqu'une nouvelle observation est publiée",
-        "properties": {
-          "type": {
-            "type": "string",
-            "enum": [
-              "observation:created"
-            ],
-            "example": "observation:created"
-          },
-          "data": {
-            "$ref": "#/components/schemas/Observation"
-          },
-          "timestamp": {
-            "type": "string",
-            "format": "date-time",
-            "example": "2025-11-03T12:34:56.789Z"
-          }
-        },
-        "example": {
-          "type": "observation:created",
-          "data": {
-            "_id": "507f1f77bcf86cd799439011",
-            "title": "OVNI triangulaire au-dessus de Genève",
-            "description": "Trois lumières formant un triangle parfait",
-            "images": [
-              {
-                "imageId": "67890abcdef12345",
-                "imageUrl": "/api/v1/images/67890abcdef12345",
-                "size": 524288,
-                "format": "image/jpeg"
-              }
-            ],
-            "location": {
-              "type": "Point",
-              "coordinates": [
-                6.1432,
-                46.2044
-              ]
-            },
-            "userId": "507f191e810c19729de860ea",
-            "createdAt": "2025-11-03T12:34:56.789Z",
-            "updatedAt": "2025-11-03T12:34:56.789Z"
-          },
-          "timestamp": "2025-11-03T12:34:56.789Z"
-        }
-      },
-      "WebSocketObservationDeleted": {
-        "type": "object",
-        "description": "**WebSocket : Observation supprimée** - Émis lorsqu'une observation est supprimée (par l'utilisateur ou un admin)",
-        "properties": {
-          "type": {
-            "type": "string",
-            "enum": [
-              "observation:deleted"
-            ],
-            "example": "observation:deleted"
-          },
-          "data": {
-            "type": "object",
-            "properties": {
-              "observationId": {
-                "type": "string",
-                "example": "507f1f77bcf86cd799439011",
-                "description": "ID de l'observation supprimée"
-              }
-            }
-          },
-          "timestamp": {
-            "type": "string",
-            "format": "date-time",
-            "example": "2025-11-03T12:34:56.789Z"
-          }
-        },
-        "example": {
-          "type": "observation:deleted",
-          "data": {
-            "observationId": "507f1f77bcf86cd799439011"
-          },
-          "timestamp": "2025-11-03T12:34:56.789Z"
-        }
-      },
-      "WebSocketCommentCreated": {
-        "type": "object",
-        "description": "**WebSocket : Commentaire créé** - Émis lorsqu'un nouveau commentaire est posté sur une observation",
-        "properties": {
-          "type": {
-            "type": "string",
-            "enum": [
-              "comment:created"
-            ],
-            "example": "comment:created"
-          },
-          "data": {
-            "type": "object",
-            "properties": {
-              "comment": {
-                "$ref": "#/components/schemas/Comment"
-              },
-              "observationId": {
-                "type": "string",
-                "example": "507f1f77bcf86cd799439011",
-                "description": "ID de l'observation commentée"
-              }
-            }
-          },
-          "timestamp": {
-            "type": "string",
-            "format": "date-time",
-            "example": "2025-11-03T12:34:56.789Z"
-          }
-        },
-        "example": {
-          "type": "comment:created",
-          "data": {
-            "comment": {
-              "_id": "507f1f77bcf86cd799439012",
-              "text": "J'ai vu exactement la même chose hier soir!",
-              "observationId": "507f1f77bcf86cd799439011",
-              "userId": "507f191e810c19729de860eb",
-              "createdAt": "2025-11-03T12:35:00.000Z"
-            },
-            "observationId": "507f1f77bcf86cd799439011"
-          },
-          "timestamp": "2025-11-03T12:35:00.000Z"
-        }
       }
     }
   },
   "tags": [
     {
-      "name": "Authentification",
-      "description": "Opérations d'authentification et gestion de compte"
+      "name": "Observations",
+      "description": "Gestion des observations OVNI - Format Phenom Search compatible. Lecture publique, création/modification authentifiée."
+    },
+    {
+      "name": "Filters",
+      "description": "Valeurs de filtres disponibles pour la recherche (pays, locales, types d'observateurs, formes, phénomènes)"
+    },
+    {
+      "name": "Authentication",
+      "description": "Authentification et gestion de compte"
     },
     {
       "name": "Utilisateurs",
       "description": "Gestion du profil utilisateur"
-    },
-    {
-      "name": "Observations",
-      "description": "Gestion des observations OVNI"
     },
     {
       "name": "Commentaires",
@@ -370,15 +309,11 @@
     },
     {
       "name": "Images",
-      "description": "Gestion des images avec GridFS"
+      "description": "Gestion des images avec Cloudinary (CDN)"
     },
     {
       "name": "Administration",
       "description": "Opérations administratives (admins uniquement)"
-    },
-    {
-      "name": "WebSocket",
-      "description": "**Mises à jour en temps réel via WebSocket (WsMini)**\n\n---\n\n### 🔗 Connexion\n\n**URLs** :\n- Dev : `ws://localhost:3000`\n- Prod : `wss://phenom-backend.onrender.com`\n\n### 📡 Canaux disponibles\n\n| Canal | Description | Événements |\n|-------|-------------|------------|\n| `observations` | Mises à jour des observations OVNI | `created`, `updated`, `deleted` |\n| `comments` | Mises à jour des commentaires | `created`, `updated`, `deleted` |\n\n### 📝 Format des messages\n\n```json\n{\n  \"type\": \"observation:created\",\n  \"data\": { /* Observation complète */ },\n  \"timestamp\": \"2025-11-03T12:34:56.789Z\"\n}\n```\n\n### 🔐 Notes importantes\n\n- ✅ Les clients peuvent **s'abonner** (subscribe) aux canaux\n- ❌ Les clients **ne peuvent pas publier** (seul le serveur publie)\n- 🔄 Reconnexion automatique recommandée en cas de déconnexion\n\n### 📚 Documentation\n\nConsultez le guide complet dans `backend/src/config/WEBSOCKET_README.md`\n"
     }
   ],
   "paths": {
@@ -1234,9 +1169,9 @@
     },
     "/api/v1/auth/signup": {
       "post": {
-        "summary": "Inscription d'un nouvel utilisateur",
+        "summary": "Register a new user",
         "tags": [
-          "Authentification"
+          "Authentication"
         ],
         "requestBody": {
           "required": true,
@@ -1254,17 +1189,17 @@
                     "type": "string",
                     "minLength": 3,
                     "maxLength": 50,
-                    "example": "Jean Dupont"
+                    "example": "John Doe"
                   },
                   "email": {
                     "type": "string",
                     "format": "email",
-                    "example": "jean.dupont@example.com"
+                    "example": "john.doe@example.com"
                   },
                   "password": {
                     "type": "string",
                     "minLength": 6,
-                    "example": "motdepasse123"
+                    "example": "password123"
                   }
                 }
               }
@@ -1273,7 +1208,7 @@
         },
         "responses": {
           "201": {
-            "description": "Utilisateur créé avec succès",
+            "description": "User created successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -1285,7 +1220,7 @@
                     },
                     "message": {
                       "type": "string",
-                      "example": "Utilisateur créé avec succès"
+                      "example": "Registration successful"
                     },
                     "data": {
                       "type": "object",
@@ -1309,7 +1244,7 @@
             }
           },
           "400": {
-            "description": "Données invalides",
+            "description": "Invalid data",
             "content": {
               "application/json": {
                 "schema": {
@@ -1319,7 +1254,7 @@
             }
           },
           "409": {
-            "description": "Email déjà utilisé",
+            "description": "Email already in use",
             "content": {
               "application/json": {
                 "schema": {
@@ -1333,9 +1268,9 @@
     },
     "/api/v1/auth/login": {
       "post": {
-        "summary": "Connexion d'un utilisateur",
+        "summary": "User login",
         "tags": [
-          "Authentification"
+          "Authentication"
         ],
         "requestBody": {
           "required": true,
@@ -1351,11 +1286,11 @@
                   "email": {
                     "type": "string",
                     "format": "email",
-                    "example": "jean.dupont@example.com"
+                    "example": "john.doe@example.com"
                   },
                   "password": {
                     "type": "string",
-                    "example": "motdepasse123"
+                    "example": "password123"
                   }
                 }
               }
@@ -1364,7 +1299,7 @@
         },
         "responses": {
           "200": {
-            "description": "Connexion réussie",
+            "description": "Login successful",
             "content": {
               "application/json": {
                 "schema": {
@@ -1376,7 +1311,7 @@
                     },
                     "message": {
                       "type": "string",
-                      "example": "Connexion réussie"
+                      "example": "Login successful"
                     },
                     "data": {
                       "type": "object",
@@ -1400,7 +1335,7 @@
             }
           },
           "400": {
-            "description": "Données invalides",
+            "description": "Invalid data",
             "content": {
               "application/json": {
                 "schema": {
@@ -1410,7 +1345,7 @@
             }
           },
           "401": {
-            "description": "Email ou mot de passe incorrect",
+            "description": "Incorrect email or password",
             "content": {
               "application/json": {
                 "schema": {
@@ -1420,7 +1355,7 @@
             }
           },
           "429": {
-            "description": "Trop de tentatives de connexion",
+            "description": "Too many login attempts",
             "content": {
               "application/json": {
                 "schema": {
@@ -1434,9 +1369,9 @@
     },
     "/api/v1/auth/logout": {
       "post": {
-        "summary": "Déconnexion d'un utilisateur",
+        "summary": "Logout user",
         "tags": [
-          "Authentification"
+          "Authentication"
         ],
         "security": [
           {
@@ -1445,7 +1380,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Déconnexion réussie",
+            "description": "Logout successful",
             "content": {
               "application/json": {
                 "schema": {
@@ -1457,7 +1392,7 @@
                     },
                     "message": {
                       "type": "string",
-                      "example": "Déconnexion réussie"
+                      "example": "Logout successful"
                     }
                   }
                 }
@@ -1465,7 +1400,256 @@
             }
           },
           "401": {
-            "description": "Non authentifié",
+            "description": "Not authenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "summary": "Get current user profile",
+        "tags": [
+          "Authentication"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User profile retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/refresh-token": {
+      "post": {
+        "summary": "Refresh JWT access token",
+        "tags": [
+          "Authentication"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "refreshToken"
+                ],
+                "properties": {
+                  "refreshToken": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token refreshed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "accessToken": {
+                          "type": "string",
+                          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                        },
+                        "refreshToken": {
+                          "type": "string",
+                          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired refresh token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/forgot-password": {
+      "post": {
+        "summary": "Request password reset email",
+        "tags": [
+          "Authentication"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "john.doe@example.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password reset email sent (or silently ignored if email not found)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "If this email exists, a password reset link has been sent"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/reset-password": {
+      "post": {
+        "summary": "Reset password using token",
+        "tags": [
+          "Authentication"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "token",
+                  "password"
+                ],
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "description": "Password reset token from email",
+                    "example": "abc123def456"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 6,
+                    "description": "New password",
+                    "example": "newPassword123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password reset successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Password has been reset successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or expired token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
             "content": {
               "application/json": {
                 "schema": {
@@ -1893,9 +2077,121 @@
         }
       }
     },
+    "/api/v1/filters/countries": {
+      "get": {
+        "summary": "Liste des pays disponibles",
+        "tags": [
+          "Filters"
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des pays",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/filters/locales": {
+      "get": {
+        "summary": "Types de localités disponibles",
+        "tags": [
+          "Filters"
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des types de localités"
+          }
+        }
+      }
+    },
+    "/api/v1/filters/observer-types": {
+      "get": {
+        "summary": "Types d'observateurs disponibles",
+        "tags": [
+          "Filters"
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des types d'observateurs avec descriptions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "example": "GND"
+                          },
+                          "description": {
+                            "type": "string",
+                            "example": "Ground Observers - Observateur(s) au sol"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/filters/ufo-shapes": {
+      "get": {
+        "summary": "Formes d'OVNI disponibles",
+        "tags": [
+          "Filters"
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des formes avec descriptions"
+          }
+        }
+      }
+    },
+    "/api/v1/filters/phenomena": {
+      "get": {
+        "summary": "Phénomènes disponibles",
+        "tags": [
+          "Filters"
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des phénomènes avec descriptions"
+          }
+        }
+      }
+    },
     "/api/v1/observations/{observationId}/images": {
       "post": {
-        "summary": "Upload une image pour une observation",
+        "summary": "Upload une image pour une observation (stockage Cloudinary)",
+        "description": "Upload une image qui sera compressée et stockée sur Cloudinary. L'image aura une URL publique directe.",
         "tags": [
           "Images"
         ],
@@ -1911,7 +2207,8 @@
             "required": true,
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "ID MongoDB de l'observation"
           }
         ],
         "requestBody": {
@@ -1920,10 +2217,14 @@
             "multipart/form-data": {
               "schema": {
                 "type": "object",
+                "required": [
+                  "image"
+                ],
                 "properties": {
                   "image": {
                     "type": "string",
-                    "format": "binary"
+                    "format": "binary",
+                    "description": "Fichier image (JPEG, PNG, WebP) - Max 10MB"
                   }
                 }
               }
@@ -1932,13 +2233,79 @@
         },
         "responses": {
           "201": {
-            "description": "Image uploadée avec succès"
+            "description": "Image uploadée avec succès sur Cloudinary",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Image uploadée avec succès"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "publicId": {
+                          "type": "string",
+                          "description": "Public ID Cloudinary de l'image",
+                          "example": "phenom/observations/507f1f77bcf86cd799439011_1699876543210"
+                        },
+                        "url": {
+                          "type": "string",
+                          "description": "URL HTTPS publique de l'image sur Cloudinary",
+                          "example": "https://res.cloudinary.com/dgsfd1fic/image/upload/v1699876543/phenom/observations/507f1f77bcf86cd799439011_1699876543210.jpg"
+                        },
+                        "format": {
+                          "type": "string",
+                          "example": "jpg"
+                        },
+                        "size": {
+                          "type": "number",
+                          "description": "Taille en octets (après compression)",
+                          "example": 245678
+                        },
+                        "width": {
+                          "type": "number",
+                          "example": 1920
+                        },
+                        "height": {
+                          "type": "number",
+                          "example": 1080
+                        },
+                        "compression": {
+                          "type": "object",
+                          "properties": {
+                            "originalSize": {
+                              "type": "number"
+                            },
+                            "compressedSize": {
+                              "type": "number"
+                            },
+                            "ratio": {
+                              "type": "number"
+                            },
+                            "savedBytes": {
+                              "type": "number"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           },
           "400": {
-            "description": "Aucune image fournie"
+            "description": "Aucune image fournie ou format invalide"
           },
           "403": {
-            "description": "Non autorisé"
+            "description": "Non autorisé - l'observation ne vous appartient pas"
           },
           "404": {
             "description": "Observation non trouvée"
@@ -1947,8 +2314,14 @@
       },
       "get": {
         "summary": "Liste les images d'une observation",
+        "description": "Retourne toutes les images avec leurs URLs Cloudinary publiques",
         "tags": [
           "Images"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
         ],
         "parameters": [
           {
@@ -1957,12 +2330,62 @@
             "required": true,
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "ID MongoDB de l'observation"
           }
         ],
         "responses": {
           "200": {
-            "description": "Liste des images"
+            "description": "Liste des images avec URLs Cloudinary",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "publicId": {
+                            "type": "string",
+                            "example": "phenom/observations/507f1f77bcf86cd799439011_1699876543210"
+                          },
+                          "url": {
+                            "type": "string",
+                            "example": "https://res.cloudinary.com/dgsfd1fic/image/upload/v1699876543/phenom/observations/507f1f77bcf86cd799439011_1699876543210.jpg"
+                          },
+                          "size": {
+                            "type": "number",
+                            "example": 245678
+                          },
+                          "format": {
+                            "type": "string",
+                            "example": "jpg"
+                          },
+                          "width": {
+                            "type": "number",
+                            "example": 1920
+                          },
+                          "height": {
+                            "type": "number",
+                            "example": 1080
+                          },
+                          "uploadedAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           },
           "404": {
             "description": "Observation non trouvée"
@@ -1970,60 +2393,10 @@
         }
       }
     },
-    "/api/v1/images/{imageId}": {
-      "get": {
-        "summary": "Récupère une image",
-        "tags": [
-          "Images"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "imageId",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Image récupérée",
-            "content": {
-              "image/jpeg": {
-                "schema": {
-                  "type": "string",
-                  "format": "binary"
-                }
-              },
-              "image/png": {
-                "schema": {
-                  "type": "string",
-                  "format": "binary"
-                }
-              },
-              "image/webp": {
-                "schema": {
-                  "type": "string",
-                  "format": "binary"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Image non trouvée"
-          }
-        }
-      }
-    },
-    "/api/v1/observations/{observationId}/images/{imageId}": {
-      "delete": {
-        "summary": "Supprime une image",
+    "/api/v1/observations/{observationId}/images/{publicId}": {
+      "put": {
+        "summary": "Modifie/remplace une image existante",
+        "description": "Remplace une image existante par une nouvelle. L'ancienne sera supprimée de Cloudinary et la nouvelle sera uploadée avec compression.",
         "tags": [
           "Images"
         ],
@@ -2039,23 +2412,156 @@
             "required": true,
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "ID MongoDB de l'observation"
           },
           {
             "in": "path",
-            "name": "imageId",
+            "name": "publicId",
             "required": true,
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "Public ID Cloudinary de l'image à remplacer (URL-encodé)",
+            "example": "phenom%2Fobservations%2F507f1f77bcf86cd799439011_1699876543210"
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "image"
+                ],
+                "properties": {
+                  "image": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Nouvelle image (JPEG, PNG, WebP) - Max 10MB"
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
-          "204": {
-            "description": "Image supprimée"
+          "200": {
+            "description": "Image modifiée avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Image modifiée avec succès"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "publicId": {
+                          "type": "string",
+                          "example": "phenom/observations/507f1f77bcf86cd799439011_1699876543222"
+                        },
+                        "url": {
+                          "type": "string",
+                          "example": "https://res.cloudinary.com/dgsfd1fic/image/upload/v1699876543/phenom/observations/507f1f77bcf86cd799439011_1699876543222.jpg"
+                        },
+                        "format": {
+                          "type": "string",
+                          "example": "jpg"
+                        },
+                        "size": {
+                          "type": "number",
+                          "example": 245678
+                        },
+                        "width": {
+                          "type": "number",
+                          "example": 1920
+                        },
+                        "height": {
+                          "type": "number",
+                          "example": 1080
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Aucune image fournie"
           },
           "403": {
             "description": "Non autorisé"
+          },
+          "404": {
+            "description": "Observation ou image non trouvée"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Supprime une image de Cloudinary et de l'observation",
+        "description": "Supprime définitivement l'image. Le publicId doit être URL-encodé car il contient des slashes.",
+        "tags": [
+          "Images"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "observationId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID MongoDB de l'observation"
+          },
+          {
+            "in": "path",
+            "name": "publicId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Public ID Cloudinary (doit être URL-encodé, ex. phenom%2Fobservations%2F507f1f77bcf86cd799439011_1699876543210)",
+            "example": "phenom%2Fobservations%2F507f1f77bcf86cd799439011_1699876543210"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Image supprimée avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Image supprimée avec succès"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Non autorisé - l'observation ne vous appartient pas (sauf admin)"
           },
           "404": {
             "description": "Image ou observation non trouvée"
@@ -2220,9 +2726,172 @@
         }
       }
     },
+    "/api/v1/observations/statistics": {
+      "get": {
+        "summary": "Statistiques globales détaillées (format Phenom Search)",
+        "tags": [
+          "Observations"
+        ],
+        "description": "Retourne des statistiques complètes sur le dataset d'observations,\ncompatibles avec le format Phenom Search API.\n",
+        "responses": {
+          "200": {
+            "description": "Statistiques récupérées avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "totalSightings": {
+                          "type": "integer",
+                          "example": 18116
+                        },
+                        "credibilityStats": {
+                          "type": "object",
+                          "properties": {
+                            "min": {
+                              "type": "integer"
+                            },
+                            "max": {
+                              "type": "integer"
+                            },
+                            "avg": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "strangenessStats": {
+                          "type": "object",
+                          "properties": {
+                            "min": {
+                              "type": "integer"
+                            },
+                            "max": {
+                              "type": "integer"
+                            },
+                            "avg": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "durationStats": {
+                          "type": "object",
+                          "properties": {
+                            "min": {
+                              "type": "integer"
+                            },
+                            "max": {
+                              "type": "integer"
+                            },
+                            "avg": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "topCountries": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "country": {
+                                "type": "string"
+                              },
+                              "count": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        },
+                        "observerTypeDistribution": {
+                          "type": "object"
+                        },
+                        "ufoShapeDistribution": {
+                          "type": "object"
+                        },
+                        "sightingsWithCoordinates": {
+                          "type": "integer"
+                        },
+                        "sightingsWithImages": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/observations/popular-types": {
+      "get": {
+        "summary": "Récupère les types d'observations les plus populaires",
+        "tags": [
+          "Observations"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20,
+              "default": 6
+            },
+            "description": "Nombre de types à retourner"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Types populaires récupérés avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "example": "WAV"
+                          },
+                          "count": {
+                            "type": "integer",
+                            "example": 156
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
     "/api/v1/observations": {
       "get": {
-        "summary": "Récupère la liste des observations avec filtres",
+        "summary": "Récupère la liste des observations avec filtres avancés",
+        "description": "Endpoint unifié pour récupérer les observations avec pagination et filtres.\nCompatible avec le format Phenom Search API.\n\n**Fonctionnalités:**\n- Pagination flexible (page/limit ou offset/limit)\n- Filtres par pays, locale, dates, credibility, strangeness\n- Filtres par types d'observateurs, formes d'OVNI, phénomènes\n- Recherche textuelle dans la description et le lieu\n- Tri personnalisable\n",
         "tags": [
           "Observations"
         ],
@@ -2243,10 +2912,19 @@
             "schema": {
               "type": "integer",
               "minimum": 1,
-              "maximum": 100,
-              "default": 10
+              "maximum": 500,
+              "default": 50
             },
             "description": "Nombre d'observations par page"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "description": "Position de départ (alternative à page)"
           },
           {
             "in": "query",
@@ -2256,7 +2934,9 @@
               "enum": [
                 "createdAt",
                 "updatedAt",
-                "title"
+                "date",
+                "credibility",
+                "strangeness"
               ],
               "default": "createdAt"
             },
@@ -2281,7 +2961,143 @@
             "schema": {
               "type": "string"
             },
-            "description": "Recherche dans le titre et la description"
+            "description": "Recherche textuelle dans description et location"
+          },
+          {
+            "in": "query",
+            "name": "country",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filtrer par pays (recherche partielle)"
+          },
+          {
+            "in": "query",
+            "name": "locale",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Type de localité (CITY, RURAL, MOUNTAIN, etc.)"
+          },
+          {
+            "in": "query",
+            "name": "startYear",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Année minimum"
+          },
+          {
+            "in": "query",
+            "name": "endYear",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Année maximum"
+          },
+          {
+            "in": "query",
+            "name": "minCredibility",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 15
+            },
+            "description": "Crédibilité minimale (0-15)"
+          },
+          {
+            "in": "query",
+            "name": "maxCredibility",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 15
+            },
+            "description": "Crédibilité maximale (0-15)"
+          },
+          {
+            "in": "query",
+            "name": "minStrangeness",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "description": "Étrangeté minimale (0-10)"
+          },
+          {
+            "in": "query",
+            "name": "maxStrangeness",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "description": "Étrangeté maximale (0-10)"
+          },
+          {
+            "in": "query",
+            "name": "minDuration",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Durée minimale (secondes)"
+          },
+          {
+            "in": "query",
+            "name": "maxDuration",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Durée maximale (secondes)"
+          },
+          {
+            "in": "query",
+            "name": "observerType",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Code(s) d'observateur séparés par virgule (ex \"GND,MIL\")"
+          },
+          {
+            "in": "query",
+            "name": "ufoShape",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Code(s) de forme séparés par virgule (ex \"SCR,CIG\")"
+          },
+          {
+            "in": "query",
+            "name": "phenomenon",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Code(s) de phénomène séparés par virgule (ex \"RAY,LND\")"
+          },
+          {
+            "in": "query",
+            "name": "hasCoordinates",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Filtrer par présence de coordonnées GPS"
+          },
+          {
+            "in": "query",
+            "name": "hasImages",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Filtrer par présence d'images"
+          },
+          {
+            "in": "query",
+            "name": "userId",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filtrer par utilisateur (MongoDB ObjectId)"
           }
         ],
         "responses": {
@@ -2314,15 +3130,21 @@
                             },
                             "limit": {
                               "type": "integer",
-                              "example": 10
+                              "example": 50
                             },
                             "total": {
                               "type": "integer",
                               "example": 234
                             },
-                            "pages": {
+                            "totalPages": {
                               "type": "integer",
-                              "example": 24
+                              "example": 5
+                            },
+                            "hasNextPage": {
+                              "type": "boolean"
+                            },
+                            "hasPrevPage": {
+                              "type": "boolean"
                             }
                           }
                         }
@@ -2347,6 +3169,7 @@
       },
       "post": {
         "summary": "Crée une nouvelle observation",
+        "description": "Crée une nouvelle observation d'OVNI/phénomène.\nUtilise le format Phenom Search compatible pour la structure de données.\n\n**Champs requis:** date, location, country, description, coordinates\n\n**Fonctionnalités sociales:** Les images peuvent être ajoutées via l'endpoint dédié\naprès la création de l'observation.\n",
         "tags": [
           "Observations"
         ],
@@ -2362,56 +3185,145 @@
               "schema": {
                 "type": "object",
                 "required": [
-                  "title",
+                  "date",
+                  "location",
+                  "country",
                   "description",
-                  "location"
+                  "coordinates"
                 ],
                 "properties": {
-                  "title": {
+                  "date": {
                     "type": "string",
-                    "minLength": 3,
-                    "maxLength": 100,
-                    "example": "OVNI triangulaire au-dessus de Lausanne"
+                    "description": "Date de l'observation (YYYY-MM-DD)",
+                    "example": "2024-03-15"
+                  },
+                  "time": {
+                    "type": "string",
+                    "description": "Heure de l'observation (HH:MM)",
+                    "example": "22:30"
+                  },
+                  "location": {
+                    "type": "string",
+                    "description": "Lieu de l'observation",
+                    "example": "Lausanne, Vaud"
+                  },
+                  "country": {
+                    "type": "string",
+                    "description": "Pays",
+                    "example": "Suisse"
+                  },
+                  "locale": {
+                    "type": "string",
+                    "enum": [
+                      "Town & City",
+                      "Rural",
+                      "Mountains",
+                      "Farmlands",
+                      "Coastal",
+                      "Desert",
+                      "Forest",
+                      "Lake/River",
+                      "Ocean",
+                      "Airport",
+                      "Military Base",
+                      "Unknown"
+                    ],
+                    "example": "Town & City"
+                  },
+                  "coordinates": {
+                    "type": "object",
+                    "required": [
+                      "lat",
+                      "lng"
+                    ],
+                    "properties": {
+                      "lat": {
+                        "type": "number",
+                        "minimum": -90,
+                        "maximum": 90,
+                        "example": 46.5197
+                      },
+                      "lng": {
+                        "type": "number",
+                        "minimum": -180,
+                        "maximum": 180,
+                        "example": 6.6323
+                      }
+                    }
                   },
                   "description": {
                     "type": "string",
                     "minLength": 10,
-                    "maxLength": 2000,
-                    "example": "J'ai observé un objet triangulaire lumineux se déplaçant silencieusement"
+                    "maxLength": 5000,
+                    "example": "J'ai observé un objet triangulaire lumineux se déplaçant silencieusement au-dessus de la ville pendant environ 2 minutes."
                   },
-                  "location": {
-                    "type": "object",
-                    "required": [
-                      "type",
-                      "coordinates"
-                    ],
-                    "properties": {
-                      "type": {
-                        "type": "string",
-                        "enum": [
-                          "Point"
-                        ],
-                        "example": "Point"
-                      },
-                      "coordinates": {
-                        "type": "array",
-                        "items": {
-                          "type": "number"
-                        },
-                        "minItems": 2,
-                        "maxItems": 2,
-                        "example": [
-                          6.6323,
-                          46.5197
-                        ],
-                        "description": "[longitude, latitude] au format WGS84"
-                      }
-                    }
+                  "credibility": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 15,
+                    "default": 5,
+                    "description": "Score de crédibilité (0-15)"
                   },
-                  "imageUrl": {
-                    "type": "string",
-                    "format": "uri",
-                    "example": "https://example.com/image.jpg"
+                  "strangeness": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10,
+                    "default": 5,
+                    "description": "Score d'étrangeté (0-10)"
+                  },
+                  "duration": {
+                    "type": "integer",
+                    "description": "Durée en secondes",
+                    "example": 120
+                  },
+                  "observerTypes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "GND",
+                        "MIL",
+                        "CIV",
+                        "HQO",
+                        "SCI",
+                        "CST",
+                        "SEA",
+                        "NWS"
+                      ]
+                    },
+                    "example": [
+                      "GND",
+                      "CIV"
+                    ]
+                  },
+                  "ufoShapes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "SCR",
+                        "CIG",
+                        "DLT",
+                        "NLT",
+                        "FBL",
+                        "FIG",
+                        "PRB",
+                        "NFO"
+                      ]
+                    },
+                    "example": [
+                      "DLT"
+                    ]
+                  },
+                  "phenomena": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "example": [
+                      "NTL",
+                      "HST"
+                    ]
                   }
                 }
               }
@@ -2537,6 +3449,7 @@
       },
       "put": {
         "summary": "Met à jour une observation",
+        "description": "Met à jour une observation existante. Seul le propriétaire ou un admin peut modifier.\nUtilise le format Phenom Search compatible.\n",
         "tags": [
           "Observations"
         ],
@@ -2564,40 +3477,86 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "title": {
+                  "date": {
                     "type": "string",
-                    "minLength": 3,
-                    "maxLength": 100,
-                    "example": "OVNI triangulaire (mis à jour)"
+                    "description": "Date de l'observation (YYYY-MM-DD)",
+                    "example": "2024-03-15"
+                  },
+                  "time": {
+                    "type": "string",
+                    "example": "22:30"
+                  },
+                  "location": {
+                    "type": "string",
+                    "example": "Lausanne, Vaud"
+                  },
+                  "country": {
+                    "type": "string",
+                    "example": "Suisse"
+                  },
+                  "locale": {
+                    "type": "string",
+                    "enum": [
+                      "Town & City",
+                      "Rural",
+                      "Mountains",
+                      "Farmlands",
+                      "Coastal",
+                      "Desert",
+                      "Forest",
+                      "Lake/River",
+                      "Ocean",
+                      "Airport",
+                      "Military Base",
+                      "Unknown"
+                    ]
+                  },
+                  "coordinates": {
+                    "type": "object",
+                    "properties": {
+                      "lat": {
+                        "type": "number"
+                      },
+                      "lng": {
+                        "type": "number"
+                      }
+                    }
                   },
                   "description": {
                     "type": "string",
                     "minLength": 10,
-                    "maxLength": 2000,
-                    "example": "Description mise à jour de l'observation"
+                    "maxLength": 5000
                   },
-                  "location": {
-                    "type": "object",
-                    "properties": {
-                      "type": {
-                        "type": "string",
-                        "enum": [
-                          "Point"
-                        ]
-                      },
-                      "coordinates": {
-                        "type": "array",
-                        "items": {
-                          "type": "number"
-                        },
-                        "minItems": 2,
-                        "maxItems": 2
-                      }
+                  "credibility": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 15
+                  },
+                  "strangeness": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "duration": {
+                    "type": "integer"
+                  },
+                  "observerTypes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
                     }
                   },
-                  "imageUrl": {
-                    "type": "string",
-                    "format": "uri"
+                  "ufoShapes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "phenomena": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -2749,6 +3708,89 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/observations/{id}/generate-ai-image": {
+      "post": {
+        "summary": "Génère une image IA pour une observation existante",
+        "description": "Utilise l'API Gemini pour générer une illustration basée sur le titre,\nla description et le type de l'observation. L'image est uploadée sur Cloudinary\net ajoutée à la liste des images de l'observation avec `source: 'ai'`.\n\nNécessite d'être le propriétaire de l'observation ou administrateur.\n",
+        "tags": [
+          "Observations"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID de l'observation (MongoDB ObjectId)",
+            "example": "507f1f77bcf86cd799439011"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Image IA générée et ajoutée avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Image IA générée avec succès"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Observation"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID invalide"
+          },
+          "401": {
+            "description": "Non authentifié"
+          },
+          "403": {
+            "description": "Non autorisé (pas propriétaire ni admin)"
+          },
+          "404": {
+            "description": "Observation non trouvée"
+          },
+          "500": {
+            "description": "Erreur lors de la génération de l'image IA",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Échec de la génération d'image IA: GEMINI_API_KEY non configurée"
+                    }
+                  }
                 }
               }
             }
@@ -2913,6 +3955,60 @@
                     "message": {
                       "type": "string",
                       "example": "Compte supprimé avec succès"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Non authentifié",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/me/stats": {
+      "get": {
+        "summary": "Récupère les statistiques de l'utilisateur connecté",
+        "tags": [
+          "Utilisateurs"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Statistiques récupérées avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "observationsCount": {
+                          "type": "integer",
+                          "example": 42
+                        },
+                        "commentsCount": {
+                          "type": "integer",
+                          "example": 127
+                        }
+                      }
                     }
                   }
                 }
