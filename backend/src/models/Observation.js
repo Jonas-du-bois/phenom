@@ -2,25 +2,132 @@ import mongoose from 'mongoose';
 
 /**
  * @file Observation.js
- * @description Mongoose model for Observation entity.
- * Stores data about UFO/Phenomenon observations, including geolocation, images, and description.
+ * @description Mongoose model for Observation/Sighting entity.
+ * Format compatible with Phenom Search API (Hatch UFO Database format).
+ * Stores UFO/Phenomenon sightings with social features (images, comments, users).
  */
 
+// Observer type codes
+const OBSERVER_TYPES = ['GND', 'MIL', 'CIV', 'HQO', 'SCI', 'CST', 'SEA', 'NWS'];
+
+// UFO shape codes
+const UFO_SHAPES = ['SCR', 'CIG', 'DLT', 'NLT', 'FBL', 'FIG', 'PRB', 'NFO'];
+
+// Phenomenon codes
+const PHENOMENA = [
+  'WAV', 'TCH', 'HST', 'SND', 'ODD', 'MID', 'RAY', 'SIG', 'LND', 'SUB',
+  'OBS', 'VEH', 'TRC', 'DRT', 'VEG', 'PHT', 'RDA', 'BLD', 'OID', 'NOC',
+  'ANI', 'HUM', 'INJ'
+];
+
+// Locale types
+const LOCALE_TYPES = [
+  'Town & City', 'Rural', 'Mountains', 'Farmlands', 'Coastal',
+  'Desert', 'Forest', 'Lake/River', 'Ocean', 'Airport', 'Military Base', 'Unknown'
+];
+
 const observationSchema = new mongoose.Schema({
-  title: {
+  // === Phenom Search compatible fields ===
+  
+  date: {
     type: String,
-    required: [true, 'Le titre est requis'],
+    required: [true, 'La date est requise'],
     trim: true,
-    minlength: [3, 'Le titre doit contenir au moins 3 caractères'],
-    maxlength: [100, 'Le titre ne peut pas dépasser 100 caractères']
+    comment: 'Date string format (e.g., "6/24/1947", "2024-01-15")'
+  },
+  time: {
+    type: String,
+    default: 'Unknown',
+    trim: true,
+    comment: 'Time of sighting (e.g., "15:00", "Unknown")'
+  },
+  location: {
+    type: String,
+    required: [true, 'Le lieu est requis'],
+    trim: true,
+    maxlength: [200, 'Le lieu ne peut pas dépasser 200 caractères'],
+    comment: 'Location name (e.g., "PARIS, FRANCE")'
+  },
+  country: {
+    type: String,
+    required: [true, 'Le pays est requis'],
+    trim: true,
+    maxlength: [100, 'Le pays ne peut pas dépasser 100 caractères']
+  },
+  state: {
+    type: String,
+    trim: true,
+    maxlength: [100, 'La région ne peut pas dépasser 100 caractères'],
+    comment: 'State/Province/Region'
   },
   description: {
     type: String,
     required: [true, 'La description est requise'],
     trim: true,
     minlength: [10, 'La description doit contenir au moins 10 caractères'],
-    maxlength: [2000, 'La description ne peut pas dépasser 2000 caractères']
+    maxlength: [5000, 'La description ne peut pas dépasser 5000 caractères']
   },
+  credibility: {
+    type: Number,
+    min: [0, 'La crédibilité doit être entre 0 et 15'],
+    max: [15, 'La crédibilité doit être entre 0 et 15'],
+    default: 5,
+    comment: 'Credibility score (0-15): quality of witnesses/evidence'
+  },
+  strangeness: {
+    type: Number,
+    min: [0, 'L\'étrangeté doit être entre 0 et 10'],
+    max: [10, 'L\'étrangeté doit être entre 0 et 10'],
+    default: 5,
+    comment: 'Strangeness score (0-10): degree of unusualness'
+  },
+  duration: {
+    type: Number,
+    min: [0, 'La durée doit être positive'],
+    default: 0,
+    comment: 'Duration in seconds'
+  },
+  locale: {
+    type: String,
+    enum: LOCALE_TYPES,
+    default: 'Unknown',
+    comment: 'Type of location'
+  },
+  coordinates: {
+    lat: {
+      type: Number,
+      min: -90,
+      max: 90,
+      comment: 'Latitude (WGS84)'
+    },
+    lng: {
+      type: Number,
+      min: -180,
+      max: 180,
+      comment: 'Longitude (WGS84)'
+    }
+  },
+  observerTypes: {
+    type: [String],
+    enum: OBSERVER_TYPES,
+    default: ['CIV'],
+    comment: 'Types of observers (GND=Ground, MIL=Military, CIV=Civilian, etc.)'
+  },
+  ufoShapes: {
+    type: [String],
+    enum: UFO_SHAPES,
+    default: [],
+    comment: 'Shapes observed (SCR=Saucer, CIG=Cigar, DLT=Delta, etc.)'
+  },
+  phenomena: {
+    type: [String],
+    enum: PHENOMENA,
+    default: [],
+    comment: 'Associated phenomena codes'
+  },
+
+  // === Phenom App specific fields (social features) ===
+  
   images: [{
     publicId: {
       type: String,
@@ -61,43 +168,10 @@ const observationSchema = new mongoose.Schema({
       comment: 'Origin of the image: user upload or AI-generated'
     }
   }],
-  location: {
-    type: {
-      type: String,
-      enum: ['Point'],
-      default: 'Point',
-      required: true
-    },
-    coordinates: {
-      type: [Number],
-      required: [true, 'Les coordonnées sont requises'],
-      validate: {
-        validator: function (v) {
-          return v.length === 2 &&
-                 v[0] >= -180 && v[0] <= 180 && // longitude
-                 v[1] >= -90 && v[1] <= 90;     // latitude
-        },
-        message: 'Coordonnées invalides. Format: [longitude, latitude]'
-      }
-    }
-  },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: [true, 'L\'ID utilisateur est requis']
-  },
-  date: {
-    type: Date,
-    default: Date.now
-  },
-  type: {
-    type: String,
-    enum: [
-      'WAV', 'TCH', 'HST', 'SND', 'ODD', 'LND', 'SUB', 'OBS', 'RAY', 'SIG',
-      'ANI', 'HUM', 'INJ', 'VEH', 'BLD', 'DRT', 'VEG', 'PHT', 'RDA', 'TRC',
-      'NOC', 'CMF', 'MID', 'CNT', 'OID', 'COV', 'OGA'
-    ],
-    required: false
   },
   tags: {
     type: [String],
@@ -108,6 +182,14 @@ const observationSchema = new mongoose.Schema({
       },
       message: 'Chaque tag doit contenir entre 2 et 30 caractères'
     }
+  },
+  
+  // === Metadata ===
+  source: {
+    type: String,
+    default: 'phenom-app',
+    enum: ['phenom-app', 'hatch-ufo', 'import'],
+    comment: 'Data source identifier'
   }
 }, {
   timestamps: true,
@@ -115,23 +197,34 @@ const observationSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
-// Geospatial index for proximity searches
-observationSchema.index({ location: '2dsphere' });
+// Indexes for efficient queries
+observationSchema.index({ country: 1 });
+observationSchema.index({ date: 1 });
+observationSchema.index({ credibility: 1 });
+observationSchema.index({ strangeness: 1 });
+observationSchema.index({ locale: 1 });
+observationSchema.index({ observerTypes: 1 });
+observationSchema.index({ ufoShapes: 1 });
+observationSchema.index({ phenomena: 1 });
 observationSchema.index({ userId: 1, createdAt: -1 });
 observationSchema.index({ createdAt: -1 });
-observationSchema.index({ type: 1 });
 observationSchema.index({ tags: 1 });
+
+// Geospatial index for proximity searches (sparse for optional coordinates)
+observationSchema.index({ 'coordinates.lat': 1, 'coordinates.lng': 1 }, { sparse: true });
 
 // Text search index
 observationSchema.index({
-  title: 'text',
+  location: 'text',
   description: 'text',
-  tags: 'text'
+  tags: 'text',
+  country: 'text'
 }, {
   weights: {
-    title: 10,
+    location: 10,
+    country: 8,
     description: 5,
-    tags: 8
+    tags: 3
   }
 });
 
@@ -149,6 +242,46 @@ observationSchema.virtual('comments', {
   localField: '_id',
   foreignField: 'observationId'
 });
+
+// Virtual: check if observation has coordinates
+observationSchema.virtual('hasCoordinates').get(function() {
+  return this.coordinates && 
+         this.coordinates.lat !== undefined && 
+         this.coordinates.lng !== undefined;
+});
+
+// Virtual: check if observation has images
+observationSchema.virtual('hasImages').get(function() {
+  return this.images && this.images.length > 0;
+});
+
+// Virtual: get image URLs array
+observationSchema.virtual('imageUrls').get(function() {
+  return this.images ? this.images.map(img => img.url) : [];
+});
+
+// Transform _id to id for Phenom Search compatibility
+observationSchema.set('toJSON', {
+  virtuals: true,
+  transform: function(doc, ret) {
+    ret.id = ret._id.toString();
+    delete ret.__v;
+    return ret;
+  }
+});
+
+// Export constants for use in validators
+export const OBSERVER_TYPES = ['GND', 'MIL', 'CIV', 'HQO', 'SCI', 'CST', 'SEA', 'NWS'];
+export const UFO_SHAPES = ['SCR', 'CIG', 'DLT', 'NLT', 'FBL', 'FIG', 'PRB', 'NFO'];
+export const PHENOMENA = [
+  'WAV', 'TCH', 'HST', 'SND', 'ODD', 'MID', 'RAY', 'SIG', 'LND', 'SUB',
+  'OBS', 'VEH', 'TRC', 'DRT', 'VEG', 'PHT', 'RDA', 'BLD', 'OID', 'NOC',
+  'ANI', 'HUM', 'INJ'
+];
+export const LOCALE_TYPES = [
+  'Town & City', 'Rural', 'Mountains', 'Farmlands', 'Coastal',
+  'Desert', 'Forest', 'Lake/River', 'Ocean', 'Airport', 'Military Base', 'Unknown'
+];
 
 const Observation = mongoose.model('Observation', observationSchema);
 

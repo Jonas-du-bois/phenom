@@ -111,6 +111,8 @@ Important:
   async callGeminiApi(prompt) {
     const apiKey = process.env.GEMINI_API_KEY;
 
+    console.log('🔑 GEMINI_API_KEY configurée:', apiKey ? `Oui (${apiKey.substring(0, 10)}...)` : 'NON!');
+
     if (!apiKey) {
       throw new Error('GEMINI_API_KEY non configurée dans les variables d\'environnement');
     }
@@ -119,6 +121,7 @@ Important:
 
     console.log('🤖 Appel API Gemini pour génération d\'image...');
     console.log('📝 Prompt:', prompt.substring(0, 200) + '...');
+    console.log('🌐 Endpoint:', endpoint);
 
     try {
       const response = await fetch(endpoint, {
@@ -142,6 +145,18 @@ Important:
       if (!response.ok) {
         const errorBody = await response.text();
         console.error('❌ Erreur API Gemini:', response.status, errorBody);
+
+        // Gestion des erreurs spécifiques
+        if (response.status === 429) {
+          throw new Error('Limite de requêtes Gemini atteinte. Le modèle expérimental a des quotas très limités. Réessayez dans quelques minutes.');
+        }
+        if (response.status === 403) {
+          throw new Error('Accès refusé à l\'API Gemini. Vérifiez que la clé API est valide et que le modèle est accessible.');
+        }
+        if (response.status === 400) {
+          throw new Error('Requête invalide vers Gemini. Le prompt ou la configuration peut être incorrecte.');
+        }
+
         throw new Error(`Erreur API Gemini: ${response.status} - ${errorBody}`);
       }
 

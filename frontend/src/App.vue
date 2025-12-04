@@ -1,12 +1,11 @@
 <template>
-  <div id="app" class="min-h-screen relative overflow-x-hidden" style="background-color: #1E2640;">
-    <StarryBackground />
+  <div id="app">
     <router-view />
   </div>
 </template>
 
 <script setup>
-import StarryBackground from './components/StarryBackground.vue'
+
 </script>
 
 <style>

@@ -13,7 +13,7 @@ const __dirname = dirname(__filename);
 const envPaths = [
   resolve(__dirname, '../.env'),      // backend/.env
   resolve(__dirname, '../../.env'),   // root .env
-  resolve(process.cwd(), '.env'),     // current working directory
+  resolve(process.cwd(), '.env')     // current working directory
 ];
 
 let envLoaded = false;
@@ -112,12 +112,12 @@ const corsOptions = {
     if (!origin) {
       return callback(null, true);
     }
-    
+
     // Allow if wildcard or origin is in the list
     if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-    
+
     // Reject with a proper CORS error (false instead of Error to avoid 500)
     console.warn(`⚠️ CORS blocked origin: ${origin}`);
     console.warn(`   Allowed origins: ${allowedOrigins.join(', ')}`);

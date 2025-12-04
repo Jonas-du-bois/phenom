@@ -83,17 +83,97 @@ Tous les endpoints REST sont documentés ci-dessous avec leurs schémas de requ�
         },
         Observation: {
           type: 'object',
+          description: 'Observation OVNI (format Phenom App avec support Phenom Search)',
           properties: {
             _id: {
               type: 'string'
             },
-            title: {
+            date: {
               type: 'string',
-              example: 'OVNI triangulaire'
+              description: 'Date de l\'observation (YYYY-MM-DD)',
+              example: '2024-03-15'
+            },
+            time: {
+              type: 'string',
+              description: 'Heure de l\'observation (HH:MM)',
+              example: '22:30'
+            },
+            location: {
+              type: 'string',
+              description: 'Lieu de l\'observation',
+              example: 'Lausanne, Vaud'
+            },
+            country: {
+              type: 'string',
+              example: 'Suisse'
+            },
+            locale: {
+              type: 'string',
+              description: 'Type de localité',
+              enum: ['CITY', 'RURAL', 'MOUNTAIN', 'DESERT', 'OCEAN', 'FOREST', 'COAST', 'LAKE'],
+              example: 'CITY'
+            },
+            coordinates: {
+              type: 'object',
+              properties: {
+                lat: {
+                  type: 'number',
+                  example: 46.5197
+                },
+                lng: {
+                  type: 'number',
+                  example: 6.6323
+                }
+              }
             },
             description: {
               type: 'string',
-              example: 'Observation d\'un objet triangulaire lumineux'
+              example: 'Observation d\'un objet triangulaire lumineux au-dessus de la ville'
+            },
+            credibility: {
+              type: 'integer',
+              description: 'Score de crédibilité (0-15)',
+              minimum: 0,
+              maximum: 15,
+              example: 8
+            },
+            strangeness: {
+              type: 'integer',
+              description: 'Score d\'étrangeté (0-10)',
+              minimum: 0,
+              maximum: 10,
+              example: 6
+            },
+            duration: {
+              type: 'integer',
+              description: 'Durée en secondes',
+              example: 120
+            },
+            observerTypes: {
+              type: 'array',
+              description: 'Types d\'observateurs',
+              items: {
+                type: 'string',
+                enum: ['GND', 'MIL', 'PIL', 'SCI', 'POL', 'AST', 'MTR', 'RAD']
+              },
+              example: ['GND', 'CIV']
+            },
+            ufoShapes: {
+              type: 'array',
+              description: 'Formes observées',
+              items: {
+                type: 'string',
+                enum: ['SPH', 'DSK', 'TRI', 'CIG', 'LGT', 'OVL', 'RCT', 'OTH']
+              },
+              example: ['TRI']
+            },
+            phenomena: {
+              type: 'array',
+              description: 'Phénomènes observés',
+              items: {
+                type: 'string'
+              },
+              example: ['NTL', 'HST']
             },
             images: {
               type: 'array',
@@ -136,24 +216,13 @@ Tous les endpoints REST sont documentés ci-dessous avec leurs schémas de requ�
                 }
               }
             },
-            location: {
-              type: 'object',
-              properties: {
-                type: {
-                  type: 'string',
-                  enum: ['Point']
-                },
-                coordinates: {
-                  type: 'array',
-                  items: {
-                    type: 'number'
-                  },
-                  example: [6.6323, 46.5197]
-                }
-              }
-            },
             userId: {
               type: 'string'
+            },
+            source: {
+              type: 'string',
+              enum: ['phenom_app', 'phenom_search_scrape'],
+              example: 'phenom_app'
             },
             createdAt: {
               type: 'string',
@@ -162,6 +231,78 @@ Tous les endpoints REST sont documentés ci-dessous avec leurs schémas de requ�
             updatedAt: {
               type: 'string',
               format: 'date-time'
+            }
+          }
+        },
+        Sighting: {
+          type: 'object',
+          description: 'Observation au format Phenom Search API',
+          properties: {
+            id: {
+              type: 'string'
+            },
+            date: {
+              type: 'string',
+              example: '2024-03-15'
+            },
+            time: {
+              type: 'string',
+              example: '22:30'
+            },
+            location: {
+              type: 'string',
+              example: 'Lausanne, Vaud'
+            },
+            country: {
+              type: 'string',
+              example: 'Suisse'
+            },
+            locale: {
+              type: 'string',
+              example: 'CITY'
+            },
+            coordinates: {
+              type: 'object',
+              properties: {
+                lat: { type: 'number' },
+                lng: { type: 'number' }
+              }
+            },
+            credibility: {
+              type: 'integer'
+            },
+            strangeness: {
+              type: 'integer'
+            },
+            duration: {
+              type: 'integer'
+            },
+            observerTypes: {
+              type: 'array',
+              items: { type: 'string' }
+            },
+            ufoShapes: {
+              type: 'array',
+              items: { type: 'string' }
+            },
+            phenomena: {
+              type: 'array',
+              items: { type: 'string' }
+            },
+            description: {
+              type: 'string'
+            },
+            images: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  url: { type: 'string' }
+                }
+              }
+            },
+            source: {
+              type: 'string'
             }
           }
         },
@@ -191,19 +332,31 @@ Tous les endpoints REST sont documentés ci-dessous avec leurs schémas de requ�
     },
     tags: [
       {
-        name: 'Authentification',
-        description: 'Opérations d\'authentification et gestion de compte'
+        name: 'Sightings',
+        description: 'API Phenom Search compatible - Observations publiques en lecture seule'
       },
       {
-        name: 'Utilisateurs',
+        name: 'Filters',
+        description: 'API Phenom Search compatible - Valeurs de filtres disponibles'
+      },
+      {
+        name: 'Statistics',
+        description: 'API Phenom Search compatible - Statistiques globales du dataset'
+      },
+      {
+        name: 'Authentication',
+        description: 'Authentification et gestion de compte'
+      },
+      {
+        name: 'Users',
         description: 'Gestion du profil utilisateur'
       },
       {
         name: 'Observations',
-        description: 'Gestion des observations OVNI'
+        description: 'CRUD des observations OVNI (authentification requise)'
       },
       {
-        name: 'Commentaires',
+        name: 'Comments',
         description: 'Gestion des commentaires sur les observations'
       },
       {

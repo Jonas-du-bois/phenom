@@ -86,11 +86,11 @@ class ObservationController {
       // Générer l'image IA
       const aiImage = await imageService.generateAiImage(
         {
-          title: observation.title,
+          location: observation.location,
           description: observation.description,
-          type: observation.type,
-          tags: observation.tags,
-          location: observation.location
+          phenomena: observation.phenomena,
+          ufoShapes: observation.ufoShapes,
+          tags: observation.tags
         },
         observationId
       );
@@ -117,7 +117,11 @@ class ObservationController {
    */
   updateObservation = asyncHandler(async (req, res) => {
     // Whitelist des champs modifiables (userId ne doit pas être modifiable)
-    const allowedFields = ['title', 'description', 'date', 'location', 'type', 'tags', 'images'];
+    const allowedFields = [
+      'date', 'time', 'location', 'country', 'state', 'description',
+      'credibility', 'strangeness', 'duration', 'locale', 'coordinates',
+      'observerTypes', 'ufoShapes', 'phenomena', 'tags', 'images'
+    ];
     const updateData = {};
     allowedFields.forEach(field => {
       if (req.body[field] !== undefined) {

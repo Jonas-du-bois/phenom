@@ -17,7 +17,7 @@ export const authenticate = async (req, res, next) => {
   try {
     // Extract token from Authorization header
     const authHeader = req.headers.authorization;
-    
+
     // Debug log
     console.log('🔐 Auth middleware:', {
       path: req.path,
@@ -59,7 +59,7 @@ export const authenticate = async (req, res, next) => {
 
   } catch (error) {
     console.log('❌ Auth error:', error.name, error.message);
-    
+
     if (error.name === 'JsonWebTokenError') {
       return res.status(401).json({
         success: false,

@@ -1,5 +1,6 @@
 /**
  * Services API pour les statistiques et la santé du système
+ * Compatible avec le format Phenom Search API
  */
 import apiClient from "../utils/api";
 import axios from "axios";
@@ -9,8 +10,7 @@ const API_BASE_URL =
 
 export const statsService = {
   /**
-   * Vérifie la santé de l'API
-   * Note: Le endpoint /health est à la racine, pas sous /api/v1
+   * Vérifie la santé de l'API (à la racine, pas sous /api/v1)
    */
   async health() {
     const response = await axios.get(`${API_BASE_URL}/health`);
@@ -18,12 +18,12 @@ export const statsService = {
   },
 
   /**
-   * Récupère les statistiques publiques
-   * Route: GET /api/v1/observations/stats
+   * Récupère les statistiques globales (format Phenom Search)
+   * GET /statistics
    */
-  async getPublicStats() {
-    const response = await apiClient.get("/observations/stats");
-    return response.data;
+  async getStatistics() {
+    const response = await apiClient.get("/statistics");
+    return response.data.data;
   },
 
   /**
