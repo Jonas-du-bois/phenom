@@ -28,7 +28,7 @@ const LOCALE_TYPES = [
 
 const observationSchema = new mongoose.Schema({
   // === Phenom Search compatible fields ===
-  
+
   date: {
     type: String,
     required: [true, 'La date est requise'],
@@ -127,7 +127,7 @@ const observationSchema = new mongoose.Schema({
   },
 
   // === Phenom App specific fields (social features) ===
-  
+
   images: [{
     publicId: {
       type: String,
@@ -183,7 +183,7 @@ const observationSchema = new mongoose.Schema({
       message: 'Chaque tag doit contenir entre 2 et 30 caractères'
     }
   },
-  
+
   // === Metadata ===
   source: {
     type: String,
@@ -244,45 +244,35 @@ observationSchema.virtual('comments', {
 });
 
 // Virtual: check if observation has coordinates
-observationSchema.virtual('hasCoordinates').get(function() {
-  return this.coordinates && 
-         this.coordinates.lat !== undefined && 
+observationSchema.virtual('hasCoordinates').get(function () {
+  return this.coordinates &&
+         this.coordinates.lat !== undefined &&
          this.coordinates.lng !== undefined;
 });
 
 // Virtual: check if observation has images
-observationSchema.virtual('hasImages').get(function() {
+observationSchema.virtual('hasImages').get(function () {
   return this.images && this.images.length > 0;
 });
 
 // Virtual: get image URLs array
-observationSchema.virtual('imageUrls').get(function() {
+observationSchema.virtual('imageUrls').get(function () {
   return this.images ? this.images.map(img => img.url) : [];
 });
 
 // Transform _id to id for Phenom Search compatibility
 observationSchema.set('toJSON', {
   virtuals: true,
-  transform: function(doc, ret) {
+  transform: function (doc, ret) {
     ret.id = ret._id.toString();
     delete ret.__v;
     return ret;
   }
 });
 
-// Export constants for use in validators
-export const OBSERVER_TYPES = ['GND', 'MIL', 'CIV', 'HQO', 'SCI', 'CST', 'SEA', 'NWS'];
-export const UFO_SHAPES = ['SCR', 'CIG', 'DLT', 'NLT', 'FBL', 'FIG', 'PRB', 'NFO'];
-export const PHENOMENA = [
-  'WAV', 'TCH', 'HST', 'SND', 'ODD', 'MID', 'RAY', 'SIG', 'LND', 'SUB',
-  'OBS', 'VEH', 'TRC', 'DRT', 'VEG', 'PHT', 'RDA', 'BLD', 'OID', 'NOC',
-  'ANI', 'HUM', 'INJ'
-];
-export const LOCALE_TYPES = [
-  'Town & City', 'Rural', 'Mountains', 'Farmlands', 'Coastal',
-  'Desert', 'Forest', 'Lake/River', 'Ocean', 'Airport', 'Military Base', 'Unknown'
-];
-
 const Observation = mongoose.model('Observation', observationSchema);
+
+// Export constants for use in validators
+export { OBSERVER_TYPES, UFO_SHAPES, PHENOMENA, LOCALE_TYPES };
 
 export default Observation;
