@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from "vue-router";
 
-// Check if user is authenticated (use same key as storage.js)
+// Check if user is authenticated (support legacy and current keys)
 const isAuthenticated = () => {
-  return !!localStorage.getItem("phenom_auth_token");
+  return !!localStorage.getItem("phenom_auth_token") || !!localStorage.getItem("token");
 };
 
 const router = createRouter({
@@ -19,43 +19,16 @@ const router = createRouter({
     // Main app routes (protected)
     {
       path: "/",
-      component: () => import("../views/OldHomeView.vue"),
+      component: () => import("../views/AppLayout.vue"),
       meta: { requiresAuth: true },
       children: [
-        {
-          path: "",
-          redirect: "/home",
-        },
-        /* {
-          path: "home",
-          name: "home",
-          component: () => import("../views/test_HomeView.vue"),
-        },
-        {
-          path: "feed",
-          name: "feed",
-          component: () => import("../views/test_FeedView.vue"),
-        },
-        {
-          path: "map",
-          name: "map",
-          component: () => import("../views/test_MapView.vue"),
-        },
-        {
-          path: "create",
-          name: "create",
-          component: () => import("../views/test_CreateObservationView.vue"),
-        },
-        {
-          path: "observations/:id",
-          name: "observation-detail",
-          component: () => import("../views/test_ObservationDetailView.vue"),
-        },
-        {
-          path: "profile/:userId?",
-          name: "profile",
-          component: () => import("../views/test_UserProfileView.vue"),
-        }, */
+        { path: "", redirect: "/home" },
+        { path: "home", name: "home", component: () => import("../views/HomeView.vue") },
+        { path: "feed", name: "feed", component: () => import("../views/FeedView.vue") },
+        { path: "map", name: "map", component: () => import("../views/MapView.vue") },
+        { path: "create", name: "create", component: () => import("../views/CreateObservationView.vue") },
+        { path: "observations/:id", name: "observation-detail", component: () => import("../views/ObservationDetailView.vue") },
+        { path: "profile/:userId?", name: "profile", component: () => import("../views/UserProfileView.vue") },
       ],
     },
 

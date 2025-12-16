@@ -1,61 +1,80 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ============================================================================
-   PHENOM DESIGN SYSTEM - Inspired by figmaMake
-   ============================================================================ */
+/*
+  Phenom Sight design tokens derived from the React prototype.
+  Centralize palette, typography, radii and motion so components stay DRY.
+*/
 
 :root {
-  /* Primary Colors */
-  --phenom-primary: #7B3FF2;
-  --phenom-primary-dark: #6B2FD1;
-  --phenom-primary-light: #9B6FF7;
-  
-  /* Background Colors */
-  --phenom-bg-primary: #1E2640;
-  --phenom-bg-secondary: #2A3454;
-  --phenom-bg-tertiary: #364466;
-  
-  /* Surface Colors (Glassmorphic) - Improved contrast */
+  color-scheme: light;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-size: 16px;
+
+  --background: #ffffff;
+  --foreground: oklch(0.145 0 0);
+  --card: #ffffff;
+  --card-foreground: oklch(0.145 0 0);
+  --popover: #ffffff;
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: #030213;
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.95 0.0058 264.53);
+  --secondary-foreground: #030213;
+  --muted: #ececf0;
+  --muted-foreground: #717182;
+  --accent: #e9ebef;
+  --accent-foreground: #030213;
+  --destructive: #d4183d;
+  --destructive-foreground: #ffffff;
+  --border: rgba(0, 0, 0, 0.1);
+  --input: transparent;
+  --input-background: #f3f3f5;
+  --switch-background: #cbced4;
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.625rem;
+  --shadow-soft: 0 16px 48px rgba(0, 0, 0, 0.08);
+  --shadow-strong: 0 32px 96px rgba(0, 0, 0, 0.16);
+  --backdrop-strong: blur(18px);
+
+  /* Legacy phenom tokens mapped to the new palette for backward compatibility */
+  --phenom-primary: var(--primary);
+  --phenom-primary-dark: color-mix(in srgb, var(--primary) 92%, #000 8%);
+  --phenom-primary-light: color-mix(in srgb, var(--primary) 60%, #fff 40%);
+  --phenom-bg-primary: var(--background);
+  --phenom-bg-secondary: var(--secondary);
+  --phenom-bg-tertiary: color-mix(in srgb, var(--secondary) 85%, #fff 15%);
   --phenom-surface-glass: rgba(255, 255, 255, 0.08);
   --phenom-surface-glass-hover: rgba(255, 255, 255, 0.12);
   --phenom-surface-glass-active: rgba(255, 255, 255, 0.16);
-  --phenom-surface-glass-strong: rgba(255, 255, 255, 0.12);
-  
-  /* Border Colors - More visible */
-  --phenom-border-subtle: rgba(255, 255, 255, 0.15);
-  --phenom-border-medium: rgba(255, 255, 255, 0.25);
-  --phenom-border-strong: rgba(255, 255, 255, 0.4);
-  
-  /* Text Colors - Enhanced contrast */
-  --phenom-text-primary: #ffffff;
-  --phenom-text-secondary: rgba(255, 255, 255, 0.9);
-  --phenom-text-tertiary: rgba(255, 255, 255, 0.7);
-  --phenom-text-muted: rgba(255, 255, 255, 0.5);
-  --phenom-text-placeholder: rgba(255, 255, 255, 0.4);
-  
-  /* Shadows */
-  --phenom-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
-  --phenom-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.15);
-  --phenom-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
-  --phenom-shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.25);
-  --phenom-shadow-2xl: 0 20px 48px rgba(0, 0, 0, 0.3);
-  
-  /* Purple Glows */
-  --phenom-glow-sm: 0 0 12px rgba(123, 63, 242, 0.3);
-  --phenom-glow-md: 0 0 24px rgba(123, 63, 242, 0.4);
-  --phenom-glow-lg: 0 0 40px rgba(123, 63, 242, 0.5);
-  
-  /* Border Radius */
+  --phenom-surface-glass-strong: rgba(255, 255, 255, 0.18);
+  --phenom-border-subtle: rgba(0, 0, 0, 0.06);
+  --phenom-border-medium: rgba(0, 0, 0, 0.12);
+  --phenom-border-strong: rgba(0, 0, 0, 0.18);
+  --phenom-text-primary: var(--foreground);
+  --phenom-text-secondary: color-mix(in srgb, var(--foreground) 80%, #666 20%);
+  --phenom-text-tertiary: color-mix(in srgb, var(--foreground) 60%, #888 40%);
+  --phenom-text-muted: #717182;
+  --phenom-text-placeholder: rgba(0, 0, 0, 0.35);
+  --phenom-shadow-sm: 0 6px 20px rgba(0, 0, 0, 0.08);
+  --phenom-shadow-md: 0 14px 30px rgba(0, 0, 0, 0.12);
+  --phenom-shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.18);
+  --phenom-shadow-xl: 0 32px 80px rgba(0, 0, 0, 0.22);
+  --phenom-shadow-2xl: 0 48px 120px rgba(0, 0, 0, 0.26);
   --phenom-radius-sm: 0.5rem;
   --phenom-radius-md: 0.75rem;
   --phenom-radius-lg: 1rem;
   --phenom-radius-xl: 1.25rem;
   --phenom-radius-2xl: 1.5rem;
   --phenom-radius-full: 9999px;
-  
-  /* Spacing Scale */
   --phenom-space-1: 0.25rem;
   --phenom-space-2: 0.5rem;
   --phenom-space-3: 0.75rem;
@@ -64,55 +83,137 @@
   --phenom-space-8: 2rem;
   --phenom-space-12: 3rem;
   --phenom-space-16: 4rem;
-  
-  /* Typography */
-  --phenom-font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  
-  /* Transitions */
   --phenom-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --phenom-transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
   --phenom-transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ============================================================================
-   BASE STYLES
-   ============================================================================ */
+.dark {
+  color-scheme: dark;
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.145 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+  --ring: oklch(0.439 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+}
 
 * {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
+}
+
+html {
+  font-size: var(--font-size);
+  scroll-behavior: smooth;
 }
 
 body {
-  font-family: var(--phenom-font-body);
-  background-color: var(--phenom-bg-primary);
-  color: var(--phenom-text-primary);
-  overflow-x: hidden;
+  min-height: 100vh;
+  font-family: var(--font-sans);
+  background: radial-gradient(circle at 20% 20%, rgba(3, 2, 19, 0.035), transparent 35%),
+    radial-gradient(circle at 80% 0%, rgba(116, 125, 255, 0.05), transparent 30%),
+    var(--background);
+  color: var(--foreground);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ============================================================================
-   ANIMATIONS
-   ============================================================================ */
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-20px);
-  }
+#app {
+  min-height: 100vh;
 }
 
-@keyframes twinkle {
-  0%, 100% {
-    opacity: 0.3;
-  }
-  50% {
-    opacity: 1;
-  }
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--primary) 25%, #fff 75%);
+  color: var(--primary-foreground);
+}
+
+/* Scrollbars kept light and minimal (matches prototype) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+  transition: background var(--phenom-transition-fast);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+/* Lightweight reusable surfaces to keep components consistent */
+.ui-surface {
+  background: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+}
+
+.ui-glass {
+  background: color-mix(in srgb, var(--card) 70%, rgba(255, 255, 255, 0.08) 30%);
+  border: 1px solid var(--phenom-border-medium);
+  border-radius: var(--radius-lg, calc(var(--radius) + 4px));
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: var(--backdrop-strong);
+}
+
+.ui-muted {
+  color: var(--muted-foreground);
+}
+
+.ui-divider {
+  border: none;
+  height: 1px;
+  width: 100%;
+  background: var(--border);
+}
+
+.ui-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--phenom-radius-full);
+  background: var(--accent);
+  color: var(--accent-foreground);
+  border: 1px solid var(--border);
 }
 
 @keyframes shimmer {
@@ -124,69 +225,15 @@ body {
   }
 }
 
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 12px rgba(123, 63, 242, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 24px rgba(123, 63, 242, 0.6);
-  }
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-.animate-twinkle {
-  animation: twinkle 2s ease-in-out infinite;
-}
-
-.animate-shimmer {
-  animation: shimmer 2s infinite;
+.ui-shimmer {
+  position: relative;
+  overflow: hidden;
   background: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.05) 0px,
-    rgba(255, 255, 255, 0.15) 40px,
-    rgba(255, 255, 255, 0.05) 80px
+    rgba(255, 255, 255, 0.04) 0px,
+    rgba(255, 255, 255, 0.12) 40px,
+    rgba(255, 255, 255, 0.04) 80px
   );
   background-size: 1000px 100%;
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-/* ============================================================================
-   CUSTOM SCROLLBAR
-   ============================================================================ */
-
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(123, 63, 242, 0.5);
-  border-radius: 4px;
-  transition: background var(--phenom-transition-base);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(123, 63, 242, 0.7);
-}
-
-/* ============================================================================
-   UTILITY CLASSES
-   ============================================================================ */
-
-.text-gradient-purple {
-  background: linear-gradient(135deg, #7B3FF2 0%, #B794F6 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  animation: shimmer 2s infinite;
 }

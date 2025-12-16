@@ -47,8 +47,9 @@ backups/
 Thumbs.db
 
 # docs (ignore documentation folder, except API docs)
-docs/
+
 !backend/src/public/docs/
+
 
 # renders yaml files
 render.yaml
