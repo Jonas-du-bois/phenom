@@ -1,45 +1,26 @@
 /**
- * Services API pour les commentaires
+ * Service API pour les commentaires
+ * Endpoints: /observations/:id/comments, /comments/:id
  */
 import apiClient from "../utils/api";
 
 export const commentService = {
-  /**
-   * Récupère les commentaires d'une observation
-   */
+  /** GET /observations/:observationId/comments */
   async getByObservation(observationId, params = {}) {
-    console.log(
-      "📥 Récupération commentaires pour observation:",
-      observationId,
-    );
-    const response = await apiClient.get(
-      `/observations/${observationId}/comments`,
-      { params },
-    );
-    console.log("✅ Commentaires reçus:", response.data);
+    const response = await apiClient.get(`/observations/${observationId}/comments`, { params });
     return response.data;
   },
 
-  /**
-   * Ajoute un commentaire
-   */
-  async create(observationId, commentData) {
-    console.log("📤 Création commentaire:", { observationId, commentData });
-    const response = await apiClient.post(
-      `/observations/${observationId}/comments`,
-      commentData,
-    );
-    console.log("✅ Commentaire créé:", response.data);
+  /** POST /observations/:observationId/comments */
+  async create(observationId, data) {
+    const body = typeof data === "string" ? { text: data } : data;
+    const response = await apiClient.post(`/observations/${observationId}/comments`, body);
     return response.data;
   },
 
-  /**
-   * Supprime un commentaire
-   */
+  /** DELETE /comments/:id */
   async delete(commentId) {
-    console.log("🗑️ Suppression commentaire:", commentId);
     const response = await apiClient.delete(`/comments/${commentId}`);
-    console.log("✅ Commentaire supprimé");
     return response.data;
   },
 };

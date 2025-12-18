@@ -34,6 +34,9 @@ export {
   formatCoordinates,
   isValidCoordinates,
   isGeolocationSupported,
+  getObservationCoordinates,
+  hasValidCoordinates,
+  getLeafletCoordinates,
 } from "./geolocation";
 
 // Validators

@@ -35,7 +35,7 @@ class CommentService {
 
     const [comments, total] = await Promise.all([
       Comment.find({ observationId })
-        .populate('userId', 'name email')
+        .populate('userId', 'name email avatar')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)

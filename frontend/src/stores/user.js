@@ -1,5 +1,6 @@
 /**
- * Store Pinia pour les utilisateurs
+ * Store Pinia pour le profil utilisateur
+ * KISS: Wrapper simple autour du service
  */
 import { defineStore } from "pinia";
 import { ref } from "vue";
@@ -10,115 +11,85 @@ export const useUserStore = defineStore("user", () => {
   const loading = ref(false);
   const error = ref(null);
 
-  /**
-   * Récupère le profil utilisateur
-   */
-  async function fetchProfile() {
+  const fetchProfile = async () => {
     loading.value = true;
     error.value = null;
     try {
       const response = await userService.getMe();
-      profile.value = response.data;
-      return response;
+      profile.value = response.data || response;
+      return profile.value;
     } catch (err) {
-      error.value =
-        err.response?.data?.message ||
-        "Erreur lors de la récupération du profil";
+      error.value = err.response?.data?.message || "Erreur de chargement";
       throw err;
     } finally {
       loading.value = false;
     }
-  }
+  };
 
-  /**
-   * Met à jour le profil
-   */
-  async function updateProfile(userData) {
+  const updateProfile = async (data) => {
     loading.value = true;
     error.value = null;
     try {
-      const response = await userService.updateMe(userData);
-      profile.value = response.data;
-      return response;
+      const response = await userService.updateMe(data);
+      profile.value = response.data || response;
+      return profile.value;
     } catch (err) {
-      error.value =
-        err.response?.data?.message ||
-        "Erreur lors de la mise à jour du profil";
+      error.value = err.response?.data?.message || "Erreur de mise à jour";
       throw err;
     } finally {
       loading.value = false;
     }
-  }
+  };
 
-  /**
-   * Met à jour l'avatar
-   */
-  async function updateAvatar(file) {
+  const updateAvatar = async (file) => {
     loading.value = true;
     error.value = null;
     try {
-      const formData = new FormData();
-      formData.append("avatar", file);
-      const response = await userService.updateAvatar(formData);
-      profile.value = response.data;
-      return response;
+      // Le service gère le FormData
+      const response = await userService.updateAvatar(file);
+      if (profile.value) {
+        profile.value.avatar = response.data?.avatar || response.avatar;
+      }
+      return profile.value;
     } catch (err) {
-      error.value =
-        err.response?.data?.message ||
-        "Erreur lors de la mise à jour de l'avatar";
+      error.value = err.response?.data?.message || "Erreur upload avatar";
       throw err;
     } finally {
       loading.value = false;
     }
-  }
+  };
 
-  /**
-   * Change le mot de passe
-   */
-  async function changePassword(passwordData) {
+  const changePassword = async (passwords) => {
     loading.value = true;
     error.value = null;
     try {
-      const response = await userService.changePassword(passwordData);
-      return response;
+      await userService.changePassword(passwords);
     } catch (err) {
-      error.value =
-        err.response?.data?.message ||
-        "Erreur lors du changement de mot de passe";
+      error.value = err.response?.data?.message || "Erreur changement mot de passe";
       throw err;
     } finally {
       loading.value = false;
     }
-  }
+  };
 
-  /**
-   * Supprime le compte
-   */
-  async function deleteAccount() {
+  const deleteAccount = async () => {
     loading.value = true;
-    error.value = null;
     try {
-      const response = await userService.deleteAccount();
+      await userService.deleteAccount();
       profile.value = null;
-      return response;
     } catch (err) {
-      error.value =
-        err.response?.data?.message ||
-        "Erreur lors de la suppression du compte";
+      error.value = err.response?.data?.message || "Erreur suppression compte";
       throw err;
     } finally {
       loading.value = false;
     }
-  }
+  };
 
-  /**
-   * Réinitialise le store
-   */
-  function $reset() {
+  const $reset = () => {
     profile.value = null;
     loading.value = false;
     error.value = null;
-  }
+  };
 
   return {
     profile,

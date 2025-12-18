@@ -1,4 +1,5 @@
 import express from 'express';
+import multer from 'multer';
 import userController from '../controllers/user.controller.js';
 import { authenticate } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
@@ -9,6 +10,22 @@ import {
 } from '../validators/user.validator.js';
 
 const router = express.Router();
+
+// Configuration de multer pour l'upload d'avatar
+const avatarUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB max pour avatar
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Type de fichier non autorisé. Types acceptés: JPEG, PNG, WebP'), false);
+    }
+  }
+});
 
 /**
  * @swagger
@@ -331,6 +348,95 @@ router.get(
   getUserObservationsValidation,
   validate,
   userController.getUserObservations
+);
+
+/**
+ * @swagger
+ * /api/v1/users/me/avatar:
+ *   post:
+ *     summary: Upload ou met à jour l'avatar de l'utilisateur
+ *     tags: [Utilisateurs]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - avatar
+ *             properties:
+ *               avatar:
+ *                 type: string
+ *                 format: binary
+ *                 description: Image de l'avatar (JPEG, PNG, WebP) - Max 5MB
+ *     responses:
+ *       200:
+ *         description: Avatar mis à jour avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Avatar mis à jour avec succès
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     url:
+ *                       type: string
+ *                       example: https://res.cloudinary.com/xxx/image/upload/v123/phenom/avatars/userId_123.jpg
+ *                     publicId:
+ *                       type: string
+ *                       example: phenom/avatars/userId_123456789
+ *       400:
+ *         description: Aucune image fournie ou format invalide
+ *       401:
+ *         description: Non authentifié
+ */
+router.post(
+  '/me/avatar',
+  authenticate,
+  avatarUpload.single('avatar'),
+  userController.uploadAvatar
+);
+
+/**
+ * @swagger
+ * /api/v1/users/me/avatar:
+ *   delete:
+ *     summary: Supprime l'avatar de l'utilisateur
+ *     tags: [Utilisateurs]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Avatar supprimé avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Avatar supprimé avec succès
+ *       400:
+ *         description: Aucun avatar à supprimer
+ *       401:
+ *         description: Non authentifié
+ */
+router.delete(
+  '/me/avatar',
+  authenticate,
+  userController.deleteAvatar
 );
 
 export default router;

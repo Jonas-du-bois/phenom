@@ -40,6 +40,16 @@ const userSchema = new mongoose.Schema({
     maxlength: [500, 'La bio ne peut pas dépasser 500 caractères'],
     default: ''
   },
+  avatar: {
+    url: {
+      type: String,
+      default: null
+    },
+    publicId: {
+      type: String,
+      default: null
+    }
+  },
   createdAt: {
     type: Date,
     default: Date.now

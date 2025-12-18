@@ -29,11 +29,12 @@ class ObservationService {
 
     const [sightings, total] = await Promise.all([
       Observation.find()
-        .populate('userId', 'name email')
+        .populate('userId', 'name email avatar')
+        .populate('commentsCount')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .lean(),
+        .lean({ virtuals: true }),
       Observation.countDocuments()
     ]);
 
@@ -60,7 +61,16 @@ class ObservationService {
    */
   async getSightingsWithFilters(filters = {}) {
     const limit = Math.min(500, Math.max(1, parseInt(filters.limit) || 50));
-    const offset = Math.max(0, parseInt(filters.offset) || 0);
+
+    // Support both 'page' (1-indexed) and 'offset' (0-indexed)
+    let offset;
+    if (filters.page !== undefined) {
+      const page = Math.max(1, parseInt(filters.page) || 1);
+      offset = (page - 1) * limit;
+    } else {
+      offset = Math.max(0, parseInt(filters.offset) || 0);
+    }
+
     const query = {};
 
     // Country filter (partial match)
@@ -145,9 +155,23 @@ class ObservationService {
       query.phenomena = { $in: phenom };
     }
 
-    // Text search
+    // Text search - utilise regex pour recherche flexible
     if (filters.search) {
-      query.$text = { $search: filters.search };
+      const searchTerm = filters.search.trim();
+      
+      // Si le terme contient des espaces, utiliser text search
+      // Sinon utiliser regex pour une recherche partielle
+      if (searchTerm.includes(' ')) {
+        query.$text = { $search: searchTerm };
+      } else {
+        // Recherche partielle sur plusieurs champs
+        query.$or = [
+          { description: { $regex: searchTerm, $options: 'i' } },
+          { location: { $regex: searchTerm, $options: 'i' } },
+          { country: { $regex: searchTerm, $options: 'i' } },
+          { tags: { $regex: searchTerm, $options: 'i' } }
+        ];
+      }
     }
 
     // Has coordinates filter
@@ -163,13 +187,18 @@ class ObservationService {
 
     const [sightings, total] = await Promise.all([
       Observation.find(query)
-        .populate('userId', 'name email')
+        .populate('userId', 'name email avatar')
+        .populate('commentsCount')
         .sort({ createdAt: -1 })
         .skip(offset)
         .limit(limit)
-        .lean(),
+        .lean({ virtuals: true }),
       Observation.countDocuments(query)
     ]);
+
+    // Calculate page info
+    const currentPage = Math.floor(offset / limit) + 1;
+    const totalPages = Math.ceil(total / limit);
 
     return {
       data: sightings,
@@ -177,7 +206,11 @@ class ObservationService {
         total,
         limit,
         offset,
-        hasMore: offset + sightings.length < total
+        page: currentPage,
+        totalPages,
+        hasMore: offset + sightings.length < total,
+        hasNextPage: currentPage < totalPages,
+        hasPrevPage: currentPage > 1
       }
     };
   }
@@ -425,7 +458,7 @@ class ObservationService {
       source: 'phenom-app'
     });
 
-    const populatedObservation = await observation.populate('userId', 'name email');
+    const populatedObservation = await observation.populate('userId', 'name email avatar');
 
     // Publish event via WebSocket
     publishObservationEvent('observation:created', populatedObservation.toObject());
@@ -444,7 +477,7 @@ class ObservationService {
       observationId,
       { $set: updateData },
       { new: true, runValidators: true }
-    ).populate('userId', 'name email');
+    ).populate('userId', 'name email avatar');
 
     if (!observation) {
       throw new NotFoundError('Observation not found');
@@ -548,9 +581,10 @@ class ObservationService {
       'coordinates.lat': { $gte: lat - latDelta, $lte: lat + latDelta },
       'coordinates.lng': { $gte: lng - lngDelta, $lte: lng + lngDelta }
     })
-      .populate('userId', 'name email')
+      .populate('userId', 'name email avatar')
+      .populate('commentsCount')
       .limit(maxResults)
-      .lean();
+      .lean({ virtuals: true });
 
     // Calculate actual distances and filter
     const haversineDistance = (lat1, lon1, lat2, lon2) => {

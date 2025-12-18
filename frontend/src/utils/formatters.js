@@ -31,9 +31,10 @@ export const formatDateShort = (date) => {
 /**
  * Formate une date en format relatif (il y a X minutes/heures/jours)
  * @param {string|Date} date - Date à formater
+ * @param {boolean} short - Format court (5min) vs long (5 minutes)
  * @returns {string} Temps relatif
  */
-export const formatRelativeTime = (date) => {
+export const formatRelativeTime = (date, short = false) => {
   if (!date) return "Inconnu";
 
   const now = new Date();
@@ -45,10 +46,16 @@ export const formatRelativeTime = (date) => {
   const diffDay = Math.floor(diffHour / 24);
 
   if (diffSec < 60) return "À l'instant";
-  if (diffMin < 60) return `Il y a ${diffMin} minute${diffMin > 1 ? "s" : ""}`;
-  if (diffHour < 24)
-    return `Il y a ${diffHour} heure${diffHour > 1 ? "s" : ""}`;
-  if (diffDay < 7) return `Il y a ${diffDay} jour${diffDay > 1 ? "s" : ""}`;
+  
+  if (short) {
+    if (diffMin < 60) return `Il y a ${diffMin}min`;
+    if (diffHour < 24) return `Il y a ${diffHour}h`;
+    if (diffDay < 7) return `Il y a ${diffDay}j`;
+  } else {
+    if (diffMin < 60) return `Il y a ${diffMin} minute${diffMin > 1 ? "s" : ""}`;
+    if (diffHour < 24) return `Il y a ${diffHour} heure${diffHour > 1 ? "s" : ""}`;
+    if (diffDay < 7) return `Il y a ${diffDay} jour${diffDay > 1 ? "s" : ""}`;
+  }
 
   return formatDateShort(date);
 };

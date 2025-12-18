@@ -220,3 +220,53 @@ const getGeolocationErrorMessage = (error) => {
 export const isGeolocationSupported = () => {
   return "geolocation" in navigator;
 };
+
+// === Observation Coordinates Helpers ===
+
+/**
+ * Extrait les coordonnées d'une observation
+ * Gère les deux formats: coordinates.lat/lng et location.coordinates
+ * @param {Object} observation - L'observation
+ * @returns {{ lat: number, lng: number } | null} Coordonnées ou null
+ */
+export const getObservationCoordinates = (observation) => {
+  if (!observation) return null;
+
+  // Format backend: coordinates.lat et coordinates.lng
+  if (observation.coordinates?.lat != null && observation.coordinates?.lng != null) {
+    return {
+      lat: observation.coordinates.lat,
+      lng: observation.coordinates.lng
+    };
+  }
+
+  // Format GeoJSON: location.coordinates [lng, lat]
+  if (Array.isArray(observation.location?.coordinates) && observation.location.coordinates.length >= 2) {
+    return {
+      lat: observation.location.coordinates[1],
+      lng: observation.location.coordinates[0]
+    };
+  }
+
+  return null;
+};
+
+/**
+ * Vérifie si une observation a des coordonnées valides
+ * @param {Object} observation - L'observation
+ * @returns {boolean} true si coordonnées présentes
+ */
+export const hasValidCoordinates = (observation) => {
+  return getObservationCoordinates(observation) !== null;
+};
+
+/**
+ * Retourne les coordonnées au format Leaflet [lat, lng]
+ * @param {Object} observation - L'observation
+ * @returns {[number, number] | null} [lat, lng] ou null
+ */
+export const getLeafletCoordinates = (observation) => {
+  const coords = getObservationCoordinates(observation);
+  if (!coords) return null;
+  return [coords.lat, coords.lng];
+};

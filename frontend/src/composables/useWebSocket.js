@@ -14,9 +14,9 @@ export function useWebSocket() {
   const maxReconnectAttempts = 5;
   const reconnectDelay = 3000;
 
-  // URL du WebSocket - en production, utiliser l'URL Render
+  // URL du WebSocket - VITE_WS_URL est passé par Docker, sinon fallback sur LOCAL pour dev Vite
   const WS_URL =
-    import.meta.env.VITE_WS_URL || "wss://phenom-backend.onrender.com";
+    import.meta.env.VITE_WS_URL || import.meta.env.VITE_WS_URL_LOCAL || "ws://localhost:3000";
 
   /**
    * Connexion au WebSocket avec WsMini WSClient

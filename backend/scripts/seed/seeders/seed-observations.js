@@ -27,14 +27,25 @@ export async function seedObservations(users) {
         continue;
       }
 
-      // Créer l'observation
+      // Créer l'observation avec tous les champs du modèle
       const observation = await Observation.create({
-        title: obsData.title,
-        description: obsData.description,
+        date: obsData.date,
+        time: obsData.time,
         location: obsData.location,
+        country: obsData.country,
+        state: obsData.state,
+        description: obsData.description,
+        credibility: obsData.credibility || 5,
+        strangeness: obsData.strangeness || 5,
+        duration: obsData.duration || 0,
+        locale: obsData.locale || 'Unknown',
+        coordinates: obsData.coordinates,
+        observerTypes: obsData.observerTypes || [],
+        ufoShapes: obsData.ufoShapes || [],
+        phenomena: obsData.phenomena || [],
         userId: user._id,
-        type: obsData.type,
-        tags: obsData.tags || []
+        tags: obsData.tags || [],
+        source: 'seed'
       });
 
       // Uploader l'image si elle existe
@@ -64,12 +75,12 @@ export async function seedObservations(users) {
           });
           await observation.save();
 
-          console.log(`   ✅ [${i + 1}/${observationsData.length}] ${observation.title.substring(0, 50)}... (avec image Cloudinary)`);
+          console.log(`   ✅ [${i + 1}/${observationsData.length}] ${observation.location.substring(0, 30)}... (${observation.phenomena.join(', ')}) (avec image Cloudinary)`);
         } catch (imageError) {
-          console.log(`   ⚠️  [${i + 1}/${observationsData.length}] ${observation.title.substring(0, 50)}... (sans image: ${imageError.message})`);
+          console.log(`   ⚠️  [${i + 1}/${observationsData.length}] ${observation.location.substring(0, 30)}... (sans image: ${imageError.message})`);
         }
       } else {
-        console.log(`   ℹ️  [${i + 1}/${observationsData.length}] ${observation.title.substring(0, 50)}... (image placeholder manquante)`);
+        console.log(`   ℹ️  [${i + 1}/${observationsData.length}] ${observation.location.substring(0, 30)}... (image placeholder manquante)`);
       }
 
       createdObservations.push(observation);

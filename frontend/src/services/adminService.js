@@ -1,58 +1,43 @@
 /**
- * Services API pour l'administration
+ * Service API pour l'administration
+ * Endpoints: /admin/*
  */
 import apiClient from "../utils/api";
 
 export const adminService = {
-  /**
-   * Récupère les statistiques admin
-   */
+  /** GET /admin/stats */
   async getStats() {
     const response = await apiClient.get("/admin/stats");
     return response.data;
   },
 
-  /**
-   * Récupère tous les utilisateurs
-   */
+  /** GET /admin/users */
   async getUsers(params = {}) {
     const response = await apiClient.get("/admin/users", { params });
     return response.data;
   },
 
-  /**
-   * Récupère les détails d'un utilisateur
-   */
+  /** GET /admin/users/:id */
   async getUserDetails(userId) {
     const response = await apiClient.get(`/admin/users/${userId}`);
     return response.data;
   },
 
-  /**
-   * Modifie le rôle d'un utilisateur
-   */
+  /** PUT /admin/users/:id/role */
   async updateUserRole(userId, role) {
-    const response = await apiClient.put(`/admin/users/${userId}/role`, {
-      role,
-    });
+    const response = await apiClient.put(`/admin/users/${userId}/role`, { role });
     return response.data;
   },
 
-  /**
-   * Supprime une observation (admin)
-   */
-  async deleteObservation(observationId) {
-    const response = await apiClient.delete(
-      `/admin/observations/${observationId}`,
-    );
+  /** DELETE /admin/observations/:id */
+  async deleteObservation(id) {
+    const response = await apiClient.delete(`/admin/observations/${id}`);
     return response.data;
   },
 
-  /**
-   * Supprime un commentaire (admin)
-   */
-  async deleteComment(commentId) {
-    const response = await apiClient.delete(`/admin/comments/${commentId}`);
+  /** DELETE /admin/comments/:id */
+  async deleteComment(id) {
+    const response = await apiClient.delete(`/admin/comments/${id}`);
     return response.data;
   },
 };

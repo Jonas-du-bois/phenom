@@ -1,13 +1,13 @@
 /**
  * Composable pour la gestion des filtres
- * Compatible avec le format Phenom Search API
+ * Gère les options de filtrage et l'état du formulaire
  */
 import { ref, computed } from "vue";
 import { useFilterStore } from "../stores/filter";
-import { useSightingStore } from "../stores/sighting";
+import { useObservationStore } from "../stores/observation";
 import { storeToRefs } from "pinia";
 
-// Structure par défaut des filtres (DRY - défini une seule fois)
+// Structure par défaut des filtres
 const createEmptyFilters = () => ({
   country: null,
   startYear: null,
@@ -26,24 +26,25 @@ const createEmptyFilters = () => ({
 
 export function useFilters() {
   const filterStore = useFilterStore();
-  const sightingStore = useSightingStore();
+  const observationStore = useObservationStore();
 
-  // Références depuis les stores
+  // Références depuis le store filter
   const {
     countries, locales, statistics, loading, error, isInitialized,
     observerTypeOptions, ufoShapeOptions, phenomenaOptions, localeOptions,
     countryOptions, yearRange, credibilityScale, strangenessScale,
   } = storeToRefs(filterStore);
 
-  const { activeFilters, hasFilters } = storeToRefs(sightingStore);
-
-  // État local
+  // État local des filtres
   const formFilters = ref(createEmptyFilters());
+  const activeFilters = ref(createEmptyFilters());
   const isApplying = ref(false);
 
-  // ========================================
   // Computed
-  // ========================================
+  const hasFilters = computed(() =>
+    Object.values(activeFilters.value).some(v => v !== null && v !== undefined && v !== "")
+  );
+
   const activeFilterCount = computed(() =>
     Object.values(activeFilters.value).filter(v => v !== null && v !== undefined && v !== "").length
   );
@@ -52,37 +53,16 @@ export function useFilters() {
     const summary = [];
     const filters = activeFilters.value;
 
-    if (filters.country) {
-      summary.push({ type: "country", label: `Pays: ${filters.country}` });
-    }
+    if (filters.country) summary.push({ type: "country", label: `Pays: ${filters.country}` });
     if (filters.startYear || filters.endYear) {
       summary.push({ type: "year", label: `Année: ${filters.startYear || "..."} - ${filters.endYear || "..."}` });
     }
-    if (filters.minCredibility !== null || filters.maxCredibility !== null) {
-      summary.push({ type: "credibility", label: `Crédibilité: ${filters.minCredibility ?? 0}-${filters.maxCredibility ?? 15}` });
-    }
-    if (filters.minStrangeness !== null || filters.maxStrangeness !== null) {
-      summary.push({ type: "strangeness", label: `Étrangeté: ${filters.minStrangeness ?? 0}-${filters.maxStrangeness ?? 10}` });
-    }
-    if (filters.observerType) {
-      summary.push({ type: "observerType", label: `Observateur: ${filterStore.getObserverTypeLabel(filters.observerType)}` });
-    }
-    if (filters.ufoShape) {
-      summary.push({ type: "ufoShape", label: `Forme: ${filterStore.getUfoShapeLabel(filters.ufoShape)}` });
-    }
-    if (filters.phenomenon) {
-      summary.push({ type: "phenomenon", label: `Phénomène: ${filterStore.getPhenomenonLabel(filters.phenomenon)}` });
-    }
-    if (filters.hasCoordinates) summary.push({ type: "hasCoordinates", label: "Avec coordonnées" });
-    if (filters.hasImages) summary.push({ type: "hasImages", label: "Avec images" });
     if (filters.search) summary.push({ type: "search", label: `Recherche: "${filters.search}"` });
 
     return summary;
   });
 
-  // ========================================
   // Actions
-  // ========================================
   const initialize = () => filterStore.initialize();
   const refresh = () => filterStore.refresh();
 
@@ -96,7 +76,8 @@ export function useFilters() {
       const cleanFilters = Object.fromEntries(
         Object.entries(formFilters.value).filter(([, v]) => v !== null && v !== undefined && v !== "")
       );
-      await sightingStore.fetchWithFilters(cleanFilters);
+      activeFilters.value = { ...formFilters.value };
+      await observationStore.fetchObservations(cleanFilters);
     } finally {
       isApplying.value = false;
     }
@@ -104,12 +85,11 @@ export function useFilters() {
 
   const clearAllFilters = async () => {
     resetFormFilters();
-    sightingStore.clearFilters();
-    await sightingStore.fetchPaginated();
+    activeFilters.value = createEmptyFilters();
+    await observationStore.fetchObservations();
   };
 
   const removeFilter = async (filterType) => {
-    // Gestion des filtres de plage
     const rangeFilters = {
       year: ["startYear", "endYear"],
       credibility: ["minCredibility", "maxCredibility"],
@@ -124,11 +104,10 @@ export function useFilters() {
     await applyFilters();
   };
 
-  const syncFormWithActive = () => { formFilters.value = { ...activeFilters.value }; };
-
   const reset = () => {
     filterStore.reset();
     resetFormFilters();
+    activeFilters.value = createEmptyFilters();
     isApplying.value = false;
   };
 
@@ -144,8 +123,8 @@ export function useFilters() {
     activeFilterCount, activeFiltersSummary,
     // Actions
     initialize, refresh, setFilter, setFilters, resetFormFilters,
-    applyFilters, clearAllFilters, removeFilter, syncFormWithActive, reset,
-    // Label helpers (re-export from store)
+    applyFilters, clearAllFilters, removeFilter, reset,
+    // Label helpers
     getObserverLabel: filterStore.getObserverTypeLabel,
     getShapeLabel: filterStore.getUfoShapeLabel,
     getPhenomenonLabel: filterStore.getPhenomenonLabel,

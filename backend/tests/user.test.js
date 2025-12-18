@@ -143,7 +143,7 @@ describe('User Endpoints', () => {
       expect(response.body.success).toBe(true);
       expect(response.body.data.name).toBe('Updated Name');
       expect(response.body.data.email).toBe('updated@example.com');
-      // La bio peut être échappée par .escape()
+      // Le texte est stocké tel quel (pas d'échappement HTML)
       expect(response.body.data.bio).toContain('astronomie');
     });
 

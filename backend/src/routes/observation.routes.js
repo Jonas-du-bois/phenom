@@ -266,7 +266,7 @@ router.get(
  *     description: |
  *       Endpoint unifié pour récupérer les observations avec pagination et filtres.
  *       Compatible avec le format Phenom Search API.
- *       
+ *
  *       **Fonctionnalités:**
  *       - Pagination flexible (page/limit ou offset/limit)
  *       - Filtres par pays, locale, dates, credibility, strangeness
@@ -462,9 +462,9 @@ router.get(
  *     description: |
  *       Crée une nouvelle observation d'OVNI/phénomène.
  *       Utilise le format Phenom Search compatible pour la structure de données.
- *       
+ *
  *       **Champs requis:** date, location, country, description, coordinates
- *       
+ *
  *       **Fonctionnalités sociales:** Les images peuvent être ajoutées via l'endpoint dédié
  *       après la création de l'observation.
  *     tags: [Observations]

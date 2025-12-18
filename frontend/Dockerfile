@@ -15,11 +15,17 @@ COPY . .
 
 # Arguments de build
 ARG VITE_API_BASE_URL
+ARG VITE_API_PREFIX="/api/v1"
+ARG VITE_WS_URL
 ARG VITE_APP_NAME="Phenom"
+ARG VITE_MAP_TILES_URL="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
 
 # Variables d'environnement pour le build
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+ENV VITE_API_PREFIX=$VITE_API_PREFIX
+ENV VITE_WS_URL=$VITE_WS_URL
 ENV VITE_APP_NAME=$VITE_APP_NAME
+ENV VITE_MAP_TILES_URL=$VITE_MAP_TILES_URL
 
 # Build de l'application
 RUN npm run build

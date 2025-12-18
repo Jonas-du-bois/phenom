@@ -1,51 +1,43 @@
 /**
- * Services API pour l'authentification
+ * Service API pour l'authentification
+ * Endpoints: /auth/*
  */
 import apiClient from "../utils/api";
 
 export const authService = {
-  /**
-   * Connexion
-   */
+  /** POST /auth/login */
   async login(credentials) {
-    console.log("📤 Envoi login avec:", {
-      email: credentials.email,
-      password: "***",
-    });
     const response = await apiClient.post("/auth/login", credentials);
-    console.log("📥 Réponse login reçue:", response.data);
     return response.data;
   },
 
-  /**
-   * Inscription
-   */
+  /** POST /auth/signup */
   async register(userData) {
     const response = await apiClient.post("/auth/signup", userData);
     return response.data;
   },
 
-  /**
-   * Déconnexion
-   */
+  /** POST /auth/logout */
   async logout() {
     const response = await apiClient.post("/auth/logout");
     return response.data;
   },
 
-  /**
-   * Récupère le profil utilisateur
-   */
+  /** GET /auth/me */
   async getProfile() {
     const response = await apiClient.get("/auth/me");
     return response.data;
   },
 
-  /**
-   * Réinitialisation du mot de passe
-   */
+  /** POST /auth/forgot-password */
   async forgotPassword(email) {
     const response = await apiClient.post("/auth/forgot-password", { email });
+    return response.data;
+  },
+
+  /** POST /auth/reset-password */
+  async resetPassword(token, password) {
+    const response = await apiClient.post("/auth/reset-password", { token, password });
     return response.data;
   },
 };

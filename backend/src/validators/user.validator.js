@@ -2,12 +2,13 @@ import { body, query } from 'express-validator';
 
 /**
  * Validation pour la mise à jour du profil
+ * Note: On n'utilise PAS .escape() car cela encode les apostrophes en &#x27;
+ * La protection XSS est gérée côté frontend à l'affichage
  */
 export const updateProfileValidation = [
   body('name')
     .optional()
     .trim()
-    .escape() // Échapper les caractères HTML pour prévenir XSS
     .isLength({ min: 2, max: 50 })
     .withMessage('Le nom doit contenir entre 2 et 50 caractères'),
   body('email')
@@ -19,7 +20,6 @@ export const updateProfileValidation = [
   body('bio')
     .optional()
     .trim()
-    .escape() // Échapper les caractères HTML pour prévenir XSS
     .isLength({ max: 500 })
     .withMessage('La bio ne peut pas dépasser 500 caractères')
 ];

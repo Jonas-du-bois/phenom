@@ -13,9 +13,9 @@ class ObservationController {
    * GET /observations
    */
   getObservations = asyncHandler(async (req, res) => {
-    const { observations, pagination } = await observationService.getObservations(req.query);
+    const { data: observations, pagination } = await observationService.getObservations(req.query);
     return res.status(200).json(
-      paginatedResponse(observations, pagination.total, pagination.page, pagination.limit)
+      paginatedResponse(observations, pagination.total, pagination.page || 1, pagination.limit)
     );
   });
 

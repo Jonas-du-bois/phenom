@@ -58,7 +58,7 @@ class ImageController {
       await observation.save();
 
       // Publier un événement WebSocket pour notifier que l'observation a été mise à jour avec une image
-      const populatedObservation = await Observation.findById(observationId).populate('userId', 'name email');
+      const populatedObservation = await Observation.findById(observationId).populate('userId', 'name email avatar');
       publishObservationEvent('observation:updated', populatedObservation.toObject());
 
       const message = uploadedImages.length === 1
@@ -98,7 +98,7 @@ class ImageController {
       await observation.save();
 
       // Publier un événement WebSocket pour notifier que l'observation a été mise à jour (image supprimée)
-      const populatedObservation = await Observation.findById(observationId).populate('userId', 'name email');
+      const populatedObservation = await Observation.findById(observationId).populate('userId', 'name email avatar');
       publishObservationEvent('observation:updated', populatedObservation.toObject());
 
       return successResponse(res, {}, 'Image supprimée avec succès');
@@ -163,7 +163,7 @@ class ImageController {
       await observation.save();
 
       // Publier un événement WebSocket pour notifier que l'observation a été mise à jour
-      const populatedObservation = await Observation.findById(observationId).populate('userId', 'name email');
+      const populatedObservation = await Observation.findById(observationId).populate('userId', 'name email avatar');
       publishObservationEvent('observation:updated', populatedObservation.toObject());
 
       return successResponse(res, newImageData, 'Image modifiée avec succès');

@@ -188,7 +188,7 @@ const observationSchema = new mongoose.Schema({
   source: {
     type: String,
     default: 'phenom-app',
-    enum: ['phenom-app', 'hatch-ufo', 'import'],
+    enum: ['phenom-app', 'hatch-ufo', 'import', 'seed'],
     comment: 'Data source identifier'
   }
 }, {

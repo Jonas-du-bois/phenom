@@ -2,185 +2,378 @@
  * Données des commentaires sur les observations
  * Format: { observationIndex, userIndex, text, daysAgo }
  * Les dates sont relatives (nombre de jours avant aujourd'hui)
+ *
+ * Observations disponibles (0-14):
+ * 0 - Triangle Lausanne
+ * 1 - Sphère Genève
+ * 2 - Formation Berne
+ * 3 - Disque Zurich
+ * 4 - Submersible Lac Léman
+ * 5 - Rayon Lyon
+ * 6 - Cigare Paris (son)
+ * 7 - Signaux Marseille
+ * 8 - Atterrissage Alpes
+ * 9 - Effet véhicule Toulouse
+ * 10 - Animaux Bordeaux
+ * 11 - Missing time Strasbourg
+ * 12 - Traces Lucerne
+ * 13 - Radiation Montreux
+ * 14 - Entité Neuchâtel
  */
 export const commentsData = [
-  // Obs 0 - WAV Triangle Lausanne
-  { observationIndex: 0, userIndex: 1, text: 'J\'ai vu exactement la même chose le même soir ! J\'étais à Pully. Incroyable !', daysAgo: 2 },
-  { observationIndex: 0, userIndex: 3, text: 'Description très précise. As-tu contacté les autorités locales ?', daysAgo: 1 },
-  { observationIndex: 0, userIndex: 5, text: 'Les triangles sont une forme classique. Merci pour le partage !', daysAgo: 0 },
-  { observationIndex: 0, userIndex: 7, text: 'J\'ai consulté les données de vol : aucun avion ne correspond.', daysAgo: 0 },
+  // Obs 0 - Triangle Lausanne
+  {
+    observationIndex: 0,
+    userIndex: 1,
+    text: 'J\'ai vu exactement la même chose le même soir ! J\'étais à Pully vers 22h45. Le triangle était immense et totalement silencieux. Incroyable !',
+    daysAgo: 2
+  },
+  {
+    observationIndex: 0,
+    userIndex: 3,
+    text: 'Description très précise, les trois lumières blanches aux angles correspondent à ce que d\'autres témoins rapportent souvent. As-tu contacté les autorités locales ou le GEIPAN suisse ?',
+    daysAgo: 1
+  },
+  {
+    observationIndex: 0,
+    userIndex: 5,
+    text: 'Les triangles sont une forme classique dans les observations depuis les années 80. Le silence total suggère une technologie de propulsion non conventionnelle. Merci pour ce témoignage détaillé !',
+    daysAgo: 1
+  },
+  {
+    observationIndex: 0,
+    userIndex: 7,
+    text: 'J\'ai consulté les données de vol de Skyguide pour cette soirée : aucun avion ne correspond à ta description. Pas de drone non plus dans cette zone à cette heure.',
+    daysAgo: 0
+  },
 
-  // Obs 1 - PHT Sphère Genève
-  { observationIndex: 1, userIndex: 0, text: 'Les photos sont disponibles ? J\'aimerais vraiment voir ça !', daysAgo: 3 },
-  { observationIndex: 1, userIndex: 4, text: 'Une disparition instantanée, fascinant ! Aucune explication logique.', daysAgo: 2 },
-  { observationIndex: 1, userIndex: 7, text: 'Belle prise ! La qualité des photos pourrait aider les analyses.', daysAgo: 1 },
+  // Obs 1 - Sphère Genève
+  {
+    observationIndex: 1,
+    userIndex: 0,
+    text: 'Les photos haute résolution sont disponibles quelque part ? J\'aimerais vraiment analyser les détails de cette sphère orange !',
+    daysAgo: 3
+  },
+  {
+    observationIndex: 1,
+    userIndex: 4,
+    text: 'Une disparition instantanée sans bruit ni accélération visible... c\'est fascinant ! Aucune explication logique avec notre technologie actuelle.',
+    daysAgo: 2
+  },
+  {
+    observationIndex: 1,
+    userIndex: 7,
+    text: 'Belle prise au-dessus du jet d\'eau ! La qualité de tes photos pourrait vraiment aider les analyses. Tu devrais contacter une association ufologique suisse.',
+    daysAgo: 1
+  },
+  {
+    observationIndex: 1,
+    userIndex: 2,
+    text: 'La lumière pulsante orange-rouge est souvent associée à un système de propulsion actif selon certaines théories. 10 minutes d\'observation c\'est long, tu as dû voir plein de détails !',
+    daysAgo: 0
+  },
 
-  // Obs 2 - OBS Formation Berne
-  { observationIndex: 2, userIndex: 2, text: 'Mise à jour : aucun satellite ne correspond à ce que j\'ai vu.', daysAgo: 1 },
-  { observationIndex: 2, userIndex: 6, text: 'La poursuite était risquée mais fascinante ! Bravo pour ton courage.', daysAgo: 0 },
+  // Obs 2 - Formation Berne
+  {
+    observationIndex: 2,
+    userIndex: 2,
+    text: 'Mise à jour après vérification : aucun satellite Starlink ne correspond à ce que j\'ai vu. La formation en V parfait et le déplacement coordonné excluent les satellites.',
+    daysAgo: 1
+  },
+  {
+    observationIndex: 2,
+    userIndex: 6,
+    text: 'La poursuite en voiture pendant 15 minutes était risquée mais fascinante ! Tu as pu estimer leur vitesse ? Bravo pour ton courage de les suivre.',
+    daysAgo: 0
+  },
+  {
+    observationIndex: 2,
+    userIndex: 8,
+    text: 'Sept points lumineux en formation V... ça ressemble aux observations de Phoenix en 1997. Peut-être un phénomène similaire en Suisse ?',
+    daysAgo: 0
+  },
 
-  // Obs 3 - TCH Disque Zurich
-  { observationIndex: 3, userIndex: 7, text: 'Les détails structurels que tu décris sont précieux pour la recherche !', daysAgo: 4 },
-  { observationIndex: 3, userIndex: 1, text: 'En plein jour c\'est rare. La visibilité devait être excellente.', daysAgo: 3 },
-  { observationIndex: 3, userIndex: 8, text: 'Des virages à 90° à haute vitesse... aucun appareil humain ne peut faire ça !', daysAgo: 2 },
-  { observationIndex: 3, userIndex: 4, text: 'Les témoins multiples rendent ton observation très crédible.', daysAgo: 1 },
+  // Obs 3 - Disque Zurich
+  {
+    observationIndex: 3,
+    userIndex: 7,
+    text: 'Les détails structurels que tu décris (dôme, panneaux, surface inférieure) sont précieux pour la recherche ! Observation de qualité professionnelle.',
+    daysAgo: 4
+  },
+  {
+    observationIndex: 3,
+    userIndex: 1,
+    text: 'En plein après-midi à 14h20 c\'est rare ! La visibilité devait être excellente. Avec des jumelles tu as pu voir des détails que beaucoup manquent.',
+    daysAgo: 3
+  },
+  {
+    observationIndex: 3,
+    userIndex: 8,
+    text: 'Des virages à 90° à haute vitesse, des arrêts brusques après accélération... aucun appareil humain ne peut faire ça sans écraser ses occupants ! Physique impossible pour nous.',
+    daysAgo: 2
+  },
+  {
+    observationIndex: 3,
+    userIndex: 4,
+    text: 'Les témoins multiples en plein jour rendent ton observation très crédible. 15-20 mètres de diamètre, c\'est énorme ! Comment personne d\'autre n\'a signalé ça ?',
+    daysAgo: 1
+  },
 
-  // Obs 4 - SUB Lac Léman
-  { observationIndex: 4, userIndex: 9, text: 'Sortir de l\'eau comme ça... c\'est du jamais vu ! Extraordinaire !', daysAgo: 3 },
-  { observationIndex: 4, userIndex: 2, text: 'Les observations USO (Underwater Submersible Objects) sont rares. Merci !', daysAgo: 2 },
-  { observationIndex: 4, userIndex: 5, text: 'La lumière bleu-vert sous l\'eau... propulsion magnétohydrodynamique ?', daysAgo: 1 },
+  // Obs 4 - Submersible Lac Léman
+  {
+    observationIndex: 4,
+    userIndex: 9,
+    text: 'Sortir de l\'eau comme ça, puis s\'élever verticalement à vitesse folle... c\'est du jamais vu ! Les USO (Unidentified Submersible Objects) sont extraordinaires !',
+    daysAgo: 3
+  },
+  {
+    observationIndex: 4,
+    userIndex: 2,
+    text: 'Les observations USO sont beaucoup plus rares que les OVNI aériens. Le Lac Léman est profond, qui sait ce qui pourrait s\'y cacher ? Merci pour ce témoignage unique !',
+    daysAgo: 2
+  },
+  {
+    observationIndex: 4,
+    userIndex: 5,
+    text: 'La lumière bleu-vert sous l\'eau avant l\'émersion... certains chercheurs parlent de propulsion magnétohydrodynamique. Ça expliquerait le fonctionnement sous-marin et aérien.',
+    daysAgo: 1
+  },
 
-  // Obs 5 - RAY Lyon
-  { observationIndex: 5, userIndex: 0, text: 'Le rayon solide est un phénomène souvent rapporté. Tu as eu chaud !', daysAgo: 4 },
-  { observationIndex: 5, userIndex: 3, text: 'La chaleur que tu as ressentie suggère une énergie dirigée. Impressionnant.', daysAgo: 3 },
+  // Obs 5 - Rayon Lyon
+  {
+    observationIndex: 5,
+    userIndex: 0,
+    text: 'Le rayon "solide" comme un cylindre de lumière est un phénomène souvent rapporté dans les observations de catégorie 2. Tu as eu chaud, littéralement !',
+    daysAgo: 4
+  },
+  {
+    observationIndex: 5,
+    userIndex: 3,
+    text: 'La chaleur intense que tu as ressentie quand le rayon est passé près de toi suggère une énergie dirigée concentrée. Impressionnant et un peu effrayant.',
+    daysAgo: 3
+  },
+  {
+    observationIndex: 5,
+    userIndex: 6,
+    text: 'Place Bellecour, il devait y avoir d\'autres témoins non ? 200m d\'altitude en pleine ville, quelqu\'un d\'autre a dû voir ça !',
+    daysAgo: 2
+  },
 
-  // Obs 6 - SND Paris
-  { observationIndex: 6, userIndex: 4, text: 'L\'enregistrement audio serait précieux ! Tu peux le partager ?', daysAgo: 2 },
-  { observationIndex: 6, userIndex: 6, text: 'Un bourdonnement modulé... certains parlent de résonance harmonique.', daysAgo: 1 },
+  // Obs 6 - Cigare Paris (son)
+  {
+    observationIndex: 6,
+    userIndex: 4,
+    text: 'L\'enregistrement audio du bourdonnement serait vraiment précieux ! Tu peux le partager ? Les analyses spectrales pourraient révéler des fréquences inhabituelles.',
+    daysAgo: 2
+  },
+  {
+    observationIndex: 6,
+    userIndex: 6,
+    text: 'Un bourdonnement grave et modulé, presque musical... certains parlent de résonance harmonique liée aux systèmes de propulsion. L\'arrêt instantané du son quand l\'objet part, c\'est significatif.',
+    daysAgo: 1
+  },
+  {
+    observationIndex: 6,
+    userIndex: 9,
+    text: 'Forme cigare gris métallique + son enregistré = observation de grande valeur scientifique. Tu devrais contacter des chercheurs spécialisés.',
+    daysAgo: 0
+  },
 
-  // Obs 7 - SIG Marseille
-  { observationIndex: 7, userIndex: 8, text: 'La communication est LA preuve d\'intelligence ! Extraordinaire expérience !', daysAgo: 5 },
-  { observationIndex: 7, userIndex: 9, text: 'J\'aurais fait pareil ! La curiosité est plus forte que la peur.', daysAgo: 4 },
-  { observationIndex: 7, userIndex: 1, text: 'Plusieurs témoins valident ton récit. C\'est très crédible.', daysAgo: 3 },
-  { observationIndex: 7, userIndex: 2, text: 'Le Vieux-Port a une vue dégagée. Bonne position d\'observation !', daysAgo: 2 },
+  // Obs 7 - Signaux Marseille
+  {
+    observationIndex: 7,
+    userIndex: 8,
+    text: 'La communication par signaux lumineux est LA preuve d\'intelligence ! Ils ont répondu à tes patterns, c\'est une interaction directe ! Extraordinaire expérience !',
+    daysAgo: 5
+  },
+  {
+    observationIndex: 7,
+    userIndex: 9,
+    text: 'J\'aurais fait pareil à ta place ! La curiosité est plus forte que la peur. Le fait qu\'ils répondaient à chaque pattern différent montre une compréhension.',
+    daysAgo: 4
+  },
+  {
+    observationIndex: 7,
+    userIndex: 1,
+    text: 'Depuis le Vieux-Port avec plusieurs témoins qui ont validé ton récit, c\'est très crédible. 15 minutes d\'échange de signaux, incroyable !',
+    daysAgo: 3
+  },
+  {
+    observationIndex: 7,
+    userIndex: 2,
+    text: 'Le Vieux-Port a une vue dégagée sur la mer, bonne position d\'observation ! Les lumières rouge, verte et blanche, comme des feux de navigation mais avec un comportement intelligent.',
+    daysAgo: 2
+  },
 
-  // Obs 8 - LND Alpes
-  { observationIndex: 8, userIndex: 2, text: 'Les traces au sol sont des preuves physiques ! As-tu pris des photos ?', daysAgo: 2 },
-  { observationIndex: 8, userIndex: 7, text: 'L\'herbe brûlée en cercle... chaleur ou radiation. Intéressant.', daysAgo: 1 },
+  // Obs 8 - Atterrissage Alpes
+  {
+    observationIndex: 8,
+    userIndex: 2,
+    text: 'Les trois marques circulaires au sol et l\'herbe brûlée en cercle de 6m sont des preuves physiques ! As-tu pris des photos des traces ? C\'est crucial !',
+    daysAgo: 2
+  },
+  {
+    observationIndex: 8,
+    userIndex: 7,
+    text: 'L\'herbe brûlée en cercle parfait suggère une chaleur ou radiation intense et localisée. Les pieds télescopiques, comme dans les rapports classiques. Observation exceptionnelle !',
+    daysAgo: 1
+  },
+  {
+    observationIndex: 8,
+    userIndex: 3,
+    text: 'Credibilité 10/10 ! Tu as vu l\'objet au sol, les détails (8m diamètre, 3m hauteur, couleur gris-bleu), ET tu as des traces physiques. C\'est rare !',
+    daysAgo: 1
+  },
+  {
+    observationIndex: 8,
+    userIndex: 5,
+    text: 'Le sifflement aigu juste avant le décollage... système de propulsion qui s\'active ? Témoignage de grande valeur pour la recherche.',
+    daysAgo: 0
+  },
 
-  // Obs 9 - VEH Toulouse
-  { observationIndex: 9, userIndex: 3, text: 'L\'effet EM sur les véhicules est bien documenté. Flippant !', daysAgo: 4 },
-  { observationIndex: 9, userIndex: 5, text: 'Ton mécanicien n\'a rien trouvé... car c\'était un champ électromagnétique !', daysAgo: 3 },
-  { observationIndex: 9, userIndex: 0, text: 'Être immobilisé comme ça... je n\'ose pas imaginer la peur.', daysAgo: 2 },
-  { observationIndex: 9, userIndex: 2, text: 'Le flash avant l\'accélération... lié à la propulsion ?', daysAgo: 1 },
+  // Obs 9 - Effet véhicule Toulouse
+  {
+    observationIndex: 9,
+    userIndex: 3,
+    text: 'L\'effet électromagnétique sur les véhicules (moteur, lumières, radio, téléphone) est très bien documenté dans la littérature ufologique. Flippant de vivre ça !',
+    daysAgo: 4
+  },
+  {
+    observationIndex: 9,
+    userIndex: 5,
+    text: 'Ton mécanicien n\'a rien trouvé car il n\'y avait rien de cassé... c\'était un champ électromagnétique intense qui a temporairement neutralisé l\'électronique !',
+    daysAgo: 3
+  },
+  {
+    observationIndex: 9,
+    userIndex: 0,
+    text: 'Être immobilisé seul sur une route de campagne avec un triangle au-dessus de toi... je n\'ose pas imaginer la peur. 5 minutes ont dû paraître une éternité.',
+    daysAgo: 2
+  },
+  {
+    observationIndex: 9,
+    userIndex: 2,
+    text: 'La lumière orange pulsante puis le flash avant l\'accélération folle... probablement lié au système de propulsion qui passe en mode "départ".',
+    daysAgo: 1
+  },
 
-  // Obs 10 - ANI Bordeaux
-  { observationIndex: 10, userIndex: 1, text: 'Les animaux sentent des choses que nous ne percevons pas. Troublant.', daysAgo: 3 },
-  { observationIndex: 10, userIndex: 4, text: 'Une semaine sans lait ! L\'impact sur les animaux est réel.', daysAgo: 2 },
+  // Obs 10 - Animaux Bordeaux
+  {
+    observationIndex: 10,
+    userIndex: 1,
+    text: 'Les animaux de ferme sentent des choses que nous ne percevons pas. Leur réaction est un indicateur fiable qu\'il s\'est passé quelque chose de réel. Troublant.',
+    daysAgo: 3
+  },
+  {
+    observationIndex: 10,
+    userIndex: 4,
+    text: 'Une semaine sans lait après l\'observation ! L\'impact sur les animaux est réel et mesurable. C\'est une preuve indirecte importante.',
+    daysAgo: 2
+  },
+  {
+    observationIndex: 10,
+    userIndex: 6,
+    text: 'Les effets sur le bétail sont classiques dans les rapports d\'observation proches. Le stress ou les radiations peuvent affecter la lactation.',
+    daysAgo: 1
+  },
 
-  // Obs 11 - HUM Strasbourg
-  { observationIndex: 11, userIndex: 6, text: 'Le missing time est terrifiant. Tu as consulté un hypnothérapeute ?', daysAgo: 5 },
-  { observationIndex: 11, userIndex: 8, text: 'La marque circulaire... ils t\'ont marqué ? C\'est inquiétant.', daysAgo: 4 },
-  { observationIndex: 11, userIndex: 2, text: '2 heures perdues... qu\'est-ce qui s\'est passé pendant ce temps ?', daysAgo: 3 },
+  // Obs 11 - Missing time Strasbourg
+  {
+    observationIndex: 11,
+    userIndex: 6,
+    text: 'Le missing time (temps manquant) est l\'aspect le plus terrifiant des rencontres rapprochées. Tu as consulté un hypnothérapeute spécialisé ?',
+    daysAgo: 5
+  },
+  {
+    observationIndex: 11,
+    userIndex: 8,
+    text: 'La marque circulaire que tu as découverte ensuite... ils t\'ont peut-être marqué ou implanté quelque chose ? C\'est vraiment inquiétant.',
+    daysAgo: 4
+  },
+  {
+    observationIndex: 11,
+    userIndex: 2,
+    text: '2 heures perdues sans aucun souvenir... qu\'est-ce qui s\'est passé pendant ce temps ? L\'hypnose régressive pourrait révéler des souvenirs enfouis.',
+    daysAgo: 3
+  },
+  {
+    observationIndex: 11,
+    userIndex: 0,
+    text: 'Tu n\'es pas seul(e), beaucoup de témoins rapportent des expériences similaires. Courage, et documente tout ce dont tu te souviens.',
+    daysAgo: 2
+  },
 
-  // Obs 12 - TRC Lucerne
-  { observationIndex: 12, userIndex: 9, text: 'Sol vitrifié = température extrême ! Au moins 1500°C.', daysAgo: 2 },
-  { observationIndex: 12, userIndex: 3, text: 'Les trois dépressions en triangle... motif récurrent dans les atterrissages.', daysAgo: 1 },
+  // Obs 12 - Traces Lucerne
+  {
+    observationIndex: 12,
+    userIndex: 9,
+    text: 'Sol vitrifié = température extrême ! Il faut au moins 1500°C pour vitrifier de la terre. Quelle technologie peut faire ça sans incendier la forêt autour ?',
+    daysAgo: 2
+  },
+  {
+    observationIndex: 12,
+    userIndex: 3,
+    text: 'Les trois dépressions en triangle parfait... c\'est un motif récurrent dans les cas d\'atterrissage à travers le monde. Traces de train d\'atterrissage tripode.',
+    daysAgo: 1
+  },
+  {
+    observationIndex: 12,
+    userIndex: 7,
+    text: 'Tu as fait analyser des échantillons du sol vitrifié ? La composition chimique pourrait révéler le type d\'énergie utilisé.',
+    daysAgo: 0
+  },
 
-  // Obs 13 - RDA Montreux
-  { observationIndex: 13, userIndex: 5, text: 'Rayons gamma × 50 ! C\'est une dose dangereuse. Tu vas bien ?', daysAgo: 4 },
-  { observationIndex: 13, userIndex: 7, text: 'Données scientifiques précieuses ! Partage ton enregistrement avec des labos.', daysAgo: 3 },
-  { observationIndex: 13, userIndex: 1, text: 'En tant que physicien, ton témoignage a beaucoup de poids.', daysAgo: 2 },
+  // Obs 13 - Radiation Montreux
+  {
+    observationIndex: 13,
+    userIndex: 5,
+    text: 'Rayons gamma × 50 au-dessus du niveau normal ! C\'est une dose potentiellement dangereuse. Tu vas bien depuis ? Fais un suivi médical.',
+    daysAgo: 4
+  },
+  {
+    observationIndex: 13,
+    userIndex: 7,
+    text: 'Données scientifiques extrêmement précieuses ! Tu as mesuré avec quel appareil ? Partage tes enregistrements avec des labos de physique.',
+    daysAgo: 3
+  },
+  {
+    observationIndex: 13,
+    userIndex: 1,
+    text: 'En tant que physicien amateur avec de l\'équipement de mesure, ton témoignage a beaucoup plus de poids que la moyenne. Documentation exemplaire !',
+    daysAgo: 2
+  },
+  {
+    observationIndex: 13,
+    userIndex: 4,
+    text: 'C\'est rare d\'avoir des mesures de radiation pendant une observation. Ça confirme que ces objets émettent des énergies mesurables.',
+    daysAgo: 1
+  },
 
-  // Obs 14 - ODD Neuchâtel
-  { observationIndex: 14, userIndex: 0, text: 'Une entité qui change de forme... c\'est au-delà de notre compréhension.', daysAgo: 3 },
-  { observationIndex: 14, userIndex: 4, text: 'La télépathie est souvent mentionnée. Tu n\'es pas seul(e).', daysAgo: 2 },
-
-  // Obs 15 - HST Fribourg 1985
-  { observationIndex: 15, userIndex: 1, text: '40 ans après et tu t\'en souviens parfaitement. Impact profond.', daysAgo: 5 },
-  { observationIndex: 15, userIndex: 6, text: '5 familles témoins ! Il devrait y avoir des archives quelque part.', daysAgo: 4 },
-
-  // Obs 16 - CMF Nice
-  { observationIndex: 16, userIndex: 8, text: 'Le camouflage en nuage... technologie de furtivité avancée !', daysAgo: 2 },
-  { observationIndex: 16, userIndex: 9, text: 'Heureusement que tu l\'as vu AVANT la transformation. Preuve du camouflage.', daysAgo: 1 },
-
-  // Obs 17 - MID Starlink
-  { observationIndex: 17, userIndex: 2, text: 'Merci de partager ! Starlink trompe beaucoup de gens en ce moment.', daysAgo: 3 },
-  { observationIndex: 17, userIndex: 3, text: 'C\'est important de différencier. Bravo pour ton honnêteté.', daysAgo: 2 },
-
-  // Obs 18 - CNT Grenoble
-  { observationIndex: 18, userIndex: 5, text: 'Les contactés reçoivent souvent des messages sur l\'évolution. Fascinant.', daysAgo: 4 },
-  { observationIndex: 18, userIndex: 7, text: 'Tu as un suivi médical, c\'est bien. Continue à documenter tes expériences.', daysAgo: 3 },
-
-  // Obs 19 - OID Nantes
-  { observationIndex: 19, userIndex: 0, text: 'Voir des entités... c\'est rare et terrifiant. Courage d\'en parler.', daysAgo: 5 },
-  { observationIndex: 19, userIndex: 1, text: 'La description classique des "petits gris". Ils inspectaient le sol...', daysAgo: 4 },
-  { observationIndex: 19, userIndex: 4, text: '6 mois de silence... je comprends. C\'est bouleversant.', daysAgo: 3 },
-
-  // Obs 20 - COV Dijon
-  { observationIndex: 20, userIndex: 6, text: '50 témoins et aucune publication ! La censure est réelle.', daysAgo: 4 },
-  { observationIndex: 20, userIndex: 8, text: 'Les militaires qui boucle la zone... cover-up classique.', daysAgo: 3 },
-  { observationIndex: 20, userIndex: 9, text: 'Cover-up évident. Nous devons continuer à témoigner !', daysAgo: 2 },
-
-  // Obs 21 - OGA Annecy
-  { observationIndex: 21, userIndex: 9, text: 'Le GEIPAN est sérieux. Tu auras peut-être une réponse officielle !', daysAgo: 2 },
-  { observationIndex: 21, userIndex: 2, text: '3 autres témoignages la même nuit... vague locale.', daysAgo: 1 },
-
-  // Obs 22 - DRT Vosges
-  { observationIndex: 22, userIndex: 3, text: 'Des empreintes à 3 orteils ! Pas d\'animal terrestre connu.', daysAgo: 3 },
-  { observationIndex: 22, userIndex: 5, text: 'Les moulages sont importants. Garde-les précieusement !', daysAgo: 2 },
-
-  // Obs 23 - VEG Colmar
-  { observationIndex: 23, userIndex: 7, text: 'Crop circle authentique ! Les tiges pliées aux nœuds, impossible à faker.', daysAgo: 4 },
-  { observationIndex: 23, userIndex: 0, text: 'Germination 3× plus rapide... radiation bénéfique ?', daysAgo: 3 },
-  { observationIndex: 23, userIndex: 1, text: 'Les crop circles authentiques sont rares. Bien documenté !', daysAgo: 2 },
-
-  // Obs 24 - BLD Montpellier
-  { observationIndex: 24, userIndex: 1, text: '500 maisons dans le noir ! Ça a dû faire les journaux non ?', daysAgo: 2 },
-  { observationIndex: 24, userIndex: 4, text: 'EDF ne trouve rien = c\'était bien un effet EM de l\'OVNI.', daysAgo: 1 },
-
-  // Obs 25 - INJ Vaud
-  { observationIndex: 25, userIndex: 6, text: 'Brûlures au 1er degré... tu t\'es approché trop près ! Fais attention.', daysAgo: 3 },
-  { observationIndex: 25, userIndex: 8, text: 'Les UV intenses ou radiations... protection nécessaire si ça se reproduit.', daysAgo: 2 },
-
-  // Obs 26 - NOC Jura
-  { observationIndex: 26, userIndex: 9, text: 'Phénomène régulier = excellente opportunité d\'étude scientifique !', daysAgo: 4 },
-  { observationIndex: 26, userIndex: 2, text: 'Toute la communauté en veille... esprit scientifique collectif. Super !', daysAgo: 3 },
-
-  // Obs 27 - WAV Besançon
-  { observationIndex: 27, userIndex: 3, text: '100m d\'envergure à 150m d\'altitude... gigantesque et impossible à louper !', daysAgo: 2 },
-  { observationIndex: 27, userIndex: 5, text: 'Des dizaines de témoins = crédibilité maximale. Merci !', daysAgo: 1 },
-
-  // Obs 28 - PHT Genève couleurs
-  { observationIndex: 28, userIndex: 7, text: 'Cycle de 10 secondes exact... c\'est mécanique ou intentionnel.', daysAgo: 3 },
-  { observationIndex: 28, userIndex: 0, text: 'Les photos avec séquence complète sont un trésor ! Partage-les !', daysAgo: 2 },
-
-  // Obs 29 - SIG Bâle
-  { observationIndex: 29, userIndex: 1, text: 'Communication inter-OVNI ! Coordination entre plusieurs vaisseaux.', daysAgo: 4 },
-  { observationIndex: 29, userIndex: 4, text: 'Le pattern complexe suggère un langage. Fascinant !', daysAgo: 3 },
-
-  // Obs 30 - ODD Nuage Lausanne
-  { observationIndex: 30, userIndex: 6, text: 'Entrer et sortir d\'un nuage... ils le créent ou l\'utilisent ?', daysAgo: 2 },
-  { observationIndex: 30, userIndex: 8, text: 'Le nuage trop géométrique... artificiel probablement.', daysAgo: 1 },
-
-  // Obs 31 - TCH Télescope Clermont
-  { observationIndex: 31, userIndex: 9, text: 'Observation technique avec mesures ! Données scientifiques précieuses.', daysAgo: 5 },
-  { observationIndex: 31, userIndex: 2, text: '45 minutes d\'observation... tu as dû voir plein de détails !', daysAgo: 4 },
-  { observationIndex: 31, userIndex: 5, text: 'Vitesse angulaire mesurée ! Données scientifiques solides.', daysAgo: 3 },
-
-  // Obs 32 - RAY Fontainebleau
-  { observationIndex: 32, userIndex: 3, text: '5 rayons indépendants... comme s\'ils scannaient la zone !', daysAgo: 3 },
-  { observationIndex: 32, userIndex: 5, text: 'Illuminer comme en plein jour... puissance énergétique incroyable.', daysAgo: 2 },
-
-  // Obs 33 - LND Thonon
-  { observationIndex: 33, userIndex: 7, text: '6 témoins ! Vous avez tous la même version j\'imagine ?', daysAgo: 4 },
-  { observationIndex: 33, userIndex: 0, text: 'Terre chaude le lendemain... chaleur résiduelle de la propulsion ?', daysAgo: 3 },
-
-  // Obs 34 - HUM Mulhouse couple
-  { observationIndex: 34, userIndex: 1, text: 'Vous deux en même temps... au moins tu n\'es pas seul(e) dans cette épreuve.', daysAgo: 5 },
-  { observationIndex: 34, userIndex: 4, text: 'GPS et montres arrêtés à 23h17... effet temporel ?', daysAgo: 4 },
-
-  // Obs 35 - SUB Neuchâtel lac
-  { observationIndex: 35, userIndex: 6, text: 'Lumières sous-marines suivant le bateau... ils vous observaient !', daysAgo: 3 },
-  { observationIndex: 35, userIndex: 8, text: 'Émergence puis envol... transition eau-air sans problème. Technologie !', daysAgo: 2 },
-  { observationIndex: 35, userIndex: 3, text: 'Les USO sont peut-être plus nombreux qu\'on ne pense.', daysAgo: 1 },
-
-  // Obs 36 - SND Chamonix
-  { observationIndex: 36, userIndex: 9, text: 'Des sons harmoniques ! Certains parlent de "musique des sphères".', daysAgo: 4 },
-  { observationIndex: 36, userIndex: 2, text: 'Analyse audio avec fréquences inhabituelles... partage l\'enregistrement !', daysAgo: 3 },
-
-  // Obs 37 - ANI Oiseaux Camargue
-  { observationIndex: 37, userIndex: 3, text: 'Migration perturbée... les oiseaux sentent les champs magnétiques.', daysAgo: 2 },
-  { observationIndex: 37, userIndex: 5, text: 'Plusieurs milliers d\'oiseaux dispersés... effet massif !', daysAgo: 1 },
-
-  // Obs 38 - VEH Reims
-  { observationIndex: 38, userIndex: 7, text: 'GPS montrant l\'Espagne ! Distorsion spatiale ou juste électronique folle ?', daysAgo: 3 },
-  { observationIndex: 38, userIndex: 0, text: 'D\'autres automobilistes aussi... preuve collective de l\'effet EM.', daysAgo: 2 },
-
-  // Obs 39 - TRC Perpignan
-  { observationIndex: 39, userIndex: 1, text: 'Fragment confisqué... évidemment ! Ils ne veulent pas qu\'on analyse.', daysAgo: 5 },
-  { observationIndex: 39, userIndex: 4, text: 'Alliage inconnu ! C\'était THE preuve matérielle. Dommage.', daysAgo: 4 },
-  { observationIndex: 39, userIndex: 6, text: 'Tu devrais avoir fait analyser en cachette avant confiscation.', daysAgo: 3 }
+  // Obs 14 - Entité Neuchâtel
+  {
+    observationIndex: 14,
+    userIndex: 0,
+    text: 'Une entité qui change de forme sous tes yeux... c\'est au-delà de notre compréhension actuelle. Rencontre du 3ème type voire plus.',
+    daysAgo: 3
+  },
+  {
+    observationIndex: 14,
+    userIndex: 4,
+    text: 'La communication télépathique est souvent mentionnée dans les rencontres avec des entités. Tu n\'es pas seul(e) à avoir vécu ça.',
+    daysAgo: 2
+  },
+  {
+    observationIndex: 14,
+    userIndex: 8,
+    text: 'As-tu pu comprendre ce qu\'ils essayaient de communiquer ? Certains contactés rapportent des messages récurrents.',
+    daysAgo: 1
+  },
+  {
+    observationIndex: 14,
+    userIndex: 6,
+    text: 'Ton expérience est exceptionnelle mais je te crois. Continue à documenter tout ce dont tu te souviens, même les détails qui semblent insignifiants.',
+    daysAgo: 0
+  }
 ];
 
 export default commentsData;

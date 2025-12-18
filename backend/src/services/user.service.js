@@ -2,6 +2,8 @@ import User from '../models/User.js';
 import Observation from '../models/Observation.js';
 import Comment from '../models/Comment.js';
 import { getPaginationParams, createPaginationMeta } from '../utils/pagination.js';
+import { uploadImage, deleteImage } from '../config/cloudinary.js';
+import sharp from 'sharp';
 
 /**
  * Service pour la gestion des utilisateurs
@@ -134,6 +136,16 @@ class UserService {
       throw new Error('USER_NOT_FOUND');
     }
 
+    // Supprimer l'avatar de l'utilisateur si existant
+    if (user.avatar?.publicId) {
+      try {
+        await deleteImage(user.avatar.publicId);
+        console.log(`🗑️ [DeleteAccount] Avatar supprimé: ${user.avatar.publicId}`);
+      } catch (error) {
+        console.error(`⚠️ [DeleteAccount] Erreur suppression avatar: ${error.message}`);
+      }
+    }
+
     // Récupérer toutes les observations de l'utilisateur
     const observations = await Observation.find({ userId }).select('_id');
 
@@ -182,7 +194,7 @@ class UserService {
         .sort({ [sortBy]: order })
         .skip(skip)
         .limit(limit)
-        .populate('userId', 'name email')
+        .populate('userId', 'name email avatar')
         .lean(),
       Observation.countDocuments({ userId })
     ]);
@@ -191,6 +203,96 @@ class UserService {
       data: observations,
       pagination: createPaginationMeta(total, page, limit)
     };
+  }
+
+  /**
+   * Upload ou met à jour l'avatar de l'utilisateur
+   * @param {string} userId - ID de l'utilisateur
+   * @param {Buffer} buffer - Buffer de l'image
+   * @param {string} mimetype - Type MIME de l'image
+   * @returns {Object} Informations de l'avatar
+   */
+  async uploadAvatar(userId, buffer, mimetype) {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error('USER_NOT_FOUND');
+    }
+
+    // Supprimer l'ancien avatar si existant
+    if (user.avatar?.publicId) {
+      try {
+        await deleteImage(user.avatar.publicId);
+        console.log(`🗑️ Ancien avatar supprimé: ${user.avatar.publicId}`);
+      } catch (error) {
+        console.error(`⚠️ Erreur suppression ancien avatar: ${error.message}`);
+      }
+    }
+
+    // Compression et redimensionnement de l'image
+    const compressed = await sharp(buffer)
+      .resize(256, 256, {
+        fit: 'cover',
+        position: 'center'
+      })
+      .jpeg({ quality: 85 })
+      .toBuffer();
+
+    // Upload sur Cloudinary
+    const publicId = `phenom/avatars/${userId}_${Date.now()}`;
+    const result = await uploadImage(compressed, {
+      folder: 'phenom/avatars',
+      public_id: publicId,
+      maxWidth: 256,
+      maxHeight: 256,
+      quality: 85
+    });
+
+    // Mettre à jour l'utilisateur
+    user.avatar = {
+      url: result.secure_url,
+      publicId: result.public_id
+    };
+    await user.save();
+
+    console.log(`✅ Avatar uploadé pour l'utilisateur ${userId}: ${result.secure_url}`);
+
+    return {
+      url: result.secure_url,
+      publicId: result.public_id
+    };
+  }
+
+  /**
+   * Supprime l'avatar de l'utilisateur
+   * @param {string} userId - ID de l'utilisateur
+   * @returns {boolean} true si la suppression a réussi
+   */
+  async deleteAvatar(userId) {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error('USER_NOT_FOUND');
+    }
+
+    if (!user.avatar?.publicId) {
+      throw new Error('NO_AVATAR');
+    }
+
+    // Supprimer de Cloudinary
+    try {
+      await deleteImage(user.avatar.publicId);
+      console.log(`🗑️ Avatar supprimé: ${user.avatar.publicId}`);
+    } catch (error) {
+      console.error(`⚠️ Erreur suppression avatar: ${error.message}`);
+    }
+
+    // Mettre à jour l'utilisateur
+    user.avatar = {
+      url: null,
+      publicId: null
+    };
+    await user.save();
+
+    return true;
   }
 }
 

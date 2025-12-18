@@ -50,13 +50,19 @@ class UserController {
       const userId = req.user._id;
 
       // Filtrer les champs autorisés (whitelist)
+      // Ignorer les champs vides pour permettre la mise à jour partielle
       const allowedFields = ['name', 'email', 'bio'];
       const updates = {};
       allowedFields.forEach(field => {
-        if (req.body[field] !== undefined) {
+        if (req.body[field] !== undefined && req.body[field] !== '') {
           updates[field] = req.body[field];
         }
       });
+
+      // Vérifier qu'il y a au moins un champ à mettre à jour
+      if (Object.keys(updates).length === 0) {
+        return errorResponse(res, 'Aucun champ à mettre à jour', 400);
+      }
 
       const user = await userService.updateProfile(userId, updates);
 
@@ -131,6 +137,54 @@ class UserController {
         pagination: result.pagination
       });
     } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Upload ou met à jour l'avatar de l'utilisateur
+   * POST /users/me/avatar
+   */
+  async uploadAvatar(req, res, next) {
+    try {
+      const userId = req.user._id;
+
+      if (!req.file) {
+        return errorResponse(res, 'Aucune image fournie', 400);
+      }
+
+      const avatar = await userService.uploadAvatar(
+        userId,
+        req.file.buffer,
+        req.file.mimetype
+      );
+
+      return successResponse(res, avatar, 'Avatar mis à jour avec succès');
+    } catch (error) {
+      if (error.message === 'USER_NOT_FOUND') {
+        return notFoundResponse(res, 'Utilisateur non trouvé');
+      }
+      next(error);
+    }
+  }
+
+  /**
+   * Supprime l'avatar de l'utilisateur
+   * DELETE /users/me/avatar
+   */
+  async deleteAvatar(req, res, next) {
+    try {
+      const userId = req.user._id;
+      await userService.deleteAvatar(userId);
+
+      return successResponse(res, null, 'Avatar supprimé avec succès');
+    } catch (error) {
+      if (error.message === 'USER_NOT_FOUND') {
+        return notFoundResponse(res, 'Utilisateur non trouvé');
+      }
+      if (error.message === 'NO_AVATAR') {
+        return errorResponse(res, 'Aucun avatar à supprimer', 400);
+      }
       next(error);
     }
   }

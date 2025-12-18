@@ -1,55 +1,167 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
 
-// Check if user is authenticated (support legacy and current keys)
+// Check if user is authenticated
 const isAuthenticated = () => {
   return !!localStorage.getItem("phenom_auth_token") || !!localStorage.getItem("token");
 };
 
+// Check if user is admin
+const isAdmin = () => {
+  try {
+    const user = JSON.parse(localStorage.getItem("phenom_user") || "{}");
+    return user?.role === "admin";
+  } catch {
+    return false;
+  }
+};
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
+  scrollBehavior(to, from, savedPosition) {
+    // Si on revient en arrière, restaurer la position
+    if (savedPosition) {
+      return savedPosition;
+    }
+    
+    // Si la route a un hash, laisser le composant gérer le scroll
+    // On scroll juste en haut et le composant scrollera vers le hash
+    if (to.hash) {
+      return { top: 0, behavior: 'instant' };
+    }
+    
+    // Par défaut, toujours scroller en haut avec animation douce
+    return { top: 0, behavior: 'smooth' };
+  },
   routes: [
-    // Auth route (public)
+    // ============ PUBLIC ROUTES ============
     {
-      path: "/auth",
-      name: "auth",
-      component: () => import("../views/AuthPage.vue"),
-      meta: { requiresAuth: false },
+      path: "/login",
+      name: "login",
+      component: () => import("@/views/LoginPage.vue"),
+      meta: { guest: true },
     },
-
-    // Main app routes (protected)
-    {
-      path: "/",
-      component: () => import("../views/AppLayout.vue"),
-      meta: { requiresAuth: true },
-      children: [
-        { path: "", redirect: "/home" },
-        { path: "home", name: "home", component: () => import("../views/HomeView.vue") },
-        { path: "feed", name: "feed", component: () => import("../views/FeedView.vue") },
-        { path: "map", name: "map", component: () => import("../views/MapView.vue") },
-        { path: "create", name: "create", component: () => import("../views/CreateObservationView.vue") },
-        { path: "observations/:id", name: "observation-detail", component: () => import("../views/ObservationDetailView.vue") },
-        { path: "profile/:userId?", name: "profile", component: () => import("../views/UserProfileView.vue") },
-      ],
-    },
-
-    // Old HomeView route (keep for compatibility) - No auth required for testing
     {
       path: "/old-home",
       name: "old-home",
-      component: () => import("../views/OldHomeView.vue"),
-      meta: { requiresAuth: false },
+      component: () => import("@/views/Tests.vue"),
+      meta: { public: true },
     },
     {
-      path: "/test",
-      name: "test",
-      component: () => import("../views/pageTest.vue"),
+      path: "/signup",
+      name: "signup",
+      component: () => import("@/views/SignupPage.vue"),
+      meta: { guest: true },
+    },
+    {
+      path: "/auth",
+      redirect: "/login",
     },
 
-    // Route 404 Not Found
+    // ============ PROTECTED ROUTES ============
+    // Feed (Home)
+    {
+      path: "/",
+      redirect: "/feed",
+    },
+    {
+      path: "/feed",
+      name: "feed",
+      component: () => import("@/views/FeedPage.vue"),
+      meta: { requiresAuth: true },
+    },
+
+    // Explore
+    {
+      path: "/explore",
+      name: "explore",
+      component: () => import("@/views/ExplorePage.vue"),
+      meta: { requiresAuth: true },
+    },
+
+    // Camera / Create observation
+    {
+      path: "/camera",
+      name: "camera",
+      component: () => import("@/views/CameraPage.vue"),
+      meta: { requiresAuth: true },
+    },
+
+    // Observation detail
+    {
+      path: "/observation/:id",
+      name: "observation-detail",
+      component: () => import("@/views/ObservationDetailPage.vue"),
+      meta: { requiresAuth: true },
+      props: true,
+    },
+
+    // Map
+    {
+      path: "/map",
+      name: "map",
+      component: () => import("@/views/MapPage.vue"),
+      meta: { requiresAuth: true },
+    },
+
+    // Alerts
+    {
+      path: "/alerts",
+      name: "alerts",
+      component: () => import("@/views/AlertsPage.vue"),
+      meta: { requiresAuth: true },
+    },
+
+    // Profile
+    {
+      path: "/profile",
+      name: "profile",
+      component: () => import("@/views/ProfilePage.vue"),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/profile/:userId",
+      name: "user-profile",
+      component: () => import("@/views/ProfilePage.vue"),
+      meta: { requiresAuth: true },
+      props: true,
+    },
+
+    // Settings
+    {
+      path: "/settings",
+      name: "settings",
+      component: () => import("@/views/SettingsPage.vue"),
+      meta: { requiresAuth: true },
+    },
+
+    // Admin
+    {
+      path: "/admin",
+      name: "admin",
+      component: () => import("@/views/AdminPage.vue"),
+      meta: { requiresAuth: true, requiresAdmin: true },
+    },
+
+    // ============ LEGACY ROUTES (redirects) ============
+    {
+      path: "/home",
+      redirect: "/feed",
+    },
+    {
+      path: "/create",
+      redirect: "/camera",
+    },
+    {
+      path: "/observations/:id",
+      redirect: (to) => `/observation/${to.params.id}`,
+    },
+
+    // ============ 404 ============
     {
       path: "/:pathMatch(.*)*",
-      name: "404-not-found",
-      component: () => import("../views/NotFoundView.vue"),
+      name: "not-found",
+      component: () => import("@/views/NotFoundPage.vue"),
     },
   ],
 });
@@ -57,17 +169,42 @@ const router = createRouter({
 // Navigation guard
 router.beforeEach((to, from, next) => {
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
-  const userIsAuthenticated = isAuthenticated();
+  const requiresAdmin = to.matched.some((record) => record.meta.requiresAdmin);
+  const isGuestOnly = to.matched.some((record) => record.meta.guest);
+  const isPublic = to.matched.some((record) => record.meta.public);
 
-  if (requiresAuth && !userIsAuthenticated) {
-    // Redirect to auth if not authenticated
-    next("/auth");
-  } else if (to.path === "/auth" && userIsAuthenticated) {
-    // Redirect to home if already authenticated
-    next("/home");
-  } else {
-    next();
+  const userIsAuthenticated = isAuthenticated();
+  const userIsAdmin = isAdmin();
+
+  console.log('[Router Guard]', {
+    path: to.path,
+    requiresAuth,
+    isGuestOnly,
+    isPublic,
+    userIsAuthenticated
+  });
+
+  // Public routes - always accessible
+  if (isPublic) {
+    return next();
   }
+
+  // Redirect authenticated users away from guest-only pages (login/signup)
+  if (isGuestOnly && userIsAuthenticated) {
+    return next("/feed");
+  }
+
+  // Redirect non-authenticated users to login
+  if (requiresAuth && !userIsAuthenticated) {
+    return next({ path: "/login", query: { redirect: to.fullPath } });
+  }
+
+  // Redirect non-admin users away from admin pages
+  if (requiresAdmin && !userIsAdmin) {
+    return next("/feed");
+  }
+
+  next();
 });
 
 export default router;

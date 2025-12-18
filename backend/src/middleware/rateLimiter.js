@@ -19,13 +19,13 @@ export const generalLimiter = rateLimit({
  * Rate limiter strict pour les routes d'authentification
  */
 export const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 tentatives max
+  windowMs: parseInt(process.env.AUTH_RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes par défaut
+  max: parseInt(process.env.AUTH_RATE_LIMIT_MAX) || 20, // 20 tentatives max par défaut
   skipSuccessfulRequests: true,
   skip: () => process.env.NODE_ENV === 'test', // Désactiver en mode test
   message: {
     success: false,
-    error: 'Trop de tentatives de connexion, veuillez réessayer dans 15 minutes'
+    error: 'Trop de tentatives de connexion, veuillez réessayer plus tard'
   }
 });
 

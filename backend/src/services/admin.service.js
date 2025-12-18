@@ -83,7 +83,7 @@ class AdminService {
       Observation.find()
         .sort({ createdAt: -1 })
         .limit(5)
-        .populate('userId', 'name email')
+        .populate('userId', 'name email avatar')
         .lean(),
       this._getTopContributors()
     ]);
@@ -211,7 +211,7 @@ class AdminService {
 
     const [observations, total] = await Promise.all([
       Observation.find(query)
-        .populate('userId', 'name email')
+        .populate('userId', 'name email avatar')
         .sort(sortOptions)
         .skip(skip)
         .limit(limit)
@@ -251,7 +251,7 @@ class AdminService {
 
     const [comments, total] = await Promise.all([
       Comment.find(query)
-        .populate('userId', 'name email')
+        .populate('userId', 'name email avatar')
         .populate('observationId', 'title')
         .sort({ createdAt: -1 })
         .skip(skip)

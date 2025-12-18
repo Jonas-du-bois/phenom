@@ -1,0 +1,13 @@
+// Views / Pages
+export { default as FeedPage } from './FeedPage.vue'
+export { default as ExplorePage } from './ExplorePage.vue'
+export { default as CameraPage } from './CameraPage.vue'
+export { default as ObservationDetailPage } from './ObservationDetailPage.vue'
+export { default as MapPage } from './MapPage.vue'
+export { default as AlertsPage } from './AlertsPage.vue'
+export { default as ProfilePage } from './ProfilePage.vue'
+export { default as LoginPage } from './LoginPage.vue'
+export { default as SignupPage } from './SignupPage.vue'
+export { default as SettingsPage } from './SettingsPage.vue'
+export { default as AdminPage } from './AdminPage.vue'
+export { default as NotFoundPage } from './NotFoundPage.vue'

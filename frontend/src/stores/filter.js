@@ -25,6 +25,11 @@ export const useFilterStore = defineStore("filter", () => {
     byCountry: [],
     byYear: [],
   });
+  const distributions = ref({
+    ufoShapes: {},
+    phenomena: {},
+    observerTypes: {}
+  });
   const loading = ref(false);
   const error = ref(null);
   const isInitialized = ref(false);
@@ -33,15 +38,30 @@ export const useFilterStore = defineStore("filter", () => {
   // Getters (computed)
   // ========================================
   const observerTypeOptions = computed(() =>
-    OBSERVER_TYPES.map(t => ({ value: t.code, label: t.label, icon: t.icon }))
+    OBSERVER_TYPES.map(t => ({ 
+      value: t.code, 
+      label: t.label, 
+      icon: t.icon
+    }))
   );
 
   const ufoShapeOptions = computed(() =>
-    UFO_SHAPES.map(s => ({ value: s.code, label: s.label, icon: s.icon, color: s.color }))
+    UFO_SHAPES.map(s => ({ 
+      value: s.code, 
+      label: s.label, 
+      icon: s.icon, 
+      color: s.color
+    }))
   );
 
   const phenomenaOptions = computed(() =>
-    PHENOMENA.map(p => ({ value: p.code, label: p.label, icon: p.icon, color: p.color, category: p.category }))
+    PHENOMENA.map(p => ({ 
+      value: p.code, 
+      label: p.label, 
+      icon: p.icon, 
+      color: p.color, 
+      category: p.category
+    }))
   );
 
   const localeOptions = computed(() =>
@@ -78,13 +98,20 @@ export const useFilterStore = defineStore("filter", () => {
   };
 
   const fetchStatistics = async () => {
-    const data = await statsService.getStatistics();
+    const response = await statsService.getPublicStats();
+    const data = response.data || response;
     statistics.value = {
-      total: data.total || 0,
-      withCoordinates: data.withCoordinates || 0,
-      withImages: data.withImages || 0,
-      byCountry: data.byCountry || [],
+      total: data.totalSightings || 0,
+      withCoordinates: data.sightingsWithCoordinates || 0,
+      withImages: data.sightingsWithImages || 0,
+      byCountry: data.topCountries || [],
       byYear: data.byYear || [],
+    };
+    // Récupérer les distributions
+    distributions.value = {
+      ufoShapes: data.ufoShapeDistribution || {},
+      phenomena: data.phenomenaDistribution || {},
+      observerTypes: data.observerTypeDistribution || {}
     };
     return data;
   };

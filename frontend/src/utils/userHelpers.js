@@ -101,31 +101,37 @@ export const formatUserForDisplay = (user) => {
 /**
  * Valide les données d'un utilisateur
  * @param {Object} userData - Données utilisateur à valider
- * @param {boolean} isUpdate - Si true, certains champs sont optionnels
+ * @param {boolean} isUpdate - Si true, certains champs sont optionnels (mise à jour partielle)
  * @returns {Object} { valid: boolean, errors: Object }
  */
 export const validateUserData = (userData, isUpdate = false) => {
   const errors = {};
 
-  // Nom
-  if (!isUpdate || userData.name !== undefined) {
-    if (!userData.name || userData.name.trim().length < 2) {
+  // Nom - en mode update, on valide seulement si le champ est rempli
+  const hasName = userData.name !== undefined && userData.name.trim() !== '';
+  if (!isUpdate && !hasName) {
+    errors.name = "Le nom doit contenir au moins 2 caractères";
+  } else if (hasName) {
+    if (userData.name.trim().length < 2) {
       errors.name = "Le nom doit contenir au moins 2 caractères";
     } else if (userData.name.length > 50) {
       errors.name = "Le nom ne peut pas dépasser 50 caractères";
     }
   }
 
-  // Email
-  if (!isUpdate || userData.email !== undefined) {
+  // Email - en mode update, on valide seulement si le champ est rempli
+  const hasEmail = userData.email !== undefined && userData.email.trim() !== '';
+  if (!isUpdate && !hasEmail) {
+    errors.email = "Email invalide";
+  } else if (hasEmail) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!userData.email || !emailRegex.test(userData.email)) {
+    if (!emailRegex.test(userData.email)) {
       errors.email = "Email invalide";
     }
   }
 
   // Mot de passe (uniquement à la création ou si fourni)
-  if (!isUpdate || userData.password !== undefined) {
+  if (!isUpdate || (userData.password && userData.password.length > 0)) {
     if (userData.password && userData.password.length < 6) {
       errors.password = "Le mot de passe doit contenir au moins 6 caractères";
     }
@@ -224,17 +230,18 @@ export const calculateUserStats = (users) => {
 
 /**
  * Nettoie les données utilisateur pour envoi au serveur
+ * N'inclut que les champs non vides pour permettre les mises à jour partielles
  * @param {Object} userData - Données utilisateur
  * @returns {Object} Données nettoyées
  */
 export const sanitizeUserData = (userData) => {
   const sanitized = {};
 
-  if (userData.name !== undefined) {
+  if (userData.name !== undefined && userData.name.trim() !== '') {
     sanitized.name = userData.name.trim();
   }
 
-  if (userData.email !== undefined) {
+  if (userData.email !== undefined && userData.email.trim() !== '') {
     sanitized.email = userData.email.trim().toLowerCase();
   }
 
@@ -242,7 +249,7 @@ export const sanitizeUserData = (userData) => {
     sanitized.password = userData.password;
   }
 
-  if (userData.bio !== undefined) {
+  if (userData.bio !== undefined && userData.bio.trim() !== '') {
     sanitized.bio = userData.bio.trim();
   }
 
