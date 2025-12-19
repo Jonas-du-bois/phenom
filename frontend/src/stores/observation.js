@@ -185,6 +185,13 @@ export const useObservationStore = defineStore("observation", () => {
     try {
       const response = await observationService.create(data);
       const newObs = response.data || response;
+
+      // Backend may return { success: false, error: '...' } with 200 status.
+      // Treat that as an error to ensure callers can handle it.
+      if (newObs && newObs.success === false) {
+        error.value = newObs.error || 'Erreur de création';
+        throw new Error(error.value);
+      }
       observations.value.unshift(newObs);
       return newObs;
     } catch (err) {
@@ -212,6 +219,71 @@ export const useObservationStore = defineStore("observation", () => {
       return updated;
     } catch (err) {
       error.value = err.response?.data?.message || "Erreur de mise à jour";
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  /**
+   * Upload images for an observation (POST /observations/:id/images)
+   */
+  const uploadObservationImages = async (observationId, files) => {
+    loading.value = true;
+    error.value = null;
+    try {
+      const formData = new FormData();
+      if (Array.isArray(files)) {
+        files.forEach((f) => formData.append('images', f));
+      } else if (files) {
+        formData.append('images', files);
+      }
+
+      const response = await observationService.addImages(observationId, formData);
+      const updated = response.data || response;
+
+      // Update currentObservation and list
+      if (currentObservation.value && (currentObservation.value._id === observationId || currentObservation.value.id === observationId)) {
+        currentObservation.value = { ...currentObservation.value, ...updated };
+      }
+
+      const idx = observations.value.findIndex(o => o._id === observationId || o.id === observationId);
+      if (idx !== -1) {
+        observations.value[idx] = { ...observations.value[idx], ...updated };
+      }
+
+      return updated;
+    } catch (err) {
+      error.value = err.response?.data?.message || 'Erreur upload images';
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  /**
+   * Generate an AI image for an observation (POST /observations/:id/generate-ai-image)
+   */
+  const generateAiImage = async (observationId) => {
+    loading.value = true;
+    error.value = null;
+    try {
+      const response = await observationService.generateAiImage(observationId);
+      const updated = response.data || response;
+
+      // Merge updated data into currentObservation/list
+      if (currentObservation.value && (currentObservation.value._id === observationId || currentObservation.value.id === observationId)) {
+        currentObservation.value = { ...currentObservation.value, ...updated };
+      }
+
+      const idx = observations.value.findIndex(o => o._id === observationId || o.id === observationId);
+      if (idx !== -1) {
+        observations.value[idx] = { ...observations.value[idx], ...updated };
+      }
+
+      return updated;
+    } catch (err) {
+      error.value = err.response?.data?.message || 'Erreur génération IA';
       throw err;
     } finally {
       loading.value = false;
@@ -264,6 +336,8 @@ export const useObservationStore = defineStore("observation", () => {
     createObservation,
     updateObservation,
     deleteObservation,
+    uploadObservationImages,
+    generateAiImage,
     reset,
   };
 });

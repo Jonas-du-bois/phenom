@@ -162,7 +162,7 @@
           <template v-else-if="activeTab === 'map'">
             <div class="h-64 rounded-xl overflow-hidden">
               <ObservationMap
-                :observations="observations"
+                :observations="userObservations"
                 :zoom="6"
               />
             </div>
@@ -194,6 +194,13 @@ const observationStore = useObservationStore()
 
 const { user: authUser } = storeToRefs(authStore)
 const { observations } = storeToRefs(observationStore)
+
+// Observations de l'utilisateur affiché uniquement
+const userObservations = computed(() => {
+  if (!user.value) return []
+  const id = user.value._id || user.value.id
+  return observations.value.filter(o => (o.user?._id || o.user?.id || o.user) === id)
+})
 
 const user = ref(null)
 const stats = ref({ observations: 0, comments: 0 })

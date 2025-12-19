@@ -144,6 +144,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { PageHeader, ObservationForm } from '@/components/organisms'
+import { AppLayout } from '@/components/layout'
 import { IconButton, BaseButton, ErrorState } from '@/components/atoms'
 import { useObservationStore } from '@/stores/observation'
 
@@ -286,29 +287,54 @@ const handleSubmit = async (data) => {
   submitting.value = true
   
   try {
-    const formDataObj = new FormData()
-    
-    if (data.media) {
-      formDataObj.append('image', data.media)
+    // Use the full form payload (ObservationForm contains many optional fields)
+    const observationData = { ...data }
+
+    // Extract any provided media file (some forms emit `media`, others `imageFile`) and
+    // remove file-like props so we don't JSON-serialize File objects to the create endpoint.
+    const mediaFile = data.media || data.imageFile || null
+    delete observationData.media
+    delete observationData.imageFile
+
+    // Omit empty locale to avoid backend validation errors for empty string
+    if (observationData.locale === '') delete observationData.locale
+
+    // If explicit latitude/longitude provided, normalize into coordinates
+    if ((observationData.latitude || observationData.latitude === 0) && (observationData.longitude || observationData.longitude === 0)) {
+      observationData.coordinates = {
+        lat: Number(observationData.latitude),
+        lng: Number(observationData.longitude)
+      }
+      delete observationData.latitude
+      delete observationData.longitude
     }
-    
-    formDataObj.append('title', data.title)
-    formDataObj.append('description', data.description)
-    formDataObj.append('type', data.type || 'other')
-    formDataObj.append('date', data.date)
-    formDataObj.append('time', data.time)
-    formDataObj.append('duration', data.duration)
-    formDataObj.append('location', data.location)
-    formDataObj.append('weather', data.weather)
-    formDataObj.append('witnesses', data.witnesses)
-    
-    if (data.coordinates) {
-      formDataObj.append('latitude', data.coordinates.lat)
-      formDataObj.append('longitude', data.coordinates.lng)
+
+    const newObs = await observationStore.createObservation(observationData)
+
+    if (!newObs || !(newObs._id || newObs.id)) {
+      // Guard: ensure we have a valid created object before proceeding
+      console.error('Création observation: réponse invalide', newObs, observationStore.error)
+      throw new Error('Réponse de création invalide')
     }
-    
-    const newObs = await observationStore.createObservation(formDataObj)
-    
+
+    // If IA image requested, call generate endpoint for the created observation
+    if (data.generateAiImage && newObs && (newObs._id || newObs.id)) {
+      try {
+        await observationStore.generateAiImage(newObs._id || newObs.id)
+      } catch (err) {
+        // ignore generation error here; store.error will contain message
+      }
+    }
+
+    // If a media file was provided (upload by user), upload it using the dedicated images endpoint
+    if (mediaFile && newObs && (newObs._id || newObs.id)) {
+      try {
+        await observationStore.uploadObservationImages(newObs._id || newObs.id, mediaFile)
+      } catch (err) {
+        // ignore upload error here; store.error will contain message
+      }
+    }
+
     // Navigate to the new observation
     router.push(`/observation/${newObs?._id || newObs?.id}`)
     

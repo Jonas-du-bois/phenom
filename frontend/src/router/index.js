@@ -71,14 +71,6 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
 
-    // Explore
-    {
-      path: "/explore",
-      name: "explore",
-      component: () => import("@/views/ExplorePage.vue"),
-      meta: { requiresAuth: true },
-    },
-
     // Camera / Create observation
     {
       path: "/camera",
