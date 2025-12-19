@@ -25,7 +25,9 @@ export const adminService = {
 
   /** PUT /admin/users/:id/role */
   async updateUserRole(userId, role) {
-    const response = await apiClient.put(`/admin/users/${userId}/role`, { role });
+    const response = await apiClient.put(`/admin/users/${userId}/role`, {
+      role,
+    });
     return response.data;
   },
 

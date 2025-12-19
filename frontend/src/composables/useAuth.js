@@ -100,7 +100,7 @@ export function useAuth() {
       user.value = null;
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-      
+
       // Redirection vers la page d'authentification
       router.push("/auth");
     }

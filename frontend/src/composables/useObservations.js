@@ -8,18 +8,23 @@ import { useObservationStore } from "@/stores/observation";
 
 export function useObservations() {
   const store = useObservationStore();
-  const { observations, currentObservation, loading, error, pagination } = storeToRefs(store);
+  const { observations, currentObservation, loading, error, pagination } =
+    storeToRefs(store);
 
   // Computed
   const hasMore = computed(() => pagination.value.hasMore);
-  const loadingMore = computed(() => loading.value && observations.value.length > 0);
-  
-  const observationsWithImages = computed(() => 
-    observations.value.filter((obs) => obs.images?.length > 0 || obs.imageUrl)
+  const loadingMore = computed(
+    () => loading.value && observations.value.length > 0,
+  );
+
+  const observationsWithImages = computed(() =>
+    observations.value.filter((obs) => obs.images?.length > 0 || obs.imageUrl),
   );
 
   const uniqueTypes = computed(() => {
-    const types = new Set(observations.value.map((obs) => obs.type).filter(Boolean));
+    const types = new Set(
+      observations.value.map((obs) => obs.type).filter(Boolean),
+    );
     return [...types];
   });
 
@@ -40,21 +45,27 @@ export function useObservations() {
 
   // WebSocket helpers
   const addObservation = (observation) => {
-    const exists = observations.value.some((obs) => obs._id === observation._id);
+    const exists = observations.value.some(
+      (obs) => obs._id === observation._id,
+    );
     if (!exists) {
       observations.value.unshift(observation);
     }
   };
 
   const updateObservationInList = (observation) => {
-    const index = observations.value.findIndex((obs) => obs._id === observation._id);
+    const index = observations.value.findIndex(
+      (obs) => obs._id === observation._id,
+    );
     if (index !== -1) {
       observations.value[index] = observation;
     }
   };
 
   const removeObservation = (observationId) => {
-    observations.value = observations.value.filter((obs) => obs._id !== observationId);
+    observations.value = observations.value.filter(
+      (obs) => obs._id !== observationId,
+    );
   };
 
   // Filtres locaux
@@ -67,7 +78,7 @@ export function useObservations() {
     return [...observations.value].sort((a, b) => {
       const aVal = a[sortBy];
       const bVal = b[sortBy];
-      return order === "asc" ? (aVal > bVal ? 1 : -1) : (aVal < bVal ? 1 : -1);
+      return order === "asc" ? (aVal > bVal ? 1 : -1) : aVal < bVal ? 1 : -1;
     });
   };
 

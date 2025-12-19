@@ -30,9 +30,20 @@ export function useFilters() {
 
   // Références depuis le store filter
   const {
-    countries, locales, statistics, loading, error, isInitialized,
-    observerTypeOptions, ufoShapeOptions, phenomenaOptions, localeOptions,
-    countryOptions, yearRange, credibilityScale, strangenessScale,
+    countries,
+    locales,
+    statistics,
+    loading,
+    error,
+    isInitialized,
+    observerTypeOptions,
+    ufoShapeOptions,
+    phenomenaOptions,
+    localeOptions,
+    countryOptions,
+    yearRange,
+    credibilityScale,
+    strangenessScale,
   } = storeToRefs(filterStore);
 
   // État local des filtres
@@ -42,22 +53,32 @@ export function useFilters() {
 
   // Computed
   const hasFilters = computed(() =>
-    Object.values(activeFilters.value).some(v => v !== null && v !== undefined && v !== "")
+    Object.values(activeFilters.value).some(
+      (v) => v !== null && v !== undefined && v !== "",
+    ),
   );
 
-  const activeFilterCount = computed(() =>
-    Object.values(activeFilters.value).filter(v => v !== null && v !== undefined && v !== "").length
+  const activeFilterCount = computed(
+    () =>
+      Object.values(activeFilters.value).filter(
+        (v) => v !== null && v !== undefined && v !== "",
+      ).length,
   );
 
   const activeFiltersSummary = computed(() => {
     const summary = [];
     const filters = activeFilters.value;
 
-    if (filters.country) summary.push({ type: "country", label: `Pays: ${filters.country}` });
+    if (filters.country)
+      summary.push({ type: "country", label: `Pays: ${filters.country}` });
     if (filters.startYear || filters.endYear) {
-      summary.push({ type: "year", label: `Année: ${filters.startYear || "..."} - ${filters.endYear || "..."}` });
+      summary.push({
+        type: "year",
+        label: `Année: ${filters.startYear || "..."} - ${filters.endYear || "..."}`,
+      });
     }
-    if (filters.search) summary.push({ type: "search", label: `Recherche: "${filters.search}"` });
+    if (filters.search)
+      summary.push({ type: "search", label: `Recherche: "${filters.search}"` });
 
     return summary;
   });
@@ -66,15 +87,23 @@ export function useFilters() {
   const initialize = () => filterStore.initialize();
   const refresh = () => filterStore.refresh();
 
-  const setFilter = (key, value) => { formFilters.value[key] = value; };
-  const setFilters = (filters) => { formFilters.value = { ...formFilters.value, ...filters }; };
-  const resetFormFilters = () => { formFilters.value = createEmptyFilters(); };
+  const setFilter = (key, value) => {
+    formFilters.value[key] = value;
+  };
+  const setFilters = (filters) => {
+    formFilters.value = { ...formFilters.value, ...filters };
+  };
+  const resetFormFilters = () => {
+    formFilters.value = createEmptyFilters();
+  };
 
   const applyFilters = async () => {
     isApplying.value = true;
     try {
       const cleanFilters = Object.fromEntries(
-        Object.entries(formFilters.value).filter(([, v]) => v !== null && v !== undefined && v !== "")
+        Object.entries(formFilters.value).filter(
+          ([, v]) => v !== null && v !== undefined && v !== "",
+        ),
       );
       activeFilters.value = { ...formFilters.value };
       await observationStore.fetchObservations(cleanFilters);
@@ -97,7 +126,9 @@ export function useFilters() {
     };
 
     if (rangeFilters[filterType]) {
-      rangeFilters[filterType].forEach(key => { formFilters.value[key] = null; });
+      rangeFilters[filterType].forEach((key) => {
+        formFilters.value[key] = null;
+      });
     } else {
       formFilters.value[filterType] = null;
     }
@@ -113,17 +144,39 @@ export function useFilters() {
 
   return {
     // State
-    countries, locales, statistics, loading, error, isInitialized,
+    countries,
+    locales,
+    statistics,
+    loading,
+    error,
+    isInitialized,
     // Options
-    observerTypeOptions, ufoShapeOptions, phenomenaOptions, localeOptions, countryOptions, yearRange,
-    credibilityScale, strangenessScale,
+    observerTypeOptions,
+    ufoShapeOptions,
+    phenomenaOptions,
+    localeOptions,
+    countryOptions,
+    yearRange,
+    credibilityScale,
+    strangenessScale,
     // Filters state
-    activeFilters, hasFilters, formFilters, isApplying,
+    activeFilters,
+    hasFilters,
+    formFilters,
+    isApplying,
     // Computed
-    activeFilterCount, activeFiltersSummary,
+    activeFilterCount,
+    activeFiltersSummary,
     // Actions
-    initialize, refresh, setFilter, setFilters, resetFormFilters,
-    applyFilters, clearAllFilters, removeFilter, reset,
+    initialize,
+    refresh,
+    setFilter,
+    setFilters,
+    resetFormFilters,
+    applyFilters,
+    clearAllFilters,
+    removeFilter,
+    reset,
     // Label helpers
     getObserverLabel: filterStore.getObserverTypeLabel,
     getShapeLabel: filterStore.getUfoShapeLabel,

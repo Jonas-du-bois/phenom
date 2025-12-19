@@ -163,4 +163,3 @@ export {
   hasAnyPermission,
   getPermissionErrorMessage,
 } from "./permissions";
-

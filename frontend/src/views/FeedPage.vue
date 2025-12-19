@@ -1,25 +1,32 @@
 <template>
   <AppLayout :alert-count="alertCount">
     <template #header>
-      <PageHeader
-        :show-search="!showSearch"
-        @search="toggleSearch"
-      >
+      <PageHeader :show-search="!showSearch" @search="toggleSearch">
         <template #right>
-          <IconButton 
-            variant="ghost" 
+          <IconButton
+            variant="ghost"
             size="sm"
             aria-label="Filtrer les observations"
             @click="showFilters = true"
           >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+              />
             </svg>
           </IconButton>
         </template>
       </PageHeader>
     </template>
-    
+
     <div class="feed-page">
       <!-- Search Bar avec animation -->
       <Transition name="search">
@@ -43,7 +50,7 @@
         </div>
       </Transition>
       <!-- Active filters display -->
-      <div 
+      <div
         v-if="hasActiveFilters"
         class="px-4 py-2 flex items-center gap-2 overflow-x-auto scrollbar-hide border-b border-white/5"
       >
@@ -56,7 +63,7 @@
             removable
             @remove="removeFilter(filter.key)"
           />
-          <button 
+          <button
             @click="clearAllFilters"
             class="text-xs text-[#00F0FF] whitespace-nowrap flex-shrink-0 ml-2"
           >
@@ -64,7 +71,7 @@
           </button>
         </div>
       </div>
-      
+
       <!-- Observation list -->
       <div class="px-4 py-4">
         <ObservationList
@@ -79,17 +86,14 @@
           @refresh="refresh"
         >
           <template #empty-action>
-            <BaseButton 
-              variant="primary"
-              @click="$router.push('/camera')"
-            >
+            <BaseButton variant="primary" @click="$router.push('/camera')">
               Créer une observation
             </BaseButton>
           </template>
         </ObservationList>
       </div>
     </div>
-    
+
     <!-- Filter panel -->
     <FilterPanel
       :is-open="showFilters"
@@ -102,106 +106,130 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
-import { AppLayout } from '@/components/layout'
-import { PageHeader, ObservationList, FilterPanel, SearchBar } from '@/components/organisms'
-import { IconButton, BaseButton } from '@/components/atoms'
-import { FilterChip } from '@/components/molecules'
-import { useObservationStore } from '@/stores/observation'
-import { useFilterStore } from '@/stores/filter'
-import { storeToRefs } from 'pinia'
+import { ref, computed, onMounted, nextTick } from "vue";
+import { AppLayout } from "@/components/layout";
+import {
+  PageHeader,
+  ObservationList,
+  FilterPanel,
+  SearchBar,
+} from "@/components/organisms";
+import { IconButton, BaseButton } from "@/components/atoms";
+import { FilterChip } from "@/components/molecules";
+import { useObservationStore } from "@/stores/observation";
+import { useFilterStore } from "@/stores/filter";
+import { storeToRefs } from "pinia";
 
-defineOptions({ name: 'FeedPage' })
+defineOptions({ name: "FeedPage" });
 
-const observationStore = useObservationStore()
-const filterStore = useFilterStore()
+const observationStore = useObservationStore();
+const filterStore = useFilterStore();
 
-const { observations, loading, pagination } = storeToRefs(observationStore)
-const { activeFilters } = storeToRefs(filterStore)
+const { observations, loading, pagination } = storeToRefs(observationStore);
+const { activeFilters } = storeToRefs(filterStore);
 
-const loadingMore = ref(false)
-const hasMore = computed(() => pagination.value.hasMore)
+const loadingMore = ref(false);
+const hasMore = computed(() => pagination.value.hasMore);
 
-const observationListRef = ref(null)
-const searchBarRef = ref(null)
-const showFilters = ref(false)
-const showSearch = ref(false)
-const searchQuery = ref('')
-const alertCount = ref(0)
+const observationListRef = ref(null);
+const searchBarRef = ref(null);
+const showFilters = ref(false);
+const showSearch = ref(false);
+const searchQuery = ref("");
+const alertCount = ref(0);
 
 // Récupérer les recherches récentes depuis le localStorage
-const recentSearches = ref(JSON.parse(localStorage.getItem('recentSearches') || '[]'))
-const searchSuggestions = ref([])
+const recentSearches = ref(
+  JSON.parse(localStorage.getItem("recentSearches") || "[]"),
+);
+const searchSuggestions = ref([]);
 
 const filters = ref({
   ufoShapes: [],
   phenomena: [],
   observerTypes: [],
   countries: [],
-  dateFrom: '',
-  dateTo: '',
+  dateFrom: "",
+  dateTo: "",
   minCredibility: 0,
   minStrangeness: 0,
   radius: 50,
   hasMedia: false,
-  verifiedOnly: false
-})
+  verifiedOnly: false,
+});
 
 const hasActiveFilters = computed(() => {
-  return filters.value.ufoShapes.length > 0 ||
-         filters.value.phenomena.length > 0 ||
-         filters.value.observerTypes.length > 0 ||
-         filters.value.countries.length > 0 ||
-         filters.value.dateFrom ||
-         filters.value.dateTo ||
-         filters.value.minCredibility > 0 ||
-         filters.value.minStrangeness > 0 ||
-         filters.value.hasMedia ||
-         filters.value.verifiedOnly
-})
+  return (
+    filters.value.ufoShapes.length > 0 ||
+    filters.value.phenomena.length > 0 ||
+    filters.value.observerTypes.length > 0 ||
+    filters.value.countries.length > 0 ||
+    filters.value.dateFrom ||
+    filters.value.dateTo ||
+    filters.value.minCredibility > 0 ||
+    filters.value.minStrangeness > 0 ||
+    filters.value.hasMedia ||
+    filters.value.verifiedOnly
+  );
+});
 
 const activeFilterChips = computed(() => {
-  const chips = []
-  
-  filters.value.ufoShapes.forEach(shape => {
-    chips.push({ key: `shape-${shape}`, label: filterStore.getUfoShapeLabel(shape) || shape })
-  })
-  
-  filters.value.phenomena.forEach(phenomenon => {
-    chips.push({ key: `phenomenon-${phenomenon}`, label: filterStore.getPhenomenonLabel(phenomenon) || phenomenon })
-  })
-  
-  filters.value.observerTypes.forEach(observerType => {
-    chips.push({ key: `observer-${observerType}`, label: filterStore.getObserverTypeLabel(observerType) || observerType })
-  })
-  
-  filters.value.countries.forEach(country => {
-    chips.push({ key: `country-${country}`, label: country })
-  })
-  
+  const chips = [];
+
+  filters.value.ufoShapes.forEach((shape) => {
+    chips.push({
+      key: `shape-${shape}`,
+      label: filterStore.getUfoShapeLabel(shape) || shape,
+    });
+  });
+
+  filters.value.phenomena.forEach((phenomenon) => {
+    chips.push({
+      key: `phenomenon-${phenomenon}`,
+      label: filterStore.getPhenomenonLabel(phenomenon) || phenomenon,
+    });
+  });
+
+  filters.value.observerTypes.forEach((observerType) => {
+    chips.push({
+      key: `observer-${observerType}`,
+      label: filterStore.getObserverTypeLabel(observerType) || observerType,
+    });
+  });
+
+  filters.value.countries.forEach((country) => {
+    chips.push({ key: `country-${country}`, label: country });
+  });
+
   if (filters.value.minCredibility > 0) {
-    chips.push({ key: 'credibility', label: `Créd. ≥${filters.value.minCredibility}` })
+    chips.push({
+      key: "credibility",
+      label: `Créd. ≥${filters.value.minCredibility}`,
+    });
   }
-  
+
   if (filters.value.minStrangeness > 0) {
-    chips.push({ key: 'strangeness', label: `Étrang. ≥${filters.value.minStrangeness}` })
+    chips.push({
+      key: "strangeness",
+      label: `Étrang. ≥${filters.value.minStrangeness}`,
+    });
   }
-  
+
   if (filters.value.hasMedia) {
-    chips.push({ key: 'hasMedia', label: 'Avec média' })
+    chips.push({ key: "hasMedia", label: "Avec média" });
   }
-  
+
   if (filters.value.verifiedOnly) {
-    chips.push({ key: 'verified', label: 'Vérifié' })
+    chips.push({ key: "verified", label: "Vérifié" });
   }
-  
-  return chips
-})
+
+  return chips;
+});
 
 const applyFilters = (newFilters) => {
-  filters.value = { ...newFilters }
-  observationStore.fetchObservations(filters.value)
-}
+  filters.value = { ...newFilters };
+  observationStore.fetchObservations(filters.value);
+};
 
 const resetFilters = () => {
   filters.value = {
@@ -209,109 +237,117 @@ const resetFilters = () => {
     phenomena: [],
     observerTypes: [],
     countries: [],
-    dateFrom: '',
-    dateTo: '',
+    dateFrom: "",
+    dateTo: "",
     minCredibility: 0,
     minStrangeness: 0,
     radius: 50,
     hasMedia: false,
-    verifiedOnly: false
-  }
-  observationStore.fetchObservations()
-}
+    verifiedOnly: false,
+  };
+  observationStore.fetchObservations();
+};
 
 const removeFilter = (key) => {
-  if (key.startsWith('shape-')) {
-    const shape = key.replace('shape-', '')
-    filters.value.ufoShapes = filters.value.ufoShapes.filter(s => s !== shape)
-  } else if (key.startsWith('phenomenon-')) {
-    const phenomenon = key.replace('phenomenon-', '')
-    filters.value.phenomena = filters.value.phenomena.filter(p => p !== phenomenon)
-  } else if (key.startsWith('observer-')) {
-    const observerType = key.replace('observer-', '')
-    filters.value.observerTypes = filters.value.observerTypes.filter(o => o !== observerType)
-  } else if (key.startsWith('country-')) {
-    const country = key.replace('country-', '')
-    filters.value.countries = filters.value.countries.filter(c => c !== country)
-  } else if (key === 'credibility') {
-    filters.value.minCredibility = 0
-  } else if (key === 'strangeness') {
-    filters.value.minStrangeness = 0
-  } else if (key === 'hasMedia') {
-    filters.value.hasMedia = false
-  } else if (key === 'verified') {
-    filters.value.verifiedOnly = false
+  if (key.startsWith("shape-")) {
+    const shape = key.replace("shape-", "");
+    filters.value.ufoShapes = filters.value.ufoShapes.filter(
+      (s) => s !== shape,
+    );
+  } else if (key.startsWith("phenomenon-")) {
+    const phenomenon = key.replace("phenomenon-", "");
+    filters.value.phenomena = filters.value.phenomena.filter(
+      (p) => p !== phenomenon,
+    );
+  } else if (key.startsWith("observer-")) {
+    const observerType = key.replace("observer-", "");
+    filters.value.observerTypes = filters.value.observerTypes.filter(
+      (o) => o !== observerType,
+    );
+  } else if (key.startsWith("country-")) {
+    const country = key.replace("country-", "");
+    filters.value.countries = filters.value.countries.filter(
+      (c) => c !== country,
+    );
+  } else if (key === "credibility") {
+    filters.value.minCredibility = 0;
+  } else if (key === "strangeness") {
+    filters.value.minStrangeness = 0;
+  } else if (key === "hasMedia") {
+    filters.value.hasMedia = false;
+  } else if (key === "verified") {
+    filters.value.verifiedOnly = false;
   }
-  observationStore.fetchObservations(filters.value)
-}
+  observationStore.fetchObservations(filters.value);
+};
 
 const clearAllFilters = () => {
-  resetFilters()
-}
+  resetFilters();
+};
 
 const loadMore = async () => {
-  if (loadingMore.value) return
-  loadingMore.value = true
+  if (loadingMore.value) return;
+  loadingMore.value = true;
   try {
-    await observationStore.loadMore(filters.value)
+    await observationStore.loadMore(filters.value);
   } finally {
-    loadingMore.value = false
+    loadingMore.value = false;
   }
-}
+};
 
 const refresh = () => {
-  observationStore.fetchObservations(filters.value)
-}
+  observationStore.fetchObservations(filters.value);
+};
 
 const toggleSearch = async () => {
-  showSearch.value = !showSearch.value
+  showSearch.value = !showSearch.value;
   if (showSearch.value) {
     // Focus sur le champ de recherche après l'animation
-    await nextTick()
+    await nextTick();
     setTimeout(() => {
-      searchBarRef.value?.focus()
-    }, 300)
+      searchBarRef.value?.focus();
+    }, 300);
   } else {
     // Réinitialiser la recherche à la fermeture
-    clearSearch()
+    clearSearch();
   }
-}
+};
 
 const handleSearch = (query) => {
-  if (!query || query.trim().length < 2) return
-  
+  if (!query || query.trim().length < 2) return;
+
   // Ajouter aux recherches récentes
-  const trimmedQuery = query.trim()
-  const recent = recentSearches.value.filter(s => s !== trimmedQuery)
-  recent.unshift(trimmedQuery)
-  recentSearches.value = recent.slice(0, 5) // Garder seulement les 5 dernières
-  localStorage.setItem('recentSearches', JSON.stringify(recentSearches.value))
-  
+  const trimmedQuery = query.trim();
+  const recent = recentSearches.value.filter((s) => s !== trimmedQuery);
+  recent.unshift(trimmedQuery);
+  recentSearches.value = recent.slice(0, 5); // Garder seulement les 5 dernières
+  localStorage.setItem("recentSearches", JSON.stringify(recentSearches.value));
+
   // Effectuer la recherche
-  filters.value.search = trimmedQuery
-  
+  filters.value.search = trimmedQuery;
+
   // Réinitialiser la pagination pour la nouvelle recherche
-  pagination.value.page = 1
-  
-  observationStore.fetchObservations(filters.value)
-}
+  pagination.value.page = 1;
+
+  observationStore.fetchObservations(filters.value);
+};
 
 const clearSearch = () => {
-  searchQuery.value = ''
+  searchQuery.value = "";
   if (filters.value.search) {
-    delete filters.value.search
-    observationStore.fetchObservations(filters.value)
+    delete filters.value.search;
+    observationStore.fetchObservations(filters.value);
   }
-}
+};
 
 const clearRecentSearches = () => {
-  recentSearches.value = []
-  localStorage.removeItem('recentSearches')
-}
+  recentSearches.value = [];
+  localStorage.removeItem("recentSearches");
+};
 
 onMounted(() => {
-  observationStore.fetchObservations()
-})
+  observationStore.fetchObservations();
+});
 </script>
 
 <style scoped>

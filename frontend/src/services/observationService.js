@@ -40,7 +40,7 @@ export const observationService = {
     const response = await apiClient.post(
       `/observations/${observationId}/images`,
       formData,
-      { headers: { "Content-Type": "multipart/form-data" } }
+      { headers: { "Content-Type": "multipart/form-data" } },
     );
     return response.data;
   },
@@ -52,21 +52,29 @@ export const observationService = {
   },
 
   /** GET /observations/nearby */
-  async getNearby(lat, lng, radius = 10000, limit = 20) {
+  async getNearby(lat, lng, radius = 10000, limit = 150) {
     const response = await apiClient.get("/observations/nearby", {
-      params: { lat, lng, radius, limit }
+      params: { lat, lng, radius, limit },
     });
     return response.data;
   },
 
   /** POST /observations/:id/generate-ai-image */
   async generateAiImage(observationId) {
-    const response = await apiClient.post(`/observations/${observationId}/generate-ai-image`);
+    const response = await apiClient.post(
+      `/observations/${observationId}/generate-ai-image`,
+    );
     return response.data;
   },
 
   // Alias pour compatibilité avec les anciennes pages
-  getObservations: function(params) { return this.getAll(params); },
-  getObservation: function(id) { return this.getById(id); },
-  deleteObservation: function(id) { return this.delete(id); },
+  getObservations: function (params) {
+    return this.getAll(params);
+  },
+  getObservation: function (id) {
+    return this.getById(id);
+  },
+  deleteObservation: function (id) {
+    return this.delete(id);
+  },
 };

@@ -46,14 +46,16 @@ export const formatRelativeTime = (date, short = false) => {
   const diffDay = Math.floor(diffHour / 24);
 
   if (diffSec < 60) return "À l'instant";
-  
+
   if (short) {
     if (diffMin < 60) return `Il y a ${diffMin}min`;
     if (diffHour < 24) return `Il y a ${diffHour}h`;
     if (diffDay < 7) return `Il y a ${diffDay}j`;
   } else {
-    if (diffMin < 60) return `Il y a ${diffMin} minute${diffMin > 1 ? "s" : ""}`;
-    if (diffHour < 24) return `Il y a ${diffHour} heure${diffHour > 1 ? "s" : ""}`;
+    if (diffMin < 60)
+      return `Il y a ${diffMin} minute${diffMin > 1 ? "s" : ""}`;
+    if (diffHour < 24)
+      return `Il y a ${diffHour} heure${diffHour > 1 ? "s" : ""}`;
     if (diffDay < 7) return `Il y a ${diffDay} jour${diffDay > 1 ? "s" : ""}`;
   }
 

@@ -108,7 +108,7 @@ export const validateUserData = (userData, isUpdate = false) => {
   const errors = {};
 
   // Nom - en mode update, on valide seulement si le champ est rempli
-  const hasName = userData.name !== undefined && userData.name.trim() !== '';
+  const hasName = userData.name !== undefined && userData.name.trim() !== "";
   if (!isUpdate && !hasName) {
     errors.name = "Le nom doit contenir au moins 2 caractères";
   } else if (hasName) {
@@ -120,7 +120,7 @@ export const validateUserData = (userData, isUpdate = false) => {
   }
 
   // Email - en mode update, on valide seulement si le champ est rempli
-  const hasEmail = userData.email !== undefined && userData.email.trim() !== '';
+  const hasEmail = userData.email !== undefined && userData.email.trim() !== "";
   if (!isUpdate && !hasEmail) {
     errors.email = "Email invalide";
   } else if (hasEmail) {
@@ -237,11 +237,11 @@ export const calculateUserStats = (users) => {
 export const sanitizeUserData = (userData) => {
   const sanitized = {};
 
-  if (userData.name !== undefined && userData.name.trim() !== '') {
+  if (userData.name !== undefined && userData.name.trim() !== "") {
     sanitized.name = userData.name.trim();
   }
 
-  if (userData.email !== undefined && userData.email.trim() !== '') {
+  if (userData.email !== undefined && userData.email.trim() !== "") {
     sanitized.email = userData.email.trim().toLowerCase();
   }
 
@@ -249,7 +249,7 @@ export const sanitizeUserData = (userData) => {
     sanitized.password = userData.password;
   }
 
-  if (userData.bio !== undefined && userData.bio.trim() !== '') {
+  if (userData.bio !== undefined && userData.bio.trim() !== "") {
     sanitized.bio = userData.bio.trim();
   }
 

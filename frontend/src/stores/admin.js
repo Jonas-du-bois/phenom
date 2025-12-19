@@ -9,12 +9,12 @@ import { adminService } from "../services/adminService";
 export const useAdminStore = defineStore("admin", () => {
   const users = ref([]);
   const reports = ref([]);
-  const stats = ref({ 
-    users: 0, 
-    observations: 0, 
+  const stats = ref({
+    users: 0,
+    observations: 0,
     comments: 0,
     todayObservations: 0,
-    pendingReports: 0
+    pendingReports: 0,
   });
   const loading = ref(false);
   const error = ref(null);
@@ -77,7 +77,7 @@ export const useAdminStore = defineStore("admin", () => {
     loading.value = true;
     try {
       await adminService.updateUserRole(userId, role);
-      const index = users.value.findIndex(u => u._id === userId);
+      const index = users.value.findIndex((u) => u._id === userId);
       if (index !== -1) users.value[index].role = role;
     } catch (err) {
       error.value = err.response?.data?.message || "Erreur de mise à jour";
@@ -139,7 +139,7 @@ export const useAdminStore = defineStore("admin", () => {
     loading.value = true;
     try {
       await adminService.dismissReport(reportId);
-      reports.value = reports.value.filter(r => (r._id || r.id) !== reportId);
+      reports.value = reports.value.filter((r) => (r._id || r.id) !== reportId);
     } catch (err) {
       error.value = err.response?.data?.message || "Erreur de rejet";
       throw err;

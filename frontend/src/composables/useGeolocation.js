@@ -45,7 +45,7 @@ export function useGeolocation(options = {}) {
             speed: position.coords.speed,
             timestamp: position.timestamp,
           };
-          
+
           coordinates.value = coords;
           loading.value = false;
           resolve(coords);
@@ -59,7 +59,7 @@ export function useGeolocation(options = {}) {
           enableHighAccuracy,
           timeout,
           maximumAge,
-        }
+        },
       );
     });
   };
@@ -99,7 +99,7 @@ export function useGeolocation(options = {}) {
         enableHighAccuracy,
         timeout,
         maximumAge: 0, // Toujours position fraîche en mode watch
-      }
+      },
     );
   };
 
@@ -120,36 +120,36 @@ export function useGeolocation(options = {}) {
   const reverseGeocode = async (lat, lng) => {
     try {
       loading.value = true;
-      
+
       const response = await fetch(
         `https://nominatim.openstreetmap.org/reverse?` +
-        `format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+          `format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
         {
           headers: {
             "Accept-Language": "fr",
           },
-        }
+        },
       );
-      
+
       if (!response.ok) {
         throw new Error("Erreur de géocodage");
       }
-      
+
       const data = await response.json();
-      
+
       // Construire une adresse lisible
       const parts = [];
       const addr = data.address;
-      
+
       if (addr.road) parts.push(addr.road);
       if (addr.house_number) parts[0] = `${addr.house_number} ${parts[0]}`;
       if (addr.city || addr.town || addr.village) {
         parts.push(addr.city || addr.town || addr.village);
       }
       if (addr.country) parts.push(addr.country);
-      
+
       address.value = parts.join(", ") || data.display_name;
-      
+
       return {
         address: address.value,
         fullAddress: data.display_name,
@@ -171,14 +171,14 @@ export function useGeolocation(options = {}) {
     const R = 6371; // Rayon de la Terre en km
     const dLat = toRad(lat2 - lat1);
     const dLon = toRad(lon2 - lon1);
-    
+
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
       Math.cos(toRad(lat1)) *
         Math.cos(toRad(lat2)) *
         Math.sin(dLon / 2) *
         Math.sin(dLon / 2);
-    
+
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   };
@@ -244,7 +244,7 @@ export function useGeolocation(options = {}) {
     address: readonly(address),
     error: readonly(error),
     loading: readonly(loading),
-    
+
     // Actions
     getCurrentPosition,
     startWatching,

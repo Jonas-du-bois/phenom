@@ -17,12 +17,12 @@ export function useCamera() {
   const startCamera = async (options = {}) => {
     try {
       error.value = null;
-      
+
       // Arrêter un stream existant
       if (stream.value) {
         stopCamera();
       }
-      
+
       const constraints = {
         video: {
           facingMode: options.facingMode || facingMode.value,
@@ -31,16 +31,16 @@ export function useCamera() {
         },
         audio: false,
       };
-      
+
       stream.value = await navigator.mediaDevices.getUserMedia(constraints);
       isActive.value = true;
-      
+
       // Attacher au video element si fourni
       if (videoRef.value) {
         videoRef.value.srcObject = stream.value;
         await videoRef.value.play();
       }
-      
+
       return stream.value;
     } catch (err) {
       console.error("❌ Erreur accès caméra:", err);
@@ -58,11 +58,11 @@ export function useCamera() {
       stream.value.getTracks().forEach((track) => track.stop());
       stream.value = null;
     }
-    
+
     if (videoRef.value) {
       videoRef.value.srcObject = null;
     }
-    
+
     isActive.value = false;
   };
 
@@ -73,27 +73,27 @@ export function useCamera() {
     if (!videoRef.value || !isActive.value) {
       throw new Error("Caméra non active");
     }
-    
+
     const video = videoRef.value;
     const canvas = document.createElement("canvas");
-    
+
     // Dimensions de la capture
     const width = options.width || video.videoWidth;
     const height = options.height || video.videoHeight;
-    
+
     canvas.width = width;
     canvas.height = height;
-    
+
     const ctx = canvas.getContext("2d");
-    
+
     // Miroir si caméra frontale
     if (facingMode.value === "user" && options.mirror !== false) {
       ctx.translate(width, 0);
       ctx.scale(-1, 1);
     }
-    
+
     ctx.drawImage(video, 0, 0, width, height);
-    
+
     // Retourner comme Blob
     return new Promise((resolve, reject) => {
       canvas.toBlob(
@@ -114,7 +114,7 @@ export function useCamera() {
           }
         },
         "image/jpeg",
-        options.quality || 0.9
+        options.quality || 0.9,
       );
     });
   };
@@ -124,11 +124,11 @@ export function useCamera() {
    */
   const switchCamera = async () => {
     facingMode.value = facingMode.value === "user" ? "environment" : "user";
-    
+
     if (isActive.value) {
       await startCamera();
     }
-    
+
     return facingMode.value;
   };
 
@@ -142,39 +142,40 @@ export function useCamera() {
       input.accept = options.accept || "image/*";
       input.multiple = options.multiple ?? true;
       input.capture = options.capture; // "camera" pour forcer la caméra sur mobile
-      
+
       input.onchange = (event) => {
         const files = Array.from(event.target.files || []);
-        
+
         if (files.length === 0) {
           reject(new Error("Aucun fichier sélectionné"));
           return;
         }
-        
+
         // Créer des previews pour chaque fichier
         Promise.all(
-          files.map((file) =>
-            new Promise((res) => {
-              const reader = new FileReader();
-              reader.onload = (e) => {
-                res({
-                  file,
-                  dataUrl: e.target.result,
-                  name: file.name,
-                  size: file.size,
-                  type: file.type,
-                });
-              };
-              reader.readAsDataURL(file);
-            })
-          )
+          files.map(
+            (file) =>
+              new Promise((res) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                  res({
+                    file,
+                    dataUrl: e.target.result,
+                    name: file.name,
+                    size: file.size,
+                    type: file.type,
+                  });
+                };
+                reader.readAsDataURL(file);
+              }),
+          ),
         ).then(resolve);
       };
-      
+
       input.oncancel = () => {
         reject(new Error("Sélection annulée"));
       };
-      
+
       input.click();
     });
   };
@@ -228,7 +229,7 @@ export function useCamera() {
     isActive,
     facingMode,
     videoRef,
-    
+
     // Actions
     startCamera,
     stopCamera,

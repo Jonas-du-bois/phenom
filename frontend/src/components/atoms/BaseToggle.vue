@@ -4,37 +4,37 @@
  * Design System: Phenom Search
  */
 
-defineOptions({ name: 'BaseToggle' })
+defineOptions({ name: "BaseToggle" });
 
 const props = defineProps({
   modelValue: {
     type: Boolean,
-    default: false
+    default: false,
   },
   label: {
     type: String,
-    default: ''
+    default: "",
   },
   disabled: {
     type: Boolean,
-    default: false
-  }
-})
+    default: false,
+  },
+});
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(["update:modelValue"]);
 
 const toggle = () => {
   if (!props.disabled) {
-    emit('update:modelValue', !props.modelValue)
+    emit("update:modelValue", !props.modelValue);
   }
-}
+};
 </script>
 
 <template>
   <label
     :class="[
       'inline-flex items-center gap-3 cursor-pointer',
-      { 'opacity-50 cursor-not-allowed': disabled }
+      { 'opacity-50 cursor-not-allowed': disabled },
     ]"
   >
     <!-- Toggle Switch -->
@@ -45,18 +45,18 @@ const toggle = () => {
       :disabled="disabled"
       :class="[
         'relative w-11 h-6 rounded-full transition-colors duration-200',
-        modelValue ? 'bg-[#00F0FF]' : 'bg-white/20'
+        modelValue ? 'bg-[#00F0FF]' : 'bg-white/20',
       ]"
       @click="toggle"
     >
       <span
         :class="[
           'absolute top-1 left-1 w-4 h-4 rounded-full bg-black transition-transform duration-200',
-          { 'translate-x-5': modelValue }
+          { 'translate-x-5': modelValue },
         ]"
       />
     </button>
-    
+
     <!-- Label -->
     <span v-if="label" class="text-sm text-white/70">
       {{ label }}

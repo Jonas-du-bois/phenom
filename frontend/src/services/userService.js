@@ -27,8 +27,9 @@ export const userService = {
   async updateAvatar(file) {
     const formData = new FormData();
     formData.append("avatar", file);
-    const response = await api.put("/users/me/avatar", formData, {
-      headers: { "Content-Type": "multipart/form-data" }
+    // Backend route uses POST /users/me/avatar
+    const response = await api.post("/users/me/avatar", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
     });
     return response.data;
   },
@@ -48,6 +49,12 @@ export const userService = {
   /** GET /users/me/stats */
   async getUserStats() {
     const response = await api.get("/users/me/stats");
+    return response.data;
+  },
+
+  /** GET /users/me/observations */
+  async getUserObservations(params = {}) {
+    const response = await api.get("/users/me/observations", { params });
     return response.data;
   },
 };

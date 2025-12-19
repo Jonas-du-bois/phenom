@@ -3,7 +3,10 @@ import { useAuthStore } from "@/stores/auth";
 
 // Check if user is authenticated
 const isAuthenticated = () => {
-  return !!localStorage.getItem("phenom_auth_token") || !!localStorage.getItem("token");
+  return (
+    !!localStorage.getItem("phenom_auth_token") ||
+    !!localStorage.getItem("token")
+  );
 };
 
 // Check if user is admin
@@ -23,15 +26,15 @@ const router = createRouter({
     if (savedPosition) {
       return savedPosition;
     }
-    
+
     // Si la route a un hash, laisser le composant gérer le scroll
     // On scroll juste en haut et le composant scrollera vers le hash
     if (to.hash) {
-      return { top: 0, behavior: 'instant' };
+      return { top: 0, behavior: "instant" };
     }
-    
+
     // Par défaut, toujours scroller en haut avec animation douce
-    return { top: 0, behavior: 'smooth' };
+    return { top: 0, behavior: "smooth" };
   },
   routes: [
     // ============ PUBLIC ROUTES ============
@@ -168,12 +171,12 @@ router.beforeEach((to, from, next) => {
   const userIsAuthenticated = isAuthenticated();
   const userIsAdmin = isAdmin();
 
-  console.log('[Router Guard]', {
+  console.log("[Router Guard]", {
     path: to.path,
     requiresAuth,
     isGuestOnly,
     isPublic,
-    userIsAuthenticated
+    userIsAuthenticated,
   });
 
   // Public routes - always accessible

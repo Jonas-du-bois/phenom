@@ -3,6 +3,8 @@
  * Les images sont maintenant stockées sur Cloudinary avec URLs publiques
  */
 
+import { countCachedImages } from "./avatarCache";
+
 /**
  * Récupère l'URL d'une image Cloudinary
  * @param {Object} imageData - Données de l'image contenant l'URL Cloudinary
@@ -127,6 +129,12 @@ export const createImagePreview = (file) => {
  * Récupère le nombre d'images en cache
  * @returns {number} Nombre d'images
  */
-export const getCachedImageCount = () => {
-  return imageBlobCache.size;
+export const getCachedImageCount = async () => {
+  try {
+    const n = await countCachedImages();
+    return Number(n) || 0;
+  } catch (err) {
+    console.warn("Erreur lors du comptage du cache d'avatars:", err);
+    return 0;
+  }
 };

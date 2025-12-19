@@ -47,8 +47,11 @@ export const useUserStore = defineStore("user", () => {
     try {
       // Le service gère le FormData
       const response = await userService.updateAvatar(file);
+      // response is the backend payload (axios response.data), try several shapes
+      // Backend typically returns: { success: true, data: { url, publicId } }
+      const avatarObj = response?.data || response || response?.avatar || null;
       if (profile.value) {
-        profile.value.avatar = response.data?.avatar || response.avatar;
+        profile.value.avatar = avatarObj;
       }
       return profile.value;
     } catch (err) {
@@ -65,7 +68,8 @@ export const useUserStore = defineStore("user", () => {
     try {
       await userService.changePassword(passwords);
     } catch (err) {
-      error.value = err.response?.data?.message || "Erreur changement mot de passe";
+      error.value =
+        err.response?.data?.message || "Erreur changement mot de passe";
       throw err;
     } finally {
       loading.value = false;

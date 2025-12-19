@@ -4,41 +4,37 @@
  * Design System: Phenom Search
  */
 
-defineOptions({ name: 'LoadingSpinner' })
+defineOptions({ name: "LoadingSpinner" });
 
 const props = defineProps({
   size: {
     type: String,
-    default: 'md',
-    validator: (v) => ['sm', 'md', 'lg', 'xl'].includes(v)
+    default: "md",
+    validator: (v) => ["sm", "md", "lg", "xl"].includes(v),
   },
   color: {
     type: String,
-    default: 'cyan',
-    validator: (v) => ['cyan', 'white'].includes(v)
-  }
-})
+    default: "cyan",
+    validator: (v) => ["cyan", "white"].includes(v),
+  },
+});
 
 const sizeClasses = {
-  sm: 'w-4 h-4',
-  md: 'w-6 h-6',
-  lg: 'w-10 h-10',
-  xl: 'w-16 h-16'
-}
+  sm: "w-4 h-4",
+  md: "w-6 h-6",
+  lg: "w-10 h-10",
+  xl: "w-16 h-16",
+};
 
 const colorClasses = {
-  cyan: 'text-[#00F0FF]',
-  white: 'text-white'
-}
+  cyan: "text-[#00F0FF]",
+  white: "text-white",
+};
 </script>
 
 <template>
   <svg
-    :class="[
-      'animate-spin',
-      sizeClasses[size],
-      colorClasses[color]
-    ]"
+    :class="['animate-spin', sizeClasses[size], colorClasses[color]]"
     viewBox="0 0 24 24"
     fill="none"
   >

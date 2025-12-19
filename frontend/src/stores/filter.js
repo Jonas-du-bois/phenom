@@ -6,7 +6,10 @@ import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { filterService } from "../services/filterService";
 import { statsService } from "../services/statsService";
-import { OBSERVER_TYPES, getObserverTypeLabel } from "../constants/observerTypes";
+import {
+  OBSERVER_TYPES,
+  getObserverTypeLabel,
+} from "../constants/observerTypes";
 import { UFO_SHAPES, getUfoShapeLabel } from "../constants/ufoShapes";
 import { PHENOMENA, getPhenomenonLabel } from "../constants/phenomena";
 import { LOCALE_TYPES, getLocaleTypeLabel } from "../constants/localeTypes";
@@ -28,7 +31,7 @@ export const useFilterStore = defineStore("filter", () => {
   const distributions = ref({
     ufoShapes: {},
     phenomena: {},
-    observerTypes: {}
+    observerTypes: {},
   });
   const loading = ref(false);
   const error = ref(null);
@@ -38,52 +41,54 @@ export const useFilterStore = defineStore("filter", () => {
   // Getters (computed)
   // ========================================
   const observerTypeOptions = computed(() =>
-    OBSERVER_TYPES.map(t => ({ 
-      value: t.code, 
-      label: t.label, 
-      icon: t.icon
-    }))
+    OBSERVER_TYPES.map((t) => ({
+      value: t.code,
+      label: t.label,
+      icon: t.icon,
+    })),
   );
 
   const ufoShapeOptions = computed(() =>
-    UFO_SHAPES.map(s => ({ 
-      value: s.code, 
-      label: s.label, 
-      icon: s.icon, 
-      color: s.color
-    }))
+    UFO_SHAPES.map((s) => ({
+      value: s.code,
+      label: s.label,
+      icon: s.icon,
+      color: s.color,
+    })),
   );
 
   const phenomenaOptions = computed(() =>
-    PHENOMENA.map(p => ({ 
-      value: p.code, 
-      label: p.label, 
-      icon: p.icon, 
-      color: p.color, 
-      category: p.category
-    }))
+    PHENOMENA.map((p) => ({
+      value: p.code,
+      label: p.label,
+      icon: p.icon,
+      color: p.color,
+      category: p.category,
+    })),
   );
 
   const localeOptions = computed(() =>
-    LOCALE_TYPES.map(l => ({ value: l.code, label: l.label, icon: l.icon }))
+    LOCALE_TYPES.map((l) => ({ value: l.code, label: l.label, icon: l.icon })),
   );
 
   const countryOptions = computed(() =>
-    countries.value.map(c => ({ value: c, label: c }))
+    countries.value.map((c) => ({ value: c, label: c })),
   );
 
   const yearRange = computed(() => {
     if (!statistics.value.byYear.length) {
       return { min: 1900, max: new Date().getFullYear() };
     }
-    const years = statistics.value.byYear.map(y => y.year);
+    const years = statistics.value.byYear.map((y) => y.year);
     return { min: Math.min(...years), max: Math.max(...years) };
   });
 
   // ========================================
   // Actions
   // ========================================
-  const clearError = () => { error.value = null; };
+  const clearError = () => {
+    error.value = null;
+  };
 
   const fetchCountries = async () => {
     const data = await filterService.getCountries();
@@ -111,7 +116,7 @@ export const useFilterStore = defineStore("filter", () => {
     distributions.value = {
       ufoShapes: data.ufoShapeDistribution || {},
       phenomena: data.phenomenaDistribution || {},
-      observerTypes: data.observerTypeDistribution || {}
+      observerTypes: data.observerTypeDistribution || {},
     };
     return data;
   };
@@ -126,7 +131,8 @@ export const useFilterStore = defineStore("filter", () => {
       await Promise.all([fetchCountries(), fetchLocales(), fetchStatistics()]);
       isInitialized.value = true;
     } catch (err) {
-      error.value = err.response?.data?.message || "Erreur lors de l'initialisation";
+      error.value =
+        err.response?.data?.message || "Erreur lors de l'initialisation";
       throw err;
     } finally {
       loading.value = false;
@@ -141,7 +147,13 @@ export const useFilterStore = defineStore("filter", () => {
   const reset = () => {
     countries.value = [];
     locales.value = [];
-    statistics.value = { total: 0, withCoordinates: 0, withImages: 0, byCountry: [], byYear: [] };
+    statistics.value = {
+      total: 0,
+      withCoordinates: 0,
+      withImages: 0,
+      byCountry: [],
+      byYear: [],
+    };
     loading.value = false;
     error.value = null;
     isInitialized.value = false;
@@ -149,15 +161,34 @@ export const useFilterStore = defineStore("filter", () => {
 
   return {
     // State
-    countries, locales, statistics, loading, error, isInitialized,
+    countries,
+    locales,
+    statistics,
+    loading,
+    error,
+    isInitialized,
     // Getters
-    observerTypeOptions, ufoShapeOptions, phenomenaOptions, localeOptions, countryOptions, yearRange,
+    observerTypeOptions,
+    ufoShapeOptions,
+    phenomenaOptions,
+    localeOptions,
+    countryOptions,
+    yearRange,
     // Scales (from constants)
     credibilityScale: CREDIBILITY_SCALE,
     strangenessScale: STRANGENESS_SCALE,
     // Actions
-    clearError, fetchCountries, fetchLocales, fetchStatistics, initialize, refresh, reset,
+    clearError,
+    fetchCountries,
+    fetchLocales,
+    fetchStatistics,
+    initialize,
+    refresh,
+    reset,
     // Label helpers (re-export)
-    getObserverTypeLabel, getUfoShapeLabel, getPhenomenonLabel, getLocaleTypeLabel,
+    getObserverTypeLabel,
+    getUfoShapeLabel,
+    getPhenomenonLabel,
+    getLocaleTypeLabel,
   };
 });

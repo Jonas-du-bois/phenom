@@ -27,8 +27,12 @@ export const useCommentStore = defineStore("comment", () => {
     error.value = null;
     currentObservationId.value = observationId;
     try {
-      const response = await commentService.getByObservation(observationId, params);
-      const fetchedComments = response.data?.comments || response.comments || response.data || [];
+      const response = await commentService.getByObservation(
+        observationId,
+        params,
+      );
+      const fetchedComments =
+        response.data?.comments || response.comments || response.data || [];
       commentsByObservation.value[observationId] = fetchedComments;
       return fetchedComments;
     } catch (err) {
@@ -49,16 +53,17 @@ export const useCommentStore = defineStore("comment", () => {
     error.value = null;
     try {
       // Accepte soit un string soit un objet avec text
-      const text = typeof textOrData === 'string' ? textOrData : textOrData.text;
+      const text =
+        typeof textOrData === "string" ? textOrData : textOrData.text;
       const response = await commentService.create(observationId, text);
       const newComment = response.data || response;
-      
+
       // Ajouter au cache
       if (!commentsByObservation.value[observationId]) {
         commentsByObservation.value[observationId] = [];
       }
       commentsByObservation.value[observationId].push(newComment);
-      
+
       return newComment;
     } catch (err) {
       error.value = err.response?.data?.message || "Erreur d'ajout";
@@ -75,11 +80,13 @@ export const useCommentStore = defineStore("comment", () => {
     loading.value = true;
     try {
       await commentService.delete(commentId);
-      
+
       // Retirer du cache
       if (commentsByObservation.value[observationId]) {
-        commentsByObservation.value[observationId] = 
-          commentsByObservation.value[observationId].filter(c => c._id !== commentId);
+        commentsByObservation.value[observationId] =
+          commentsByObservation.value[observationId].filter(
+            (c) => c._id !== commentId,
+          );
       }
     } catch (err) {
       error.value = err.response?.data?.message || "Erreur de suppression";

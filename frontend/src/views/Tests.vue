@@ -259,7 +259,9 @@
         <div class="grid md:grid-cols-2 gap-4">
           <!-- Get All - Format Phenom Search -->
           <div class="api-card md:col-span-2">
-            <h3 class="text-lg font-semibold mb-3">🔍 Lister les observations (Phenom Search)</h3>
+            <h3 class="text-lg font-semibold mb-3">
+              🔍 Lister les observations (Phenom Search)
+            </h3>
             <div class="space-y-3 mb-3">
               <!-- Pagination & Recherche -->
               <div class="grid grid-cols-3 gap-2">
@@ -285,13 +287,19 @@
 
               <!-- Tri -->
               <div class="grid grid-cols-2 gap-2">
-                <select v-model="observationForms.list.sortBy" class="input-field">
+                <select
+                  v-model="observationForms.list.sortBy"
+                  class="input-field"
+                >
                   <option value="createdAt">Trier par: Date création</option>
                   <option value="date">Date observation</option>
                   <option value="credibility">Crédibilité</option>
                   <option value="strangeness">Étrangeté</option>
                 </select>
-                <select v-model="observationForms.list.order" class="input-field">
+                <select
+                  v-model="observationForms.list.order"
+                  class="input-field"
+                >
                   <option value="desc">⬇️ Décroissant</option>
                   <option value="asc">⬆️ Croissant</option>
                 </select>
@@ -299,7 +307,9 @@
 
               <!-- Filtres géographiques -->
               <div class="p-2 bg-blue-900/20 rounded-lg">
-                <p class="text-xs text-blue-400 mb-2">🌍 Filtres géographiques</p>
+                <p class="text-xs text-blue-400 mb-2">
+                  🌍 Filtres géographiques
+                </p>
                 <div class="grid grid-cols-2 gap-2">
                   <input
                     v-model="observationForms.list.country"
@@ -307,9 +317,16 @@
                     placeholder="Pays (ex: France, Suisse)"
                     class="input-field"
                   />
-                  <select v-model="observationForms.list.locale" class="input-field">
+                  <select
+                    v-model="observationForms.list.locale"
+                    class="input-field"
+                  >
                     <option value="">Toutes localités</option>
-                    <option v-for="loc in LOCALE_TYPES" :key="loc.code" :value="loc.code">
+                    <option
+                      v-for="loc in LOCALE_TYPES"
+                      :key="loc.code"
+                      :value="loc.code"
+                    >
                       {{ loc.icon }} {{ loc.label }}
                     </option>
                   </select>
@@ -337,7 +354,9 @@
 
               <!-- Filtres scores -->
               <div class="p-2 bg-green-900/20 rounded-lg">
-                <p class="text-xs text-green-400 mb-2">📊 Scores (0-15 crédibilité, 0-10 étrangeté)</p>
+                <p class="text-xs text-green-400 mb-2">
+                  📊 Scores (0-15 crédibilité, 0-10 étrangeté)
+                </p>
                 <div class="grid grid-cols-4 gap-2">
                   <input
                     v-model.number="observationForms.list.minCredibility"
@@ -376,23 +395,46 @@
 
               <!-- Filtres types -->
               <div class="p-2 bg-orange-900/20 rounded-lg">
-                <p class="text-xs text-orange-400 mb-2">🏷️ Types (codes séparés par virgule)</p>
+                <p class="text-xs text-orange-400 mb-2">
+                  🏷️ Types (codes séparés par virgule)
+                </p>
                 <div class="grid grid-cols-3 gap-2">
-                  <select v-model="observationForms.list.observerType" class="input-field">
+                  <select
+                    v-model="observationForms.list.observerType"
+                    class="input-field"
+                  >
                     <option value="">Observateur...</option>
-                    <option v-for="obs in OBSERVER_TYPES" :key="obs.code" :value="obs.code">
+                    <option
+                      v-for="obs in OBSERVER_TYPES"
+                      :key="obs.code"
+                      :value="obs.code"
+                    >
                       {{ obs.icon }} {{ obs.code }} - {{ obs.label }}
                     </option>
                   </select>
-                  <select v-model="observationForms.list.ufoShape" class="input-field">
+                  <select
+                    v-model="observationForms.list.ufoShape"
+                    class="input-field"
+                  >
                     <option value="">Forme OVNI...</option>
-                    <option v-for="shape in UFO_SHAPES" :key="shape.code" :value="shape.code">
+                    <option
+                      v-for="shape in UFO_SHAPES"
+                      :key="shape.code"
+                      :value="shape.code"
+                    >
                       {{ shape.icon }} {{ shape.code }} - {{ shape.label }}
                     </option>
                   </select>
-                  <select v-model="observationForms.list.phenomenon" class="input-field">
+                  <select
+                    v-model="observationForms.list.phenomenon"
+                    class="input-field"
+                  >
                     <option value="">Phénomène...</option>
-                    <option v-for="pheno in PHENOMENA" :key="pheno.code" :value="pheno.code">
+                    <option
+                      v-for="pheno in PHENOMENA"
+                      :key="pheno.code"
+                      :value="pheno.code"
+                    >
                       {{ pheno.icon }} {{ pheno.code }} - {{ pheno.label }}
                     </option>
                   </select>
@@ -401,12 +443,18 @@
 
               <!-- Filtres booléens -->
               <div class="grid grid-cols-2 gap-2">
-                <select v-model="observationForms.list.hasCoordinates" class="input-field">
+                <select
+                  v-model="observationForms.list.hasCoordinates"
+                  class="input-field"
+                >
                   <option :value="null">Coordonnées GPS...</option>
                   <option :value="true">✅ Avec coordonnées</option>
                   <option :value="false">❌ Sans coordonnées</option>
                 </select>
-                <select v-model="observationForms.list.hasImages" class="input-field">
+                <select
+                  v-model="observationForms.list.hasImages"
+                  class="input-field"
+                >
                   <option :value="null">Images...</option>
                   <option :value="true">📷 Avec images</option>
                   <option :value="false">🚫 Sans images</option>
@@ -429,7 +477,9 @@
           <!-- Create Observation -->
           <div class="api-card">
             <h3 class="text-lg font-semibold mb-3">Créer une observation</h3>
-            <p class="text-xs text-gray-400 mb-3">Format Phenom Search compatible</p>
+            <p class="text-xs text-gray-400 mb-3">
+              Format Phenom Search compatible
+            </p>
             <div class="space-y-3 mb-3">
               <!-- Date et Heure -->
               <div class="p-2 bg-blue-900/20 rounded-lg">
@@ -467,9 +517,16 @@
                       placeholder="Pays"
                       class="input-field"
                     />
-                    <select v-model="observationForms.create.locale" class="input-field">
+                    <select
+                      v-model="observationForms.create.locale"
+                      class="input-field"
+                    >
                       <option value="">Type de lieu...</option>
-                      <option v-for="locale in LOCALE_TYPES" :key="locale.code" :value="locale.code">
+                      <option
+                        v-for="locale in LOCALE_TYPES"
+                        :key="locale.code"
+                        :value="locale.code"
+                      >
                         {{ locale.icon }} {{ locale.label }}
                       </option>
                     </select>
@@ -519,7 +576,9 @@
                 <p class="text-xs text-purple-400 mb-2">📊 Évaluation</p>
                 <div class="grid grid-cols-3 gap-2">
                   <div>
-                    <label class="text-xs text-gray-400">Crédibilité (0-15)</label>
+                    <label class="text-xs text-gray-400"
+                      >Crédibilité (0-15)</label
+                    >
                     <input
                       v-model.number="observationForms.create.credibility"
                       type="number"
@@ -529,7 +588,9 @@
                     />
                   </div>
                   <div>
-                    <label class="text-xs text-gray-400">Étrangeté (0-10)</label>
+                    <label class="text-xs text-gray-400"
+                      >Étrangeté (0-10)</label
+                    >
                     <input
                       v-model.number="observationForms.create.strangeness"
                       type="number"
@@ -556,14 +617,20 @@
                 <p class="text-xs text-orange-400 mb-2">🏷️ Classifications</p>
                 <div class="space-y-2">
                   <div>
-                    <label class="text-xs text-gray-400">Types d'observateurs</label>
+                    <label class="text-xs text-gray-400"
+                      >Types d'observateurs</label
+                    >
                     <select
                       v-model="observationForms.create.observerTypes"
                       multiple
                       class="input-field"
                       style="height: 80px"
                     >
-                      <option v-for="obs in OBSERVER_TYPES" :key="obs.code" :value="obs.code">
+                      <option
+                        v-for="obs in OBSERVER_TYPES"
+                        :key="obs.code"
+                        :value="obs.code"
+                      >
                         {{ obs.icon }} {{ obs.code }} - {{ obs.label }}
                       </option>
                     </select>
@@ -576,7 +643,11 @@
                       class="input-field"
                       style="height: 80px"
                     >
-                      <option v-for="shape in UFO_SHAPES" :key="shape.code" :value="shape.code">
+                      <option
+                        v-for="shape in UFO_SHAPES"
+                        :key="shape.code"
+                        :value="shape.code"
+                      >
                         {{ shape.icon }} {{ shape.code }} - {{ shape.label }}
                       </option>
                     </select>
@@ -589,19 +660,25 @@
                       class="input-field"
                       style="height: 100px"
                     >
-                      <option v-for="pheno in PHENOMENA" :key="pheno.code" :value="pheno.code">
+                      <option
+                        v-for="pheno in PHENOMENA"
+                        :key="pheno.code"
+                        :value="pheno.code"
+                      >
                         {{ pheno.icon }} {{ pheno.code }} - {{ pheno.label }}
                       </option>
                     </select>
                   </div>
-                  <p class="text-xs text-gray-500">💡 Ctrl+clic pour sélectionner plusieurs</p>
+                  <p class="text-xs text-gray-500">
+                    💡 Ctrl+clic pour sélectionner plusieurs
+                  </p>
                 </div>
               </div>
 
               <!-- Upload d'image OU génération IA -->
               <div class="space-y-2">
                 <label class="text-sm text-gray-400">📷 Image</label>
-                
+
                 <!-- Toggle entre upload et IA -->
                 <div class="flex gap-2 mb-2">
                   <button
@@ -611,19 +688,23 @@
                       'flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                       !observationForms.create.generateAiImage
                         ? 'bg-violet-600 text-white'
-                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600',
                     ]"
                   >
                     📷 Upload photo
                   </button>
                   <button
                     type="button"
-                    @click="observationForms.create.generateAiImage = true; observationForms.create.imageFile = null; observationForms.create.imagePreview = null;"
+                    @click="
+                      observationForms.create.generateAiImage = true;
+                      observationForms.create.imageFile = null;
+                      observationForms.create.imagePreview = null;
+                    "
                     :class="[
                       'flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                       observationForms.create.generateAiImage
                         ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
-                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600',
                     ]"
                   >
                     🤖 Générer par IA
@@ -652,12 +733,18 @@
                 </div>
 
                 <!-- Info génération IA -->
-                <div v-else class="p-3 bg-gradient-to-r from-purple-900/30 to-pink-900/30 border border-purple-500/30 rounded-lg">
+                <div
+                  v-else
+                  class="p-3 bg-gradient-to-r from-purple-900/30 to-pink-900/30 border border-purple-500/30 rounded-lg"
+                >
                   <p class="text-purple-200 text-sm">
-                    ✨ <strong>Génération IA avec Gemini</strong><br/>
+                    ✨ <strong>Génération IA avec Gemini</strong><br />
                     <span class="text-xs text-purple-300">
-                      Une illustration sera automatiquement générée à partir de la description et des phénomènes sélectionnés.
-                      L'image sera marquée avec <code class="bg-black/30 px-1 rounded">source: 'ai'</code>.
+                      Une illustration sera automatiquement générée à partir de
+                      la description et des phénomènes sélectionnés. L'image
+                      sera marquée avec
+                      <code class="bg-black/30 px-1 rounded">source: 'ai'</code
+                      >.
                     </span>
                   </p>
                 </div>
@@ -666,10 +753,16 @@
             <button
               @click="createObservation"
               class="btn-primary mb-3 w-full"
-              :disabled="(!observationForms.create.imageFile && !observationForms.create.generateAiImage) || !currentUser"
+              :disabled="
+                (!observationForms.create.imageFile &&
+                  !observationForms.create.generateAiImage) ||
+                !currentUser
+              "
               :class="{
                 'opacity-50 cursor-not-allowed':
-                  (!observationForms.create.imageFile && !observationForms.create.generateAiImage) || !currentUser,
+                  (!observationForms.create.imageFile &&
+                    !observationForms.create.generateAiImage) ||
+                  !currentUser,
               }"
             >
               <span v-if="observationForms.create.generateAiImage">
@@ -678,9 +771,7 @@
               <span v-else-if="observationForms.create.imageFile">
                 Créer l'observation
               </span>
-              <span v-else>
-                Sélectionnez une photo ou activez l'IA
-              </span>
+              <span v-else> Sélectionnez une photo ou activez l'IA </span>
             </button>
             <p v-if="!currentUser" class="text-yellow-400 text-sm mb-3">
               ⚠️ Vous devez être connecté pour créer une observation
@@ -714,7 +805,9 @@
           <!-- Update Observation -->
           <div class="api-card">
             <h3 class="text-lg font-semibold mb-3">Modifier une observation</h3>
-            <p class="text-xs text-gray-400 mb-3">Format Phenom Search compatible</p>
+            <p class="text-xs text-gray-400 mb-3">
+              Format Phenom Search compatible
+            </p>
             <div class="space-y-3 mb-3">
               <input
                 v-model="observationForms.update.id"
@@ -759,9 +852,16 @@
                       placeholder="Pays"
                       class="input-field"
                     />
-                    <select v-model="observationForms.update.locale" class="input-field">
+                    <select
+                      v-model="observationForms.update.locale"
+                      class="input-field"
+                    >
                       <option value="">Type de lieu...</option>
-                      <option v-for="locale in LOCALE_TYPES" :key="locale.code" :value="locale.code">
+                      <option
+                        v-for="locale in LOCALE_TYPES"
+                        :key="locale.code"
+                        :value="locale.code"
+                      >
                         {{ locale.icon }} {{ locale.label }}
                       </option>
                     </select>
@@ -798,7 +898,9 @@
                 <p class="text-xs text-purple-400 mb-2">📊 Évaluation</p>
                 <div class="grid grid-cols-3 gap-2">
                   <div>
-                    <label class="text-xs text-gray-400">Crédibilité (0-15)</label>
+                    <label class="text-xs text-gray-400"
+                      >Crédibilité (0-15)</label
+                    >
                     <input
                       v-model.number="observationForms.update.credibility"
                       type="number"
@@ -808,7 +910,9 @@
                     />
                   </div>
                   <div>
-                    <label class="text-xs text-gray-400">Étrangeté (0-10)</label>
+                    <label class="text-xs text-gray-400"
+                      >Étrangeté (0-10)</label
+                    >
                     <input
                       v-model.number="observationForms.update.strangeness"
                       type="number"
@@ -835,14 +939,20 @@
                 <p class="text-xs text-orange-400 mb-2">🏷️ Classifications</p>
                 <div class="space-y-2">
                   <div>
-                    <label class="text-xs text-gray-400">Types d'observateurs</label>
+                    <label class="text-xs text-gray-400"
+                      >Types d'observateurs</label
+                    >
                     <select
                       v-model="observationForms.update.observerTypes"
                       multiple
                       class="input-field"
                       style="height: 80px"
                     >
-                      <option v-for="obs in OBSERVER_TYPES" :key="obs.code" :value="obs.code">
+                      <option
+                        v-for="obs in OBSERVER_TYPES"
+                        :key="obs.code"
+                        :value="obs.code"
+                      >
                         {{ obs.icon }} {{ obs.code }} - {{ obs.label }}
                       </option>
                     </select>
@@ -855,7 +965,11 @@
                       class="input-field"
                       style="height: 80px"
                     >
-                      <option v-for="shape in UFO_SHAPES" :key="shape.code" :value="shape.code">
+                      <option
+                        v-for="shape in UFO_SHAPES"
+                        :key="shape.code"
+                        :value="shape.code"
+                      >
                         {{ shape.icon }} {{ shape.code }} - {{ shape.label }}
                       </option>
                     </select>
@@ -868,12 +982,18 @@
                       class="input-field"
                       style="height: 100px"
                     >
-                      <option v-for="pheno in PHENOMENA" :key="pheno.code" :value="pheno.code">
+                      <option
+                        v-for="pheno in PHENOMENA"
+                        :key="pheno.code"
+                        :value="pheno.code"
+                      >
                         {{ pheno.icon }} {{ pheno.code }} - {{ pheno.label }}
                       </option>
                     </select>
                   </div>
-                  <p class="text-xs text-gray-500">💡 Ctrl+clic pour sélectionner plusieurs</p>
+                  <p class="text-xs text-gray-500">
+                    💡 Ctrl+clic pour sélectionner plusieurs
+                  </p>
                 </div>
               </div>
             </div>
@@ -908,11 +1028,10 @@
 
           <!-- Generate AI Image -->
           <div class="api-card">
-            <h3 class="text-lg font-semibold mb-3">
-              🤖 Générer une image IA
-            </h3>
+            <h3 class="text-lg font-semibold mb-3">🤖 Générer une image IA</h3>
             <p class="text-sm text-gray-400 mb-3">
-              Génère une image IA pour une observation existante sans image, basée sur son titre, description et type.
+              Génère une image IA pour une observation existante sans image,
+              basée sur son titre, description et type.
             </p>
             <div class="space-y-2 mb-3">
               <input
@@ -922,8 +1041,8 @@
                 class="input-field"
               />
             </div>
-            <button 
-              @click="generateAiImageForObservation" 
+            <button
+              @click="generateAiImageForObservation"
               class="btn-primary mb-3 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700"
               :disabled="aiImageLoading"
             >
@@ -1898,11 +2017,16 @@ async function createObservation() {
 
     // Validation
     if (!useAiImage && !observationForms.value.create.imageFile) {
-      results.value.createObservation = { error: "Une photo est requise (ou activez la génération IA)" };
+      results.value.createObservation = {
+        error: "Une photo est requise (ou activez la génération IA)",
+      };
       return;
     }
 
-    if (!observationForms.value.create.description || observationForms.value.create.description.length < 10) {
+    if (
+      !observationForms.value.create.description ||
+      observationForms.value.create.description.length < 10
+    ) {
       results.value.createObservation = {
         error: "La description doit contenir au moins 10 caractères",
       };
@@ -1911,7 +2035,9 @@ async function createObservation() {
 
     // Étape 1: Créer l'observation
     results.value.createObservation = {
-      status: useAiImage ? "🤖 Création de l'observation + génération IA en cours..." : "Création de l'observation...",
+      status: useAiImage
+        ? "🤖 Création de l'observation + génération IA en cours..."
+        : "Création de l'observation...",
     };
 
     // Format Phenom Search
@@ -1945,7 +2071,8 @@ async function createObservation() {
       observationData.duration = observationForms.value.create.duration;
     }
     if (observationForms.value.create.observerTypes?.length > 0) {
-      observationData.observerTypes = observationForms.value.create.observerTypes;
+      observationData.observerTypes =
+        observationForms.value.create.observerTypes;
     }
     if (observationForms.value.create.ufoShapes?.length > 0) {
       observationData.ufoShapes = observationForms.value.create.ufoShapes;
@@ -1953,7 +2080,10 @@ async function createObservation() {
     if (observationForms.value.create.phenomena?.length > 0) {
       observationData.phenomena = observationForms.value.create.phenomena;
     }
-    if (observationForms.value.create.latitude && observationForms.value.create.longitude) {
+    if (
+      observationForms.value.create.latitude &&
+      observationForms.value.create.longitude
+    ) {
       observationData.coordinates = {
         lat: observationForms.value.create.latitude,
         lng: observationForms.value.create.longitude,

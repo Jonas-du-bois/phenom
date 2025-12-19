@@ -233,18 +233,24 @@ export const getObservationCoordinates = (observation) => {
   if (!observation) return null;
 
   // Format backend: coordinates.lat et coordinates.lng
-  if (observation.coordinates?.lat != null && observation.coordinates?.lng != null) {
+  if (
+    observation.coordinates?.lat != null &&
+    observation.coordinates?.lng != null
+  ) {
     return {
       lat: observation.coordinates.lat,
-      lng: observation.coordinates.lng
+      lng: observation.coordinates.lng,
     };
   }
 
   // Format GeoJSON: location.coordinates [lng, lat]
-  if (Array.isArray(observation.location?.coordinates) && observation.location.coordinates.length >= 2) {
+  if (
+    Array.isArray(observation.location?.coordinates) &&
+    observation.location.coordinates.length >= 2
+  ) {
     return {
       lat: observation.location.coordinates[1],
-      lng: observation.location.coordinates[0]
+      lng: observation.location.coordinates[0],
     };
   }
 

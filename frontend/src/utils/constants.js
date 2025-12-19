@@ -51,7 +51,12 @@ export const STRANGENESS_SCALE = {
     UNUSUAL: { min: 3, max: 4, label: "Inhabituel", color: "indigo" },
     STRANGE: { min: 5, max: 6, label: "Étrange", color: "purple" },
     VERY_STRANGE: { min: 7, max: 8, label: "Très étrange", color: "pink" },
-    EXTRAORDINARY: { min: 9, max: 10, label: "Extraordinaire", color: "fuchsia" },
+    EXTRAORDINARY: {
+      min: 9,
+      max: 10,
+      label: "Extraordinaire",
+      color: "fuchsia",
+    },
   },
 };
 

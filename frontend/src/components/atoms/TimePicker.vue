@@ -4,36 +4,36 @@
  * Design System: Phenom Search
  */
 
-defineOptions({ name: 'TimePicker' })
+defineOptions({ name: "TimePicker" });
 
 const props = defineProps({
   modelValue: {
     type: String,
-    default: ''
+    default: "",
   },
   label: {
     type: String,
-    default: ''
+    default: "",
   },
   error: {
     type: String,
-    default: ''
+    default: "",
   },
   disabled: {
     type: Boolean,
-    default: false
+    default: false,
   },
   required: {
     type: Boolean,
-    default: false
-  }
-})
+    default: false,
+  },
+});
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(["update:modelValue"]);
 
 const handleInput = (e) => {
-  emit('update:modelValue', e.target.value)
-}
+  emit("update:modelValue", e.target.value);
+};
 </script>
 
 <template>
@@ -46,7 +46,7 @@ const handleInput = (e) => {
       {{ label }}
       <span v-if="required" class="text-[#00F0FF]">*</span>
     </label>
-    
+
     <!-- Time Input -->
     <div class="relative">
       <input
@@ -60,17 +60,14 @@ const handleInput = (e) => {
           'transition-all duration-200',
           '[color-scheme:dark]',
           error ? 'border-red-500/50' : 'border-white/10',
-          { 'opacity-50 cursor-not-allowed': disabled }
+          { 'opacity-50 cursor-not-allowed': disabled },
         ]"
         @input="handleInput"
       />
     </div>
-    
+
     <!-- Error Message -->
-    <p
-      v-if="error"
-      class="mt-2 text-xs text-red-500"
-    >
+    <p v-if="error" class="mt-2 text-xs text-red-500">
       {{ error }}
     </p>
   </div>

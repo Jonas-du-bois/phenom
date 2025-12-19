@@ -12,21 +12,25 @@ export const imageService = {
     const response = await apiClient.post(
       `/observations/${observationId}/images`,
       formData,
-      { headers: { "Content-Type": "multipart/form-data" } }
+      { headers: { "Content-Type": "multipart/form-data" } },
     );
     return response.data;
   },
 
   /** GET /observations/:id/images */
   async list(observationId) {
-    const response = await apiClient.get(`/observations/${observationId}/images`);
+    const response = await apiClient.get(
+      `/observations/${observationId}/images`,
+    );
     return response.data;
   },
 
   /** DELETE /observations/:id/images/:publicId */
   async delete(observationId, publicId) {
     const encodedId = encodeURIComponent(publicId);
-    const response = await apiClient.delete(`/observations/${observationId}/images/${encodedId}`);
+    const response = await apiClient.delete(
+      `/observations/${observationId}/images/${encodedId}`,
+    );
     return response.data;
   },
 };

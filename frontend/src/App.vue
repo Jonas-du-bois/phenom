@@ -9,23 +9,23 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { AppLayout } from './components/layout'
-import { useAuthStore } from './stores/auth'
+import { computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { AppLayout } from "./components/layout";
+import { useAuthStore } from "./stores/auth";
 
-const router = useRouter()
-const authStore = useAuthStore()
+const router = useRouter();
+const authStore = useAuthStore();
 
 // Masquer la navbar sur certaines routes
 const showTabBar = computed(() => {
-  const routePath = router.currentRoute.value.path
-  const hiddenRoutes = ['/login', '/signup', '/auth', '/camera', '/old-home']
-  return !hiddenRoutes.includes(routePath)
-})
+  const routePath = router.currentRoute.value.path;
+  const hiddenRoutes = ["/login", "/signup", "/auth", "/camera", "/old-home"];
+  return !hiddenRoutes.includes(routePath);
+});
 
 // Initialiser l'authentification au démarrage
 onMounted(async () => {
-  await authStore.initialize()
-})
+  await authStore.initialize();
+});
 </script>

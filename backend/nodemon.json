@@ -1,0 +1,10 @@
+{
+  "watch": ["src", "scripts"],
+  "ext": "js,json",
+  "ignore": [
+    "coverage/**",
+    "uploads/**",
+    "node_modules/**"
+  ],
+  "legacyWatch": true
+}

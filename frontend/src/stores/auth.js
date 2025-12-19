@@ -5,7 +5,14 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { authService } from "../services/authService";
-import { saveAuthToken, getAuthToken, removeAuthToken, saveUserData, getUserData, removeUserData } from "../utils/storage";
+import {
+  saveAuthToken,
+  getAuthToken,
+  removeAuthToken,
+  saveUserData,
+  getUserData,
+  removeUserData,
+} from "../utils/storage";
 
 export const useAuthStore = defineStore("auth", () => {
   // État
@@ -26,7 +33,7 @@ export const useAuthStore = defineStore("auth", () => {
    */
   const initialize = async () => {
     if (initialized.value) return;
-    
+
     if (token.value) {
       try {
         await fetchUser();
@@ -47,13 +54,13 @@ export const useAuthStore = defineStore("auth", () => {
 
       const response = await authService.login(credentials);
       const { user: userData, accessToken } = response.data;
-      
+
       // Stocker le token et l'utilisateur
       token.value = accessToken;
       user.value = userData;
       saveAuthToken(accessToken);
       saveUserData(userData);
-      
+
       return { success: true };
     } catch (err) {
       error.value = err.response?.data?.message || "Erreur de connexion";
@@ -73,12 +80,12 @@ export const useAuthStore = defineStore("auth", () => {
 
       const response = await authService.register(userData);
       const { user: newUser, accessToken } = response.data;
-      
+
       token.value = accessToken;
       user.value = newUser;
       saveAuthToken(accessToken);
       saveUserData(newUser);
-      
+
       return { success: true };
     } catch (err) {
       error.value = err.response?.data?.message || "Erreur d'inscription";
@@ -106,7 +113,7 @@ export const useAuthStore = defineStore("auth", () => {
    */
   const fetchUser = async () => {
     if (!token.value) return null;
-    
+
     try {
       loading.value = true;
       const response = await authService.getProfile();
@@ -141,13 +148,13 @@ export const useAuthStore = defineStore("auth", () => {
     loading,
     error,
     initialized,
-    
+
     // Computed
     isAuthenticated,
     isAdmin,
     userName,
     userAvatar,
-    
+
     // Actions
     initialize,
     login,

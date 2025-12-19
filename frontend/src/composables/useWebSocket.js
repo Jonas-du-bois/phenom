@@ -16,7 +16,9 @@ export function useWebSocket() {
 
   // URL du WebSocket - VITE_WS_URL est passé par Docker, sinon fallback sur LOCAL pour dev Vite
   const WS_URL =
-    import.meta.env.VITE_WS_URL || import.meta.env.VITE_WS_URL_LOCAL || "ws://localhost:3000";
+    import.meta.env.VITE_WS_URL ||
+    import.meta.env.VITE_WS_URL_LOCAL ||
+    "ws://localhost:3000";
 
   /**
    * Connexion au WebSocket avec WsMini WSClient

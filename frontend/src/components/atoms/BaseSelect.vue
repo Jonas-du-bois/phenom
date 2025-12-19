@@ -4,45 +4,45 @@
  * Design System: Phenom Search
  */
 
-defineOptions({ name: 'BaseSelect' })
+defineOptions({ name: "BaseSelect" });
 
 const props = defineProps({
   modelValue: {
     type: [String, Number],
-    default: ''
+    default: "",
   },
   options: {
     type: Array,
-    required: true
+    required: true,
     // Format: [{ value: 'value', label: 'Label' }]
   },
   label: {
     type: String,
-    default: ''
+    default: "",
   },
   placeholder: {
     type: String,
-    default: 'Sélectionner...'
+    default: "Sélectionner...",
   },
   error: {
     type: String,
-    default: ''
+    default: "",
   },
   disabled: {
     type: Boolean,
-    default: false
+    default: false,
   },
   required: {
     type: Boolean,
-    default: false
-  }
-})
+    default: false,
+  },
+});
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(["update:modelValue"]);
 
 const handleChange = (e) => {
-  emit('update:modelValue', e.target.value)
-}
+  emit("update:modelValue", e.target.value);
+};
 </script>
 
 <template>
@@ -55,7 +55,7 @@ const handleChange = (e) => {
       {{ label }}
       <span v-if="required" class="text-[#00F0FF]">*</span>
     </label>
-    
+
     <!-- Select Container -->
     <div class="relative">
       <select
@@ -68,7 +68,7 @@ const handleChange = (e) => {
           'focus:outline-none focus:border-[#00F0FF] focus:ring-1 focus:ring-[#00F0FF]/20',
           'transition-all duration-200',
           error ? 'border-red-500/50' : 'border-white/10',
-          { 'opacity-50 cursor-not-allowed': disabled }
+          { 'opacity-50 cursor-not-allowed': disabled },
         ]"
         @change="handleChange"
       >
@@ -84,20 +84,25 @@ const handleChange = (e) => {
           {{ option.label }}
         </option>
       </select>
-      
+
       <!-- Chevron Icon -->
-      <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/40">
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <div
+        class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/40"
+      >
+        <svg
+          class="w-4 h-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
           <path d="M6 9l6 6 6-6" />
         </svg>
       </div>
     </div>
-    
+
     <!-- Error Message -->
-    <p
-      v-if="error"
-      class="mt-2 text-xs text-red-500"
-    >
+    <p v-if="error" class="mt-2 text-xs text-red-500">
       {{ error }}
     </p>
   </div>

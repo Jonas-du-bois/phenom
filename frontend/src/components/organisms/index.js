@@ -1,11 +1,11 @@
 // Organisms - Complex components combining molecules
-export { default as BottomTabBar } from './BottomTabBar.vue'
-export { default as PageHeader } from './PageHeader.vue'
-export { default as FilterPanel } from './FilterPanel.vue'
-export { default as SearchBar } from './SearchBar.vue'
-export { default as ObservationList } from './ObservationList.vue'
-export { default as CommentList } from './CommentList.vue'
-export { default as ObservationForm } from './ObservationForm.vue'
-export { default as LoginForm } from './LoginForm.vue'
-export { default as SignupForm } from './SignupForm.vue'
-export { default as ObservationMap } from './ObservationMap.vue'
+export { default as BottomTabBar } from "./BottomTabBar.vue";
+export { default as PageHeader } from "./PageHeader.vue";
+export { default as FilterPanel } from "./FilterPanel.vue";
+export { default as SearchBar } from "./SearchBar.vue";
+export { default as ObservationList } from "./ObservationList.vue";
+export { default as CommentList } from "./CommentList.vue";
+export { default as ObservationForm } from "./ObservationForm.vue";
+export { default as LoginForm } from "./LoginForm.vue";
+export { default as SignupForm } from "./SignupForm.vue";
+export { default as ObservationMap } from "./ObservationMap.vue";

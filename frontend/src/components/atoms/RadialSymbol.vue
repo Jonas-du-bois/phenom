@@ -4,47 +4,47 @@
  * Design System: Phenom Search
  */
 
-defineOptions({ name: 'RadialSymbol' })
+defineOptions({ name: "RadialSymbol" });
 
 const props = defineProps({
   size: {
     type: Number,
-    default: 200
+    default: 200,
   },
   rays: {
     type: Number,
-    default: 24
+    default: 24,
   },
   color: {
     type: String,
-    default: '#00F0FF'
+    default: "#00F0FF",
   },
   opacity: {
     type: Number,
-    default: 0.2
-  }
-})
+    default: 0.2,
+  },
+});
 
 // Générer les rayons
 const rayPaths = computed(() => {
-  const paths = []
-  const centerX = props.size / 2
-  const centerY = props.size / 2
-  const innerRadius = props.size * 0.15
-  const outerRadius = props.size * 0.45
-  
+  const paths = [];
+  const centerX = props.size / 2;
+  const centerY = props.size / 2;
+  const innerRadius = props.size * 0.15;
+  const outerRadius = props.size * 0.45;
+
   for (let i = 0; i < props.rays; i++) {
-    const angle = (i * 2 * Math.PI) / props.rays - Math.PI / 2
-    const x1 = centerX + innerRadius * Math.cos(angle)
-    const y1 = centerY + innerRadius * Math.sin(angle)
-    const x2 = centerX + outerRadius * Math.cos(angle)
-    const y2 = centerY + outerRadius * Math.sin(angle)
-    
-    paths.push(`M ${x1} ${y1} L ${x2} ${y2}`)
+    const angle = (i * 2 * Math.PI) / props.rays - Math.PI / 2;
+    const x1 = centerX + innerRadius * Math.cos(angle);
+    const y1 = centerY + innerRadius * Math.sin(angle);
+    const x2 = centerX + outerRadius * Math.cos(angle);
+    const y2 = centerY + outerRadius * Math.sin(angle);
+
+    paths.push(`M ${x1} ${y1} L ${x2} ${y2}`);
   }
-  
-  return paths
-})
+
+  return paths;
+});
 </script>
 
 <template>
@@ -64,7 +64,7 @@ const rayPaths = computed(() => {
       stroke-width="1"
       fill="none"
     />
-    
+
     <!-- Rays -->
     <path
       v-for="(path, index) in rayPaths"
@@ -74,7 +74,7 @@ const rayPaths = computed(() => {
       stroke-width="1"
       stroke-linecap="round"
     />
-    
+
     <!-- Outer circle -->
     <circle
       :cx="size / 2"

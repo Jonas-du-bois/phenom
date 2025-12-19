@@ -1,63 +1,63 @@
 <script setup>
-import { computed } from 'vue'
+import { computed } from "vue";
 
 /**
  * TextArea - Zone de texte multi-ligne
  * Design System: Phenom Search
  */
 
-defineOptions({ name: 'TextArea' })
+defineOptions({ name: "TextArea" });
 
 const props = defineProps({
   modelValue: {
     type: String,
-    default: ''
+    default: "",
   },
   label: {
     type: String,
-    default: ''
+    default: "",
   },
   placeholder: {
     type: String,
-    default: ''
+    default: "",
   },
   error: {
     type: String,
-    default: ''
+    default: "",
   },
   disabled: {
     type: Boolean,
-    default: false
+    default: false,
   },
   required: {
     type: Boolean,
-    default: false
+    default: false,
   },
   rows: {
     type: Number,
-    default: 4
+    default: 4,
   },
   maxlength: {
     type: Number,
-    default: null
+    default: null,
   },
   minlength: {
     type: Number,
-    default: null
+    default: null,
   },
   showCount: {
     type: Boolean,
-    default: false
-  }
-})
+    default: false,
+  },
+});
 
-const emit = defineEmits(['update:modelValue', 'blur', 'focus'])
+const emit = defineEmits(["update:modelValue", "blur", "focus"]);
 
 const handleInput = (e) => {
-  emit('update:modelValue', e.target.value)
-}
+  emit("update:modelValue", e.target.value);
+};
 
-const charCount = computed(() => props.modelValue?.length || 0)
+const charCount = computed(() => props.modelValue?.length || 0);
 </script>
 
 <template>
@@ -70,7 +70,7 @@ const charCount = computed(() => props.modelValue?.length || 0)
       {{ label }}
       <span v-if="required" class="text-[#00F0FF]">*</span>
     </label>
-    
+
     <!-- Textarea -->
     <textarea
       :value="modelValue"
@@ -86,30 +86,27 @@ const charCount = computed(() => props.modelValue?.length || 0)
         'focus:outline-none focus:border-[#00F0FF] focus:ring-1 focus:ring-[#00F0FF]/20',
         'transition-all duration-200',
         error ? 'border-red-500/50' : 'border-white/10',
-        { 'opacity-50 cursor-not-allowed': disabled }
+        { 'opacity-50 cursor-not-allowed': disabled },
       ]"
       @input="handleInput"
       @blur="emit('blur', $event)"
       @focus="emit('focus', $event)"
     />
-    
+
     <!-- Footer -->
     <div class="flex items-center justify-between mt-2">
       <!-- Error Message -->
-      <p
-        v-if="error"
-        class="text-xs text-red-500"
-      >
+      <p v-if="error" class="text-xs text-red-500">
         {{ error }}
       </p>
       <span v-else />
-      
+
       <!-- Character Count -->
       <p
         v-if="showCount && maxlength"
         :class="[
           'text-xs',
-          charCount >= maxlength ? 'text-red-500' : 'text-white/40'
+          charCount >= maxlength ? 'text-red-500' : 'text-white/40',
         ]"
       >
         {{ charCount }}/{{ maxlength }}

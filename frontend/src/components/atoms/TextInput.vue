@@ -4,48 +4,48 @@
  * Design System: Phenom Search
  */
 
-defineOptions({ name: 'TextInput' })
+defineOptions({ name: "TextInput" });
 
 const props = defineProps({
   modelValue: {
     type: [String, Number],
-    default: ''
+    default: "",
   },
   type: {
     type: String,
-    default: 'text'
+    default: "text",
   },
   label: {
     type: String,
-    default: ''
+    default: "",
   },
   placeholder: {
     type: String,
-    default: ''
+    default: "",
   },
   error: {
     type: String,
-    default: ''
+    default: "",
   },
   disabled: {
     type: Boolean,
-    default: false
+    default: false,
   },
   required: {
     type: Boolean,
-    default: false
+    default: false,
   },
   autocomplete: {
     type: String,
-    default: 'off'
-  }
-})
+    default: "off",
+  },
+});
 
-const emit = defineEmits(['update:modelValue', 'blur', 'focus'])
+const emit = defineEmits(["update:modelValue", "blur", "focus"]);
 
 const handleInput = (e) => {
-  emit('update:modelValue', e.target.value)
-}
+  emit("update:modelValue", e.target.value);
+};
 </script>
 
 <template>
@@ -58,7 +58,7 @@ const handleInput = (e) => {
       {{ label }}
       <span v-if="required" class="text-[#00F0FF]">*</span>
     </label>
-    
+
     <!-- Input Container -->
     <div class="relative">
       <!-- Left Icon Slot -->
@@ -68,7 +68,7 @@ const handleInput = (e) => {
       >
         <slot name="leftIcon" />
       </div>
-      
+
       <!-- Input -->
       <input
         :type="type"
@@ -85,13 +85,13 @@ const handleInput = (e) => {
           $slots.leftIcon ? 'pl-10 pr-4' : 'px-4',
           $slots.rightIcon ? 'pr-10' : '',
           error ? 'border-red-500/50' : 'border-white/10',
-          { 'opacity-50 cursor-not-allowed': disabled }
+          { 'opacity-50 cursor-not-allowed': disabled },
         ]"
         @input="handleInput"
         @blur="emit('blur', $event)"
         @focus="emit('focus', $event)"
       />
-      
+
       <!-- Right Icon Slot -->
       <div
         v-if="$slots.rightIcon"
@@ -100,12 +100,9 @@ const handleInput = (e) => {
         <slot name="rightIcon" />
       </div>
     </div>
-    
+
     <!-- Error Message -->
-    <p
-      v-if="error"
-      class="mt-2 text-xs text-red-500"
-    >
+    <p v-if="error" class="mt-2 text-xs text-red-500">
       {{ error }}
     </p>
   </div>

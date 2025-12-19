@@ -17,7 +17,7 @@ export function useToast() {
    */
   const show = (message, type = "info", duration = 4000) => {
     const id = ++toastId;
-    
+
     const toast = {
       id,
       message,
@@ -25,16 +25,16 @@ export function useToast() {
       visible: true,
       createdAt: Date.now(),
     };
-    
+
     toasts.value.push(toast);
-    
+
     // Auto-dismiss
     if (duration > 0) {
       setTimeout(() => {
         dismiss(id);
       }, duration);
     }
-    
+
     return id;
   };
 
@@ -77,9 +77,9 @@ export function useToast() {
       success: successMsg = "Succès !",
       error: errorMsg = "Erreur",
     } = messages;
-    
+
     const id = show(loading, "info", 0);
-    
+
     try {
       const result = await promiseFn();
       dismiss(id);
