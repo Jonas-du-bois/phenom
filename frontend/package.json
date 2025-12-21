@@ -21,6 +21,7 @@
     "pinia": "^2.3.1",
     "vue": "^3.4.15",
     "vue-router": "^4.6.2",
+    "vue-advanced-cropper": "*",
     "wsmini": "^1.2.0"
   },
   "devDependencies": {

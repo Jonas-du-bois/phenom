@@ -17,3 +17,12 @@ app.use(router);
 
 // Monter l'application
 app.mount("#app");
+
+// Enregistrer le service worker (si supporté)
+if ('serviceWorker' in navigator) {
+	window.addEventListener('load', () => {
+		navigator.serviceWorker.register('/service-worker.js').catch((err) => {
+			console.warn('Service worker registration failed:', err);
+		});
+	});
+}

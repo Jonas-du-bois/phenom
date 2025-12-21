@@ -108,7 +108,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import { ObservationCard } from "@/components/molecules";
 import { LoadingSpinner, EmptyState } from "@/components/atoms";
@@ -162,6 +162,7 @@ let startY = 0;
 let currentY = 0;
 let touchStarted = false;
 let observer = null;
+let intersectionDebounce = null;
 
 const PULL_THRESHOLD = 80; // Distance to trigger refresh
 const PULL_MAX_DISTANCE = 120; // Max visual distance
@@ -204,25 +205,62 @@ const handleTouchEnd = () => {
 };
 
 // Intersection observer for infinite scroll
-onMounted(() => {
-  if (props.hasMore && loadMoreRef.value) {
-    observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !props.loadingMore) {
-          emit("load-more");
-        }
-      },
-      { threshold: 0.1 },
-    );
-    observer.observe(loadMoreRef.value);
+// Create an IntersectionObserver and re-create it when `hasMore` or the ref changes.
+const setupObserver = () => {
+  // cleanup previous observer
+  if (observer) {
+    try {
+      observer.disconnect();
+    } catch (e) {}
+    observer = null;
   }
+
+  if (!props.hasMore || !loadMoreRef.value) return;
+
+  observer = new IntersectionObserver(
+    (entries) => {
+      if (entries[0].isIntersecting && !props.loadingMore) {
+        // debounce rapid intersections
+        if (intersectionDebounce) clearTimeout(intersectionDebounce);
+        intersectionDebounce = setTimeout(() => {
+          emit("load-more");
+          intersectionDebounce = null;
+        }, 200);
+      }
+    },
+    { threshold: 0.1, rootMargin: "200px 0px" },
+  );
+
+  try {
+    observer.observe(loadMoreRef.value);
+  } catch (e) {}
+};
+
+onMounted(() => {
+  setupObserver();
 });
 
 onUnmounted(() => {
   if (observer) {
-    observer.disconnect();
+    try {
+      observer.disconnect();
+    } catch (e) {}
+    observer = null;
+  }
+  if (intersectionDebounce) {
+    clearTimeout(intersectionDebounce);
+    intersectionDebounce = null;
   }
 });
+
+// Recreate observer when hasMore flag or the ref element changes
+watch(
+  [() => props.hasMore, () => loadMoreRef.value],
+  () => {
+    // small delay to allow DOM to settle
+    setTimeout(() => setupObserver(), 50);
+  },
+);
 
 const handleClick = (observation) => {
   emit("click", observation);
