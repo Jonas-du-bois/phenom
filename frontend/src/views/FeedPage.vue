@@ -351,6 +351,10 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.feed-page {
+  margin-top: 3.5rem;
+}
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;

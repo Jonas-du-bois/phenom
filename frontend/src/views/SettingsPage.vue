@@ -60,6 +60,28 @@
           @confirm="onAvatarConfirm"
           @cancel="onAvatarCancel"
         />
+        <EditProfileModal
+          v-if="showEditProfileModal"
+          :name="user?.username"
+          :bio="user?.bio"
+          @confirm="onEditProfileConfirm"
+          @cancel="onEditProfileCancel"
+        />
+
+        <ChangePasswordModal
+          v-if="showChangePasswordModal"
+          @confirm="onChangePasswordConfirm"
+          @cancel="onChangePasswordCancel"
+        />
+        <AlertRadiusModal
+          v-if="showAlertRadiusModal"
+          :value="settings.alertRadius"
+          :min="1"
+          :max="200"
+          @update:value="(v) => (settings.alertRadius = v)"
+          @confirm="onAlertRadiusConfirm"
+          @cancel="onAlertRadiusCancel"
+        />
         <!-- Pending cropped preview -->
         <div v-if="pendingCropped" class="mt-4 flex items-center gap-4">
           <div
@@ -73,7 +95,7 @@
           </div>
           <div class="flex gap-2">
             <BaseButton variant="primary" @click="uploadPendingAvatar"
-              >Téléverser</BaseButton
+              >Confirmer</BaseButton
             >
             <BaseButton variant="ghost" @click="cancelPendingAvatar"
               >Annuler</BaseButton
@@ -84,6 +106,24 @@
 
       <!-- Settings sections -->
       <div class="divide-y divide-white/10">
+
+        <!-- installing button-->
+        <!-- Bouton d'installation PWA (visible uniquement sur cette page) -->
+        <div class="px-4 py-3">
+          <button
+            v-if="showInstallButton"
+            type="button"
+            class="w-full text-left text-white bg-gradient-to-r from-[#00F0FF] to-[#0066FF] rounded-md shadow-md px-4 py-3 flex items-center"
+            @click="promptInstall"
+            aria-label="Installer l'application"
+          >
+            <svg class="w-4 h-4 mr-3 text-white animate-spin" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+            </svg>
+            <span class="font-medium">Installer l'application</span>
+          </button>
+        </div>
         <!-- Account -->
         <div class="px-4 py-3">
           <h3 class="text-xs text-white/40 uppercase tracking-wider mb-3">
@@ -114,28 +154,13 @@
               </div>
             </button>
 
-            <button
-              @click="editEmail"
-              class="w-full flex items-center justify-between py-3 text-white"
-            >
+            
               <span>Email</span>
               <div class="flex items-center gap-2 text-white/40">
-                <span>{{ user?.email }}</span>
-                <svg
-                  class="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
+                <span class="flex text">{{ user?.email }}</span>
+                
               </div>
-            </button>
+          
 
             <button
               @click="changePassword"
@@ -349,7 +374,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from "vue";
+import { ref, reactive, computed, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { AppLayout } from "@/components/layout";
 import { PageHeader } from "@/components/organisms";
@@ -358,6 +383,9 @@ import { useAuthStore } from "@/stores/auth";
 import { useUserStore } from "@/stores/user";
 import { storeToRefs } from "pinia";
 import AvatarCropModal from "@/components/molecules/AvatarCropModal.vue";
+import EditProfileModal from "@/components/molecules/EditProfileModal.vue";
+import ChangePasswordModal from "@/components/molecules/ChangePasswordModal.vue";
+import AlertRadiusModal from "@/components/molecules/AlertRadiusModal.vue";
 import { deleteCroppedImage } from "@/utils/avatarCache";
 
 defineOptions({ name: "SettingsPage" });
@@ -373,6 +401,9 @@ const avatarInput = ref(null);
 const selectedAvatarFile = ref(null);
 const showAvatarModal = ref(false);
 const pendingCropped = ref(null); // { file, cacheKey, previewUrl }
+const showEditProfileModal = ref(false);
+const showChangePasswordModal = ref(false);
+const showAlertRadiusModal = ref(false);
 
 const settings = reactive({
   nearbyAlerts: true,
@@ -384,6 +415,48 @@ const settings = reactive({
 onMounted(() => {
   loadSettings();
 });
+
+// Gestion du prompt d'installation PWA
+const deferredPrompt = ref(null);
+const showInstallButton = ref(false);
+
+// Gestion du prompt d'installation PWA — écouteurs ajoutés au montage
+const handleBeforeInstallPrompt = (e) => {
+  e.preventDefault();
+  deferredPrompt.value = e;
+  showInstallButton.value = true;
+};
+
+const handleAppInstalled = () => {
+  deferredPrompt.value = null;
+  showInstallButton.value = false;
+};
+
+onMounted(() => {
+  window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  window.addEventListener('appinstalled', handleAppInstalled);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  window.removeEventListener('appinstalled', handleAppInstalled);
+  deferredPrompt.value = null;
+  showInstallButton.value = false;
+});
+
+async function promptInstall() {
+  if (!deferredPrompt.value) return;
+  try {
+    deferredPrompt.value.prompt();
+    const choiceResult = await deferredPrompt.value.userChoice;
+    // Masquer le bouton après réponse
+    showInstallButton.value = false;
+    deferredPrompt.value = null;
+    // Vous pouvez enregistrer analytics ici selon choiceResult.outcome
+  } catch (err) {
+    console.warn('Erreur pendant le prompt d\'installation PWA', err);
+  }
+}
 
 const loadSettings = () => {
   const saved = localStorage.getItem("phenom_settings");
@@ -456,19 +529,67 @@ const uploadPendingAvatar = async () => {
 };
 
 const editUsername = () => {
-  // TODO: Show edit username modal
+  showEditProfileModal.value = true;
 };
 
 const editEmail = () => {
-  // TODO: Show edit email modal
+  showEditProfileModal.value = true;
 };
 
 const changePassword = () => {
-  // TODO: Show change password modal
+  showChangePasswordModal.value = true;
+};
+
+const onEditProfileConfirm = async (payload) => {
+  try {
+    await userStore.updateProfile(payload);
+    await authStore.fetchUser();
+    showEditProfileModal.value = false;
+    alert('Profil mis à jour');
+  } catch (err) {
+    alert(err?.response?.data?.message || err?.message || 'Erreur mise à jour');
+  }
+};
+
+const onEditProfileCancel = () => {
+  showEditProfileModal.value = false;
+};
+
+const onChangePasswordConfirm = async (payload) => {
+  const { currentPassword, newPassword, confirmPassword } = payload || {};
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    alert('Tous les champs sont requis');
+    return;
+  }
+  if (newPassword !== confirmPassword) {
+    alert('Les mots de passe ne correspondent pas');
+    return;
+  }
+  try {
+    await userStore.changePassword({ currentPassword, newPassword });
+    showChangePasswordModal.value = false;
+    alert('Mot de passe changé');
+  } catch (err) {
+    alert(err?.response?.data?.message || err?.message || 'Erreur changement mot de passe');
+  }
+};
+
+const onChangePasswordCancel = () => {
+  showChangePasswordModal.value = false;
 };
 
 const setAlertRadius = () => {
-  // TODO: Show radius picker modal
+  showAlertRadiusModal.value = true;
+};
+
+const onAlertRadiusConfirm = (value) => {
+  settings.alertRadius = Number(value);
+  saveSettings();
+  showAlertRadiusModal.value = false;
+};
+
+const onAlertRadiusCancel = () => {
+  showAlertRadiusModal.value = false;
 };
 
 const setLanguage = () => {

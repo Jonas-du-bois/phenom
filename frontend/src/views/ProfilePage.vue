@@ -67,7 +67,7 @@
               size="xl"
               class="mb-4"
             />
-            <h1 class="text-xl font-bold text-white">{{ user.username }}</h1>
+            <h1 class="text-xl font-bold text-white">{{ user.name }}</h1>
             <p v-if="user.bio" class="text-white/60 text-sm mt-2 max-w-sm">
               {{ user.bio }}
             </p>
@@ -219,7 +219,13 @@
 
           <!-- Map -->
           <template v-else-if="activeTab === 'map'">
-            <div class="h-64 rounded-xl overflow-hidden">
+            <div
+              class="h-64 rounded-xl overflow-hidden relative z-0"
+              :style="{
+                marginBottom: 'calc(-4rem - env(safe-area-inset-bottom, 0px))',
+                paddingBottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))',
+              }"
+            >
               <ObservationMap :observations="userObservationsList" :zoom="6" />
             </div>
           </template>

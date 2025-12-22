@@ -1,6 +1,6 @@
 <template>
   <nav
-    class="fixed bottom-4 left-0 right-0 z-50 bg-[#080A0E]/50 backdrop-blur-xl border-t border-white/5 rounded-2xl max-w-screen mx-3"
+    class="liquid-glass-nav fixed bottom-4 left-0 right-0 z-50 max-w-screen mx-5"
     :style="{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }"
   >
     <div class="flex items-center justify-around h-16">
@@ -13,23 +13,23 @@
       >
         <!-- Camera tab special styling -->
         <template v-if="tab.name === 'camera'">
-          <div
-            class="camera-button w-14 h-14 -mt-6 rounded-full bg-[#00F0FF] flex items-center justify-center shadow-glow-cyan transition-transform duration-200 active:scale-95"
-          >
-            <svg
-              class="w-7 h-7 text-black"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
-          </div>
+          <div class="camera-button-v3-wrapper w-14 h-14 -mt-2">
+            <div class="camera-button-v3 w-full h-full rounded-full flex items-center justify-center transition-all duration-300 active:scale-95">
+              <svg
+                class="w-7 h-7 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2.5"
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+            </div>
+          </div> 
         </template>
 
         <!-- Normal tabs -->
@@ -170,4 +170,112 @@ const isActive = (tab) => {
 .camera-button:active {
   box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
 }
+
+.camera-button-v3-wrapper {
+  position: relative;
+  filter: drop-shadow(0 0 20px rgba(0, 240, 255, 0.3));
+}
+
+.camera-button-v3-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 9999px;
+  padding: 2px;
+  background: linear-gradient(135deg, #00F0FF, #A855F7, #00F0FF);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  /* animation pour le bouton camera */
+  /* animation: rotate-border 10s linear infinite; */
+}
+
+.camera-button-v3 {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(168, 85, 247, 0.15));
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+/* Liquid glass navbar */
+.liquid-glass-nav {
+  position: fixed;
+  left: 1.25rem;
+  right: 1.25rem;
+  bottom: 1rem;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+  overflow: visible;
+}
+
+.liquid-glass-nav::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0));
+  mix-blend-mode: overlay;
+}
+
+/* Ensure tab items remain transparent and inherit glass color */
+.liquid-glass-nav .tab-item {
+  background: transparent;
+  color: rgba(255,255,255,0.9);
+  flex: 1 1 0;
+  min-width: 0; /* allow items to shrink uniformly */
+  padding-top: 0.35rem;
+  padding-bottom: 0.35rem;
+}
+
+.liquid-glass-nav .tab-item.active {
+  color: #00f0ff;
+}
+
+/* Layout tweaks for balanced spacing and centered camera */
+.liquid-glass-nav > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  height: auto;
+}
+
+.liquid-glass-nav .icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+}
+
+.camera-button-v3-wrapper {
+  position: relative;
+  filter: drop-shadow(0 0 20px rgba(0, 240, 255, 0.3));
+  z-index: 60;
+  transform: translateY(-15%); /* lift the camera button to overlap the nav */
+}
+
+.camera-button-v3 {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.liquid-glass-nav .tab-item .text-xs {
+  margin-top: 2px;
+}
+
+@keyframes rotate-border {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 </style>

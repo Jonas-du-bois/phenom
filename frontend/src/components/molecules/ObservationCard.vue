@@ -237,11 +237,11 @@ const goToComments = () => {
     </div>
     
     <!-- Menu actions (optionnel) -->
-    <button class="p-1.5 -mr-1.5 hover:bg-white/5 rounded-lg transition-colors flex-shrink-0">
+    <!-- <button class="p-1.5 -mr-1.5 hover:bg-white/5 rounded-lg transition-colors flex-shrink-0">
       <svg class="w-5 h-5 text-white/60" fill="currentColor" viewBox="0 0 24 24">
         <path d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
       </svg>
-    </button>
+    </button> -->
   </div>
 </div>
 
