@@ -1,494 +1,205 @@
 <template>
-  <form
-    @submit.prevent="handleSubmit"
-    class="observation-form space-y-6"
-    novalidate
-  >
-    <!-- Image Section with AI Toggle -->
-    <div class="space-y-4">
-      <label class="text-sm font-medium text-white/60 uppercase tracking-wider">
-        Photo / Vidéo
-      </label>
+  <form @submit.prevent="handleSubmit" class="observation-form" novalidate>
+    <div class="liquid-glass-card">
+      <!-- Image toggle -->
+      <div class="form-section">
+        <label class="section-label">Photo / Vidéo</label>
 
-      <!-- Toggle between Upload and AI -->
-      <div class="flex gap-3 mb-4">
-        <button
-          type="button"
-          @click="
-            form.generateAiImage = false;
-            removeMedia();
-          "
-          :class="[
-            'flex-1 px-4 py-3 rounded-xl text-sm font-medium transition-all',
-            !form.generateAiImage
-              ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/30'
-              : 'bg-[#12151C] text-white/60 hover:text-white border border-white/10',
-          ]"
-        >
-          Upload photo
-        </button>
-        <button
-          type="button"
-          @click="
-            form.generateAiImage = true;
-            removeMedia();
-          "
-          :class="[
-            'flex-1 px-4 py-3 rounded-xl text-sm font-medium transition-all',
-            form.generateAiImage
-              ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/30'
-              : 'bg-[#12151C] text-white/60 hover:text-white border border-white/10',
-          ]"
-        >
-          Générer par IA
-        </button>
-      </div>
-
-      <!-- Upload Section -->
-      <div v-if="!form.generateAiImage">
-        <div
-          v-if="!form.media"
-          class="aspect-video bg-[#12151C] border-2 border-dashed border-white/20 rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-[#00F0FF]/50 transition-colors"
-          @click="openMediaPicker"
-        >
-          <svg
-            class="w-12 h-12 text-white/30"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="1.5"
-              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-            />
-          </svg>
-          <p class="text-white/40 text-sm">Cliquez pour ajouter une photo</p>
-          <p class="text-white/30 text-xs">JPEG, PNG, WebP • Max 10 MB</p>
-        </div>
-
-        <div v-else class="relative aspect-video rounded-2xl overflow-hidden">
-          <img
-            :src="mediaPreview"
-            alt="Aperçu"
-            class="w-full h-full object-cover"
-          />
+        <div class="toggle-group">
           <button
             type="button"
-            @click="removeMedia"
-            class="absolute top-3 right-3 w-10 h-10 bg-black/70 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-red-600 transition-colors"
+            class="toggle-btn" 
+            :class="{ active: !form.generateAiImage }"
+            @click="(form.generateAiImage = false), removeMedia()"
           >
-            <svg
-              class="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"
-              />
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
             </svg>
+            Upload
+          </button>
+          <button
+            type="button"
+            class="toggle-btn"
+            :class="{ active: form.generateAiImage }"
+            @click="(form.generateAiImage = true), removeMedia()"
+          >
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 16V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2z"/>
+              <polyline points="7 10 12 15 17 10"/>
+            </svg>
+            Générer IA
+          </button>
+        </div>
+
+        <div v-if="!form.generateAiImage" class="media-zone" @click="openMediaPicker">
+          <template v-if="!form.media">
+            <div class="upload-placeholder">
+              <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+              </svg>
+              <p>Cliquez pour ajouter une photo</p>
+              <span class="upload-hint">JPEG, PNG, WebP • Max 10MB</span>
+            </div>
+          </template>
+          <template v-else>
+            <div class="media-preview-container">
+              <img :src="mediaPreview" alt="Aperçu" class="media-img" />
+              <button type="button" class="remove-media-btn" @click.stop="removeMedia">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+          </template>
+        </div>
+
+        <div v-else class="ai-badge">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+          Une image sera générée par IA à partir de la description
+        </div>
+
+        <input ref="mediaInput" type="file" accept="image/jpeg,image/png,image/webp" class="file-input" @change="handleMediaSelect" />
+      </div>
+
+      <!-- Date & Time -->
+      <div class="form-section">
+        <label class="section-label">Date & Heure</label>
+        <div class="input-row">
+          <input class="liquid-input" v-model="form.date" type="date" :max="today" required />
+          <input class="liquid-input" v-model="form.time" type="time" />
+        </div>
+        <p v-if="errors.date" class="error-msg">{{ errors.date }}</p>
+      </div>
+
+      <!-- Location -->
+      <div class="form-section">
+        <label class="section-label">Localisation</label>
+        <div class="input-row">
+          <input class="liquid-input flex-1" v-model="form.location" type="text" placeholder="Lieu (ex: Lausanne)" />
+          <button type="button" class="geo-btn" @click="getCurrentLocation" :disabled="gettingLocation">
+            <LoadingSpinner v-if="gettingLocation" size="sm" />
+            <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="input-row mt-3">
+          <input class="liquid-input" v-model="form.country" type="text" placeholder="Pays" required />
+          <select class="liquid-input" v-model="form.locale">
+            <option value="">Type de lieu...</option>
+            <option v-for="opt in LOCALE_TYPES" :key="opt.code" :value="opt.code">{{ opt.icon }} {{ opt.label }}</option>
+          </select>
+        </div>
+
+        <div class="input-row mt-3">
+          <input class="liquid-input" v-model.number="form.latitude" type="number" step="0.000001" placeholder="Latitude" />
+          <input class="liquid-input" v-model.number="form.longitude" type="number" step="0.000001" placeholder="Longitude" />
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="form-section">
+        <label class="section-label">Description</label>
+        <textarea 
+          class="liquid-textarea" 
+          v-model="form.description" 
+          rows="5" 
+          maxlength="2000" 
+          placeholder="Décrivez en détail votre observation... (minimum 10 caractères)" 
+          required
+        ></textarea>
+        <div class="char-counter">{{ form.description.length }} / 2000</div>
+        <p v-if="errors.description" class="error-msg">{{ errors.description }}</p>
+      </div>
+
+      <!-- Ratings -->
+      <div class="form-section">
+        <label class="section-label">Évaluation</label>
+        <div class="rating-grid">
+          <div class="rating-item">
+            <label class="rating-label">Crédibilité</label>
+            <input class="liquid-input" v-model.number="form.credibility" type="number" min="0" max="15" placeholder="0-15" />
+          </div>
+          <div class="rating-item">
+            <label class="rating-label">Étrangeté</label>
+            <input class="liquid-input" v-model.number="form.strangeness" type="number" min="0" max="10" placeholder="0-10" />
+          </div>
+          <div class="rating-item">
+            <label class="rating-label">Durée (secondes)</label>
+            <input class="liquid-input" v-model.number="form.duration" type="number" min="0" placeholder="Durée" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Classifications avec chips -->
+      <div class="form-section">
+        <label class="section-label">Types d'observateurs</label>
+        <div class="chips-container">
+          <button
+            v-for="obs in OBSERVER_TYPES"
+            :key="obs.code"
+            type="button"
+            class="chip"
+            :class="{ selected: form.observerTypes.includes(obs.code) }"
+            @click="toggleSelection('observerTypes', obs.code)"
+          >
+            <span class="chip-icon">{{ obs.icon }}</span>
+            <span class="chip-label">{{ obs.label }}</span>
           </button>
         </div>
       </div>
 
-      <!-- AI Generation Info -->
-      <div
-        v-else
-        class="p-4 bg-gradient-to-r from-purple-900/30 to-pink-900/30 border border-purple-500/30 rounded-xl"
-      >
-        <div class="flex items-start gap-3">
-          <div
-            class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center flex-shrink-0"
+      <div class="form-section">
+        <label class="section-label">Formes d'OVNI</label>
+        <div class="chips-container">
+          <button
+            v-for="shape in UFO_SHAPES"
+            :key="shape.code"
+            type="button"
+            class="chip"
+            :class="{ selected: form.ufoShapes.includes(shape.code) }"
+            @click="toggleSelection('ufoShapes', shape.code)"
           >
-            <svg
-              class="w-6 h-6 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M13 10V3L4 14h7v7l9-11h-7z"
-              />
+            <span class="chip-icon">{{ shape.icon }}</span>
+            <span class="chip-label">{{ shape.label }}</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <label class="section-label">Phénomènes observés</label>
+        <div class="chips-container">
+          <button
+            v-for="pheno in PHENOMENA"
+            :key="pheno.code"
+            type="button"
+            class="chip"
+            :class="{ selected: form.phenomena.includes(pheno.code) }"
+            @click="toggleSelection('phenomena', pheno.code)"
+          >
+            <span class="chip-icon">{{ pheno.icon }}</span>
+            <span class="chip-label">{{ pheno.label }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Submit button -->
+      <div class="form-section">
+        <button type="submit" :disabled="!isValid || submitting" class="submit-button">
+          <span v-if="submitting">
+            <svg class="spinner" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" opacity="0.25"/>
+              <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" opacity="0.75"/>
             </svg>
-          </div>
-          <div>
-            <p class="text-purple-200 font-medium mb-1">
-              ✨ Génération IA avec Gemini
-            </p>
-            <p class="text-purple-300/80 text-sm">
-              Une illustration sera automatiquement générée à partir de votre
-              description et des phénomènes sélectionnés. L'image sera marquée
-              avec
-              <code class="bg-black/30 px-1.5 py-0.5 rounded text-xs"
-                >source: 'ai'</code
-              >.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <input
-        ref="mediaInput"
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        class="hidden"
-        @change="handleMediaSelect"
-      />
-    </div>
-
-    <!-- Date & Time Section -->
-    <div class="space-y-4">
-      <label
-        class="text-sm font-medium text-white/60 uppercase tracking-wider flex items-center gap-2"
-      >
-        <span>📅</span>
-        <span>Date & Heure</span>
-      </label>
-
-      <div class="grid grid-cols-2 gap-4">
-        <div class="space-y-2">
-          <input
-            v-model="form.date"
-            type="date"
-            :max="today"
-            class="w-full px-4 py-3 bg-[#12151C] border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#00F0FF]/50 transition-colors"
-            required
-          />
-          <p v-if="errors.date" class="text-red-400 text-xs">
-            {{ errors.date }}
-          </p>
-        </div>
-
-        <div class="space-y-2">
-          <input
-            v-model="form.time"
-            type="time"
-            class="w-full px-4 py-3 bg-[#12151C] border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#00F0FF]/50 transition-colors"
-          />
-          <p v-if="errors.time" class="text-red-400 text-xs">
-            {{ errors.time }}
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Location Section -->
-    <div class="space-y-4">
-      <label
-        class="text-sm font-medium text-white/60 uppercase tracking-wider flex items-center gap-2"
-      >
-        <span>📍</span>
-        <span>Localisation</span>
-      </label>
-
-      <div class="flex gap-3">
-        <input
-          v-model="form.location"
-          type="text"
-          placeholder="Lieu de l'observation (ex: Lausanne, près du lac)"
-          class="flex-1 px-4 py-3 bg-[#12151C] border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-[#00F0FF]/50 transition-colors"
-        />
-        <button
-          type="button"
-          @click="getCurrentLocation"
-          class="w-12 h-12 bg-[#12151C] border border-white/10 rounded-xl flex items-center justify-center text-white/60 hover:text-[#00F0FF] hover:border-[#00F0FF]/30 transition-colors flex-shrink-0"
-          :disabled="gettingLocation"
-          title="Utiliser ma position actuelle"
-        >
-          <LoadingSpinner v-if="gettingLocation" size="sm" />
-          <svg
-            v-else
-            class="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-            />
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-            />
-          </svg>
+            Publication en cours...
+          </span>
+          <span v-else>{{ submitLabel }}</span>
         </button>
       </div>
-
-      <div class="grid grid-cols-2 gap-4">
-        <div class="space-y-2">
-          <input
-            v-model="form.country"
-            type="text"
-            placeholder="Pays (ex: Suisse)"
-            class="w-full px-4 py-3 bg-[#12151C] border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-[#00F0FF]/50 transition-colors"
-            required
-          />
-          <p v-if="errors.country" class="text-red-400 text-xs">
-            {{ errors.country }}
-          </p>
-        </div>
-
-        <select
-          v-model="form.locale"
-          class="w-full px-4 py-3 bg-[#12151C] border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#00F0FF]/50 transition-colors appearance-none"
-        >
-          <option value="">Type de lieu...</option>
-          <option v-for="opt in LOCALE_TYPES" :key="opt.code" :value="opt.code">
-            {{ opt.icon }} {{ opt.label }}
-          </option>
-        </select>
-      </div>
-
-      <div class="grid grid-cols-2 gap-4">
-        <input
-          v-model.number="form.latitude"
-          type="number"
-          step="0.000001"
-          placeholder="Latitude (ex: 46.5197)"
-          class="w-full px-4 py-3 bg-[#12151C] border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-[#00F0FF]/50 transition-colors"
-        />
-        <input
-          v-model.number="form.longitude"
-          type="number"
-          step="0.000001"
-          placeholder="Longitude (ex: 6.6323)"
-          class="w-full px-4 py-3 bg-[#12151C] border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-[#00F0FF]/50 transition-colors"
-        />
-      </div>
-    </div>
-
-    <!-- Description Section -->
-    <div class="space-y-4">
-      <label
-        class="text-sm font-medium text-white/60 uppercase tracking-wider flex items-center gap-2"
-      >
-        <span>📝</span>
-        <span>Description détaillée</span>
-      </label>
-
-      <div class="relative">
-        <textarea
-          v-model="form.description"
-          placeholder="Décrivez précisément ce que vous avez observé... (min 10 caractères)"
-          class="w-full px-4 py-3 bg-[#12151C] border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-[#00F0FF]/50 transition-colors resize-none"
-          rows="5"
-          maxlength="2000"
-          required
-        ></textarea>
-        <div class="absolute bottom-3 right-3 text-xs text-white/30">
-          {{ form.description.length }}/2000
-        </div>
-      </div>
-      <p v-if="errors.description" class="text-red-400 text-xs">
-        {{ errors.description }}
-      </p>
-    </div>
-
-    <!-- Evaluation Section -->
-    <div class="space-y-4">
-      <label
-        class="text-sm font-medium text-white/60 uppercase tracking-wider flex items-center gap-2"
-      >
-        <span>📊</span>
-        <span>Évaluation</span>
-      </label>
-
-      <div class="grid grid-cols-3 gap-4">
-        <div class="space-y-2">
-          <label class="text-xs text-white/50">Crédibilité (0-15)</label>
-          <input
-            v-model.number="form.credibility"
-            type="number"
-            min="0"
-            max="15"
-            placeholder="5"
-            class="w-full px-4 py-3 bg-[#12151C] border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-[#00F0FF]/50 transition-colors"
-          />
-        </div>
-
-        <div class="space-y-2">
-          <label class="text-xs text-white/50">Étrangeté (0-10)</label>
-          <input
-            v-model.number="form.strangeness"
-            type="number"
-            min="0"
-            max="10"
-            placeholder="5"
-            class="w-full px-4 py-3 bg-[#12151C] border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-[#00F0FF]/50 transition-colors"
-          />
-        </div>
-
-        <div class="space-y-2">
-          <label class="text-xs text-white/50">Durée (secondes)</label>
-          <input
-            v-model.number="form.duration"
-            type="number"
-            min="0"
-            placeholder="60"
-            class="w-full px-4 py-3 bg-[#12151C] border border-white/10 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-[#00F0FF]/50 transition-colors"
-          />
-        </div>
-      </div>
-    </div>
-
-    <!-- Classifications Section -->
-    <div class="space-y-4">
-      <label
-        class="text-sm font-medium text-white/60 uppercase tracking-wider flex items-center gap-2"
-      >
-        <span>🏷️</span>
-        <span>Classifications</span>
-      </label>
-
-      <!-- Global dropdown showing all possible choices -->
-      <div class="mb-3">
-        <label class="text-xs text-white/50">Voir toutes les options</label>
-        <select
-          v-model="allChoicesSelected"
-          class="w-full px-4 py-3 bg-[#12151C] border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#00F0FF]/50 transition-colors"
-        >
-          <option value="">-- Parcourir toutes les options --</option>
-          <optgroup
-            v-for="group in ALL_OPTIONS"
-            :label="group.label"
-            :key="group.label"
-          >
-            <option
-              v-for="opt in group.options"
-              :key="group.label + opt.code"
-              :value="group.key + '::' + opt.code"
-            >
-              {{
-                (opt.icon ? opt.icon + " " : "") + opt.code + " - " + opt.label
-              }}
-            </option>
-          </optgroup>
-        </select>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="space-y-2">
-          <label class="text-xs text-white/50">Types d'observateurs</label>
-          <select
-            v-model="form.observerTypes"
-            multiple
-            class="w-full px-4 py-3 bg-[#12151C] border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#00F0FF]/50 transition-colors"
-            style="height: 120px"
-          >
-            <option
-              v-for="obs in OBSERVER_TYPES"
-              :key="obs.code"
-              :value="obs.code"
-              class="py-1"
-            >
-              {{ obs.icon }} {{ obs.code }} - {{ obs.label }}
-            </option>
-          </select>
-        </div>
-
-        <div class="space-y-2">
-          <label class="text-xs text-white/50">Formes OVNI</label>
-          <select
-            v-model="form.ufoShapes"
-            multiple
-            class="w-full px-4 py-3 bg-[#12151C] border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#00F0FF]/50 transition-colors"
-            style="height: 120px"
-          >
-            <option
-              v-for="shape in UFO_SHAPES"
-              :key="shape.code"
-              :value="shape.code"
-              class="py-1"
-            >
-              {{ shape.icon }} {{ shape.code }} - {{ shape.label }}
-            </option>
-          </select>
-        </div>
-
-        <div class="space-y-2">
-          <label class="text-xs text-white/50">Phénomènes</label>
-          <select
-            v-model="form.phenomena"
-            multiple
-            class="w-full px-4 py-3 bg-[#12151C] border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#00F0FF]/50 transition-colors"
-            style="height: 120px"
-          >
-            <option
-              v-for="pheno in PHENOMENA"
-              :key="pheno.code"
-              :value="pheno.code"
-              class="py-1"
-            >
-              {{ pheno.icon }} {{ pheno.code }} - {{ pheno.label }}
-            </option>
-          </select>
-        </div>
-      </div>
-
-      <p class="text-xs text-white/40 flex items-center gap-2">
-        <svg
-          class="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-        Maintenez Ctrl (ou Cmd) et cliquez pour sélectionner plusieurs options
-      </p>
-    </div>
-
-    <!-- Submit Button -->
-    <div class="pt-6">
-      <button
-        type="submit"
-        :disabled="!isValid || submitting"
-        :class="[
-          'w-full px-6 py-4 rounded-xl font-semibold text-white transition-all transform',
-          isValid && !submitting
-            ? 'bg-gradient-to-r from-[#00F0FF] to-[#00A3CC] hover:shadow-xl hover:shadow-[#00F0FF]/30 hover:scale-[1.02] active:scale-[0.98]'
-            : 'bg-white/10 cursor-not-allowed opacity-50',
-        ]"
-      >
-        <span v-if="submitting" class="flex items-center justify-center gap-3">
-          <LoadingSpinner size="sm" />
-          <span>Publication en cours...</span>
-        </span>
-        <span v-else class="flex items-center justify-center gap-2">
-          <svg
-            class="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-            />
-          </svg>
-          {{ submitLabel }}
-        </span>
-      </button>
     </div>
   </form>
 </template>
@@ -551,35 +262,6 @@ const errors = reactive({
   description: "",
 });
 
-// Aggregated options for the dropdown
-const ALL_OPTIONS = [
-  { key: "observer", label: "Types d'observateurs", options: OBSERVER_TYPES },
-  { key: "shapes", label: "Formes OVNI", options: UFO_SHAPES },
-  { key: "phenomena", label: "Phénomènes", options: PHENOMENA },
-  { key: "locale", label: "Types de lieu", options: LOCALE_TYPES },
-];
-
-const allChoicesSelected = ref("");
-
-// When the user selects an entry from the global dropdown, add it to the relevant form field
-watch(allChoicesSelected, (val) => {
-  if (!val) return;
-  const [groupKey, code] = val.split("::");
-
-  if (groupKey === "observer") {
-    if (!form.observerTypes.includes(code)) form.observerTypes.push(code);
-  } else if (groupKey === "shapes") {
-    if (!form.ufoShapes.includes(code)) form.ufoShapes.push(code);
-  } else if (groupKey === "phenomena") {
-    if (!form.phenomena.includes(code)) form.phenomena.push(code);
-  } else if (groupKey === "locale") {
-    form.locale = code;
-  }
-
-  // Reset selection after applying
-  allChoicesSelected.value = "";
-});
-
 const mediaInput = ref(null);
 const mediaPreview = ref("");
 const gettingLocation = ref(false);
@@ -611,6 +293,15 @@ const isValid = computed(() => {
   );
 });
 
+const toggleSelection = (field, code) => {
+  const index = form[field].indexOf(code);
+  if (index > -1) {
+    form[field].splice(index, 1);
+  } else {
+    form[field].push(code);
+  }
+};
+
 const openMediaPicker = () => {
   mediaInput.value?.click();
 };
@@ -635,13 +326,11 @@ const handleMediaSelect = (e) => {
   }
 
   form.media = file;
-  // mediaPreview will be updated by the watcher below
   emit("media-change", file);
 };
 
 const removeMedia = () => {
   form.media = null;
-  // revoke any created object URL
   if (currentObjectUrl) {
     try {
       URL.revokeObjectURL(currentObjectUrl);
@@ -657,11 +346,9 @@ const removeMedia = () => {
   emit("media-change", null);
 };
 
-// Keep mediaPreview in sync with form.media (File | string | { url })
 watch(
   () => form.media,
   (val) => {
-    // revoke previous URL
     if (currentObjectUrl) {
       try {
         URL.revokeObjectURL(currentObjectUrl);
@@ -801,47 +488,507 @@ defineExpose({ validate, form });
 </script>
 
 <style scoped>
-/* Custom scrollbar for select elements */
-select::-webkit-scrollbar {
-  width: 8px;
+/* === LIQUID GLASS CORE === */
+.liquid-glass-card {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.03) 0%,
+    rgba(255, 255, 255, 0.01) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: clamp(16px, 4vw, 32px);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 0 0 1px rgba(0, 240, 255, 0.05);
+  position: relative;
+  overflow: hidden;
 }
 
-select::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
+.liquid-glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 240, 255, 0.3),
+    transparent
+  );
+  animation: shimmer 3s infinite;
 }
 
-select::-webkit-scrollbar-thumb {
-  background: rgba(0, 240, 255, 0.3);
-  border-radius: 4px;
+@keyframes shimmer {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
 }
 
-select::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 240, 255, 0.5);
+/* === FORM SECTIONS === */
+.form-section {
+  margin-bottom: 28px;
 }
 
-/* Custom select arrow */
-select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='rgba(255,255,255,0.4)'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 20px;
-  padding-right: 40px;
+.form-section:last-child {
+  margin-bottom: 0;
 }
 
-/* Multiple select styling */
-select[multiple] option {
-  padding: 8px 12px;
-  margin: 2px 0;
-  border-radius: 4px;
+.section-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-select[multiple] option:checked {
+/* === INPUTS === */
+.liquid-input,
+.liquid-textarea {
+  width: 100%;
+  padding: 14px 18px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.04),
+    rgba(255, 255, 255, 0.02)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  color: #ffffff;
+  font-size: 15px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.liquid-input::placeholder,
+.liquid-textarea::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.liquid-input:focus,
+.liquid-textarea:focus {
+  outline: none;
+  border-color: rgba(0, 240, 255, 0.4);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 240, 255, 0.08),
+    rgba(0, 163, 204, 0.04)
+  );
+  box-shadow: 
+    0 0 0 3px rgba(0, 240, 255, 0.1),
+    0 4px 20px rgba(0, 240, 255, 0.15);
+}
+
+.liquid-textarea {
+  resize: vertical;
+  min-height: 120px;
+  font-family: inherit;
+  line-height: 1.6;
+}
+
+/* === INPUT ROWS === */
+.input-row {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.input-row .liquid-input {
+  flex: 1;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.mt-3 {
+  margin-top: 12px;
+}
+
+/* === TOGGLE BUTTONS === */
+.toggle-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.toggle-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.03),
+    rgba(255, 255, 255, 0.01)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.toggle-btn .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.toggle-btn.active {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 240, 255, 0.15),
+    rgba(0, 163, 204, 0.1)
+  );
+  border-color: rgba(0, 240, 255, 0.3);
+  color: #00F0FF;
+  box-shadow: 
+    0 4px 16px rgba(0, 240, 255, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.toggle-btn:hover:not(.active) {
+  border-color: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* === MEDIA UPLOAD === */
+.media-zone {
+  margin-top: 12px;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.upload-placeholder {
+  padding: 48px 24px;
+  text-align: center;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(255, 255, 255, 0.005)
+  );
+  border: 2px dashed rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  transition: all 0.3s ease;
+}
+
+.upload-placeholder:hover {
+  border-color: rgba(0, 240, 255, 0.3);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 240, 255, 0.05),
+    rgba(0, 163, 204, 0.02)
+  );
+}
+
+.upload-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 16px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.upload-placeholder p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.upload-hint {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 13px;
+}
+
+.media-preview-container {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.media-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 14px;
+}
+
+.remove-media-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.remove-media-btn:hover {
+  background: rgba(255, 59, 48, 0.8);
+  transform: scale(1.05);
+}
+
+.remove-media-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.file-input {
+  display: none;
+}
+
+/* === AI BADGE === */
+.ai-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  margin-top: 12px;
+  background: linear-gradient(
+    135deg,
+    rgba(138, 43, 226, 0.1),
+    rgba(255, 105, 180, 0.05)
+  );
+  border: 1px solid rgba(138, 43, 226, 0.2);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 14px;
+}
+
+.ai-badge .icon {
+  width: 20px;
+  height: 20px;
+  color: rgba(138, 43, 226, 0.8);
+}
+
+/* === GEO BUTTON === */
+.geo-btn {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.04),
+    rgba(255, 255, 255, 0.02)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.geo-btn:hover:not(:disabled) {
+  border-color: rgba(0, 240, 255, 0.3);
+  color: #00F0FF;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 240, 255, 0.1),
+    rgba(0, 163, 204, 0.05)
+  );
+}
+
+.geo-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.geo-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* === RATING GRID === */
+.rating-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.rating-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rating-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+}
+
+/* === CHIPS === */
+.chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.04),
+    rgba(255, 255, 255, 0.02)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chip:hover {
+  border-color: rgba(0, 240, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.chip.selected {
   background: linear-gradient(
     135deg,
     rgba(0, 240, 255, 0.2),
-    rgba(0, 163, 204, 0.2)
+    rgba(0, 163, 204, 0.15)
   );
-  color: #00f0ff;
+  border-color: rgba(0, 240, 255, 0.4);
+  color: #00F0FF;
+  box-shadow: 
+    0 4px 16px rgba(0, 240, 255, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.chip-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.chip-label {
+  line-height: 1;
+}
+
+/* === SUBMIT BUTTON === */
+.submit-button {
+  width: 100%;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #00F0FF 0%, #00A3CC 100%);
+  border: none;
+  border-radius: 14px;
+  color: #021014;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 
+    0 4px 20px rgba(0, 240, 255, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.submit-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 6px 28px rgba(0, 240, 255, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.submit-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* === UTILITIES === */
+.char-counter {
+  text-align: right;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 8px;
+}
+
+.error-msg {
+  color: #ff7b7b;
+  font-size: 13px;
+  margin-top: 8px;
+  font-weight: 500;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 640px) {
+  .liquid-glass-card {
+    border-radius: 20px;
+    padding: 20px;
+  }
+
+  .rating-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .toggle-btn {
+    font-size: 13px;
+    padding: 10px 14px;
+  }
+
+  .chip {
+    font-size: 13px;
+    padding: 8px 14px;
+  }
+}
+
+/* === SELECT STYLING === */
+select.liquid-input {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='rgba(255,255,255,0.5)'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 18px;
+  padding-right: 44px;
+  cursor: pointer;
+}
+
+select.liquid-input:focus {
+  cursor: pointer;
 }
 </style>

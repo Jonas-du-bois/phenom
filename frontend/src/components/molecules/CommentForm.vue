@@ -1,10 +1,9 @@
 <script setup>
 /**
  * CommentForm - Formulaire de commentaire
- * Design System: Phenom Search
+ * Design System: Phenom Search - Liquid Glass Style
  */
 import { ref } from "vue";
-
 defineOptions({ name: "CommentForm" });
 
 const props = defineProps({
@@ -33,7 +32,7 @@ const handleSubmit = () => {
 
 <template>
   <form
-    class="flex items-center gap-2 px-4 py-3 bg-[#12151C] border-t border-white/10"
+    class="flex items-center gap-3 mx-2"
     @submit.prevent="handleSubmit"
   >
     <!-- Input -->
@@ -42,7 +41,7 @@ const handleSubmit = () => {
       type="text"
       :placeholder="placeholder"
       :disabled="loading"
-      class="flex-1 py-2 px-3 bg-white/5 border border-white/10 text-white text-sm placeholder:text-white/40 focus:outline-none focus:border-[#00F0FF] transition-colors"
+      class="flex-1 py-2.5 px-4 bg-white/[0.02] border border-white/[0.08] rounded-full text-white text-sm placeholder:text-white/40 focus:outline-none focus:border-[#00F0FF]/50 focus:bg-white/[0.04] transition-all backdrop-blur-sm"
     />
 
     <!-- Submit Button -->
@@ -50,10 +49,10 @@ const handleSubmit = () => {
       type="submit"
       :disabled="!content.trim() || loading"
       :class="[
-        'p-2 transition-colors touch-target',
+        'flex items-center justify-center w-10 h-10 rounded-full transition-all',
         content.trim() && !loading
-          ? 'text-[#00F0FF] hover:bg-[#00F0FF]/10'
-          : 'text-white/20 cursor-not-allowed',
+          ? 'bg-[#00F0FF]/10 text-[#00F0FF] hover:bg-[#00F0FF]/20 border border-[#00F0FF]/30'
+          : 'bg-white/[0.02] text-white/20 cursor-not-allowed border border-white/[0.08]',
       ]"
     >
       <svg
@@ -90,3 +89,21 @@ const handleSubmit = () => {
     </button>
   </form>
 </template>
+
+<style scoped>
+/* Effet de focus subtil avec glow */
+input:focus {
+  box-shadow: 0 0 0 1px rgba(0, 240, 255, 0.1),
+              0 0 20px rgba(0, 240, 255, 0.05);
+}
+
+/* Animation du bouton au hover */
+button:not(:disabled):hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
+}
+
+button:not(:disabled):active {
+  transform: scale(0.95);
+}
+</style>

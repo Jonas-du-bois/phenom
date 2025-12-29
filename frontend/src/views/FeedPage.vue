@@ -1,7 +1,7 @@
 <template>
   <AppLayout :alert-count="alertCount">
     <template #header>
-      <PageHeader :show-search="!showSearch" @search="toggleSearch">
+      <PageHeader :show-search="true" @search="toggleSearch">
         <template #right>
           <IconButton
             variant="ghost"
@@ -30,7 +30,7 @@
     <div class="feed-page">
       <!-- Search Bar avec animation -->
       <Transition name="search">
-        <div v-if="showSearch" class="px-4 pt-4 pb-2 border-b border-white/5">
+        <div v-if="showSearch" class="px-4 pt-8 pb-2 border-b border-white/5">
           <SearchBar
             ref="searchBarRef"
             v-model="searchQuery"
@@ -40,6 +40,7 @@
             @search="handleSearch"
             @clear="clearSearch"
             @clear-recent="clearRecentSearches"
+            @close="toggleSearch"
           />
           <button
             @click="toggleSearch"
@@ -52,9 +53,15 @@
       <!-- Active filters display -->
       <div
         v-if="hasActiveFilters"
-        class="px-4 py-2 flex items-center gap-2 overflow-x-auto scrollbar-hide border-b border-white/5"
+        class="px-4 py-2 pt-8 flex items-center gap-2 overflow-x-auto scrollbar-hide border-b border-white/5"
       >
         <div class="flex items-center gap-2 flex-nowrap">
+          <button
+            @click="clearAllFilters"
+            class="text-xs text-[#00F0FF] whitespace-nowrap flex-shrink-0 ml-2"
+          >
+            Effacer tout
+          </button>
           <FilterChip
             v-for="filter in activeFilterChips"
             :key="filter.key"
@@ -63,12 +70,7 @@
             removable
             @remove="removeFilter(filter.key)"
           />
-          <button
-            @click="clearAllFilters"
-            class="text-xs text-[#00F0FF] whitespace-nowrap flex-shrink-0 ml-2"
-          >
-            Effacer tout
-          </button>
+          
         </div>
       </div>
 

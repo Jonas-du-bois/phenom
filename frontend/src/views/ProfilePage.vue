@@ -40,14 +40,14 @@
     <div class="profile-page">
       <!-- Loading -->
       <template v-if="loading">
-        <div class="flex items-center justify-center py-12">
+        <div class="flex items-center justify-center py-12 mt-16 min-h-[calc(100vh-4rem)]">
           <LoadingSpinner size="lg" />
         </div>
       </template>
 
       <!-- Error -->
       <template v-else-if="error">
-        <div class="flex items-center justify-center py-12 px-4">
+        <div class="flex items-center justify-center py-12 px-4 mt-16 min-h-[calc(100vh-4rem)]">
           <ErrorState
             :title="error"
             description="Impossible de charger le profil."
@@ -58,7 +58,7 @@
       <!-- Profile content -->
       <template v-else-if="user">
         <!-- Profile header -->
-        <div class="px-4 py-6 space-y-6">
+        <div class="px-4 py-6 space-y-6 mt-16">
           <!-- Avatar & Username -->
           <div class="flex flex-col items-center text-center">
             <BaseAvatar

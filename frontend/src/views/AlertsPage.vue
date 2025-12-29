@@ -28,7 +28,7 @@
       </PageHeader>
     </template>
 
-    <div class="alerts-page">
+    <div class="alerts-page mt-20">
       <!-- Location permission banner -->
       <div
         v-if="!locationEnabled"
@@ -336,6 +336,7 @@ const formatTime = (date) => {
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

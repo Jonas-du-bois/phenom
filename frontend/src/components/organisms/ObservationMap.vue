@@ -9,7 +9,7 @@
     </div>
 
     <!-- Map controls overlay -->
-    <div class="absolute top-4 right-4 z-[1000] flex flex-col gap-2">
+    <div class="absolute top-22 right-4 z-[1000] flex flex-col gap-2">
       <!-- Zoom controls -->
       <div
         class="bg-[#12151C] rounded-xl overflow-hidden shadow-lg border border-white/10"
@@ -106,7 +106,7 @@
     <!-- Observation count badge -->
     <div
       v-if="observations.length > 0"
-      class="absolute top-4 left-4 z-[1000] backdrop-blur-2xl bg-white/5 px-4 py-2.5 rounded-2xl border border-white/10 shadow-2xl hover:bg-white/10 transition-all duration-300"
+      class="absolute top-22 left-4 z-[1000] backdrop-blur-2xl bg-white/5 px-4 py-2.5 rounded-2xl border border-white/10 shadow-2xl hover:bg-white/10 transition-all duration-300"
     >
       <div class="flex items-center gap-2.5">
         <div class="relative">

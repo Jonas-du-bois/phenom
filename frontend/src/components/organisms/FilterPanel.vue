@@ -2,16 +2,16 @@
   <Teleport to="body">
     <Transition name="slide-up">
       <div v-if="isOpen" class="fixed inset-0 z-50">
-        <!-- Backdrop -->
+        <!-- Backdrop (liquid glass subtle) -->
         <div
-          class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+          class="absolute inset-0 bg-[rgba(255,255,255,0.02)] backdrop-blur-2xl"
           @click="$emit('close')"
         />
 
-        <!-- Panel -->
+        <!-- Panel (liquid glass card) -->
         <div
           ref="panelRef"
-          class="absolute bottom-0 left-0 right-0 max-h-[85vh] bg-[#12151C] rounded-t-3xl overflow-hidden flex flex-col"
+          class="absolute bottom-0 left-0 right-0 max-h-[85vh] rounded-2xl overflow-hidden flex flex-col liquid-panel"
           :style="{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }"
           @touchstart="handleTouchStart"
           @touchmove="handleTouchMove"
@@ -19,18 +19,13 @@
         >
           <!-- Drag handle -->
           <div class="flex justify-center py-3">
-            <div class="w-10 h-1 bg-white/20 rounded-full" />
+            <div class="w-12 h-1.5 rounded-full drag-handle" />
           </div>
 
           <!-- Header -->
-          <div
-            class="flex items-center justify-between px-4 pb-4 border-b border-white/10"
-          >
-            <h2 class="text-lg font-semibold text-white">Filtres</h2>
-            <button
-              @click="handleReset"
-              class="text-sm text-[#00F0FF] font-medium"
-            >
+          <div class="flex items-center justify-between px-4 pb-4 header-row">
+            <h2 class="text-lg font-semibold text-white/90">Filtres</h2>
+            <button @click="handleReset" class="text-sm text-[#00F0FF] font-medium">
               Réinitialiser
             </button>
           </div>
@@ -194,9 +189,9 @@
             </div>
           </div>
 
-          <!-- Apply button -->
-          <div class="p-4 border-t border-white/10">
-            <BaseButton variant="primary" class="w-full" @click="handleApply">
+          <!-- Apply button (hidden when instant apply enabled) -->
+          <div v-if="!props.instant" class="p-4 border-t border-transparent">
+            <BaseButton variant="primary" class="w-full liquid-apply prominent" @click="handleApply">
               Appliquer les filtres
             </BaseButton>
           </div>
@@ -224,6 +219,11 @@ const props = defineProps({
   isOpen: {
     type: Boolean,
     default: false,
+  },
+  // When true, filters are applied immediately on change and the Apply button is hidden
+  instant: {
+    type: Boolean,
+    default: true,
   },
   initialFilters: {
     type: Object,
@@ -316,12 +316,34 @@ const selectCountry = (code) => {
 const handleReset = () => {
   Object.assign(filters, defaultFilters);
   emit("reset");
+  if (props.instant) {
+    emit("apply", { ...filters });
+  }
 };
 
 const handleApply = () => {
   emit("apply", { ...filters });
   emit("close");
 };
+
+// Emit immediate apply on filters change when `instant` enabled
+import { nextTick } from "vue";
+let _initialized = false;
+onMounted(async () => {
+  await nextTick();
+  _initialized = true;
+});
+
+watch(
+  () => filters,
+  (newVal) => {
+    if (!props.instant) return;
+    if (!_initialized) return;
+    if (!props.isOpen) return;
+    emit("apply", { ...newVal });
+  },
+  { deep: true },
+);
 
 // Swipe to close
 const handleTouchStart = (e) => {
@@ -360,5 +382,56 @@ const handleTouchEnd = () => {
 .slide-up-enter-from > div:last-child,
 .slide-up-leave-to > div:last-child {
   transform: translateY(100%);
+}
+
+/* Liquid glass styles */
+.liquid-panel {
+  background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid rgba(255,255,255,0.06);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.02);
+}
+
+.drag-handle {
+  background: linear-gradient(90deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
+}
+
+.header-row {
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  padding-bottom: 14px;
+}
+
+.header-row h2 {
+  color: rgba(255,255,255,0.95);
+}
+
+.liquid-apply {
+  background: linear-gradient(135deg, rgba(0,240,255,0.12), rgba(0,163,204,0.08));
+  color: #001b1e;
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+
+.liquid-apply:hover {
+  transform: translateY(-2px);
+}
+
+.liquid-apply.prominent {
+  background: linear-gradient(135deg, #00F0FF 0%, #00A3CC 100%);
+  color: #001b1e;
+  box-shadow: 0 8px 30px rgba(0,240,255,0.18), inset 0 1px 0 rgba(255,255,255,0.2);
+  font-weight: 800;
+  border-radius: 12px;
+}
+
+.liquid-apply.prominent:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0,240,255,0.22), inset 0 1px 0 rgba(255,255,255,0.25);
+}
+
+.flex-1::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="observation-detail-page min-h-screen bg-[#000000] mb-8">
+  <div class="observation-detail-page min-h-screen bg-[#000000] mb-8 mt-16">
     <!-- Loading state -->
     <template v-if="loading">
       <div class="flex items-center justify-center h-screen">
@@ -55,9 +55,9 @@
           <BaseBadge :variant="typeBadgeVariant">
             {{ observation.type?.toUpperCase() || "OBSERVATION" }}
           </BaseBadge>
-          <BaseBadge v-if="observation.verified" variant="success">
+          <!-- <BaseBadge v-if="observation.verified" variant="success">
             Vérifié
-          </BaseBadge>
+          </BaseBadge> -->
         </div>
 
         <!-- Description -->
@@ -105,9 +105,6 @@
         </div>
       </div>
 
-      <!-- Divider -->
-      <div class="h-2 bg-[#080A0E]" />
-
       <!-- Comments section -->
       <div class="px-4 py-4" id="comments">
         <h2 class="text-lg font-semibold text-white mb-4">
@@ -126,32 +123,32 @@
           @delete="deleteComment"
           @user-click="goToProfile"
         />
-      </div>
 
-      <!-- Comment form (sticky bottom) -->
+          <!-- Comment form (sticky bottom) -->
       <CommentForm
         v-if="isAuthenticated"
         :loading="submittingComment"
         @submit="submitComment"
       />
+      </div>
 
       <!-- Options menu -->
       <Teleport to="body">
         <Transition name="fade">
-          <div v-if="showMenu" class="fixed inset-0 z-50">
+          <div v-if="showMenu" class="fixed inset-0 z-50 rounded-2xl">
             <div
               class="absolute inset-0 bg-black/60"
               @click="showMenu = false"
             />
 
             <div
-              class="absolute bottom-0 left-0 right-0 bg-[#12151C] rounded-t-2xl overflow-hidden"
-              :style="{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }"
+              class="absolute bottom-0 left-0 right-0 rounded-t-2xl overflow-hidden py-2.5 px-4 bg-white/[0.02] border border-white/[0.08] text-white text-sm transition-all backdrop-blur-sm"
+              :style="{ paddingBottom: '12px' + 'env(safe-area-inset-bottom, 0px)' }"
             >
               <div class="py-2">
                 <button
                   @click="shareObservation"
-                  class="w-full px-4 py-3 flex items-center gap-3 text-white hover:bg-white/5"
+                  class="w-full px-4 py-3 flex items-center gap-3 text-white"
                 >
                   <svg
                     class="w-5 h-5"
@@ -169,30 +166,10 @@
                   <span>Partager</span>
                 </button>
 
-                <button
-                  @click="reportObservation"
-                  class="w-full px-4 py-3 flex items-center gap-3 text-white hover:bg-white/5"
-                >
-                  <svg
-                    class="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="1.5"
-                      d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"
-                    />
-                  </svg>
-                  <span>Signaler</span>
-                </button>
-
                 <template v-if="isOwner">
                   <button
                     @click="editObservation"
-                    class="w-full px-4 py-3 flex items-center gap-3 text-white hover:bg-white/5"
+                    class="w-full px-4 py-3 flex items-center gap-3 text-white"
                   >
                     <svg
                       class="w-5 h-5"
@@ -212,7 +189,7 @@
 
                   <button
                     @click="confirmDelete"
-                    class="w-full px-4 py-3 flex items-center gap-3 text-red-400 hover:bg-white/5"
+                    class="w-full px-4 py-3 flex items-center gap-3 text-red-400"
                   >
                     <svg
                       class="w-5 h-5"
@@ -234,7 +211,7 @@
 
               <button
                 @click="showMenu = false"
-                class="w-full px-4 py-4 text-center text-white/60 border-t border-white/10"
+                class="w-full px-4 py-4 text-center text-white bg-white/[0.02] border-2 border-white rounded-2xl cursor-pointer active:bg-white/[0.06] active:scale-95 transition-transform shadow-sm ring-1 ring-white/10 focus:outline-none"
               >
                 Annuler
               </button>

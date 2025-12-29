@@ -91,6 +91,15 @@ const router = createRouter({
       props: true,
     },
 
+    // Edit observation
+    {
+      path: "/observation/:id/edit",
+      name: "observation-edit",
+      component: () => import("@/views/ObservationEditPage.vue"),
+      meta: { requiresAuth: true },
+      props: true,
+    },
+
     // Map
     {
       path: "/map",

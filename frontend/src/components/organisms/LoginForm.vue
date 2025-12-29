@@ -230,21 +230,25 @@
 </template>
 
 <script setup>
-import { ref, reactive } from "vue";
+import { ref, reactive, watch, toRef } from "vue";
 import { TextInput, BaseButton } from "@/components/atoms";
 
 defineOptions({ name: "LoginForm" });
 
-defineProps({
+const props = defineProps({
   loading: {
     type: Boolean,
     default: false,
   },
+  // Accept string or object (field errors)
   error: {
-    type: String,
+    type: [String, Object],
     default: "",
   },
 });
+
+// Expose a reactive `error` ref for template compatibility
+const error = toRef(props, "error");
 
 const emit = defineEmits(["submit"]);
 
@@ -281,6 +285,19 @@ const validate = () => {
 
   return isValid;
 };
+
+// Map server-side error objects to field errors when provided via prop
+watch(
+  () => props.error,
+  (newVal) => {
+    if (!newVal) return;
+    if (typeof newVal === "object") {
+      if (newVal.email) errors.email = newVal.email;
+      if (newVal.password) errors.password = newVal.password;
+    }
+  },
+  { immediate: true }
+);
 
 const handleSubmit = () => {
   if (!validate()) return;

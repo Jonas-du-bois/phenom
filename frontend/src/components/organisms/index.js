@@ -9,3 +9,4 @@ export { default as ObservationForm } from "./ObservationForm.vue";
 export { default as LoginForm } from "./LoginForm.vue";
 export { default as SignupForm } from "./SignupForm.vue";
 export { default as ObservationMap } from "./ObservationMap.vue";
+

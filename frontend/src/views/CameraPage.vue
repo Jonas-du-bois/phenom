@@ -156,7 +156,7 @@
           @back="mode = 'camera'"
         />
 
-        <div class="flex-1 overflow-y-auto p-4">
+        <div class="flex-1 overflow-y-auto p-4 mt-18">
           <ObservationForm
             ref="formRef"
             :initial-data="formData"
@@ -166,6 +166,17 @@
           />
         </div>
       </template>
+
+        <!-- <div class="flex-1 overflow-y-auto p-4 mt-18">
+          <ObservationForm
+            ref="formRef"
+            :initial-data="formData"
+            :submitting="submitting"
+            @submit="handleSubmit"
+            @media-change="handleMediaChange"
+          />
+        </div>
+      </template> -->
 
       <!-- Camera error -->
       <div
@@ -187,7 +198,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
-import { PageHeader, ObservationForm } from "@/components/organisms";
+import { PageHeader, ObservationForm} from "@/components/organisms";
 import { AppLayout } from "@/components/layout";
 import { IconButton, BaseButton, ErrorState } from "@/components/atoms";
 import { useObservationStore } from "@/stores/observation";
@@ -198,6 +209,7 @@ const router = useRouter();
 const observationStore = useObservationStore();
 
 const mode = ref("camera"); // 'camera' | 'form'
+// showBadges removed — simplified form view
 const videoRef = ref(null);
 const canvasRef = ref(null);
 const galleryInput = ref(null);
@@ -223,6 +235,8 @@ const formData = ref({
   weather: "",
   witnesses: 1,
 });
+
+// Tabs removed — simplified camera → form flow
 
 let mediaStream = null;
 

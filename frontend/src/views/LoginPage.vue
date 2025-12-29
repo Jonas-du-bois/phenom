@@ -35,8 +35,9 @@ const handleLogin = async (credentials) => {
     router.push(redirect);
   } catch (err) {
     console.error("Login error:", err);
+    // Prefer field-level errors returned by the API when available
     error.value =
-      err.response?.data?.message || "Email ou mot de passe incorrect";
+      err.response?.data?.errors || err.response?.data?.message || "Email ou mot de passe incorrect";
   } finally {
     loading.value = false;
   }

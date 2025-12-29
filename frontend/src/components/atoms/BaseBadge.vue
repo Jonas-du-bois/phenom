@@ -43,7 +43,7 @@ const sizeClasses = {
 <template>
   <span
     :class="[
-      'inline-flex items-center gap-1.5 border',
+      'inline-flex items-center gap-1.5 border rounded-2xl',
       'font-medium uppercase tracking-wider',
       variantClasses[variant],
       sizeClasses[size],

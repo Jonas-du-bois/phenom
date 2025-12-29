@@ -6,7 +6,7 @@
 
     <div class="settings-page">
       <!-- Profile section -->
-      <div class="px-4 py-6">
+      <div class="px-4 py-6 mt-16">
         <div class="flex items-center gap-4">
           <div class="relative">
             <BaseAvatar

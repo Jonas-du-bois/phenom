@@ -14,29 +14,15 @@
         @keydown.escape="handleClear"
       />
 
-      <!-- Search icon -->
-      <svg
-        class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40 pointer-events-none"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-        />
-      </svg>
-
-      <!-- Clear button -->
+      <!-- Search icon (now clickable to toggle search) -->
       <button
-        v-if="query"
-        @click="handleClear"
-        class="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full bg-white/10 text-white/60 hover:bg-white/20 hover:text-white transition-colors"
+        type="button"
+        @click="toggleSearch"
+        class="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-white/40"
+        aria-label="Toggle search"
       >
         <svg
-          class="w-4 h-4"
+          class="w-5 h-5"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -45,10 +31,12 @@
             stroke-linecap="round"
             stroke-linejoin="round"
             stroke-width="2"
-            d="M6 18L18 6M6 6l12 12"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
           />
         </svg>
       </button>
+
+      <!-- clear button removed: use search icon to toggle/close -->
     </div>
 
     <!-- Suggestions dropdown -->
@@ -191,7 +179,19 @@ const handleClear = () => {
   query.value = "";
   emit("update:modelValue", "");
   emit("clear");
-  inputRef.value?.focus();
+};
+
+const toggleSearch = () => {
+  if (isFocused.value) {
+    // close search: clear query and blur
+    handleClear();
+    inputRef.value?.blur();
+    isFocused.value = false;
+    emit("close");
+  } else {
+    inputRef.value?.focus();
+    isFocused.value = true;
+  }
 };
 
 const handleBlur = () => {
