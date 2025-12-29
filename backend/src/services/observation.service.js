@@ -158,7 +158,7 @@ class ObservationService {
     // Text search - utilise regex pour recherche flexible
     if (filters.search) {
       const searchTerm = filters.search.trim();
-      
+
       // Si le terme contient des espaces, utiliser text search
       // Sinon utiliser regex pour une recherche partielle
       if (searchTerm.includes(' ')) {

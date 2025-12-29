@@ -2,10 +2,14 @@
  * Composable pour la connexion WebSocket avec WsMini PubSub
  * Utilise le client WSClient de WsMini
  */
-import { ref, onUnmounted } from "vue";
+import { ref, onUnmounted, getCurrentInstance } from "vue";
 import { WSClient } from "wsmini";
+// Singleton instance so multiple calls to `useWebSocket()` share the same client/state
+let _singleton = null;
 
 export function useWebSocket() {
+  if (_singleton) return _singleton;
+
   const ws = ref(null);
   const connected = ref(false);
   const messages = ref([]);
@@ -14,17 +18,44 @@ export function useWebSocket() {
   const maxReconnectAttempts = 5;
   const reconnectDelay = 3000;
 
-  // URL du WebSocket - VITE_WS_URL est passé par Docker, sinon fallback sur LOCAL pour dev Vite
-  const WS_URL =
-    import.meta.env.VITE_WS_URL ||
-    import.meta.env.VITE_WS_URL_LOCAL ||
-    "ws://localhost:3000";
+  // Determine WebSocket URL dynamically:
+  // - If running in a browser on localhost/127.0.0.1, prefer VITE_WS_URL_LOCAL (dev)
+  // - Otherwise use VITE_WS_URL (prod) and fallback to ws://localhost:3000
+  const envWs = import.meta.env.VITE_WS_URL || '';
+  const envWsLocal = import.meta.env.VITE_WS_URL_LOCAL || '';
+  let WS_URL = '';
+  try {
+    if (typeof window !== 'undefined') {
+      const host = window.location.hostname;
+      const isLocal = host === 'localhost' || host === '127.0.0.1' || host === '';
+      if (isLocal && envWsLocal) {
+        WS_URL = envWsLocal;
+      } else if (isLocal && !envWsLocal) {
+        WS_URL = 'ws://localhost:3000';
+      } else if (!isLocal && envWs) {
+        WS_URL = envWs;
+      } else {
+        // fallback to envWs or local
+        WS_URL = envWs || envWsLocal || 'ws://localhost:3000';
+      }
+    } else {
+      WS_URL = envWs || envWsLocal || 'ws://localhost:3000';
+    }
+  } catch (e) {
+    WS_URL = import.meta.env.VITE_WS_URL || import.meta.env.VITE_WS_URL_LOCAL || 'ws://localhost:3000';
+  }
+  console.log('ℹ️ useWebSocket selected WS_URL =', WS_URL);
 
   /**
    * Connexion au WebSocket avec WsMini WSClient
    */
   async function connect(token = null) {
     try {
+      if (connected.value && ws.value) {
+        console.log("ℹ️ WebSocket déjà connecté, saut de la connexion");
+        return;
+      }
+
       console.log(`🔌 Tentative de connexion WebSocket à: ${WS_URL}`);
 
       // Créer le client WsMini
@@ -86,7 +117,12 @@ export function useWebSocket() {
   function disconnect() {
     reconnectAttempts.value = maxReconnectAttempts; // Empêcher la reconnexion auto
     if (ws.value) {
-      // WSmini gère la fermeture automatiquement
+      try {
+        if (typeof ws.value.close === "function") ws.value.close();
+        else if (typeof ws.value.disconnect === "function") ws.value.disconnect();
+      } catch (e) {
+        // ignore
+      }
       ws.value = null;
       connected.value = false;
       console.log("🔌 WebSocket déconnecté");
@@ -128,11 +164,12 @@ export function useWebSocket() {
     messages.value = [];
   }
 
-  onUnmounted(() => {
-    disconnect();
-  });
+  // NOTE: Ne pas s'abonner à `onUnmounted` ici — la connexion est gérée
+  // globalement (ex. dans `main.js`). Enregistrer des hooks de nettoyage
+  // depuis un composant qui appelle `useWebSocket()` fermerait la connexion
+  // globale à chaque démontage de composant.
 
-  return {
+  const instance = {
     ws,
     connected,
     messages,
@@ -144,4 +181,7 @@ export function useWebSocket() {
     unsubscribe,
     clearMessages,
   };
+
+  _singleton = instance;
+  return instance;
 }

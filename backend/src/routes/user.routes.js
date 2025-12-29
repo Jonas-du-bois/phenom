@@ -439,4 +439,11 @@ router.delete(
   userController.deleteAvatar
 );
 
+// Endpoint pour mettre à jour la position courante (pour alertes de proximité)
+router.post(
+  '/me/location',
+  authenticate,
+  userController.updateLocation
+);
+
 export default router;

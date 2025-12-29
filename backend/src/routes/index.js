@@ -3,6 +3,7 @@ import authRoutes from './auth.routes.js';
 import userRoutes from './user.routes.js';
 import observationRoutes from './observation.routes.js';
 import commentRoutes from './comment.routes.js';
+import pushRoutes from './push.routes.js';
 import adminRoutes from './admin.routes.js';
 import imageRoutes from './image.routes.js';
 import filterRoutes from './filter.routes.js';
@@ -22,6 +23,9 @@ router.use('/auth', authRoutes);
 
 // Routes des utilisateurs
 router.use('/users', userRoutes);
+
+// Push subscriptions
+router.use('/push', pushRoutes);
 
 // Routes des images
 router.use('/', imageRoutes);

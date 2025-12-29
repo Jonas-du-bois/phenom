@@ -107,6 +107,18 @@ const observationSchema = new mongoose.Schema({
       comment: 'Longitude (WGS84)'
     }
   },
+  // GeoJSON point for efficient geospatial queries (optional, populated when available)
+  locationPoint: {
+    type: {
+      type: String,
+      enum: ['Point'],
+      default: 'Point'
+    },
+    coordinates: {
+      type: [Number], // [lng, lat]
+      default: undefined
+    }
+  },
   observerTypes: {
     type: [String],
     enum: OBSERVER_TYPES,
@@ -212,6 +224,8 @@ observationSchema.index({ tags: 1 });
 
 // Geospatial index for proximity searches (sparse for optional coordinates)
 observationSchema.index({ 'coordinates.lat': 1, 'coordinates.lng': 1 }, { sparse: true });
+// 2dsphere index for GeoJSON point
+observationSchema.index({ locationPoint: '2dsphere' }, { sparse: true });
 
 // Text search index
 observationSchema.index({

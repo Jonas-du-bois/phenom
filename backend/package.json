@@ -51,6 +51,8 @@
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "wsmini": "^1.2.0"
+    ,
+    "web-push": "^3.5.0"
   },
   "devDependencies": {
     "cross-env": "^10.1.0",

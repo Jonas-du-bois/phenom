@@ -93,9 +93,9 @@
       <template v-else-if="!alerts.length">
         <div class="flex items-center justify-center py-12 px-4">
           <EmptyState
-            icon="bell"
+            icon="alerts"
             title="Aucune alerte"
-            description="Vous serez notifié des observations proches de vous."
+            message="Vous serez notifié des observations proches de vous."
           />
         </div>
       </template>
@@ -205,7 +205,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted, watch } from "vue";
+import { useAuthStore } from '@/stores/auth';
 import { useRouter } from "vue-router";
 import { AppLayout } from "@/components/layout";
 import { PageHeader } from "@/components/organisms";
@@ -221,11 +222,34 @@ defineOptions({ name: "AlertsPage" });
 
 const router = useRouter();
 
+// WebSocket (WsMini PubSub)
+import { useWebSocket } from "@/composables/useWebSocket";
+
+const { connected: wsConnected, messages: wsMessages, error: wsError, connect, disconnect } = useWebSocket();
+
 const alerts = ref([]);
 const loading = ref(true);
 const locationEnabled = ref(false);
 const alertRadius = ref(50);
 const userLocation = ref(null);
+const authStore = useAuthStore();
+const locationCheckIntervalId = ref(null);
+const LOCATION_CHECK_INTERVAL_MS = 30 * 60 * 1000; // 30 minutes
+
+// Settings sync (from SettingsPage localStorage key)
+const nearbyAlertsEnabled = ref(true);
+
+const loadSettingsFromStorage = () => {
+  try {
+    const raw = localStorage.getItem("phenom_settings");
+    if (!raw) return;
+    const s = JSON.parse(raw);
+    if (typeof s.nearbyAlerts === "boolean") nearbyAlertsEnabled.value = s.nearbyAlerts;
+    if (typeof s.alertRadius === "number") alertRadius.value = s.alertRadius;
+  } catch (e) {
+    // ignore
+  }
+};
 
 onMounted(async () => {
   // Check if location is already enabled
@@ -239,6 +263,88 @@ onMounted(async () => {
   }
 
   await fetchAlerts();
+
+  // Load settings and decide whether to connect
+  loadSettingsFromStorage();
+  if (nearbyAlertsEnabled.value) {
+    connect();
+  }
+
+  // Start periodic background location checks if allowed
+  const startLocationBackgroundLoop = () => {
+    // stop any existing loop
+    if (locationCheckIntervalId.value) clearInterval(locationCheckIntervalId.value);
+    if (!navigator.geolocation || !locationEnabled.value) return;
+    // run immediately then set interval
+    getCurrentLocation();
+    locationCheckIntervalId.value = setInterval(() => {
+      // Check permission then fetch
+      try {
+        navigator.permissions?.query({ name: "geolocation" }).then((res) => {
+          if (res.state === "granted") getCurrentLocation();
+        }).catch(() => getCurrentLocation());
+      } catch (e) {
+        getCurrentLocation();
+      }
+    }, LOCATION_CHECK_INTERVAL_MS);
+  };
+
+  const stopLocationBackgroundLoop = () => {
+    if (locationCheckIntervalId.value) {
+      clearInterval(locationCheckIntervalId.value);
+      locationCheckIntervalId.value = null;
+    }
+  };
+
+  // Start/stop based on current permission
+  if (locationEnabled.value) startLocationBackgroundLoop();
+
+  // Watch changes to locationEnabled to manage the loop
+  const onLocationEnabledChange = (val) => {
+    if (val) startLocationBackgroundLoop();
+    else stopLocationBackgroundLoop();
+  };
+
+  // expose for cleanup
+  window.__phenom_alerts_start_location_loop = startLocationBackgroundLoop;
+  window.__phenom_alerts_stop_location_loop = stopLocationBackgroundLoop;
+
+  // Listen to storage changes (SettingsPage updates localStorage)
+  const onStorage = (e) => {
+    if (e.key !== "phenom_settings") return;
+    const prev = nearbyAlertsEnabled.value;
+    loadSettingsFromStorage();
+    // connect/disconnect when toggle changed
+    if (!prev && nearbyAlertsEnabled.value) connect();
+    if (prev && !nearbyAlertsEnabled.value) {
+      disconnect();
+      alerts.value = [];
+    }
+  };
+
+  window.addEventListener("storage", onStorage);
+
+  // watch permission changes via Permissions API (if supported)
+  try {
+    navigator.permissions?.query({ name: "geolocation" }).then((perm) => {
+      perm.onchange = () => {
+        locationEnabled.value = perm.state === "granted";
+        onLocationEnabledChange(locationEnabled.value);
+      };
+    });
+  } catch (e) {}
+
+  // store listener for cleanup
+  window.__phenom_alerts_storage_handler = onStorage;
+});
+
+onUnmounted(() => {
+  // remove storage listener
+  const handler = window.__phenom_alerts_storage_handler;
+  if (handler) window.removeEventListener("storage", handler);
+  // cleanup location loop
+  try { stopLocationBackgroundLoop(); } catch (e) {}
+  // Ne pas déconnecter le WebSocket ici — la connexion est gérée globalement
 });
 
 const getCurrentLocation = () => {
@@ -249,6 +355,25 @@ const getCurrentLocation = () => {
         lng: position.coords.longitude,
       };
       fetchAlerts();
+      // send location to backend for proximity checks (if authenticated)
+      (async () => {
+        try {
+          const token = authStore.token;
+          if (!token) return;
+          await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/v1/users/me/location`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ lat: userLocation.value.lat, lng: userLocation.value.lng, radiusKm: alertRadius.value })
+          });
+        } catch (e) {
+          console.warn('Failed to send location to backend', e);
+        }
+      })();
+      // record last check time locally
+      try { localStorage.setItem('phenom_last_location_check', new Date().toISOString()); } catch (e) {}
     },
     (error) => {
       console.error("Location error:", error);
@@ -296,6 +421,62 @@ const fetchAlerts = async () => {
     loading.value = false;
   }
 };
+
+// Helper: distance (haversine) in km
+const computeDistanceKm = (lat1, lon1, lat2, lon2) => {
+  if ([lat1, lon1, lat2, lon2].some((v) => v === null || v === undefined)) return null;
+  const toRad = (v) => (v * Math.PI) / 180;
+  const R = 6371; // km
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
+// Watch WebSocket messages and create alerts when an observation event is received
+watch(
+  wsMessages,
+  (msgs) => {
+    if (!msgs || !msgs.length) return;
+    const latest = msgs[msgs.length - 1];
+
+    // Support different shapes depending on source: either wrapper { channel, data, receivedAt }
+    // or raw message { type, data, timestamp }
+    const channel = latest.channel || latest.channel;
+    const payload = latest.data || latest;
+
+    // Only handle observations channel / observation events
+    if (channel === "observations" || payload?.type?.includes("observation")) {
+      const event = payload;
+      const obs = event.data || event;
+
+      // If observation has coordinates, compute distance
+      let distance = null;
+      const obsCoords = obs?.coordinates || obs?.location?.coordinates || obs?.coords;
+      if (userLocation.value && obsCoords) {
+        const lat = obsCoords.lat ?? obsCoords[0];
+        const lng = obsCoords.lng ?? obsCoords[1];
+        distance = computeDistanceKm(userLocation.value.lat, userLocation.value.lng, lat, lng);
+        if (distance !== null) distance = Math.round(distance * 10) / 10; // 1 decimal
+      }
+
+      // Only add alert if no user location or within radius
+      if (distance === null || distance <= alertRadius.value) {
+        const id = obs?._id || obs?.id || `alert_${Date.now()}`;
+        alerts.value.unshift({
+          id,
+          observation: obs,
+          message: event.type || "Nouvelle observation",
+          distance: distance !== null ? distance : undefined,
+          createdAt: event.timestamp || latest.receivedAt || new Date().toISOString(),
+          read: false,
+        });
+      }
+    }
+  },
+  { deep: true },
+);
 
 const viewAlert = (alert) => {
   // Mark as read

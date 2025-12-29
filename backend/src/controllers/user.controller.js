@@ -123,6 +123,97 @@ class UserController {
   }
 
   /**
+   * Met à jour la position actuelle de l'utilisateur
+   * POST /users/me/location
+   */
+  async updateLocation(req, res, next) {
+    try {
+      const userId = req.user._id;
+      const { lat, lng, radiusKm = 50 } = req.body;
+
+      if (typeof lat !== 'number' || typeof lng !== 'number') {
+        return errorResponse(res, 'lat and lng are required and must be numbers', 400);
+      }
+
+      // Store/update last location on PushSubscription documents if present
+      const PushSubscription = (await import('../models/PushSubscription.js')).default;
+      await PushSubscription.updateMany({ userId }, { $set: { 'lastLocation.lat': lat, 'lastLocation.lng': lng, 'lastLocation.updatedAt': new Date() } });
+
+      // Find nearby observations and notify user via WS + WebPush
+      const Observation = (await import('../models/Observation.js')).default;
+
+      // Try a geoNear aggregation using GeoJSON `locationPoint` if available (more efficient)
+      let toNotify = [];
+      try {
+        const meters = Math.round(radiusKm * 1000);
+        const agg = await Observation.aggregate([
+          {
+            $geoNear: {
+              near: { type: 'Point', coordinates: [lng, lat] },
+              distanceField: 'dist.calculated',
+              maxDistance: meters,
+              spherical: true
+            }
+          },
+          { $limit: 200 }
+        ]).allowDiskUse(true);
+
+        // normalize results
+        toNotify = agg.map((doc) => ({ obs: doc, distance: Math.round((doc.dist?.calculated || 0) / 100) / 10 }));
+      } catch (geoErr) {
+        // fallback to bounding box + haversine if $geoNear not available or no locationPoint
+        const deg = radiusKm / 111; // ~111 km per degree latitude
+        const minLat = lat - deg;
+        const maxLat = lat + deg;
+        const minLng = lng - deg;
+        const maxLng = lng + deg;
+
+        const candidates = await Observation.find({
+          'coordinates.lat': { $gte: minLat, $lte: maxLat },
+          'coordinates.lng': { $gte: minLng, $lte: maxLng }
+        }).limit(200).lean();
+
+        const toKm = (lat1, lon1, lat2, lon2) => {
+          const toRad = v => (v * Math.PI) / 180;
+          const R = 6371;
+          const dLat = toRad(lat2 - lat1);
+          const dLon = toRad(lon2 - lon1);
+          const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          return R * c;
+        };
+
+        for (const obs of candidates) {
+          if (!obs.coordinates || obs.coordinates.lat === undefined) continue;
+          const d = toKm(lat, lng, obs.coordinates.lat, obs.coordinates.lng);
+          if (d <= radiusKm) toNotify.push({ obs, distance: Math.round(d * 10) / 10 });
+        }
+
+      }
+
+      // Notify via WS and WebPush
+      const webpushService = (await import('../services/webpush.service.js')).default;
+      const { publishObservationEvent } = await import('../config/websocket.js');
+
+      for (const item of toNotify) {
+        // Publish WS event
+        publishObservationEvent('observation:nearby', item.obs);
+
+        // Send WebPush to user's subscriptions
+        await webpushService.notifyUserPush(userId, {
+          title: 'Alerte : observation proche',
+          body: item.obs.location || 'Nouvelle observation proche',
+          data: { url: `/observation/${item.obs._id}` }
+        }).catch(() => {});
+      }
+
+      return successResponse(res, { checked: toNotify.length });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
    * Récupère les observations de l'utilisateur connecté
    * GET /users/me/observations
    */
