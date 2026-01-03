@@ -1,34 +1,49 @@
 /**
- * Constantes de l'application
- * Compatible avec le format Phenom Search API
+ * Application Constants
+ *
+ * Centralized constant definitions for the Phenom application.
+ * Compatible with Phenom Search API format.
  */
 
-// Statuts admin
+// ============================================================================
+// ADMIN STATUS VALUES
+// ============================================================================
+
 export const ADMIN_STATUS = {
-  PENDING: "pending",
-  APPROVED: "approved",
-  REJECTED: "rejected",
+  PENDING: "pending", // Awaiting review
+  APPROVED: "approved", // Approved by admin
+  REJECTED: "rejected", // Rejected by admin
 };
 
-// Rôles utilisateurs
+// ============================================================================
+// USER ROLES
+// ============================================================================
+
 export const USER_ROLES = {
-  USER: "user",
-  ADMIN: "admin",
+  USER: "user", // Standard user
+  ADMIN: "admin", // Administrator
 };
 
-// Limites de validation
+// ============================================================================
+// VALIDATION LIMITS
+// ============================================================================
+
 export const LIMITS = {
-  DESCRIPTION_MIN_LENGTH: 20,
-  DESCRIPTION_MAX_LENGTH: 5000,
-  MAX_IMAGES: 5,
-  MAX_IMAGE_SIZE: 5 * 1024 * 1024, // 5MB
-  MAX_TAGS: 10,
-  LOCATION_MAX_LENGTH: 200,
-  COUNTRY_MAX_LENGTH: 100,
-  STATE_MAX_LENGTH: 100,
+  DESCRIPTION_MIN_LENGTH: 20, // Minimum description characters
+  DESCRIPTION_MAX_LENGTH: 5000, // Maximum description characters
+  MAX_IMAGES: 5, // Max images per observation
+  MAX_IMAGE_SIZE: 5 * 1024 * 1024, // 5MB max file size
+  MAX_TAGS: 10, // Max tags per observation
+  LOCATION_MAX_LENGTH: 200, // Location field max length
+  COUNTRY_MAX_LENGTH: 100, // Country field max length
+  STATE_MAX_LENGTH: 100, // State/region field max length
 };
 
-// Échelle de crédibilité (0-15)
+// ============================================================================
+// CREDIBILITY SCALE (0-15)
+// Measures the reliability of the observation report
+// ============================================================================
+
 export const CREDIBILITY_SCALE = {
   MIN: 0,
   MAX: 15,
@@ -42,7 +57,11 @@ export const CREDIBILITY_SCALE = {
   },
 };
 
-// Échelle d'étrangeté (0-10)
+// ============================================================================
+// STRANGENESS SCALE (0-10)
+// Measures how unusual/unexplainable the phenomenon was
+// ============================================================================
+
 export const STRANGENESS_SCALE = {
   MIN: 0,
   MAX: 10,
@@ -60,8 +79,11 @@ export const STRANGENESS_SCALE = {
   },
 };
 
-// Sources de données
+// ============================================================================
+// DATA SOURCES
+// ============================================================================
+
 export const DATA_SOURCES = {
-  USER: "user",
-  HATCH: "hatch",
+  USER: "user", // User-submitted observation
+  HATCH: "hatch", // Imported from Hatch UFO database
 };

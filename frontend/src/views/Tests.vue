@@ -1,7 +1,27 @@
+<!-- ========================================================================
+     TESTS PAGE - API Testing Center for development and debugging
+     
+     This is a comprehensive testing interface for all backend API endpoints.
+     It allows developers to manually test each endpoint with custom inputs
+     and view the raw API responses.
+     
+     Features:
+     - Health check and public statistics
+     - Authentication testing (login, register, logout)
+     - User profile management
+     - Observation CRUD operations
+     - Comment system testing
+     - Image upload testing
+     - Admin panel endpoints
+     - Filter options retrieval
+     
+     Note: This page is for development purposes only and should not
+     be accessible in production. Access via /old-home route.
+     ======================================================================== -->
 <template>
   <div class="home-view min-h-screen p-8">
     <div class="max-w-7xl mx-auto">
-      <!-- Header -->
+      <!-- Header - API status and user info display -->
       <div class="text-center mb-12">
         <h1 class="text-5xl font-bold text-violet-mystique mb-4">
           🛸 Phenom API Testing Center
@@ -23,7 +43,7 @@
           >
             Status: {{ healthStatus || "checking..." }}
           </span>
-          <!-- Utilisateur connecté -->
+          <!-- Logged in user display -->
           <span
             v-if="currentUser"
             class="px-3 py-1 bg-violet-500/20 text-violet-400 rounded-full"
@@ -40,7 +60,7 @@
         </div>
       </div>
 
-      <!-- Navigation rapide -->
+      <!-- Quick navigation buttons -->
       <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2 mb-8">
         <button
           v-for="section in sections"
@@ -52,7 +72,7 @@
         </button>
       </div>
 
-      <!-- Section: Santé & Stats -->
+      <!-- Section: Health & Stats -->
       <section id="health" class="api-section mb-8">
         <h2 class="section-title">🏥 Santé & Statistiques</h2>
         <div class="grid md:grid-cols-2 gap-4">
@@ -67,7 +87,7 @@
             }}</pre>
           </div>
 
-          <!-- Stats publiques -->
+          <!-- Public Stats -->
           <div class="api-card">
             <h3 class="text-lg font-semibold mb-3">Statistiques publiques</h3>
             <button @click="getPublicStats" class="btn-primary mb-3">
@@ -263,7 +283,7 @@
               🔍 Lister les observations (Phenom Search)
             </h3>
             <div class="space-y-3 mb-3">
-              <!-- Pagination & Recherche -->
+              <!-- Pagination & Search -->
               <div class="grid grid-cols-3 gap-2">
                 <input
                   v-model.number="observationForms.list.page"
@@ -285,7 +305,7 @@
                 />
               </div>
 
-              <!-- Tri -->
+              <!-- Sorting -->
               <div class="grid grid-cols-2 gap-2">
                 <select
                   v-model="observationForms.list.sortBy"
@@ -305,7 +325,7 @@
                 </select>
               </div>
 
-              <!-- Filtres géographiques -->
+              <!-- Geographic filters -->
               <div class="p-2 bg-blue-900/20 rounded-lg">
                 <p class="text-xs text-blue-400 mb-2">
                   🌍 Filtres géographiques
@@ -333,7 +353,7 @@
                 </div>
               </div>
 
-              <!-- Filtres temporels -->
+              <!-- Time filters -->
               <div class="p-2 bg-purple-900/20 rounded-lg">
                 <p class="text-xs text-purple-400 mb-2">📅 Filtres temporels</p>
                 <div class="grid grid-cols-2 gap-2">
@@ -352,7 +372,7 @@
                 </div>
               </div>
 
-              <!-- Filtres scores -->
+              <!-- Score filters -->
               <div class="p-2 bg-green-900/20 rounded-lg">
                 <p class="text-xs text-green-400 mb-2">
                   📊 Scores (0-15 crédibilité, 0-10 étrangeté)
@@ -393,7 +413,7 @@
                 </div>
               </div>
 
-              <!-- Filtres types -->
+              <!-- Type filters -->
               <div class="p-2 bg-orange-900/20 rounded-lg">
                 <p class="text-xs text-orange-400 mb-2">
                   🏷️ Types (codes séparés par virgule)
@@ -441,7 +461,7 @@
                 </div>
               </div>
 
-              <!-- Filtres booléens -->
+              <!-- Boolean filters -->
               <div class="grid grid-cols-2 gap-2">
                 <select
                   v-model="observationForms.list.hasCoordinates"
@@ -481,7 +501,7 @@
               Format Phenom Search compatible
             </p>
             <div class="space-y-3 mb-3">
-              <!-- Date et Heure -->
+              <!-- Date and Time -->
               <div class="p-2 bg-blue-900/20 rounded-lg">
                 <p class="text-xs text-blue-400 mb-2">📅 Date & Heure</p>
                 <div class="grid grid-cols-2 gap-2">
@@ -571,7 +591,7 @@
                 rows="3"
               ></textarea>
 
-              <!-- Évaluation -->
+              <!-- Rating/Evaluation -->
               <div class="p-2 bg-purple-900/20 rounded-lg">
                 <p class="text-xs text-purple-400 mb-2">📊 Évaluation</p>
                 <div class="grid grid-cols-3 gap-2">
@@ -675,11 +695,11 @@
                 </div>
               </div>
 
-              <!-- Upload d'image OU génération IA -->
+              <!-- Image upload OR AI generation -->
               <div class="space-y-2">
                 <label class="text-sm text-gray-400">📷 Image</label>
 
-                <!-- Toggle entre upload et IA -->
+                <!-- Toggle between upload and AI -->
                 <div class="flex gap-2 mb-2">
                   <button
                     type="button"
@@ -711,7 +731,7 @@
                   </button>
                 </div>
 
-                <!-- Upload classique -->
+                <!-- Classic upload -->
                 <div v-if="!observationForms.create.generateAiImage">
                   <input
                     ref="observationImageInput"
@@ -732,7 +752,7 @@
                   </div>
                 </div>
 
-                <!-- Info génération IA -->
+                <!-- AI generation info -->
                 <div
                   v-else
                   class="p-3 bg-gradient-to-r from-purple-900/30 to-pink-900/30 border border-purple-500/30 rounded-lg"
@@ -816,7 +836,7 @@
                 class="input-field"
               />
 
-              <!-- Date et Heure -->
+              <!-- Date and Time -->
               <div class="p-2 bg-blue-900/20 rounded-lg">
                 <p class="text-xs text-blue-400 mb-2">📅 Date & Heure</p>
                 <div class="grid grid-cols-2 gap-2">
@@ -835,7 +855,7 @@
                 </div>
               </div>
 
-              <!-- Localisation -->
+              <!-- Location -->
               <div class="p-2 bg-green-900/20 rounded-lg">
                 <p class="text-xs text-green-400 mb-2">📍 Localisation</p>
                 <div class="space-y-2">
@@ -885,7 +905,7 @@
                 </div>
               </div>
 
-              <!-- Description -->
+              <!-- Description field -->
               <textarea
                 v-model="observationForms.update.description"
                 placeholder="Description (min 10 caractères)"
@@ -893,7 +913,7 @@
                 rows="3"
               ></textarea>
 
-              <!-- Évaluation -->
+              <!-- Rating/Evaluation -->
               <div class="p-2 bg-purple-900/20 rounded-lg">
                 <p class="text-xs text-purple-400 mb-2">📊 Évaluation</p>
                 <div class="grid grid-cols-3 gap-2">
@@ -1139,7 +1159,7 @@
         </div>
       </section>
 
-      <!-- Section: Images (Migration vers Cloudinary) -->
+      <!-- Section: Images (Cloudinary Migration) -->
       <section id="images" class="api-section mb-8">
         <h2 class="section-title">🖼️ Images (Cloudinary)</h2>
         <div class="api-card">
@@ -1347,7 +1367,7 @@
 
               <div class="text-xs text-gray-500">URL: {{ wsUrl }}</div>
 
-              <!-- Erreur de connexion -->
+              <!-- Connection error -->
               <div
                 v-if="wsError && !wsConnected"
                 class="p-3 bg-red-500/10 border border-red-500/30 rounded-lg"
@@ -1934,7 +1954,7 @@ function getGeolocation() {
       enableHighAccuracy: true,
       timeout: 10000,
       maximumAge: 0,
-    },
+    }
   );
 }
 
@@ -2001,7 +2021,7 @@ function resetObservationFilters() {
 async function getObservations() {
   try {
     const response = await observationService.getAll(
-      observationForms.value.list,
+      observationForms.value.list
     );
     results.value.observations = response;
   } catch (error) {
@@ -2106,7 +2126,7 @@ async function createObservation() {
 
       await imageService.uploadToObservation(
         observationId,
-        observationForms.value.create.imageFile,
+        observationForms.value.create.imageFile
       );
     }
 
@@ -2145,7 +2165,7 @@ async function createObservation() {
 async function getOneObservation() {
   try {
     const response = await observationService.getById(
-      observationForms.value.getOne.id,
+      observationForms.value.getOne.id
     );
     results.value.oneObservation = response;
   } catch (error) {
@@ -2209,7 +2229,7 @@ async function updateObservation() {
 async function deleteObservation() {
   try {
     const response = await observationService.delete(
-      observationForms.value.delete.id,
+      observationForms.value.delete.id
     );
     results.value.deleteObservation = response;
   } catch (error) {
@@ -2224,7 +2244,7 @@ async function generateAiImageForObservation() {
   try {
     aiImageLoading.value = true;
     const response = await observationService.generateAiImage(
-      observationForms.value.generateAi.id,
+      observationForms.value.generateAi.id
     );
     results.value.generateAiImage = response;
   } catch (error) {
@@ -2243,7 +2263,7 @@ async function getComments() {
     const params = { page, limit };
     const response = await commentService.getByObservation(
       observationId,
-      params,
+      params
     );
     results.value.comments = response;
   } catch (error) {
@@ -2309,7 +2329,7 @@ async function updateUserRole() {
 async function deleteObservationAdmin() {
   try {
     const response = await adminService.deleteObservation(
-      adminForms.value.deleteObservation.id,
+      adminForms.value.deleteObservation.id
     );
     results.value.deleteObservationAdmin = response;
   } catch (error) {
@@ -2322,7 +2342,7 @@ async function deleteObservationAdmin() {
 async function deleteCommentAdmin() {
   try {
     const response = await adminService.deleteComment(
-      adminForms.value.deleteComment.id,
+      adminForms.value.deleteComment.id
     );
     results.value.deleteCommentAdmin = response;
   } catch (error) {
@@ -2335,7 +2355,7 @@ async function deleteCommentAdmin() {
 async function getUserDetails() {
   try {
     const response = await adminService.getUserDetails(
-      adminForms.value.userDetails.id,
+      adminForms.value.userDetails.id
     );
     results.value.userDetails = response;
   } catch (error) {

@@ -1,13 +1,17 @@
 /**
- * Composable pour la gestion des filtres
- * Gère les options de filtrage et l'état du formulaire
+ * useFilters Composable
+ *
+ * Filter management for observations.
+ * Handles filter options and form state.
+ *
+ * @module composables/useFilters
  */
 import { ref, computed } from "vue";
 import { useFilterStore } from "../stores/filter";
 import { useObservationStore } from "../stores/observation";
 import { storeToRefs } from "pinia";
 
-// Structure par défaut des filtres
+// Default filter structure
 const createEmptyFilters = () => ({
   country: null,
   startYear: null,
@@ -46,7 +50,7 @@ export function useFilters() {
     strangenessScale,
   } = storeToRefs(filterStore);
 
-  // État local des filtres
+  // Local filter state
   const formFilters = ref(createEmptyFilters());
   const activeFilters = ref(createEmptyFilters());
   const isApplying = ref(false);
@@ -54,15 +58,15 @@ export function useFilters() {
   // Computed
   const hasFilters = computed(() =>
     Object.values(activeFilters.value).some(
-      (v) => v !== null && v !== undefined && v !== "",
-    ),
+      (v) => v !== null && v !== undefined && v !== ""
+    )
   );
 
   const activeFilterCount = computed(
     () =>
       Object.values(activeFilters.value).filter(
-        (v) => v !== null && v !== undefined && v !== "",
-      ).length,
+        (v) => v !== null && v !== undefined && v !== ""
+      ).length
   );
 
   const activeFiltersSummary = computed(() => {
@@ -102,8 +106,8 @@ export function useFilters() {
     try {
       const cleanFilters = Object.fromEntries(
         Object.entries(formFilters.value).filter(
-          ([, v]) => v !== null && v !== undefined && v !== "",
-        ),
+          ([, v]) => v !== null && v !== undefined && v !== ""
+        )
       );
       activeFilters.value = { ...formFilters.value };
       await observationStore.fetchObservations(cleanFilters);

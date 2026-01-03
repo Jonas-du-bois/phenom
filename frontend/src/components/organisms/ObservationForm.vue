@@ -1,19 +1,52 @@
+<!-- ========================================================================
+     OBSERVATION FORM - Complete form for creating/editing observations
+     
+     Features:
+     - Photo upload or AI image generation toggle
+     - Date/time picker with today as default
+     - Location fields with GPS geolocation support
+     - Description textarea with character counter (max 2000)
+     - Rating inputs (credibility 0-15, strangeness 0-10, duration)
+     - Multi-select chips for classifications:
+       * Observer types (pilot, military, civilian, etc.)
+       * UFO shapes (disc, triangle, sphere, etc.)
+       * Phenomena (lights, sounds, electromagnetic, etc.)
+     - Form validation with error messages
+     - Loading state during submission
+     
+     Props:
+     - initialData: Pre-fill form with existing observation data
+     - submitting: Show loading state on submit button
+     - submitLabel: Custom submit button text
+     
+     Events:
+     - submit: Emits validated form data
+     - media-change: Emits when media file changes
+     ======================================================================== -->
 <template>
   <form @submit.prevent="handleSubmit" class="observation-form" novalidate>
     <div class="liquid-glass-card">
-      <!-- Image toggle -->
+      <!-- Media upload toggle - Choose between upload or AI generation -->
       <div class="form-section">
         <label class="section-label">Photo / Vidéo</label>
 
         <div class="toggle-group">
           <button
             type="button"
-            class="toggle-btn" 
+            class="toggle-btn"
             :class="{ active: !form.generateAiImage }"
-            @click="(form.generateAiImage = false), removeMedia()"
+            @click="((form.generateAiImage = false), removeMedia())"
           >
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+            <svg
+              class="icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"
+              />
             </svg>
             Upload
           </button>
@@ -21,21 +54,41 @@
             type="button"
             class="toggle-btn"
             :class="{ active: form.generateAiImage }"
-            @click="(form.generateAiImage = true), removeMedia()"
+            @click="((form.generateAiImage = true), removeMedia())"
           >
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 16V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2z"/>
-              <polyline points="7 10 12 15 17 10"/>
+            <svg
+              class="icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M21 16V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2z"
+              />
+              <polyline points="7 10 12 15 17 10" />
             </svg>
             Générer IA
           </button>
         </div>
 
-        <div v-if="!form.generateAiImage" class="media-zone" @click="openMediaPicker">
+        <div
+          v-if="!form.generateAiImage"
+          class="media-zone"
+          @click="openMediaPicker"
+        >
           <template v-if="!form.media">
             <div class="upload-placeholder">
-              <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+              <svg
+                class="upload-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path
+                  d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"
+                />
               </svg>
               <p>Cliquez pour ajouter une photo</p>
               <span class="upload-hint">JPEG, PNG, WebP • Max 10MB</span>
@@ -44,9 +97,18 @@
           <template v-else>
             <div class="media-preview-container">
               <img :src="mediaPreview" alt="Aperçu" class="media-img" />
-              <button type="button" class="remove-media-btn" @click.stop="removeMedia">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M18 6L6 18M6 6l12 12"/>
+              <button
+                type="button"
+                class="remove-media-btn"
+                @click.stop="removeMedia"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M18 6L6 18M6 6l12 12" />
                 </svg>
               </button>
             </div>
@@ -54,20 +116,38 @@
         </div>
 
         <div v-else class="ai-badge">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          <svg
+            class="icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
           </svg>
           Une image sera générée par IA à partir de la description
         </div>
 
-        <input ref="mediaInput" type="file" accept="image/jpeg,image/png,image/webp" class="file-input" @change="handleMediaSelect" />
+        <input
+          ref="mediaInput"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          class="file-input"
+          @change="handleMediaSelect"
+        />
       </div>
 
       <!-- Date & Time -->
       <div class="form-section">
         <label class="section-label">Date & Heure</label>
         <div class="input-row">
-          <input class="liquid-input" v-model="form.date" type="date" :max="today" required />
+          <input
+            class="liquid-input"
+            v-model="form.date"
+            type="date"
+            :max="today"
+            required
+          />
           <input class="liquid-input" v-model="form.time" type="time" />
         </div>
         <p v-if="errors.date" class="error-msg">{{ errors.date }}</p>
@@ -77,43 +157,85 @@
       <div class="form-section">
         <label class="section-label">Localisation</label>
         <div class="input-row">
-          <input class="liquid-input flex-1" v-model="form.location" type="text" placeholder="Lieu (ex: Lausanne)" />
-          <button type="button" class="geo-btn" @click="getCurrentLocation" :disabled="gettingLocation">
+          <input
+            class="liquid-input flex-1"
+            v-model="form.location"
+            type="text"
+            placeholder="Lieu (ex: Lausanne)"
+          />
+          <button
+            type="button"
+            class="geo-btn"
+            @click="getCurrentLocation"
+            :disabled="gettingLocation"
+          >
             <LoadingSpinner v-if="gettingLocation" size="sm" />
-            <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-              <circle cx="12" cy="10" r="3"/>
+            <svg
+              v-else
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
             </svg>
           </button>
         </div>
 
         <div class="input-row mt-3">
-          <input class="liquid-input" v-model="form.country" type="text" placeholder="Pays" required />
+          <input
+            class="liquid-input"
+            v-model="form.country"
+            type="text"
+            placeholder="Pays"
+            required
+          />
           <select class="liquid-input" v-model="form.locale">
             <option value="">Type de lieu...</option>
-            <option v-for="opt in LOCALE_TYPES" :key="opt.code" :value="opt.code">{{ opt.icon }} {{ opt.label }}</option>
+            <option
+              v-for="opt in LOCALE_TYPES"
+              :key="opt.code"
+              :value="opt.code"
+            >
+              {{ opt.icon }} {{ opt.label }}
+            </option>
           </select>
         </div>
 
         <div class="input-row mt-3">
-          <input class="liquid-input" v-model.number="form.latitude" type="number" step="0.000001" placeholder="Latitude" />
-          <input class="liquid-input" v-model.number="form.longitude" type="number" step="0.000001" placeholder="Longitude" />
+          <input
+            class="liquid-input"
+            v-model.number="form.latitude"
+            type="number"
+            step="0.000001"
+            placeholder="Latitude"
+          />
+          <input
+            class="liquid-input"
+            v-model.number="form.longitude"
+            type="number"
+            step="0.000001"
+            placeholder="Longitude"
+          />
         </div>
       </div>
 
       <!-- Description -->
       <div class="form-section">
         <label class="section-label">Description</label>
-        <textarea 
-          class="liquid-textarea" 
-          v-model="form.description" 
-          rows="5" 
-          maxlength="2000" 
-          placeholder="Décrivez en détail votre observation... (minimum 10 caractères)" 
+        <textarea
+          class="liquid-textarea"
+          v-model="form.description"
+          rows="5"
+          maxlength="2000"
+          placeholder="Décrivez en détail votre observation... (minimum 10 caractères)"
           required
         ></textarea>
         <div class="char-counter">{{ form.description.length }} / 2000</div>
-        <p v-if="errors.description" class="error-msg">{{ errors.description }}</p>
+        <p v-if="errors.description" class="error-msg">
+          {{ errors.description }}
+        </p>
       </div>
 
       <!-- Ratings -->
@@ -122,15 +244,35 @@
         <div class="rating-grid">
           <div class="rating-item">
             <label class="rating-label">Crédibilité</label>
-            <input class="liquid-input" v-model.number="form.credibility" type="number" min="0" max="15" placeholder="0-15" />
+            <input
+              class="liquid-input"
+              v-model.number="form.credibility"
+              type="number"
+              min="0"
+              max="15"
+              placeholder="0-15"
+            />
           </div>
           <div class="rating-item">
             <label class="rating-label">Étrangeté</label>
-            <input class="liquid-input" v-model.number="form.strangeness" type="number" min="0" max="10" placeholder="0-10" />
+            <input
+              class="liquid-input"
+              v-model.number="form.strangeness"
+              type="number"
+              min="0"
+              max="10"
+              placeholder="0-10"
+            />
           </div>
           <div class="rating-item">
             <label class="rating-label">Durée (secondes)</label>
-            <input class="liquid-input" v-model.number="form.duration" type="number" min="0" placeholder="Durée" />
+            <input
+              class="liquid-input"
+              v-model.number="form.duration"
+              type="number"
+              min="0"
+              placeholder="Durée"
+            />
           </div>
         </div>
       </div>
@@ -189,11 +331,26 @@
 
       <!-- Submit button -->
       <div class="form-section">
-        <button type="submit" :disabled="!isValid || submitting" class="submit-button">
+        <button
+          type="submit"
+          :disabled="!isValid || submitting"
+          class="submit-button"
+        >
           <span v-if="submitting">
             <svg class="spinner" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" opacity="0.25"/>
-              <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" opacity="0.75"/>
+              <circle
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+                opacity="0.25"
+              />
+              <path
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                opacity="0.75"
+              />
             </svg>
             Publication en cours...
           </span>
@@ -280,7 +437,7 @@ watch(
       Object.assign(form, data);
     }
   },
-  { deep: true },
+  { deep: true }
 );
 
 const isValid = computed(() => {
@@ -374,7 +531,7 @@ watch(
       mediaPreview.value = "";
     }
   },
-  { immediate: true },
+  { immediate: true }
 );
 
 onUnmounted(() => {
@@ -407,7 +564,7 @@ const getCurrentLocation = async () => {
 
     try {
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${position.coords.latitude}&lon=${position.coords.longitude}&format=json`,
+        `https://nominatim.openstreetmap.org/reverse?lat=${position.coords.latitude}&lon=${position.coords.longitude}&format=json`
       );
       const data = await response.json();
       if (data.display_name) {
@@ -500,7 +657,7 @@ defineExpose({ validate, form });
   padding: clamp(16px, 4vw, 32px);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  box-shadow: 
+  box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.1),
     0 0 0 1px rgba(0, 240, 255, 0.05);
@@ -509,7 +666,7 @@ defineExpose({ validate, form });
 }
 
 .liquid-glass-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -525,8 +682,13 @@ defineExpose({ validate, form });
 }
 
 @keyframes shimmer {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.8; }
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.8;
+  }
 }
 
 /* === FORM SECTIONS === */
@@ -580,7 +742,7 @@ defineExpose({ validate, form });
     rgba(0, 240, 255, 0.08),
     rgba(0, 163, 204, 0.04)
   );
-  box-shadow: 
+  box-shadow:
     0 0 0 3px rgba(0, 240, 255, 0.1),
     0 4px 20px rgba(0, 240, 255, 0.15);
 }
@@ -651,8 +813,8 @@ defineExpose({ validate, form });
     rgba(0, 163, 204, 0.1)
   );
   border-color: rgba(0, 240, 255, 0.3);
-  color: #00F0FF;
-  box-shadow: 
+  color: #00f0ff;
+  box-shadow:
     0 4px 16px rgba(0, 240, 255, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
@@ -801,7 +963,7 @@ defineExpose({ validate, form });
 
 .geo-btn:hover:not(:disabled) {
   border-color: rgba(0, 240, 255, 0.3);
-  color: #00F0FF;
+  color: #00f0ff;
   background: linear-gradient(
     135deg,
     rgba(0, 240, 255, 0.1),
@@ -876,8 +1038,8 @@ defineExpose({ validate, form });
     rgba(0, 163, 204, 0.15)
   );
   border-color: rgba(0, 240, 255, 0.4);
-  color: #00F0FF;
-  box-shadow: 
+  color: #00f0ff;
+  box-shadow:
     0 4px 16px rgba(0, 240, 255, 0.25),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
@@ -895,7 +1057,7 @@ defineExpose({ validate, form });
 .submit-button {
   width: 100%;
   padding: 16px 24px;
-  background: linear-gradient(135deg, #00F0FF 0%, #00A3CC 100%);
+  background: linear-gradient(135deg, #00f0ff 0%, #00a3cc 100%);
   border: none;
   border-radius: 14px;
   color: #021014;
@@ -903,7 +1065,7 @@ defineExpose({ validate, form });
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 
+  box-shadow:
     0 4px 20px rgba(0, 240, 255, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
   display: flex;
@@ -914,7 +1076,7 @@ defineExpose({ validate, form });
 
 .submit-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 
+  box-shadow:
     0 6px 28px rgba(0, 240, 255, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
@@ -936,8 +1098,12 @@ defineExpose({ validate, form });
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* === UTILITIES === */

@@ -1,33 +1,65 @@
 /**
- * Store Pinia pour les observations
- * KISS: Wrapper simple autour du service
+ * Observations Pinia Store
+ *
+ * Manages the observation data for the application.
+ * KISS principle: Simple wrapper around the observation service.
+ *
+ * Features:
+ * - Fetch observations with filters and pagination
+ * - Create, update, delete observations
+ * - Map-specific queries with bounding box
+ * - Client-side caching for map data
  */
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { observationService } from "../services/observationService";
 
 export const useObservationStore = defineStore("observation", () => {
-  // État
+  // ==========================================================================
+  // STATE
+  // ==========================================================================
+
+  /** List of observations for feed/list views */
   const observations = ref([]);
+
+  /** Currently viewed observation (detail page) */
   const currentObservation = ref(null);
+
+  /** Loading state for async operations */
   const loading = ref(false);
+
+  /** Error message from last failed operation */
   const error = ref(null);
+
+  /** Pagination state */
   const pagination = ref({ page: 1, limit: 30, total: 0, hasMore: true });
 
-  // Computed
+  // ==========================================================================
+  // COMPUTED GETTERS
+  // ==========================================================================
+
+  /** Check if there are any observations loaded */
   const hasObservations = computed(() => observations.value.length > 0);
+
+  /** Filter observations that have images */
   const observationsWithImages = computed(() =>
-    observations.value.filter((o) => o.images?.length > 0),
+    observations.value.filter((o) => o.images?.length > 0)
   );
 
+  // ==========================================================================
+  // FILTER CONVERSION
+  // ==========================================================================
+
   /**
-   * Convertit les filtres frontend en format API backend
-   * Format backend: ufoShape, phenomenon, country (regex, un seul), observerType
+   * Convert frontend filters to API query parameters
+   * Backend format: ufoShape, phenomenon, country (regex, single), observerType
+   * @param {Object} filters - Frontend filter object
+   * @returns {Object} API-compatible query parameters
    */
   const convertFiltersToApiParams = (filters) => {
     const params = {};
 
-    // Recherche textuelle
+    // Text search
     if (filters.search) {
       params.search = filters.search;
     }
@@ -47,8 +79,8 @@ export const useObservationStore = defineStore("observation", () => {
       params.observerType = filters.observerTypes.join(",");
     }
 
-    // Country - backend utilise regex, donc un seul pays à la fois
-    // On prend le premier pays sélectionné
+    // Country - backend uses regex, so only one country at a time
+    // Take the first selected country
     if (filters.countries?.length) {
       params.country = filters.countries[0];
     }
@@ -58,7 +90,7 @@ export const useObservationStore = defineStore("observation", () => {
       params.locale = filters.locale;
     }
 
-    // Scores min/max
+    // Score ranges (min/max)
     if (filters.minCredibility !== undefined && filters.minCredibility > 0) {
       params.minCredibility = filters.minCredibility;
     }
@@ -72,7 +104,7 @@ export const useObservationStore = defineStore("observation", () => {
       params.maxStrangeness = filters.maxStrangeness;
     }
 
-    // Années (dateFrom/dateTo -> startYear/endYear)
+    // Year range (dateFrom/dateTo -> startYear/endYear)
     if (filters.dateFrom) {
       const year = new Date(filters.dateFrom).getFullYear();
       if (!isNaN(year)) params.startYear = year;
@@ -82,7 +114,7 @@ export const useObservationStore = defineStore("observation", () => {
       if (!isNaN(year)) params.endYear = year;
     }
 
-    // Options booléennes
+    // Boolean options
     if (filters.hasMedia) {
       params.hasImages = true;
     }
@@ -96,8 +128,15 @@ export const useObservationStore = defineStore("observation", () => {
     return params;
   };
 
+  // ==========================================================================
+  // FETCH ACTIONS
+  // ==========================================================================
+
   /**
-   * Récupère les observations avec filtres
+   * Fetch observations with optional filters
+   * Updates the observations state and pagination
+   * @param {Object} filters - Filter criteria
+   * @returns {Promise<Array>} Fetched observations
    */
   const fetchObservations = async (filters = {}) => {
     loading.value = true;
@@ -121,32 +160,41 @@ export const useObservationStore = defineStore("observation", () => {
       }
       return observations.value;
     } catch (err) {
-      error.value = err.response?.data?.message || "Erreur de chargement";
+      error.value = err.response?.data?.message || "Loading error";
       throw err;
     } finally {
       loading.value = false;
     }
   };
 
+  // ==========================================================================
+  // MAP-SPECIFIC QUERIES (with caching)
+  // ==========================================================================
+
   /**
-   * Récupère des observations pour une bounding box / map view sans muter le store global
-   * filters peut contenir bounds (JSON), hasCoordinates, etc.
-   * opts: { limit } par défaut 150
+   * Fetch observations for a map bounding box without mutating the global store
+   * Uses local caching to minimize API calls
+   * @param {Object} filters - Can contain bounds (JSON), hasCoordinates, etc.
+   * @param {Object} opts - { limit, page, force }
+   * @returns {Promise<Array>} Observations within bounds
    */
-  // Simple caching strategy pour la carte : on conserve la dernière bbox+filtres
-  // Si la bbox demandée est contenue dans le cache (avec marge) et les filtres
-  // sont identiques et que le cache n'est pas expiré, on retourne les données locales.
+
+  // Simple caching strategy for map: keep last bbox + filters
+  // If requested bbox is contained in cache (with margin) and filters
+  // are identical and cache hasn't expired, return cached data
   const CACHE_KEY = "phenom_map_cache";
   const CACHE_TTL = 1000 * 60 * 10; // 10 minutes
 
   const mapCache = ref({ bounds: null, filtersHash: null, data: [], ts: 0 });
 
+  /** Save cache to localStorage */
   const saveCacheToStorage = () => {
     try {
       localStorage.setItem(CACHE_KEY, JSON.stringify(mapCache.value));
     } catch {}
   };
 
+  /** Load cache from localStorage */
   const loadCacheFromStorage = () => {
     try {
       const raw = localStorage.getItem(CACHE_KEY);
@@ -157,6 +205,7 @@ export const useObservationStore = defineStore("observation", () => {
     } catch {}
   };
 
+  /** Create stable JSON string for object comparison (sorted keys) */
   const stableStringify = (obj) => {
     if (!obj || typeof obj !== "object") return JSON.stringify(obj);
     const keys = Object.keys(obj).sort();
@@ -167,6 +216,7 @@ export const useObservationStore = defineStore("observation", () => {
     return JSON.stringify(out);
   };
 
+  /** Check if big bounds contain small bounds (with margin tolerance) */
   const boundsContains = (big, small, margin = 0.15) => {
     // big & small: { north, south, east, west }
     if (!big || !small) return false;
@@ -180,13 +230,14 @@ export const useObservationStore = defineStore("observation", () => {
     );
   };
 
-  // initialize cache from localStorage
+  // Initialize cache from localStorage on module load
   try {
     loadCacheFromStorage();
   } catch {}
 
   const fetchObservationsInBounds = async (filters = {}, opts = {}) => {
     const { limit = 150, page = 1, force = false } = opts;
+
     // Normalize bounds (if provided as stringified JSON)
     let bounds = filters.bounds;
     try {
@@ -245,7 +296,7 @@ export const useObservationStore = defineStore("observation", () => {
 
       return list;
     } catch (err) {
-      error.value = err.response?.data?.message || "Erreur chargement bounds";
+      error.value = err.response?.data?.message || "Error loading bounds data";
       throw err;
     } finally {
       loading.value = false;
@@ -253,7 +304,9 @@ export const useObservationStore = defineStore("observation", () => {
   };
 
   /**
-   * Charge plus d'observations (infinite scroll)
+   * Load more observations (infinite scroll pagination)
+   * @param {Object} filters - Filter criteria
+   * @returns {Promise<Array>} Newly loaded observations
    */
   const loadMore = async (filters = {}) => {
     if (!pagination.value.hasMore || loading.value) return;
@@ -283,7 +336,9 @@ export const useObservationStore = defineStore("observation", () => {
   };
 
   /**
-   * Récupère une observation par ID
+   * Fetch a single observation by ID
+   * @param {string} id - Observation ID
+   * @returns {Promise<Object>} The observation object
    */
   const fetchObservationById = async (id) => {
     loading.value = true;
@@ -293,7 +348,7 @@ export const useObservationStore = defineStore("observation", () => {
       currentObservation.value = response.data || response;
       return currentObservation.value;
     } catch (err) {
-      error.value = err.response?.data?.message || "Observation introuvable";
+      error.value = err.response?.data?.message || "Observation not found";
       throw err;
     } finally {
       loading.value = false;
@@ -301,7 +356,9 @@ export const useObservationStore = defineStore("observation", () => {
   };
 
   /**
-   * Crée une nouvelle observation
+   * Create a new observation
+   * @param {Object} data - Observation data to create
+   * @returns {Promise<Object>} The created observation
    */
   const createObservation = async (data) => {
     loading.value = true;
@@ -313,13 +370,14 @@ export const useObservationStore = defineStore("observation", () => {
       // Backend may return { success: false, error: '...' } with 200 status.
       // Treat that as an error to ensure callers can handle it.
       if (newObs && newObs.success === false) {
-        error.value = newObs.error || "Erreur de création";
+        error.value = newObs.error || "Creation failed";
         throw new Error(error.value);
       }
       observations.value.unshift(newObs);
       return newObs;
     } catch (err) {
-      error.value = err.response?.data?.message || "Erreur de création";
+      error.value =
+        err.response?.data?.message || "Failed to create observation";
       throw err;
     } finally {
       loading.value = false;
@@ -327,7 +385,10 @@ export const useObservationStore = defineStore("observation", () => {
   };
 
   /**
-   * Met à jour une observation
+   * Update an existing observation
+   * @param {string} id - Observation ID to update
+   * @param {Object} data - Updated observation data
+   * @returns {Promise<Object>} The updated observation
    */
   const updateObservation = async (id, data) => {
     loading.value = true;
@@ -335,7 +396,7 @@ export const useObservationStore = defineStore("observation", () => {
       const response = await observationService.update(id, data);
       const updated = response.data || response;
 
-      // Mettre à jour dans la liste
+      // Update in local list
       const index = observations.value.findIndex((o) => o._id === id);
       if (index !== -1) observations.value[index] = updated;
       if (currentObservation.value?._id === id)
@@ -343,7 +404,8 @@ export const useObservationStore = defineStore("observation", () => {
 
       return updated;
     } catch (err) {
-      error.value = err.response?.data?.message || "Erreur de mise à jour";
+      error.value =
+        err.response?.data?.message || "Failed to update observation";
       throw err;
     } finally {
       loading.value = false;
@@ -366,7 +428,7 @@ export const useObservationStore = defineStore("observation", () => {
 
       const response = await observationService.addImages(
         observationId,
-        formData,
+        formData
       );
       const updated = response.data || response;
 
@@ -380,7 +442,7 @@ export const useObservationStore = defineStore("observation", () => {
       }
 
       const idx = observations.value.findIndex(
-        (o) => o._id === observationId || o.id === observationId,
+        (o) => o._id === observationId || o.id === observationId
       );
       if (idx !== -1) {
         observations.value[idx] = { ...observations.value[idx], ...updated };
@@ -388,7 +450,7 @@ export const useObservationStore = defineStore("observation", () => {
 
       return updated;
     } catch (err) {
-      error.value = err.response?.data?.message || "Erreur upload images";
+      error.value = err.response?.data?.message || "Failed to upload images";
       throw err;
     } finally {
       loading.value = false;
@@ -415,7 +477,7 @@ export const useObservationStore = defineStore("observation", () => {
       }
 
       const idx = observations.value.findIndex(
-        (o) => o._id === observationId || o.id === observationId,
+        (o) => o._id === observationId || o.id === observationId
       );
       if (idx !== -1) {
         observations.value[idx] = { ...observations.value[idx], ...updated };
@@ -423,7 +485,8 @@ export const useObservationStore = defineStore("observation", () => {
 
       return updated;
     } catch (err) {
-      error.value = err.response?.data?.message || "Erreur génération IA";
+      error.value =
+        err.response?.data?.message || "Failed to generate AI image";
       throw err;
     } finally {
       loading.value = false;
@@ -431,7 +494,9 @@ export const useObservationStore = defineStore("observation", () => {
   };
 
   /**
-   * Supprime une observation
+   * Delete an observation
+   * @param {string} id - Observation ID to delete
+   * @returns {Promise<void>}
    */
   const deleteObservation = async (id) => {
     loading.value = true;
@@ -440,7 +505,8 @@ export const useObservationStore = defineStore("observation", () => {
       observations.value = observations.value.filter((o) => o._id !== id);
       if (currentObservation.value?._id === id) currentObservation.value = null;
     } catch (err) {
-      error.value = err.response?.data?.message || "Erreur de suppression";
+      error.value =
+        err.response?.data?.message || "Failed to delete observation";
       throw err;
     } finally {
       loading.value = false;
@@ -448,7 +514,7 @@ export const useObservationStore = defineStore("observation", () => {
   };
 
   /**
-   * Reset l'état
+   * Reset store state to initial values
    */
   const reset = () => {
     observations.value = [];
@@ -458,7 +524,7 @@ export const useObservationStore = defineStore("observation", () => {
   };
 
   return {
-    // État
+    // State
     observations,
     currentObservation,
     loading,

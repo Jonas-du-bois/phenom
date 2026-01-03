@@ -1,3 +1,27 @@
+<!--
+  ============================================================================
+  SettingsPage.vue - User Settings and Preferences Page
+  ============================================================================
+  
+  PURPOSE:
+  Allows users to manage their profile, preferences, and account settings.
+  Includes avatar upload, notification settings, and admin access.
+
+  FEATURES:
+  - Profile editing (username, bio, location)
+  - Avatar upload and cropping
+  - Email and password change
+  - Push notification settings
+  - Location permission management
+  - Cache management
+  - Admin panel access (admin users only)
+  - Account deletion
+  - Logout functionality
+
+  ROUTE: /settings (requires auth)
+  ============================================================================
+-->
+
 <template>
   <AppLayout :show-tab-bar="true">
     <template #header>
@@ -106,7 +130,6 @@
 
       <!-- Settings sections -->
       <div class="divide-y divide-white/10">
-
         <!-- installing button-->
         <!-- Bouton d'installation PWA (visible uniquement sur cette page) -->
         <div class="px-4 py-3">
@@ -117,9 +140,26 @@
             @click="promptInstall"
             aria-label="Installer l'application"
           >
-            <svg class="w-4 h-4 mr-3 text-white animate-spin" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+            <svg
+              class="w-4 h-4 mr-3 text-white animate-spin"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+              />
             </svg>
             <span class="font-medium">Installer l'application</span>
           </button>
@@ -154,13 +194,10 @@
               </div>
             </button>
 
-            
-              <span>Email</span>
-              <div class="flex items-center gap-2 text-white/40">
-                <span class="flex text">{{ user?.email }}</span>
-                
-              </div>
-          
+            <span>Email</span>
+            <div class="flex items-center gap-2 text-white/40">
+              <span class="flex text">{{ user?.email }}</span>
+            </div>
 
             <button
               @click="changePassword"
@@ -228,22 +265,40 @@
               <div>
                 <div class="text-white">Statut abonnement</div>
                 <div class="text-xs text-white/40">
-                  {{ pushSubscription ? 'Abonné' : 'Non abonné' }}
+                  {{ pushSubscription ? "Abonné" : "Non abonné" }}
                 </div>
               </div>
               <div class="flex gap-2">
-                <BaseButton v-if="!pushSubscription" size="sm" @click="handleSubscribe">S'abonner</BaseButton>
-                <BaseButton v-else variant="ghost" size="sm" @click="handleUnsubscribe">Se désabonner</BaseButton>
+                <BaseButton
+                  v-if="!pushSubscription"
+                  size="sm"
+                  @click="handleSubscribe"
+                  >S'abonner</BaseButton
+                >
+                <BaseButton
+                  v-else
+                  variant="ghost"
+                  size="sm"
+                  @click="handleUnsubscribe"
+                  >Se désabonner</BaseButton
+                >
               </div>
             </div>
 
             <div class="flex items-center justify-between">
               <div>
                 <div class="text-white">Dernier check position</div>
-                <div class="text-xs text-white/40">{{ lastLocationCheckDisplay }}</div>
+                <div class="text-xs text-white/40">
+                  {{ lastLocationCheckDisplay }}
+                </div>
               </div>
               <div>
-                <BaseButton size="sm" variant="ghost" @click="refreshLastLocationCheck">Actualiser</BaseButton>
+                <BaseButton
+                  size="sm"
+                  variant="ghost"
+                  @click="refreshLastLocationCheck"
+                  >Actualiser</BaseButton
+                >
               </div>
             </div>
           </div>
@@ -465,13 +520,13 @@ const handleAppInstalled = () => {
 };
 
 onMounted(() => {
-  window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-  window.addEventListener('appinstalled', handleAppInstalled);
+  window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+  window.addEventListener("appinstalled", handleAppInstalled);
 });
 
 onUnmounted(() => {
-  window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-  window.removeEventListener('appinstalled', handleAppInstalled);
+  window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+  window.removeEventListener("appinstalled", handleAppInstalled);
   deferredPrompt.value = null;
   showInstallButton.value = false;
 });
@@ -486,7 +541,7 @@ async function promptInstall() {
     deferredPrompt.value = null;
     // Vous pouvez enregistrer analytics ici selon choiceResult.outcome
   } catch (err) {
-    console.warn('Erreur pendant le prompt d\'installation PWA', err);
+    console.warn("Erreur pendant le prompt d'installation PWA", err);
   }
 }
 
@@ -504,12 +559,14 @@ const saveSettings = () => {
 };
 
 // Web Push subscription
-const VAPID_PUBLIC = import.meta.env.VITE_VAPID_PUBLIC || '';
+const VAPID_PUBLIC = import.meta.env.VITE_VAPID_PUBLIC || "";
 
 function urlBase64ToUint8Array(base64String) {
   try {
-    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding)
+      .replace(/-/g, "+")
+      .replace(/_/g, "/");
     const rawData = atob(base64);
     const outputArray = new Uint8Array(rawData.length);
     for (let i = 0; i < rawData.length; ++i) {
@@ -517,63 +574,76 @@ function urlBase64ToUint8Array(base64String) {
     }
     return outputArray;
   } catch (e) {
-    console.error('Invalid VAPID public key format', e, base64String);
-    throw new Error('Invalid VAPID public key');
+    console.error("Invalid VAPID public key format", e, base64String);
+    throw new Error("Invalid VAPID public key");
   }
 }
 
 async function subscribeToPush() {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    alert('Push not supported by this browser');
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+    alert("Push not supported by this browser");
     return null;
   }
   let effectiveVapid = VAPID_PUBLIC;
-  if (!effectiveVapid || typeof effectiveVapid !== 'string' || effectiveVapid.trim() === '') {
+  if (
+    !effectiveVapid ||
+    typeof effectiveVapid !== "string" ||
+    effectiveVapid.trim() === ""
+  ) {
     // Try to fetch public key from backend at runtime (useful when app is deployed without rebuild)
     try {
-      const resp = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/v1/push/public-key`);
+      const resp = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || ""}/api/v1/push/public-key`
+      );
       if (resp && resp.ok) {
         const json = await resp.json();
-        effectiveVapid = json?.data?.publicKey || json?.publicKey || '';
+        effectiveVapid = json?.data?.publicKey || json?.publicKey || "";
       }
     } catch (e) {
-      console.warn('Failed to fetch VAPID public key from backend', e);
+      console.warn("Failed to fetch VAPID public key from backend", e);
     }
   }
 
-  if (!effectiveVapid || effectiveVapid.trim() === '') {
-    alert('Clé VAPID publique manquante : configurez VITE_VAPID_PUBLIC ou définissez VAPID_PUBLIC_KEY côté serveur');
-    console.error('VAPID public key is missing (frontend env and backend fallback empty)');
+  if (!effectiveVapid || effectiveVapid.trim() === "") {
+    alert(
+      "Clé VAPID publique manquante : configurez VITE_VAPID_PUBLIC ou définissez VAPID_PUBLIC_KEY côté serveur"
+    );
+    console.error(
+      "VAPID public key is missing (frontend env and backend fallback empty)"
+    );
     return null;
   }
 
   try {
     const permission = await Notification.requestPermission();
-    if (permission !== 'granted') {
-      alert('Notification permission denied');
+    if (permission !== "granted") {
+      alert("Notification permission denied");
       return null;
     }
 
     const swReg = await navigator.serviceWorker.ready;
     const sub = await swReg.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(effectiveVapid)
+      applicationServerKey: urlBase64ToUint8Array(effectiveVapid),
     });
 
     // send to backend
     const token = authStore.token;
-    await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/v1/push/subscribe`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
-      },
-      body: JSON.stringify({ subscription: sub })
-    });
+    await fetch(
+      `${import.meta.env.VITE_API_BASE_URL || ""}/api/v1/push/subscribe`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ subscription: sub }),
+      }
+    );
 
     return sub;
   } catch (err) {
-    console.error('Push subscribe error', err);
+    console.error("Push subscribe error", err);
     return null;
   }
 }
@@ -583,49 +653,57 @@ async function unsubscribeFromPush(subscription) {
     if (!subscription) return;
     const endpoint = subscription.endpoint;
     const token = authStore.token;
-    await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/v1/push/unsubscribe`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
-      },
-      body: JSON.stringify({ endpoint })
-    });
+    await fetch(
+      `${import.meta.env.VITE_API_BASE_URL || ""}/api/v1/push/unsubscribe`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ endpoint }),
+      }
+    );
     await subscription.unsubscribe();
   } catch (err) {
-    console.warn('Unsubscribe error', err);
+    console.warn("Unsubscribe error", err);
   }
 }
 
 // Auto-subscribe when any notification toggle is set to true
-watch(() => [settings.commentNotifications, settings.newObservations], async (vals, oldVals) => {
-  const [comments, newObs] = vals;
-  const any = comments || newObs;
-  if (any) {
-    // ensure subscription
-    try {
-      const swReg = await navigator.serviceWorker.ready;
-      const existing = await swReg.pushManager.getSubscription();
-      if (!existing) await subscribeToPush();
-    } catch (e) {}
+watch(
+  () => [settings.commentNotifications, settings.newObservations],
+  async (vals, oldVals) => {
+    const [comments, newObs] = vals;
+    const any = comments || newObs;
+    if (any) {
+      // ensure subscription
+      try {
+        const swReg = await navigator.serviceWorker.ready;
+        const existing = await swReg.pushManager.getSubscription();
+        if (!existing) await subscribeToPush();
+      } catch (e) {}
+    }
   }
-});
+);
 
 // Push subscription state + last location check
 const pushSubscription = ref(null);
 const lastLocationCheck = ref(null);
 
 const lastLocationCheckDisplay = computed(() => {
-  if (!lastLocationCheck.value) return 'Jamais';
+  if (!lastLocationCheck.value) return "Jamais";
   try {
     const d = new Date(lastLocationCheck.value);
-    return d.toLocaleString('fr-FR');
-  } catch (e) { return lastLocationCheck.value; }
+    return d.toLocaleString("fr-FR");
+  } catch (e) {
+    return lastLocationCheck.value;
+  }
 });
 
 async function checkSubscription() {
   try {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
       pushSubscription.value = null;
       return;
     }
@@ -636,7 +714,13 @@ async function checkSubscription() {
     pushSubscription.value = null;
   }
   // load last location check from localStorage
-  try { lastLocationCheck.value = localStorage.getItem('phenom_last_location_check'); } catch (e) { lastLocationCheck.value = null; }
+  try {
+    lastLocationCheck.value = localStorage.getItem(
+      "phenom_last_location_check"
+    );
+  } catch (e) {
+    lastLocationCheck.value = null;
+  }
 }
 
 async function handleSubscribe() {
@@ -651,12 +735,18 @@ async function handleUnsubscribe() {
     if (existing) await unsubscribeFromPush(existing);
     pushSubscription.value = null;
   } catch (e) {
-    console.warn('unsubscribe failed', e);
+    console.warn("unsubscribe failed", e);
   }
 }
 
 function refreshLastLocationCheck() {
-  try { lastLocationCheck.value = localStorage.getItem('phenom_last_location_check'); } catch (e) { lastLocationCheck.value = null; }
+  try {
+    lastLocationCheck.value = localStorage.getItem(
+      "phenom_last_location_check"
+    );
+  } catch (e) {
+    lastLocationCheck.value = null;
+  }
 }
 
 onMounted(() => {
@@ -738,9 +828,9 @@ const onEditProfileConfirm = async (payload) => {
     await userStore.updateProfile(payload);
     await authStore.fetchUser();
     showEditProfileModal.value = false;
-    alert('Profil mis à jour');
+    alert("Profil mis à jour");
   } catch (err) {
-    alert(err?.response?.data?.message || err?.message || 'Erreur mise à jour');
+    alert(err?.response?.data?.message || err?.message || "Erreur mise à jour");
   }
 };
 
@@ -751,19 +841,23 @@ const onEditProfileCancel = () => {
 const onChangePasswordConfirm = async (payload) => {
   const { currentPassword, newPassword, confirmPassword } = payload || {};
   if (!currentPassword || !newPassword || !confirmPassword) {
-    alert('Tous les champs sont requis');
+    alert("Tous les champs sont requis");
     return;
   }
   if (newPassword !== confirmPassword) {
-    alert('Les mots de passe ne correspondent pas');
+    alert("Les mots de passe ne correspondent pas");
     return;
   }
   try {
     await userStore.changePassword({ currentPassword, newPassword });
     showChangePasswordModal.value = false;
-    alert('Mot de passe changé');
+    alert("Mot de passe changé");
   } catch (err) {
-    alert(err?.response?.data?.message || err?.message || 'Erreur changement mot de passe');
+    alert(
+      err?.response?.data?.message ||
+        err?.message ||
+        "Erreur changement mot de passe"
+    );
   }
 };
 
@@ -797,7 +891,7 @@ const handleLogout = async () => {
 const confirmDeleteAccount = () => {
   if (
     confirm(
-      "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.",
+      "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible."
     )
   ) {
     // TODO: Delete account via API

@@ -1,26 +1,52 @@
 /**
- * Store Pinia pour les commentaires
- * KISS: Wrapper simple autour du service
+ * Comment Store - Pinia Store for Comments
+ *
+ * KISS: Simple wrapper around the comment service
+ * Manages comments with per-observation caching.
+ *
+ * @module stores/comment
+ *
+ * State:
+ * - commentsByObservation: Cache of comments keyed by observation ID
+ * - currentObservationId: Currently viewed observation
+ *
+ * Actions:
+ * - fetchComments: Fetch comments for an observation
+ * - addComment: Add a new comment
+ * - removeComment: Delete a comment
+ * - getComments: Get cached comments
+ * - clearCache: Clear comment cache
  */
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { commentService } from "../services/commentService";
 
 export const useCommentStore = defineStore("comment", () => {
-  // Commentaires par observation ID (cache)
+  // ============================================================================
+  // STATE
+  // ============================================================================
+
+  // Comments cache by observation ID
   const commentsByObservation = ref({});
   const currentObservationId = ref(null);
   const loading = ref(false);
   const error = ref(null);
 
-  // Computed: commentaires de l'observation courante
+  // Computed: comments for current observation
   const comments = computed(() => {
     if (!currentObservationId.value) return [];
     return commentsByObservation.value[currentObservationId.value] || [];
   });
 
+  // ============================================================================
+  // ACTIONS
+  // ============================================================================
+
   /**
-   * Récupère les commentaires d'une observation
+   * Fetch comments for an observation
+   * @param {string} observationId - Observation ID
+   * @param {Object} params - Query parameters
+   * @returns {Promise<Array>} Comments array
    */
   const fetchComments = async (observationId, params = {}) => {
     loading.value = true;
@@ -29,14 +55,14 @@ export const useCommentStore = defineStore("comment", () => {
     try {
       const response = await commentService.getByObservation(
         observationId,
-        params,
+        params
       );
       const fetchedComments =
         response.data?.comments || response.comments || response.data || [];
       commentsByObservation.value[observationId] = fetchedComments;
       return fetchedComments;
     } catch (err) {
-      error.value = err.response?.data?.message || "Erreur de chargement";
+      error.value = err.response?.data?.message || "Failed to load comments";
       throw err;
     } finally {
       loading.value = false;
@@ -44,21 +70,22 @@ export const useCommentStore = defineStore("comment", () => {
   };
 
   /**
-   * Ajoute un commentaire
-   * @param {string} observationId - ID de l'observation
-   * @param {string|object} textOrData - Texte du commentaire ou objet {text}
+   * Add a new comment to an observation
+   * @param {string} observationId - Observation ID
+   * @param {string|Object} textOrData - Comment text or object {text}
+   * @returns {Promise<Object>} Created comment
    */
   const addComment = async (observationId, textOrData) => {
     loading.value = true;
     error.value = null;
     try {
-      // Accepte soit un string soit un objet avec text
+      // Accept either string or object with text property
       const text =
         typeof textOrData === "string" ? textOrData : textOrData.text;
       const response = await commentService.create(observationId, text);
       const newComment = response.data || response;
 
-      // Ajouter au cache
+      // Add to cache
       if (!commentsByObservation.value[observationId]) {
         commentsByObservation.value[observationId] = [];
       }
@@ -66,7 +93,7 @@ export const useCommentStore = defineStore("comment", () => {
 
       return newComment;
     } catch (err) {
-      error.value = err.response?.data?.message || "Erreur d'ajout";
+      error.value = err.response?.data?.message || "Failed to add comment";
       throw err;
     } finally {
       loading.value = false;
@@ -74,22 +101,24 @@ export const useCommentStore = defineStore("comment", () => {
   };
 
   /**
-   * Supprime un commentaire
+   * Delete a comment
+   * @param {string} observationId - Observation ID
+   * @param {string} commentId - Comment ID to delete
    */
   const removeComment = async (observationId, commentId) => {
     loading.value = true;
     try {
       await commentService.delete(commentId);
 
-      // Retirer du cache
+      // Remove from cache
       if (commentsByObservation.value[observationId]) {
         commentsByObservation.value[observationId] =
           commentsByObservation.value[observationId].filter(
-            (c) => c._id !== commentId,
+            (c) => c._id !== commentId
           );
       }
     } catch (err) {
-      error.value = err.response?.data?.message || "Erreur de suppression";
+      error.value = err.response?.data?.message || "Failed to delete comment";
       throw err;
     } finally {
       loading.value = false;
@@ -97,14 +126,17 @@ export const useCommentStore = defineStore("comment", () => {
   };
 
   /**
-   * Récupère les commentaires d'une observation depuis le cache
+   * Get comments from cache for an observation
+   * @param {string} observationId - Observation ID
+   * @returns {Array} Cached comments
    */
   const getComments = (observationId) => {
     return commentsByObservation.value[observationId] || [];
   };
 
   /**
-   * Vide le cache d'une observation
+   * Clear comment cache
+   * @param {string|null} observationId - Observation ID or null to clear all
    */
   const clearCache = (observationId = null) => {
     if (observationId) {

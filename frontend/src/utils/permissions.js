@@ -1,9 +1,29 @@
 /**
- * Utilitaires de permission et d'autorisation
+ * Permission and Authorization Utilities
+ *
+ * Centralized permission system for the application.
+ * Defines roles, permissions per role, and provides
+ * functions to check user permissions.
+ *
+ * @module utils/permissions
+ *
+ * Roles:
+ * - ADMIN: Full access to all features
+ * - VIEWER: Can create/edit own content, view all
+ *
+ * Permission Categories:
+ * - Observations: Create, edit, delete (own vs any)
+ * - Comments: Create, edit, delete (own vs any)
+ * - Users: View, create, edit, delete, change role
+ * - Administration: Panel access, stats, system management
  */
 
+// ============================================================================
+// ROLE DEFINITIONS
+// ============================================================================
+
 /**
- * Rôles disponibles dans l'application
+ * Available roles in the application
  */
 export const ROLES = {
   ADMIN: "admin",
@@ -43,9 +63,9 @@ export const PERMISSIONS = {
 };
 
 /**
- * Vérifie si un utilisateur a un rôle spécifique
- * @param {Object} user - Objet utilisateur
- * @param {string} role - Rôle à vérifier
+ * Check if a user has a specific role
+ * @param {Object} user - User object
+ * @param {string} role - Role to check
  * @returns {boolean}
  */
 export const hasRole = (user, role) => {
@@ -53,9 +73,9 @@ export const hasRole = (user, role) => {
 };
 
 /**
- * Vérifie si un utilisateur a une permission
- * @param {Object} user - Objet utilisateur
- * @param {string} permission - Permission à vérifier (ex: 'CREATE_OBSERVATION')
+ * Check if a user has a permission
+ * @param {Object} user - User object
+ * @param {string} permission - Permission to check (e.g., 'CREATE_OBSERVATION')
  * @returns {boolean}
  */
 export const hasPermission = (user, permission) => {
@@ -65,8 +85,8 @@ export const hasPermission = (user, permission) => {
 };
 
 /**
- * Vérifie si un utilisateur peut créer une observation
- * @param {Object} user - Objet utilisateur
+ * Check if a user can create an observation
+ * @param {Object} user - User object
  * @returns {boolean}
  */
 export const canCreateObservation = (user) => {
@@ -74,18 +94,18 @@ export const canCreateObservation = (user) => {
 };
 
 /**
- * Vérifie si un utilisateur peut éditer une observation
- * @param {Object} user - Objet utilisateur
- * @param {Object} observation - Observation à éditer
+ * Check if a user can edit an observation
+ * @param {Object} user - User object
+ * @param {Object} observation - Observation to edit
  * @returns {boolean}
  */
 export const canEditObservation = (user, observation) => {
   if (!user || !observation) return false;
 
-  // Admin peut tout éditer
+  // Admin can edit anything
   if (hasPermission(user, "EDIT_ANY_OBSERVATION")) return true;
 
-  // Utilisateur peut éditer ses propres observations
+  // User can edit their own observations
   if (hasPermission(user, "EDIT_OWN_OBSERVATION")) {
     const userId = user._id || user.id;
     const obsUserId = observation.userId?._id || observation.userId;
@@ -96,18 +116,18 @@ export const canEditObservation = (user, observation) => {
 };
 
 /**
- * Vérifie si un utilisateur peut supprimer une observation
- * @param {Object} user - Objet utilisateur
- * @param {Object} observation - Observation à supprimer
+ * Check if a user can delete an observation
+ * @param {Object} user - User object
+ * @param {Object} observation - Observation to delete
  * @returns {boolean}
  */
 export const canDeleteObservation = (user, observation) => {
   if (!user || !observation) return false;
 
-  // Admin peut tout supprimer
+  // Admin can delete anything
   if (hasPermission(user, "DELETE_ANY_OBSERVATION")) return true;
 
-  // Utilisateur peut supprimer ses propres observations
+  // User can delete their own observations
   if (hasPermission(user, "DELETE_OWN_OBSERVATION")) {
     const userId = user._id || user.id;
     const obsUserId = observation.userId?._id || observation.userId;
@@ -118,8 +138,8 @@ export const canDeleteObservation = (user, observation) => {
 };
 
 /**
- * Vérifie si un utilisateur peut créer un commentaire
- * @param {Object} user - Objet utilisateur
+ * Check if a user can create a comment
+ * @param {Object} user - User object
  * @returns {boolean}
  */
 export const canCreateComment = (user) => {
@@ -127,18 +147,18 @@ export const canCreateComment = (user) => {
 };
 
 /**
- * Vérifie si un utilisateur peut éditer un commentaire
- * @param {Object} user - Objet utilisateur
- * @param {Object} comment - Commentaire à éditer
+ * Check if a user can edit a comment
+ * @param {Object} user - User object
+ * @param {Object} comment - Comment to edit
  * @returns {boolean}
  */
 export const canEditComment = (user, comment) => {
   if (!user || !comment) return false;
 
-  // Admin peut tout éditer
+  // Admin can edit anything
   if (hasPermission(user, "EDIT_ANY_COMMENT")) return true;
 
-  // Utilisateur peut éditer ses propres commentaires
+  // User can edit their own comments
   if (hasPermission(user, "EDIT_OWN_COMMENT")) {
     const userId = user._id || user.id;
     const commentUserId = comment.userId?._id || comment.userId;
@@ -149,18 +169,18 @@ export const canEditComment = (user, comment) => {
 };
 
 /**
- * Vérifie si un utilisateur peut supprimer un commentaire
- * @param {Object} user - Objet utilisateur
- * @param {Object} comment - Commentaire à supprimer
+ * Check if a user can delete a comment
+ * @param {Object} user - User object
+ * @param {Object} comment - Comment to delete
  * @returns {boolean}
  */
 export const canDeleteComment = (user, comment) => {
   if (!user || !comment) return false;
 
-  // Admin peut tout supprimer
+  // Admin can delete anything
   if (hasPermission(user, "DELETE_ANY_COMMENT")) return true;
 
-  // Utilisateur peut supprimer ses propres commentaires
+  // User can delete their own comments
   if (hasPermission(user, "DELETE_OWN_COMMENT")) {
     const userId = user._id || user.id;
     const commentUserId = comment.userId?._id || comment.userId;
@@ -171,8 +191,8 @@ export const canDeleteComment = (user, comment) => {
 };
 
 /**
- * Vérifie si un utilisateur peut accéder au panneau admin
- * @param {Object} user - Objet utilisateur
+ * Check if a user can access the admin panel
+ * @param {Object} user - User object
  * @returns {boolean}
  */
 export const canAccessAdminPanel = (user) => {
@@ -180,8 +200,8 @@ export const canAccessAdminPanel = (user) => {
 };
 
 /**
- * Vérifie si un utilisateur peut gérer d'autres utilisateurs
- * @param {Object} user - Objet utilisateur
+ * Check if a user can manage other users
+ * @param {Object} user - User object
  * @returns {boolean}
  */
 export const canManageUsers = (user) => {
@@ -189,8 +209,8 @@ export const canManageUsers = (user) => {
 };
 
 /**
- * Vérifie si un utilisateur peut voir les statistiques
- * @param {Object} user - Objet utilisateur
+ * Check if a user can view statistics
+ * @param {Object} user - User object
  * @returns {boolean}
  */
 export const canViewStats = (user) => {
@@ -198,8 +218,8 @@ export const canViewStats = (user) => {
 };
 
 /**
- * Vérifie si un utilisateur peut changer le rôle d'autres utilisateurs
- * @param {Object} user - Objet utilisateur
+ * Check if a user can change other users' roles
+ * @param {Object} user - User object
  * @returns {boolean}
  */
 export const canChangeUserRole = (user) => {
@@ -207,10 +227,10 @@ export const canChangeUserRole = (user) => {
 };
 
 /**
- * Filtre une liste d'actions disponibles selon les permissions
- * @param {Object} user - Objet utilisateur
- * @param {Array} actions - Liste d'actions avec leur permission requise
- * @returns {Array} Actions autorisées
+ * Filter a list of available actions by user permissions
+ * @param {Object} user - User object
+ * @param {Array} actions - List of actions with required permission
+ * @returns {Array} Allowed actions
  */
 export const filterAllowedActions = (user, actions) => {
   return actions.filter((action) => {
@@ -220,9 +240,9 @@ export const filterAllowedActions = (user, actions) => {
 };
 
 /**
- * Obtient toutes les permissions d'un utilisateur
- * @param {Object} user - Objet utilisateur
- * @returns {Array<string>} Liste des permissions
+ * Get all permissions for a user
+ * @param {Object} user - User object
+ * @returns {Array<string>} List of permissions
  */
 export const getUserPermissions = (user) => {
   if (!user || !user.role) return [];
@@ -233,9 +253,9 @@ export const getUserPermissions = (user) => {
 };
 
 /**
- * Vérifie si un utilisateur a toutes les permissions spécifiées
- * @param {Object} user - Objet utilisateur
- * @param {Array<string>} permissions - Liste de permissions
+ * Check if a user has all specified permissions
+ * @param {Object} user - User object
+ * @param {Array<string>} permissions - List of permissions
  * @returns {boolean}
  */
 export const hasAllPermissions = (user, permissions) => {
@@ -243,9 +263,9 @@ export const hasAllPermissions = (user, permissions) => {
 };
 
 /**
- * Vérifie si un utilisateur a au moins une des permissions spécifiées
- * @param {Object} user - Objet utilisateur
- * @param {Array<string>} permissions - Liste de permissions
+ * Check if a user has at least one of the specified permissions
+ * @param {Object} user - User object
+ * @param {Array<string>} permissions - List of permissions
  * @returns {boolean}
  */
 export const hasAnyPermission = (user, permissions) => {
@@ -253,9 +273,10 @@ export const hasAnyPermission = (user, permissions) => {
 };
 
 /**
- * Obtient un message d'erreur de permission
- * @param {string} permission - Permission refusée
- * @returns {string} Message d'erreur
+ * Get a permission error message for display
+ * Note: Messages are in French for end-user display
+ * @param {string} permission - Denied permission
+ * @returns {string} Localized error message
  */
 export const getPermissionErrorMessage = (permission) => {
   const messages = {

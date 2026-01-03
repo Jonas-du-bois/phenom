@@ -1,134 +1,149 @@
 /**
- * Utilitaires pour la gestion du localStorage
+ * LocalStorage Utilities
+ *
+ * Type-safe wrappers for localStorage operations with JSON serialization.
+ * Provides specialized functions for auth tokens, user data, and app state.
  */
 
+// ============================================================================
+// STORAGE KEYS - Centralized key definitions
+// ============================================================================
+
 const STORAGE_KEYS = {
-  AUTH_TOKEN: "phenom_auth_token",
-  USER_DATA: "phenom_user_data",
-  USER_PREFERENCES: "phenom_user_preferences",
-  RECENT_SEARCHES: "phenom_recent_searches",
-  DRAFT_OBSERVATION: "phenom_draft_observation",
-  MAP_VIEW: "phenom_map_view",
-  FILTERS: "phenom_filters",
-  CACHE_PREFIX: "phenom_cache_",
+  AUTH_TOKEN: "phenom_auth_token", // JWT access token
+  USER_DATA: "phenom_user_data", // User profile object
+  USER_PREFERENCES: "phenom_user_preferences", // User settings
+  RECENT_SEARCHES: "phenom_recent_searches", // Search history
+  DRAFT_OBSERVATION: "phenom_draft_observation", // Unsaved observation
+  MAP_VIEW: "phenom_map_view", // Last map position/zoom
+  FILTERS: "phenom_filters", // Last applied filters
+  CACHE_PREFIX: "phenom_cache_", // Prefix for cached data
 };
 
+// ============================================================================
+// GENERIC STORAGE OPERATIONS
+// ============================================================================
+
 /**
- * Sauvegarde une valeur dans le localStorage
- * @param {string} key - Clé de stockage
- * @param {any} value - Valeur à stocker
+ * Save a value to localStorage with JSON serialization
+ * @param {string} key - Storage key
+ * @param {any} value - Value to store (will be JSON stringified)
  */
 export const setItem = (key, value) => {
   try {
     const serialized = JSON.stringify(value);
     localStorage.setItem(key, serialized);
   } catch (error) {
-    console.error("Erreur lors de la sauvegarde dans localStorage:", error);
+    console.error("Error saving to localStorage:", error);
   }
 };
 
 /**
- * Récupère une valeur du localStorage
- * @param {string} key - Clé de stockage
- * @param {any} defaultValue - Valeur par défaut si non trouvée
- * @returns {any} Valeur récupérée
+ * Retrieve a value from localStorage with JSON parsing
+ * @param {string} key - Storage key
+ * @param {any} defaultValue - Default if key not found
+ * @returns {any} Parsed value or default
  */
 export const getItem = (key, defaultValue = null) => {
   try {
     const item = localStorage.getItem(key);
     return item ? JSON.parse(item) : defaultValue;
   } catch (error) {
-    console.error("Erreur lors de la lecture du localStorage:", error);
+    console.error("Error reading from localStorage:", error);
     return defaultValue;
   }
 };
 
 /**
- * Supprime une valeur du localStorage
- * @param {string} key - Clé à supprimer
+ * Remove a value from localStorage
+ * @param {string} key - Key to remove
  */
 export const removeItem = (key) => {
   try {
     localStorage.removeItem(key);
   } catch (error) {
-    console.error("Erreur lors de la suppression du localStorage:", error);
+    console.error("Error removing from localStorage:", error);
   }
 };
 
 /**
- * Vide complètement le localStorage
+ * Clear all localStorage data
  */
 export const clearAll = () => {
   try {
     localStorage.clear();
   } catch (error) {
-    console.error("Erreur lors du nettoyage du localStorage:", error);
+    console.error("Error clearing localStorage:", error);
   }
 };
 
-// ========== Gestion du token d'authentification ==========
+// ============================================================================
+// AUTHENTICATION TOKEN MANAGEMENT
+// ============================================================================
 
 /**
- * Sauvegarde le token d'authentification
- * @param {string} token - Token JWT
+ * Save JWT access token
+ * @param {string} token - JWT token string
  */
 export const saveAuthToken = (token) => {
   setItem(STORAGE_KEYS.AUTH_TOKEN, token);
 };
 
 /**
- * Récupère le token d'authentification
- * @returns {string|null} Token JWT
+ * Get stored JWT access token
+ * @returns {string|null} Token or null
  */
 export const getAuthToken = () => {
   return getItem(STORAGE_KEYS.AUTH_TOKEN);
 };
 
 /**
- * Supprime le token d'authentification
+ * Remove JWT access token (logout)
  */
 export const removeAuthToken = () => {
   removeItem(STORAGE_KEYS.AUTH_TOKEN);
 };
 
-// ========== Gestion des données utilisateur ==========
+// ============================================================================
+// USER DATA MANAGEMENT
+// ============================================================================
 
 /**
- * Sauvegarde les données utilisateur
- * @param {Object} userData - Données utilisateur
+ * Save user profile data
+ * @param {Object} userData - User profile object
  */
 export const saveUserData = (userData) => {
   setItem(STORAGE_KEYS.USER_DATA, userData);
 };
 
 /**
- * Récupère les données utilisateur
- * @returns {Object|null} Données utilisateur
+ * Get user profile data
+ * @returns {Object|null} User data
  */
 export const getUserData = () => {
   return getItem(STORAGE_KEYS.USER_DATA);
 };
 
 /**
- * Supprime les données utilisateur
+ * Remove user profile data
  */
 export const removeUserData = () => {
   removeItem(STORAGE_KEYS.USER_DATA);
 };
 
-// ========== Gestion des préférences utilisateur ==========
+// ========== User Preferences Management ==========
 
 /**
- * Sauvegarde les préférences utilisateur
- * @param {Object} preferences - Préférences
+ * Save user preferences
+ * @param {Object} preferences - Preferences object
  */
 export const saveUserPreferences = (preferences) => {
   setItem(STORAGE_KEYS.USER_PREFERENCES, preferences);
 };
 
 /**
- * Récupère les préférences utilisateur
- * @returns {Object} Préférences avec valeurs par défaut
+ * Get user preferences with defaults
+ * @returns {Object} Preferences with default values
  */
 export const getUserPreferences = () => {
   return getItem(STORAGE_KEYS.USER_PREFERENCES, {
@@ -143,9 +158,9 @@ export const getUserPreferences = () => {
 };
 
 /**
- * Met à jour une préférence spécifique
- * @param {string} key - Clé de la préférence
- * @param {any} value - Nouvelle valeur
+ * Update a specific preference
+ * @param {string} key - Preference key
+ * @param {any} value - New value
  */
 export const updatePreference = (key, value) => {
   const preferences = getUserPreferences();
@@ -153,12 +168,12 @@ export const updatePreference = (key, value) => {
   saveUserPreferences(preferences);
 };
 
-// ========== Gestion des recherches récentes ==========
+// ========== Recent Searches Management ==========
 
 /**
- * Ajoute une recherche récente
- * @param {string} searchText - Texte recherché
- * @param {number} maxItems - Nombre max de recherches à conserver
+ * Add a recent search
+ * @param {string} searchText - Search text
+ * @param {number} maxItems - Maximum searches to keep
  */
 export const addRecentSearch = (searchText, maxItems = 10) => {
   const searches = getRecentSearches();
@@ -168,16 +183,16 @@ export const addRecentSearch = (searchText, maxItems = 10) => {
 };
 
 /**
- * Récupère les recherches récentes
- * @returns {Array<string>} Liste des recherches
+ * Get recent searches
+ * @returns {Array<string>} List of searches
  */
 export const getRecentSearches = () => {
   return getItem(STORAGE_KEYS.RECENT_SEARCHES, []);
 };
 
 /**
- * Supprime une recherche spécifique
- * @param {string} searchText - Recherche à supprimer
+ * Remove a specific search
+ * @param {string} searchText - Search to remove
  */
 export const removeRecentSearch = (searchText) => {
   const searches = getRecentSearches();
@@ -186,17 +201,17 @@ export const removeRecentSearch = (searchText) => {
 };
 
 /**
- * Vide les recherches récentes
+ * Clear all recent searches
  */
 export const clearRecentSearches = () => {
   removeItem(STORAGE_KEYS.RECENT_SEARCHES);
 };
 
-// ========== Gestion du brouillon d'observation ==========
+// ========== Observation Draft Management ==========
 
 /**
- * Sauvegarde un brouillon d'observation
- * @param {Object} draft - Données du brouillon
+ * Save an observation draft
+ * @param {Object} draft - Draft data
  */
 export const saveDraftObservation = (draft) => {
   setItem(STORAGE_KEYS.DRAFT_OBSERVATION, {
@@ -206,32 +221,32 @@ export const saveDraftObservation = (draft) => {
 };
 
 /**
- * Récupère le brouillon d'observation
- * @returns {Object|null} Brouillon
+ * Get observation draft
+ * @returns {Object|null} Draft data
  */
 export const getDraftObservation = () => {
   return getItem(STORAGE_KEYS.DRAFT_OBSERVATION);
 };
 
 /**
- * Supprime le brouillon d'observation
+ * Remove observation draft
  */
 export const removeDraftObservation = () => {
   removeItem(STORAGE_KEYS.DRAFT_OBSERVATION);
 };
 
 /**
- * Vérifie si un brouillon existe
+ * Check if a draft exists
  * @returns {boolean}
  */
 export const hasDraftObservation = () => {
   return getDraftObservation() !== null;
 };
 
-// ========== Gestion de la vue carte ==========
+// ========== Map View Management ==========
 
 /**
- * Sauvegarde la position de la carte
+ * Save map position
  * @param {Object} mapView - { center, zoom }
  */
 export const saveMapView = (mapView) => {
@@ -239,26 +254,26 @@ export const saveMapView = (mapView) => {
 };
 
 /**
- * Récupère la position de la carte
+ * Get map position
  * @returns {Object|null} { center, zoom }
  */
 export const getMapView = () => {
   return getItem(STORAGE_KEYS.MAP_VIEW);
 };
 
-// ========== Gestion des filtres ==========
+// ========== Filters Management ==========
 
 /**
- * Sauvegarde les filtres actifs
- * @param {Object} filters - Filtres
+ * Save active filters
+ * @param {Object} filters - Filters object
  */
 export const saveFilters = (filters) => {
   setItem(STORAGE_KEYS.FILTERS, filters);
 };
 
 /**
- * Récupère les filtres sauvegardés
- * @returns {Object} Filtres
+ * Get saved filters
+ * @returns {Object} Filters with defaults
  */
 export const getFilters = () => {
   return getItem(STORAGE_KEYS.FILTERS, {
@@ -270,19 +285,19 @@ export const getFilters = () => {
 };
 
 /**
- * Réinitialise les filtres
+ * Reset filters to defaults
  */
 export const resetFilters = () => {
   removeItem(STORAGE_KEYS.FILTERS);
 };
 
-// ========== Gestion du cache ==========
+// ========== Cache Management ==========
 
 /**
- * Met en cache une donnée avec expiration
- * @param {string} key - Clé du cache
- * @param {any} data - Données à cacher
- * @param {number} ttl - Durée de vie en secondes (par défaut 1h)
+ * Cache data with expiration
+ * @param {string} key - Cache key
+ * @param {any} data - Data to cache
+ * @param {number} ttl - Time to live in seconds (default 1h)
  */
 export const setCacheItem = (key, data, ttl = 3600) => {
   const cacheKey = STORAGE_KEYS.CACHE_PREFIX + key;
@@ -294,9 +309,9 @@ export const setCacheItem = (key, data, ttl = 3600) => {
 };
 
 /**
- * Récupère une donnée du cache si elle n'a pas expiré
- * @param {string} key - Clé du cache
- * @returns {any|null} Données cachées ou null si expiré
+ * Get cached data if not expired
+ * @param {string} key - Cache key
+ * @returns {any|null} Cached data or null if expired
  */
 export const getCacheItem = (key) => {
   const cacheKey = STORAGE_KEYS.CACHE_PREFIX + key;
@@ -313,8 +328,8 @@ export const getCacheItem = (key) => {
 };
 
 /**
- * Supprime une donnée du cache
- * @param {string} key - Clé du cache
+ * Remove cached data
+ * @param {string} key - Cache key
  */
 export const removeCacheItem = (key) => {
   const cacheKey = STORAGE_KEYS.CACHE_PREFIX + key;
@@ -322,13 +337,13 @@ export const removeCacheItem = (key) => {
 };
 
 /**
- * Nettoie tous les caches expirés
+ * Clean all expired cache entries
  */
 export const cleanExpiredCache = () => {
   try {
     const keys = Object.keys(localStorage);
     const cacheKeys = keys.filter((k) =>
-      k.startsWith(STORAGE_KEYS.CACHE_PREFIX),
+      k.startsWith(STORAGE_KEYS.CACHE_PREFIX)
     );
 
     cacheKeys.forEach((cacheKey) => {
@@ -338,27 +353,27 @@ export const cleanExpiredCache = () => {
       }
     });
   } catch (error) {
-    console.error("Erreur lors du nettoyage du cache:", error);
+    console.error("Error cleaning cache:", error);
   }
 };
 
 /**
- * Vide tout le cache
+ * Clear all cache entries
  */
 export const clearAllCache = () => {
   try {
     const keys = Object.keys(localStorage);
     const cacheKeys = keys.filter((k) =>
-      k.startsWith(STORAGE_KEYS.CACHE_PREFIX),
+      k.startsWith(STORAGE_KEYS.CACHE_PREFIX)
     );
     cacheKeys.forEach((key) => removeItem(key));
   } catch (error) {
-    console.error("Erreur lors du nettoyage du cache:", error);
+    console.error("Error clearing cache:", error);
   }
 };
 
 /**
- * Calcule la taille utilisée du localStorage
+ * Calculate localStorage usage
  * @returns {Object} { used: number (bytes), usedMB: number }
  */
 export const getStorageSize = () => {
@@ -374,13 +389,13 @@ export const getStorageSize = () => {
       usedMB: (total / (1024 * 1024)).toFixed(2),
     };
   } catch (error) {
-    console.error("Erreur lors du calcul de la taille du storage:", error);
+    console.error("Error calculating storage size:", error);
     return { used: 0, usedMB: 0 };
   }
 };
 
 /**
- * Déconnexion complète - supprime toutes les données sensibles
+ * Full logout - remove all sensitive data
  */
 export const clearAuthData = () => {
   removeAuthToken();

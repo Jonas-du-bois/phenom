@@ -1,31 +1,83 @@
+<!--
+  ============================================================================
+  MapMarker.vue - Custom map marker for observations
+  ============================================================================
+  
+  PURPOSE:
+  A custom SVG map marker component used on the observation map.
+  The marker color changes based on the observation's credibility score.
+  Includes a pulsing animation when selected.
+  
+  FEATURES:
+  - Custom pin/drop shape with inner UFO icon
+  - Color coded by credibility:
+    - Cyan (#00F0FF): High credibility (>= 10)
+    - Amber (#f59e0b): Medium credibility (>= 5)
+    - Red (#ef4444): Low credibility (< 5)
+  - Larger scale and z-index when selected
+  - Pulsing circle animation when selected
+  - Drop shadow for depth
+  
+  USAGE EXAMPLES:
+  <MapMarker
+    :observation="observationData"
+    :selected="isSelected"
+    @click="handleMarkerClick"
+  />
+  
+  PROPS:
+  - observation: Object (required) - Observation data with credibility
+  - selected: Boolean (default: false) - Whether marker is selected
+  
+  EVENTS:
+  - @click(observation) - Emitted when marker is clicked
+  ============================================================================
+-->
+
 <script setup>
 /**
- * MapMarker - Marqueur de carte personnalisé
+ * MapMarker - Custom map marker component
  * Design System: Phenom Search
  */
 import { computed } from "vue";
 
 defineOptions({ name: "MapMarker" });
 
+// ============================================================================
+// PROPS DEFINITION
+// ============================================================================
 const props = defineProps({
+  // The observation data object
   observation: {
     type: Object,
     required: true,
   },
+  // Whether this marker is currently selected
   selected: {
     type: Boolean,
     default: false,
   },
 });
 
+// ============================================================================
+// EVENTS
+// ============================================================================
 const emit = defineEmits(["click"]);
 
-// Couleur basée sur la crédibilité
+// ============================================================================
+// COMPUTED PROPERTIES
+// ============================================================================
+/**
+ * Determine marker color based on credibility score
+ * - High (>= 10): Cyan - highly credible
+ * - Medium (>= 5): Amber - moderately credible
+ * - Low (< 5): Red - low credibility
+ */
 const markerColor = computed(() => {
   const credibility = props.observation.credibility || 0;
-  if (credibility >= 10) return "#00F0FF"; // Cyan
-  if (credibility >= 5) return "#f59e0b"; // Amber
-  return "#ef4444"; // Red
+  if (credibility >= 10) return "#00F0FF"; // Cyan - high credibility
+  if (credibility >= 5) return "#f59e0b"; // Amber - medium credibility
+  return "#ef4444"; // Red - low credibility
 });
 </script>
 

@@ -1,9 +1,24 @@
 /**
- * Composable pour la connexion WebSocket avec WsMini PubSub
- * Utilise le client WSClient de WsMini
+ * WebSocket Composable - WsMini PubSub Connection
+ *
+ * Provides real-time WebSocket connection using WsMini WSClient.
+ * Implements singleton pattern for shared connection across components.
+ *
+ * @module composables/useWebSocket
+ *
+ * Features:
+ * - Automatic reconnection with retry limits
+ * - Dynamic URL selection (dev vs prod)
+ * - Channel subscription (observations, comments)
+ * - Connection state management
+ *
+ * @example
+ * const { connect, disconnect, connected, messages } = useWebSocket();
+ * await connect(authToken);
  */
 import { ref, onUnmounted, getCurrentInstance } from "vue";
 import { WSClient } from "wsmini";
+
 // Singleton instance so multiple calls to `useWebSocket()` share the same client/state
 let _singleton = null;
 
@@ -21,55 +36,60 @@ export function useWebSocket() {
   // Determine WebSocket URL dynamically:
   // - If running in a browser on localhost/127.0.0.1, prefer VITE_WS_URL_LOCAL (dev)
   // - Otherwise use VITE_WS_URL (prod) and fallback to ws://localhost:3000
-  const envWs = import.meta.env.VITE_WS_URL || '';
-  const envWsLocal = import.meta.env.VITE_WS_URL_LOCAL || '';
-  let WS_URL = '';
+  const envWs = import.meta.env.VITE_WS_URL || "";
+  const envWsLocal = import.meta.env.VITE_WS_URL_LOCAL || "";
+  let WS_URL = "";
   try {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const host = window.location.hostname;
-      const isLocal = host === 'localhost' || host === '127.0.0.1' || host === '';
+      const isLocal =
+        host === "localhost" || host === "127.0.0.1" || host === "";
       if (isLocal && envWsLocal) {
         WS_URL = envWsLocal;
       } else if (isLocal && !envWsLocal) {
-        WS_URL = 'ws://localhost:3000';
+        WS_URL = "ws://localhost:3000";
       } else if (!isLocal && envWs) {
         WS_URL = envWs;
       } else {
         // fallback to envWs or local
-        WS_URL = envWs || envWsLocal || 'ws://localhost:3000';
+        WS_URL = envWs || envWsLocal || "ws://localhost:3000";
       }
     } else {
-      WS_URL = envWs || envWsLocal || 'ws://localhost:3000';
+      WS_URL = envWs || envWsLocal || "ws://localhost:3000";
     }
   } catch (e) {
-    WS_URL = import.meta.env.VITE_WS_URL || import.meta.env.VITE_WS_URL_LOCAL || 'ws://localhost:3000';
+    WS_URL =
+      import.meta.env.VITE_WS_URL ||
+      import.meta.env.VITE_WS_URL_LOCAL ||
+      "ws://localhost:3000";
   }
-  console.log('ℹ️ useWebSocket selected WS_URL =', WS_URL);
+  console.log("ℹ️ useWebSocket selected WS_URL =", WS_URL);
 
   /**
-   * Connexion au WebSocket avec WsMini WSClient
+   * Connect to WebSocket using WsMini WSClient
+   * @param {string|null} token - Optional auth token
    */
   async function connect(token = null) {
     try {
       if (connected.value && ws.value) {
-        console.log("ℹ️ WebSocket déjà connecté, saut de la connexion");
+        console.log("ℹ️ WebSocket already connected, skipping connection");
         return;
       }
 
-      console.log(`🔌 Tentative de connexion WebSocket à: ${WS_URL}`);
+      console.log(`🔌 Attempting WebSocket connection to: ${WS_URL}`);
 
-      // Créer le client WsMini
+      // Create WsMini client
       ws.value = new WSClient(WS_URL);
 
-      // Se connecter
+      // Connect
       await ws.value.connect();
 
       connected.value = true;
       error.value = null;
       reconnectAttempts.value = 0;
-      console.log("✅ WebSocket connecté avec WSClient");
+      console.log("✅ WebSocket connected with WSClient");
 
-      // S'abonner aux canaux avec callbacks
+      // Subscribe to channels with callbacks
       await ws.value.sub("observations", (data) => {
         console.log("📨 Message observations:", data);
         messages.value.push({
@@ -88,63 +108,66 @@ export function useWebSocket() {
         });
       });
 
-      console.log("✅ Souscriptions aux canaux: observations, comments");
+      console.log("✅ Subscribed to channels: observations, comments");
     } catch (err) {
       error.value = err.message;
       connected.value = false;
-      console.error("❌ Erreur connexion WebSocket:", err);
+      console.error("❌ WebSocket connection error:", err);
       console.error(
-        `⚠️ Vérifiez que le serveur backend est accessible à ${WS_URL}`,
+        `⚠️ Verify that the backend server is accessible at ${WS_URL}`
       );
 
-      // Tentative de reconnexion automatique
+      // Automatic reconnection attempt
       if (reconnectAttempts.value < maxReconnectAttempts) {
         reconnectAttempts.value++;
         console.log(
-          `🔄 Reconnexion (${reconnectAttempts.value}/${maxReconnectAttempts}) dans ${reconnectDelay / 1000}s...`,
+          `🔄 Reconnection (${reconnectAttempts.value}/${maxReconnectAttempts}) in ${reconnectDelay / 1000}s...`
         );
         setTimeout(() => connect(token), reconnectDelay);
       } else {
-        console.warn("⚠️ Nombre maximum de tentatives de reconnexion atteint");
-        console.warn(`💡 Vérifiez que le backend est accessible à ${WS_URL}`);
+        console.warn("⚠️ Maximum reconnection attempts reached");
+        console.warn(`💡 Verify that the backend is accessible at ${WS_URL}`);
       }
     }
   }
 
   /**
-   * Déconnexion du WebSocket
+   * Disconnect from WebSocket
    */
   function disconnect() {
-    reconnectAttempts.value = maxReconnectAttempts; // Empêcher la reconnexion auto
+    reconnectAttempts.value = maxReconnectAttempts; // Prevent auto-reconnection
     if (ws.value) {
       try {
         if (typeof ws.value.close === "function") ws.value.close();
-        else if (typeof ws.value.disconnect === "function") ws.value.disconnect();
+        else if (typeof ws.value.disconnect === "function")
+          ws.value.disconnect();
       } catch (e) {
         // ignore
       }
       ws.value = null;
       connected.value = false;
-      console.log("🔌 WebSocket déconnecté");
+      console.log("🔌 WebSocket disconnected");
     }
   }
 
   /**
-   * S'abonne à un canal supplémentaire (si besoin)
+   * Subscribe to an additional channel
+   * @param {string} channel - Channel name
+   * @param {Function} callback - Message handler
    */
   async function subscribe(channel, callback) {
     if (ws.value && connected.value) {
       try {
         await ws.value.sub(channel, callback);
-        console.log(`📡 Souscription au canal: ${channel}`);
+        console.log(`📡 Subscribed to channel: ${channel}`);
       } catch (err) {
-        console.error(`❌ Erreur souscription au canal ${channel}:`, err);
+        console.error(`❌ Error subscribing to channel ${channel}:`, err);
       }
     }
   }
 
   /**
-   * Se désabonne d'un canal
+   * Unsubscribe from a channel
    */
   async function unsubscribe(channel) {
     if (ws.value && connected.value) {

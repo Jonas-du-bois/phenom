@@ -1,6 +1,10 @@
 /**
- * Composable pour la géolocalisation
- * Gère l'obtention de la position et le reverse geocoding
+ * useGeolocation Composable
+ *
+ * Geolocation management for obtaining user position and reverse geocoding.
+ * Uses browser's Geolocation API and Nominatim for address lookup.
+ *
+ * @module composables/useGeolocation
  */
 import { ref, readonly, onUnmounted } from "vue";
 
@@ -19,7 +23,8 @@ export function useGeolocation(options = {}) {
   const watchId = ref(null);
 
   /**
-   * Obtient la position actuelle
+   * Get the current position
+   * @returns {Promise<Object>} Coordinates object
    */
   const getCurrentPosition = () => {
     return new Promise((resolve, reject) => {
@@ -59,13 +64,13 @@ export function useGeolocation(options = {}) {
           enableHighAccuracy,
           timeout,
           maximumAge,
-        },
+        }
       );
     });
   };
 
   /**
-   * Démarre le suivi de position en temps réel
+   * Start real-time position tracking
    */
   const startWatching = () => {
     if (!navigator.geolocation) {
@@ -98,13 +103,13 @@ export function useGeolocation(options = {}) {
       {
         enableHighAccuracy,
         timeout,
-        maximumAge: 0, // Toujours position fraîche en mode watch
-      },
+        maximumAge: 0, // Always fresh position in watch mode
+      }
     );
   };
 
   /**
-   * Arrête le suivi de position
+   * Stop position tracking
    */
   const stopWatching = () => {
     if (watchId.value) {
@@ -114,8 +119,11 @@ export function useGeolocation(options = {}) {
   };
 
   /**
-   * Reverse geocoding - obtient l'adresse à partir des coordonnées
-   * Utilise Nominatim (OpenStreetMap) - gratuit et sans clé API
+   * Reverse geocoding - get address from coordinates
+   * Uses Nominatim (OpenStreetMap) - free, no API key required
+   * @param {number} lat - Latitude
+   * @param {number} lng - Longitude
+   * @returns {Promise<Object>} Address information
    */
   const reverseGeocode = async (lat, lng) => {
     try {
@@ -128,16 +136,16 @@ export function useGeolocation(options = {}) {
           headers: {
             "Accept-Language": "fr",
           },
-        },
+        }
       );
 
       if (!response.ok) {
-        throw new Error("Erreur de géocodage");
+        throw new Error("Geocoding failed");
       }
 
       const data = await response.json();
 
-      // Construire une adresse lisible
+      // Build a readable address
       const parts = [];
       const addr = data.address;
 
@@ -156,7 +164,7 @@ export function useGeolocation(options = {}) {
         raw: data,
       };
     } catch (err) {
-      console.error("Erreur reverse geocoding:", err);
+      console.error("Reverse geocoding error:", err);
       return { address: "", fullAddress: "", raw: null };
     } finally {
       loading.value = false;
@@ -164,11 +172,16 @@ export function useGeolocation(options = {}) {
   };
 
   /**
-   * Calcule la distance entre deux points (en km)
-   * Formule de Haversine
+   * Calculate distance between two points (in km)
+   * Uses Haversine formula
+   * @param {number} lat1 - First point latitude
+   * @param {number} lon1 - First point longitude
+   * @param {number} lat2 - Second point latitude
+   * @param {number} lon2 - Second point longitude
+   * @returns {number} Distance in kilometers
    */
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
-    const R = 6371; // Rayon de la Terre en km
+    const R = 6371; // Earth's radius in km
     const dLat = toRad(lat2 - lat1);
     const dLon = toRad(lon2 - lon1);
 
@@ -186,7 +199,10 @@ export function useGeolocation(options = {}) {
   const toRad = (deg) => deg * (Math.PI / 180);
 
   /**
-   * Obtient le message d'erreur approprié
+   * Get appropriate error message for geolocation errors
+   * Note: Messages are in French for end-user display
+   * @param {GeolocationPositionError} err - Geolocation error
+   * @returns {string} Localized error message
    */
   const getErrorMessage = (err) => {
     switch (err.code) {
@@ -202,16 +218,18 @@ export function useGeolocation(options = {}) {
   };
 
   /**
-   * Vérifie si la géolocalisation est disponible
+   * Check if geolocation is supported
+   * @returns {boolean} True if supported
    */
   const isSupported = () => !!navigator.geolocation;
 
   /**
-   * Demande la permission de géolocalisation
+   * Request geolocation permission
+   * @returns {Promise<string>} Permission state ('granted', 'denied', 'prompt')
    */
   const requestPermission = async () => {
     if (!navigator.permissions) {
-      // Fallback: essayer d'obtenir la position
+      // Fallback: try to get position
       try {
         await getCurrentPosition();
         return "granted";
@@ -239,7 +257,7 @@ export function useGeolocation(options = {}) {
   });
 
   return {
-    // État
+    // State
     coordinates: readonly(coordinates),
     address: readonly(address),
     error: readonly(error),

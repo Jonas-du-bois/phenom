@@ -1,6 +1,10 @@
 /**
- * Composable pour la gestion des observations
- * KISS: Wrapper léger autour du store Pinia
+ * useObservations Composable
+ *
+ * Lightweight wrapper around the Pinia observation store.
+ * Provides computed properties and actions for observation management.
+ *
+ * @module composables/useObservations
  */
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
@@ -14,16 +18,16 @@ export function useObservations() {
   // Computed
   const hasMore = computed(() => pagination.value.hasMore);
   const loadingMore = computed(
-    () => loading.value && observations.value.length > 0,
+    () => loading.value && observations.value.length > 0
   );
 
   const observationsWithImages = computed(() =>
-    observations.value.filter((obs) => obs.images?.length > 0 || obs.imageUrl),
+    observations.value.filter((obs) => obs.images?.length > 0 || obs.imageUrl)
   );
 
   const uniqueTypes = computed(() => {
     const types = new Set(
-      observations.value.map((obs) => obs.type).filter(Boolean),
+      observations.value.map((obs) => obs.type).filter(Boolean)
     );
     return [...types];
   });
@@ -46,7 +50,7 @@ export function useObservations() {
   // WebSocket helpers
   const addObservation = (observation) => {
     const exists = observations.value.some(
-      (obs) => obs._id === observation._id,
+      (obs) => obs._id === observation._id
     );
     if (!exists) {
       observations.value.unshift(observation);
@@ -55,7 +59,7 @@ export function useObservations() {
 
   const updateObservationInList = (observation) => {
     const index = observations.value.findIndex(
-      (obs) => obs._id === observation._id,
+      (obs) => obs._id === observation._id
     );
     if (index !== -1) {
       observations.value[index] = observation;
@@ -64,11 +68,11 @@ export function useObservations() {
 
   const removeObservation = (observationId) => {
     observations.value = observations.value.filter(
-      (obs) => obs._id !== observationId,
+      (obs) => obs._id !== observationId
     );
   };
 
-  // Filtres locaux
+  // Local filters
   const filterByType = (type) => {
     if (!type) return observations.value;
     return observations.value.filter((obs) => obs.type === type);
@@ -83,7 +87,7 @@ export function useObservations() {
   };
 
   return {
-    // État (refs du store)
+    // State (store refs)
     observations,
     currentObservation,
     loading,
@@ -110,7 +114,7 @@ export function useObservations() {
     updateObservationInList,
     removeObservation,
 
-    // Filtres
+    // Filters
     filterByType,
     sortObservations,
   };

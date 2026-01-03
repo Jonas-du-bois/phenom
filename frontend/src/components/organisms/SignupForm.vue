@@ -1,6 +1,21 @@
+<!-- ========================================================================
+     SIGNUP FORM - User registration form with validation
+     
+     Features:
+     - Username, email, password fields with validation
+     - Password strength indicator (4 levels)
+     - Password confirmation field
+     - Password visibility toggle
+     - Terms and conditions acceptance
+     - Social signup slot for OAuth providers
+     - Login redirect link
+     
+     Events:
+     - submit: Emits validated form data { username, email, password }
+     ======================================================================== -->
 <template>
   <form @submit.prevent="handleSubmit" class="signup-form space-y-6">
-    <!-- Logo -->
+    <!-- Logo and branding section -->
     <div class="text-center mb-8">
       <div
         class="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-[#00F0FF] to-[#0066CC] flex items-center justify-center mb-4"

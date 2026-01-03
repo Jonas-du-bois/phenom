@@ -1,9 +1,36 @@
 /**
- * Export centralisé de tous les utilitaires
- * Permet d'importer facilement: import { formatDate, validateEmail } from '@/utils'
+ * Utils Index - Centralized Utility Export
+ *
+ * This file provides a barrel export for all utility functions.
+ * Import utilities from here for cleaner imports.
+ *
+ * @module utils
+ *
+ * @example
+ * // Instead of:
+ * import { formatDate } from '@/utils/formatters';
+ * import { validateEmail } from '@/utils/validators';
+ *
+ * // Use:
+ * import { formatDate, validateEmail } from '@/utils';
+ *
+ * Categories:
+ * - Formatters: Date, number, text formatting
+ * - Image Helpers: Cloudinary image handling
+ * - Geolocation: GPS and coordinate utilities
+ * - Validators: Form input validation
+ * - Observation Helpers: Observation filtering/sorting
+ * - User Helpers: User role and permission checks
+ * - Comment Helpers: Comment manipulation
+ * - Storage: localStorage wrapper with typed keys
+ * - Permissions: Role-based access control
  */
 
-// Formatters
+// ============================================================================
+// FORMATTERS
+// ============================================================================
+// Date, number, and text formatting utilities
+
 export {
   formatDate,
   formatDateShort,
@@ -14,7 +41,11 @@ export {
   truncate,
 } from "./formatters";
 
-// Image Helpers (Cloudinary)
+// ============================================================================
+// IMAGE HELPERS
+// ============================================================================
+// Cloudinary image handling and placeholders
+
 export {
   getImageUrl,
   getPlaceholderImage,
@@ -23,7 +54,11 @@ export {
   createImagePreview,
 } from "./imageHelpers";
 
-// Geolocation
+// ============================================================================
+// GEOLOCATION
+// ============================================================================
+// GPS and coordinate utilities
+
 export {
   getCurrentPosition,
   watchPosition,
@@ -39,7 +74,11 @@ export {
   getLeafletCoordinates,
 } from "./geolocation";
 
-// Validators
+// ============================================================================
+// VALIDATORS
+// ============================================================================
+// Form input validation functions
+
 export {
   validateEmail,
   validatePassword,
@@ -52,7 +91,11 @@ export {
   validateForm,
 } from "./validators";
 
-// Observation Helpers
+// ============================================================================
+// OBSERVATION HELPERS
+// ============================================================================
+// Observation filtering, sorting, and grouping
+
 export {
   filterObservationsByType,
   filterObservationsByTags,
@@ -69,7 +112,11 @@ export {
   findSimilarObservations,
 } from "./observationHelpers";
 
-// User Helpers
+// ============================================================================
+// USER HELPERS
+// ============================================================================
+// User role checks and data formatting
+
 export {
   isAdmin,
   isViewer,
@@ -86,7 +133,11 @@ export {
   generateDefaultAvatar,
 } from "./userHelpers";
 
-// Comment Helpers
+// ============================================================================
+// COMMENT HELPERS
+// ============================================================================
+// Comment manipulation utilities
+
 export {
   sortComments,
   filterCommentsByUser,
@@ -103,7 +154,11 @@ export {
   getTopCommenters,
 } from "./commentHelpers";
 
-// Storage
+// ============================================================================
+// STORAGE
+// ============================================================================
+// localStorage wrapper with typed keys and expiring cache
+
 export {
   setItem,
   getItem,
@@ -141,7 +196,11 @@ export {
   STORAGE_KEYS,
 } from "./storage";
 
-// Permissions
+// ============================================================================
+// PERMISSIONS
+// ============================================================================
+// Role-based access control utilities
+
 export {
   ROLES,
   PERMISSIONS,

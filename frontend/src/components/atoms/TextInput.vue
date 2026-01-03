@@ -1,48 +1,113 @@
+<!--
+  ============================================================================
+  TextInput.vue - Single-line Text Input Component
+  ============================================================================
+  
+  PURPOSE:
+  A styled single-line text input supporting various input types.
+  Includes slots for left/right icons and standard form features.
+
+  FEATURES:
+  - Multiple input types (text, email, password, number, etc.)
+  - Optional label with required indicator
+  - Left and right icon slots
+  - Error state with message
+  - Disabled state
+  - Focus and blur events
+  - Autocomplete control
+
+  USAGE EXAMPLES:
+  <TextInput v-model="email" type="email" label="Email" required />
+  <TextInput v-model="search" placeholder="Search...">
+    <template #leftIcon><SearchIcon /></template>
+  </TextInput>
+  <TextInput v-model="password" type="password" label="Password">
+    <template #rightIcon><EyeIcon /></template>
+  </TextInput>
+
+  PROPS:
+  - modelValue: Input value (v-model)
+  - type: HTML input type (default: 'text')
+  - label: Label text above input
+  - placeholder: Placeholder text
+  - error: Error message to display
+  - disabled: Whether input is disabled
+  - required: Whether field is required
+  - autocomplete: Autocomplete attribute value
+
+  SLOTS:
+  - leftIcon: Icon displayed on the left side of input
+  - rightIcon: Icon displayed on the right side of input
+
+  EVENTS:
+  - update:modelValue: Emitted on input change
+  - blur: Emitted when input loses focus
+  - focus: Emitted when input gains focus
+  ============================================================================
+-->
+
 <script setup>
 /**
- * TextInput - Input texte avec label optionnel
+ * TextInput - Single-line Text Input Component
  * Design System: Phenom Search
  */
 
 defineOptions({ name: "TextInput" });
 
+// =============================================================================
+// PROPS DEFINITION
+// =============================================================================
 const props = defineProps({
+  // Input value (v-model binding)
   modelValue: {
     type: [String, Number],
     default: "",
   },
+  // HTML input type attribute
   type: {
     type: String,
     default: "text",
   },
+  // Label text displayed above input
   label: {
     type: String,
     default: "",
   },
+  // Placeholder text
   placeholder: {
     type: String,
     default: "",
   },
+  // Error message (triggers error styling)
   error: {
     type: String,
     default: "",
   },
+  // Disabled state
   disabled: {
     type: Boolean,
     default: false,
   },
+  // Required field indicator
   required: {
     type: Boolean,
     default: false,
   },
+  // HTML autocomplete attribute
   autocomplete: {
     type: String,
     default: "off",
   },
 });
 
+// =============================================================================
+// EVENTS
+// =============================================================================
 const emit = defineEmits(["update:modelValue", "blur", "focus"]);
 
+/**
+ * Handle input and emit new value
+ */
 const handleInput = (e) => {
   emit("update:modelValue", e.target.value);
 };
@@ -50,7 +115,7 @@ const handleInput = (e) => {
 
 <template>
   <div class="w-full">
-    <!-- Label -->
+    <!-- Label (optional) -->
     <label
       v-if="label"
       class="block mb-2 text-xs uppercase tracking-wider text-white/60"
@@ -59,7 +124,7 @@ const handleInput = (e) => {
       <span v-if="required" class="text-[#00F0FF]">*</span>
     </label>
 
-    <!-- Input Container -->
+    <!-- Input Container (relative for icon positioning) -->
     <div class="relative">
       <!-- Left Icon Slot -->
       <div
@@ -69,7 +134,7 @@ const handleInput = (e) => {
         <slot name="leftIcon" />
       </div>
 
-      <!-- Input -->
+      <!-- Input Element -->
       <input
         :type="type"
         :value="modelValue"
@@ -82,6 +147,7 @@ const handleInput = (e) => {
           'placeholder:text-white/40',
           'focus:outline-none focus:border-[#00F0FF] focus:ring-1 focus:ring-[#00F0FF]/20',
           'transition-all duration-200',
+          // Adjust padding based on icon slots
           $slots.leftIcon ? 'pl-10 pr-4' : 'px-4',
           $slots.rightIcon ? 'pr-10' : '',
           error ? 'border-red-500/50' : 'border-white/10',
@@ -101,7 +167,7 @@ const handleInput = (e) => {
       </div>
     </div>
 
-    <!-- Error Message -->
+    <!-- Error Message (conditional) -->
     <p v-if="error" class="mt-2 text-xs text-red-500">
       {{ error }}
     </p>

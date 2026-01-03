@@ -1,22 +1,72 @@
+<!--
+  ============================================================================
+  MapPopup.vue - Popup card for map markers
+  ============================================================================
+  
+  PURPOSE:
+  A popup information card that appears when a map marker is clicked.
+  Shows a preview of the observation with image, location, date,
+  description, and credibility score. Includes a "View" button.
+  
+  FEATURES:
+  - Image preview with hover zoom effect
+  - Location and date display
+  - Truncated description (2 lines)
+  - Credibility score
+  - Close button
+  - View button to navigate to full observation
+  - Liquid glass design aesthetic with backdrop blur
+  - Gradient overlays for depth
+  
+  USAGE EXAMPLES:
+  <MapPopup
+    :observation="selectedObservation"
+    @view="navigateToObservation"
+    @close="closePopup"
+  />
+  
+  PROPS:
+  - observation: Object (required) - Observation data to display
+  
+  EVENTS:
+  - @view(observation) - Emitted when "View" button is clicked
+  - @close - Emitted when close button is clicked
+  ============================================================================
+-->
+
 <script setup>
 /**
- * MapPopup - Popup d'information pour la carte
+ * MapPopup - Observation popup for map display
  * Design System: Phenom Search
  */
 import { computed } from "vue";
 
 defineOptions({ name: "MapPopup" });
 
+// ============================================================================
+// PROPS DEFINITION
+// ============================================================================
 const props = defineProps({
+  // The observation data to display in the popup
   observation: {
     type: Object,
     required: true,
   },
 });
 
+// ============================================================================
+// EVENTS
+// ============================================================================
 const emit = defineEmits(["view", "close"]);
 
-// Image principale
+// ============================================================================
+// COMPUTED PROPERTIES
+// ============================================================================
+
+/**
+ * Get the main/first image from the observation
+ * Returns URL string or null if no images
+ */
 const mainImage = computed(() => {
   const images = props.observation.images || [];
   if (images.length > 0) {
@@ -25,7 +75,10 @@ const mainImage = computed(() => {
   return null;
 });
 
-// Date formatée
+/**
+ * Format the observation date in French locale
+ * Example: "15 janv. 2024"
+ */
 const formattedDate = computed(() => {
   const date = new Date(props.observation.date || props.observation.createdAt);
   return date.toLocaleDateString("fr-FR", {

@@ -1,70 +1,111 @@
 <script setup>
 /**
- * ObservationCard - Carte d'observation pour le feed
+ * ObservationCard - Card component for displaying observation in the feed
  * Design System: Phenom Search
+ *
+ * Displays an observation with user info, image, metadata, comments section,
+ * and action buttons (comment, share).
  */
+
+// ============================================================================
+// IMPORTS
+// ============================================================================
 import { computed, ref } from "vue";
 import { getImageUrl } from "@/utils/imageHelpers";
 import { useRouter } from "vue-router";
+
+// Atomic components
 import BaseAvatar from "../atoms/BaseAvatar.vue";
 import BaseBadge from "../atoms/BaseBadge.vue";
 import CredibilityGauge from "../atoms/CredibilityGauge.vue";
 import TextArea from "../atoms/TextArea.vue";
 import BaseButton from "../atoms/BaseButton.vue";
+
+// Stores and composables
 import { useCommentStore } from "@/stores/comment";
 import { useToast } from "@/composables/useToast";
 import { formatRelativeTime } from "@/utils/formatters";
 
+// ============================================================================
+// COMPONENT OPTIONS
+// ============================================================================
 defineOptions({ name: "ObservationCard" });
 
+// ============================================================================
+// PROPS & EMITS
+// ============================================================================
 const props = defineProps({
+  /** The observation object containing all data to display */
   observation: {
     type: Object,
     required: true,
   },
 });
 
+// NOTE: "comment" and "share" emits are defined but never actually used in the template
+// The component handles these actions internally instead of emitting events
+// POTENTIALLY UNUSED: emit("comment") and emit("share") are never called
 const emit = defineEmits(["click", "comment", "share"]);
 
+// ============================================================================
+// DEPENDENCIES
+// ============================================================================
 const router = useRouter();
 const commentStore = useCommentStore();
 const toast = useToast();
 
-// État local
-const showComments = ref(false);
-const commentText = ref("");
-const isSubmittingComment = ref(false);
-const isLoadingComments = ref(false);
-const comments = ref([]);
-const localCommentCount = ref(0);
+// ============================================================================
+// LOCAL STATE
+// ============================================================================
+const showComments = ref(false); // Controls comments section visibility
+const commentText = ref(""); // New comment input text
+const isSubmittingComment = ref(false); // Loading state for comment submission
+const isLoadingComments = ref(false); // Loading state for fetching comments
+const comments = ref([]); // List of comments for this observation
+const localCommentCount = ref(0); // Tracks locally added comments count
 
-// Formater la date relative
+// ============================================================================
+// COMPUTED PROPERTIES - Data formatting and extraction
+// ============================================================================
+
+/**
+ * Formats the observation date as a relative time string (e.g., "2 hours ago")
+ */
 const relativeDate = computed(() => {
   return formatRelativeTime(
     props.observation.createdAt || props.observation.date,
-    true,
+    true
   );
 });
 
-// Extraire la ville depuis `observation.location` si `observation.city` absent
+/**
+ * Extracts the city name from observation data
+ * Prioritizes `city` field, falls back to parsing `location` string
+ */
 const city = computed(() => {
-  // Priorité au champ `city` s'il existe
+  // Priority: use city field if available
   if (props.observation.city) return props.observation.city;
 
-  const loc = props.observation.location || '';
-  if (!loc) return '';
+  const loc = props.observation.location || "";
+  if (!loc) return "";
 
-  // Split par virgule et prendre la dernière partie non vide
-  const parts = loc.split(',').map(p => p.trim()).filter(Boolean);
+  // Split by comma and take the last non-empty part
+  const parts = loc
+    .split(",")
+    .map((p) => p.trim())
+    .filter(Boolean);
   let candidate = parts.length ? parts[parts.length - 1] : loc.trim();
 
-  // Supprimer parenthèses éventuelles et trim
-  candidate = candidate.replace(/\s*\(.*\)$/, '').trim();
+  // Remove any parentheses content and trim
+  candidate = candidate.replace(/\s*\(.*\)$/, "").trim();
 
   return candidate;
 });
 
-// Formater la durée
+/**
+ * Formats the observation duration into human-readable string
+ * Handles seconds, minutes, and hours
+ */
 const formattedDuration = computed(() => {
   const seconds = props.observation.duration || 0;
   if (seconds < 60) return `${seconds}s`;
@@ -74,25 +115,33 @@ const formattedDuration = computed(() => {
   return `${hours}h ${minutes % 60}min`;
 });
 
-// Image principale
+/**
+ * Gets the main (first) image URL from the observation
+ * Supports both string URLs and object format { url }
+ */
 const mainImage = computed(() => {
   const images = props.observation.images || [];
   if (images.length > 0) {
     const first = images[0];
-    // Supporte string URL or object { url }
+    // Support both string URL and object { url } format
     return typeof first === "string" ? first : getImageUrl(first);
   }
   return null;
 });
 
-// Nom de l'utilisateur (API renvoie userId, pas user)
+/**
+ * Gets the user display name
+ * API may return userId or user object depending on population
+ */
 const userName = computed(() => {
   return (
     props.observation.userId?.name || props.observation.user?.name || "Anonyme"
   );
 });
 
-// Avatar de l'utilisateur (string URL)
+/**
+ * Gets the user avatar URL with Cloudinary transformations
+ */
 const userAvatar = computed(() => {
   const a =
     props.observation.userId?.avatar || props.observation.user?.avatar || "";
@@ -102,7 +151,10 @@ const userAvatar = computed(() => {
     : getImageUrl(a, { width: 128, height: 128, crop: "fill" });
 });
 
-// Nombre de commentaires (API renvoie commentsCount ou comments array)
+/**
+ * Gets the total comment count
+ * Handles different API response formats and adds locally created comments
+ */
 const commentCount = computed(() => {
   const base =
     props.observation.commentsCount ??
@@ -112,7 +164,14 @@ const commentCount = computed(() => {
   return base + localCommentCount.value;
 });
 
-// Gérer l'ouverture de la section commentaires
+// ============================================================================
+// METHODS - Comments handling
+// ============================================================================
+
+/**
+ * Toggles the comments section visibility
+ * Loads comments from API on first open
+ */
 const toggleComments = async () => {
   showComments.value = !showComments.value;
   if (showComments.value && comments.value.length === 0) {
@@ -120,6 +179,11 @@ const toggleComments = async () => {
   }
 };
 
+/**
+ * Gets avatar URL for a comment author
+ * @param {Object} user - The user object from a comment
+ * @returns {string} The avatar URL or empty string
+ */
 const getUserAvatar = (user) => {
   const a = user?.avatar || "";
   if (!a) return "";
@@ -128,7 +192,9 @@ const getUserAvatar = (user) => {
     : getImageUrl(a, { width: 64, height: 64, crop: "fill" });
 };
 
-// Charger les commentaires depuis l'API
+/**
+ * Fetches comments from the API for this observation
+ */
 const loadComments = async () => {
   isLoadingComments.value = true;
   try {
@@ -141,19 +207,25 @@ const loadComments = async () => {
   }
 };
 
-// Soumettre le commentaire
+/**
+ * Submits a new comment to the API
+ * Updates local state and clears input on success
+ */
 const submitComment = async () => {
   if (!commentText.value.trim() || isSubmittingComment.value) return;
 
   isSubmittingComment.value = true;
   try {
+    // POTENTIALLY UNUSED: newComment variable is assigned but never used
+    // The commented code below was intended to use it
     const newComment = await commentStore.addComment(
       props.observation._id,
-      commentText.value,
+      commentText.value
     );
     localCommentCount.value++;
     comments.value = commentStore.comments;
-    /* if (newComment) {
+    /* DEAD CODE: This block is commented out and unused
+    if (newComment) {
       comments.value.unshift(newComment)
     } */
     commentText.value = "";
@@ -165,7 +237,11 @@ const submitComment = async () => {
   }
 };
 
-// Gérer l'envoi avec Entrée
+/**
+ * Handles keyboard events in the comment input
+ * Submits on Enter key (without Shift)
+ * @param {KeyboardEvent} e - The keyboard event
+ */
 const handleCommentKeydown = (e) => {
   if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault();
@@ -173,84 +249,118 @@ const handleCommentKeydown = (e) => {
   }
 };
 
-// Partager l'observation
+// ============================================================================
+// METHODS - Sharing
+// ============================================================================
+
+/**
+ * Shares the observation via Web Share API or copies link to clipboard
+ * Uses native share on mobile, clipboard on desktop
+ */
 const handleShare = async () => {
   const shareUrl = `${window.location.origin}/observation/${props.observation._id}`;
 
   try {
     if (navigator.share) {
+      // Native share (mobile)
       await navigator.share({
         title: "Phenom Sight",
         text: props.observation.description,
         url: shareUrl,
       });
     } else {
+      // Fallback: copy to clipboard (desktop)
       await navigator.clipboard.writeText(shareUrl);
       toast.success("Lien copié");
     }
   } catch (error) {
+    // Ignore AbortError (user cancelled share dialog)
     if (error.name !== "AbortError") {
       toast.error("Erreur lors du partage");
     }
   }
 };
 
-// Arrêter la propagation du clic
+// ============================================================================
+// METHODS - Event handling
+// ============================================================================
+
+/**
+ * Stops event propagation to prevent parent click handlers
+ * Used on interactive elements within the card
+ * @param {Event} e - The event to stop
+ */
 const stopPropagation = (e) => {
   e.stopPropagation();
 };
 
-// Rediriger vers la page de détail avec ancre commentaires
+/**
+ * Navigates to the observation detail page with comments section anchor
+ */
 const goToComments = () => {
   router.push(`/observation/${props.observation._id}#comments`);
 };
 </script>
 
 <template>
+  <!-- ========================================================================
+       MAIN CARD CONTAINER
+       Clickable article that emits 'click' event with observation data
+       ======================================================================== -->
   <article
     class="bg-[#000000] border-b border-white/10 rounded-lg"
     @click="emit('click', observation)"
   >
-    <!-- Header: Avatar + Nom + Localisation -->
+    <!-- ======================================================================
+         HEADER SECTION - User avatar, name, location and date
+         ====================================================================== -->
     <div class="px-1 py-3">
-  <div class="flex items-center gap-3">
-    <!-- Avatar -->
-    <BaseAvatar :src="userAvatar" :name="userName" size="sm" class="flex-shrink-0" />
-    
-    <!-- Info column -->
-    <div class="flex-1 min-w-0">
-      <!-- Name + verification badge (optionnel) -->
-      <div class="flex items-center gap-1.5 mb-1">
-        <h3 class="text-sm font-bold text-white truncate">
-          {{ userName }}
-        </h3>
-      </div>
-      
-      <!-- Location + date en une ligne -->
-      <p class="text-xs text-white/60 truncate leading-tight">
-        <span class="text-white">{{ observation.country }}</span>
-        <span class="text-white/30 mx-1.5">•</span>
-        <span>{{ city }}</span>
-        <span class="text-white/30 mx-1.5">•</span>
-        <time>{{ relativeDate }}</time>
-      </p>
-    </div>
-    
-    <!-- Menu actions (optionnel) -->
-    <!-- <button class="p-1.5 -mr-1.5 hover:bg-white/5 rounded-lg transition-colors flex-shrink-0">
+      <div class="flex items-center gap-3">
+        <!-- User avatar -->
+        <BaseAvatar
+          :src="userAvatar"
+          :name="userName"
+          size="sm"
+          class="flex-shrink-0"
+        />
+
+        <!-- User info column -->
+        <div class="flex-1 min-w-0">
+          <!-- Name + verification badge (optional, not implemented) -->
+          <div class="flex items-center gap-1.5 mb-1">
+            <h3 class="text-sm font-bold text-white truncate">
+              {{ userName }}
+            </h3>
+          </div>
+
+          <!-- Location + date on single line -->
+          <p class="text-xs text-white/60 truncate leading-tight">
+            <span class="text-white">{{ observation.country }}</span>
+            <span class="text-white/30 mx-1.5">•</span>
+            <span>{{ city }}</span>
+            <span class="text-white/30 mx-1.5">•</span>
+            <time>{{ relativeDate }}</time>
+          </p>
+        </div>
+
+        <!-- COMMENTED OUT: Actions menu button (kebab menu)
+         POTENTIALLY UNUSED: This feature is not implemented -->
+        <!-- <button class="p-1.5 -mr-1.5 hover:bg-white/5 rounded-lg transition-colors flex-shrink-0">
       <svg class="w-5 h-5 text-white/60" fill="currentColor" viewBox="0 0 24 24">
         <path d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
       </svg>
     </button> -->
-  </div>
-</div>
+      </div>
+    </div>
 
-
-    <!-- Image -->
+    <!-- ======================================================================
+         IMAGE SECTION - Main observation image with credibility overlay
+         ====================================================================== -->
     <div
       v-if="mainImage"
       class="relative aspect-[4/3] bg-[#12151C] overflow-hidden rounded-lg"
     >
+      <!-- Main image with lazy loading -->
       <img
         :src="mainImage"
         :alt="observation.description"
@@ -258,12 +368,12 @@ const goToComments = () => {
         loading="lazy"
       />
 
-      <!-- Overlay gradient -->
+      <!-- Gradient overlay for better text/badge readability -->
       <div
         class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"
       />
 
-      <!-- Crédibilité en overlay -->
+      <!-- Credibility gauge positioned at bottom-right of image -->
       <div class="absolute bottom-3 right-3">
         <CredibilityGauge
           :value="observation.credibility || 0"
@@ -273,11 +383,12 @@ const goToComments = () => {
       </div>
     </div>
 
-    <!-- Placeholder si pas d'image -->
+    <!-- Placeholder when no image is available -->
     <div
       v-else
       class="aspect-[4/3] bg-[#12151C] flex items-center justify-center"
     >
+      <!-- UFO-like icon as placeholder -->
       <svg
         class="w-16 h-16 text-white/10"
         viewBox="0 0 24 24"
@@ -292,9 +403,11 @@ const goToComments = () => {
       </svg>
     </div>
 
-    <!-- Métadonnées -->
+    <!-- ======================================================================
+         METADATA SECTION - UFO shapes, duration, description, comments
+         ====================================================================== -->
     <div class="px-4 py-3 space-y-3">
-      <!-- Formes UFO (chips) -->
+      <!-- UFO shapes displayed as chips/badges (max 3 visible) -->
       <div v-if="observation.ufoShapes?.length" class="flex flex-wrap gap-2">
         <BaseBadge
           v-for="shape in observation.ufoShapes.slice(0, 3)"
@@ -304,6 +417,7 @@ const goToComments = () => {
         >
           {{ shape }}
         </BaseBadge>
+        <!-- "+N" badge when more than 3 shapes -->
         <BaseBadge
           v-if="observation.ufoShapes.length > 3"
           variant="default"
@@ -313,7 +427,7 @@ const goToComments = () => {
         </BaseBadge>
       </div>
 
-      <!-- Durée -->
+      <!-- Duration display with clock icon -->
       <div
         v-if="observation.duration"
         class="flex items-center gap-2 text-xs text-white/50"
@@ -331,16 +445,17 @@ const goToComments = () => {
         <span>{{ formattedDuration }}</span>
       </div>
 
-      <!-- Description (max 3 lignes) -->
+      <!-- Description text with 3-line clamp -->
       <p class="text-sm text-white/70 line-clamp-3">
         {{ observation.description }}
       </p>
 
-      <!-- Compteur commentaires -->
+      <!-- Comment count toggle button -->
       <button
         class="flex items-center gap-1 text-xs text-white/40 hover:text-[#00F0FF] transition-colors relative"
         @click.stop="toggleComments"
       >
+        <!-- Comment bubble icon -->
         <svg
           class="w-4 h-4"
           viewBox="0 0 24 24"
@@ -353,6 +468,7 @@ const goToComments = () => {
         <span
           >{{ commentCount }} commentaire{{ commentCount > 1 ? "s" : "" }}</span
         >
+        <!-- Chevron icon that rotates when comments are open -->
         <svg
           class="w-3 h-3 transition-transform"
           :class="{ 'rotate-180': showComments }"
@@ -365,36 +481,42 @@ const goToComments = () => {
         </svg>
       </button>
 
-      <!-- Section commentaires -->
+      <!-- ====================================================================
+           EXPANDABLE COMMENTS SECTION
+           Uses Vue Transition for slide animation
+           ==================================================================== -->
       <Transition name="slide">
         <div
           v-if="showComments"
           class="mt-3 space-y-3"
           @click="stopPropagation"
         >
-          <!-- Loading -->
+          <!-- Loading spinner while fetching comments -->
           <div v-if="isLoadingComments" class="flex justify-center py-4">
             <div
               class="w-5 h-5 border-2 border-[#00F0FF]/30 border-t-[#00F0FF] rounded-full animate-spin"
             ></div>
           </div>
 
-          <!-- Liste des commentaires, max 7 -->
+          <!-- Comments list (scrollable, max height) -->
           <div
             v-else-if="comments.length > 0"
             class="space-y-3 max-h-60 overflow-y-auto"
           >
+            <!-- Individual comment item -->
             <div
               v-for="comment in comments"
               :key="comment._id"
               class="flex gap-2 p-2 bg-white/5 rounded-lg"
             >
+              <!-- Comment author avatar -->
               <BaseAvatar
                 :src="getUserAvatar(comment.userId)"
                 :name="comment.userId?.name || 'Anonyme'"
                 size="xs"
               />
               <div class="flex-1 min-w-0">
+                <!-- Author name and timestamp -->
                 <div class="flex items-center gap-2">
                   <span class="text-xs font-medium text-white truncate">
                     {{ comment.userId?.name || "Anonyme" }}
@@ -403,18 +525,22 @@ const goToComments = () => {
                     formatRelativeTime(comment.createdAt, true)
                   }}</span>
                 </div>
+                <!-- Comment text content -->
                 <p class="text-sm text-white/70 mt-1">{{ comment.text }}</p>
               </div>
             </div>
           </div>
 
-          <!-- Aucun commentaire -->
+          <!-- Empty state when no comments -->
           <p v-else class="text-center text-sm text-white/40 py-3">
             Aucun commentaire pour l'instant
           </p>
 
-          <!-- Formulaire d'ajout -->
+          <!-- ================================================================
+               NEW COMMENT FORM
+               ================================================================ -->
           <div class="pt-2 border-t border-white/10 space-y-2">
+            <!-- Comment input textarea -->
             <TextArea
               v-model="commentText"
               @keydown="handleCommentKeydown"
@@ -422,6 +548,7 @@ const goToComments = () => {
               placeholder="Ajouter un commentaire..."
               :rows="2"
             />
+            <!-- Submit button -->
             <div class="flex gap-2 justify-end">
               <BaseButton
                 variant="primary"
@@ -438,11 +565,13 @@ const goToComments = () => {
       </Transition>
     </div>
 
-    <!-- Actions Bar -->
+    <!-- ======================================================================
+         ACTION BAR - Comment and Share buttons
+         ====================================================================== -->
     <div
       class="flex items-center justify-around px-4 py-3 border-t border-white/5"
     >
-      <!-- Commenter -->
+      <!-- Comment action button - navigates to detail page -->
       <button
         class="flex items-center gap-2 px-4 py-2 text-white/50 hover:text-[#00F0FF] transition-colors touch-target"
         @click.stop="goToComments"
@@ -459,7 +588,7 @@ const goToComments = () => {
         <span class="text-xs uppercase tracking-wider">Commenter</span>
       </button>
 
-      <!-- Partager -->
+      <!-- Share action button - uses Web Share API or clipboard -->
       <button
         class="flex items-center gap-2 px-4 py-2 text-white/50 hover:text-[#00F0FF] transition-colors touch-target relative group"
         @click.stop="handleShare"
@@ -483,7 +612,12 @@ const goToComments = () => {
   </article>
 </template>
 
+<!-- ============================================================================
+     SCOPED STYLES - Animation transitions
+     ============================================================================ -->
 <style scoped>
+/* Fade transition for general show/hide animations */
+/* POTENTIALLY UNUSED: .fade-* classes are defined but not used in template */
 .fade-enter-active,
 .fade-leave-active {
   transition: all 0.2s ease;
@@ -494,6 +628,7 @@ const goToComments = () => {
   opacity: 0;
 }
 
+/* Slide transition for comments section expand/collapse */
 .slide-enter-active,
 .slide-leave-active {
   transition: all 0.3s ease;

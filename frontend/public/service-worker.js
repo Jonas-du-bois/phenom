@@ -1,52 +1,118 @@
-const CACHE_NAME = 'phenom-pwa-v1';
-const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/manifest.json'
-];
+/**
+ * Service Worker for Phenom PWA
+ *
+ * Handles:
+ * - Asset caching for offline support
+ * - Cache versioning and cleanup
+ * - Network-first with cache fallback strategy
+ * - Web Push notifications
+ * - Notification click handling
+ */
 
-self.addEventListener('install', (event) => {
+// ============================================================================
+// CACHE CONFIGURATION
+// ============================================================================
+
+/** Cache version - increment to invalidate old caches */
+const CACHE_NAME = "phenom-pwa-v1";
+
+/** Static assets to cache on install for offline support */
+const ASSETS_TO_CACHE = ["/", "/index.html", "/manifest.json"];
+
+// ============================================================================
+// SERVICE WORKER LIFECYCLE EVENTS
+// ============================================================================
+
+/**
+ * Install event - Cache static assets
+ * Called when service worker is first installed or updated
+ */
+self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE)).then(() => self.skipWaiting())
+    caches
+      .open(CACHE_NAME)
+      .then((cache) => cache.addAll(ASSETS_TO_CACHE))
+      .then(() => self.skipWaiting()) // Activate immediately, don't wait for old SW to finish
   );
 });
 
-self.addEventListener('activate', (event) => {
+/**
+ * Activate event - Clean up old caches
+ * Called when service worker becomes active (after install)
+ */
+self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => Promise.all(keys.map((key) => {
-      if (key !== CACHE_NAME) return caches.delete(key);
-    }))).then(() => self.clients.claim())
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(
+          keys.map((key) => {
+            // Delete any caches that don't match current version
+            if (key !== CACHE_NAME) return caches.delete(key);
+          })
+        )
+      )
+      .then(() => self.clients.claim()) // Take control of all clients immediately
   );
 });
 
-self.addEventListener('fetch', (event) => {
+/**
+ * Fetch event - Network-first with cache fallback strategy
+ * Attempts network request, falls back to cache if offline
+ */
+self.addEventListener("fetch", (event) => {
   event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request).catch(() => cached))
+    caches
+      .match(event.request)
+      .then((cached) => cached || fetch(event.request).catch(() => cached))
   );
 });
 
-// Web Push handler
-self.addEventListener('push', (event) => {
+// ============================================================================
+// WEB PUSH NOTIFICATION HANDLERS
+// ============================================================================
+
+/**
+ * Push event - Display incoming push notifications
+ * Parses notification payload and shows system notification
+ */
+self.addEventListener("push", (event) => {
+  // Parse push data (JSON format expected)
   const payload = event.data?.json?.() || {};
-  const title = payload.title || 'Phenom';
+
+  const title = payload.title || "Phenom";
   const options = {
-    body: payload.body || '',
-    data: payload.data || {},
-    tag: payload.tag || 'phenom-alert',
-    renotify: true
+    body: payload.body || "",
+    data: payload.data || {}, // Custom data for click handling
+    tag: payload.tag || "phenom-alert", // Group notifications with same tag
+    renotify: true, // Notify even if same tag exists
   };
+
   event.waitUntil(self.registration.showNotification(title, options));
 });
 
-self.addEventListener('notificationclick', (event) => {
+/**
+ * Notification click event - Handle user interaction with notifications
+ * Opens or focuses the alerts page when notification is clicked
+ */
+self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const url = event.notification.data?.url || '/alerts';
+
+  // Get target URL from notification data, default to alerts page
+  const url = event.notification.data?.url || "/alerts";
+
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      for (const client of clientList) {
-        if (client.url.includes('/alerts') && 'focus' in client) return client.focus();
-      }
-      if (clients.openWindow) return clients.openWindow(url);
-    })
+    clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((clientList) => {
+        // Try to focus existing alerts tab
+        for (const client of clientList) {
+          if (client.url.includes("/alerts") && "focus" in client) {
+            return client.focus();
+          }
+        }
+        // Otherwise open new window
+        if (clients.openWindow) return clients.openWindow(url);
+      })
   );
 });

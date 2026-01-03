@@ -1,3 +1,22 @@
+<!--
+  ============================================================================
+  SignupPage.vue - User Registration Page
+  ============================================================================
+  
+  PURPOSE:
+  Provides the registration form for new users to create an account.
+  Auto-redirects to feed after successful registration.
+
+  FEATURES:
+  - Username, email, and password registration form
+  - Loading state during registration
+  - Error message display for validation/server errors
+  - Link to login page for existing users
+
+  ROUTE: /signup (guest only)
+  ============================================================================
+-->
+
 <template>
   <div
     class="signup-page min-h-screen bg-[#080A0E] flex items-center justify-center p-4"

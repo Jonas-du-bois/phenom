@@ -1,3 +1,24 @@
+<!--
+  ============================================================================
+  MapPage.vue - Interactive Observation Map Page
+  ============================================================================
+  
+  PURPOSE:
+  Displays observations on an interactive Leaflet map with clustering.
+  Users can explore observations geographically and filter by various criteria.
+
+  FEATURES:
+  - Leaflet map with marker clustering
+  - Auto-centers on user's location (with permission)
+  - Focus on specific observation via query param (?focus=id)
+  - Bounds-based observation loading (fetches visible area only)
+  - Filter panel for refining displayed observations
+  - Debounced bounds change handling for performance
+
+  ROUTE: /map (main tab)
+  ============================================================================
+-->
+
 <template>
   <AppLayout :show-tab-bar="true">
     <div class="map-page h-screen flex flex-col">
@@ -121,7 +142,7 @@ onMounted(async () => {
         mapZoom.value = 10;
       },
       () => {},
-      { timeout: 5000 },
+      { timeout: 5000 }
     );
   }
 

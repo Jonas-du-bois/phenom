@@ -2,18 +2,37 @@ import { useRouter } from "vue-router";
 import { ref } from "vue";
 
 /**
- * Composable pour gérer les erreurs HTTP de manière centralisée
- * Gère les redirections automatiques vers les pages d'erreur appropriées
+ * Error Handler Composable - Centralized HTTP Error Management
+ *
+ * Provides consistent error handling across the application with
+ * automatic redirects to appropriate error pages.
+ *
+ * @module composables/useErrorHandler
+ *
+ * Features:
+ * - HTTP status code handling (401, 403, 404, 500)
+ * - Automatic redirect to login on 401
+ * - Automatic redirect to 404 page
+ * - Optional notification display
+ * - Loading state management
+ *
+ * @example
+ * const { handleError, withErrorHandling } = useErrorHandler();
+ * await withErrorHandling(async () => await api.fetchData());
  */
 export function useErrorHandler() {
   const router = useRouter();
-  const error = ref(null);
-  const isLoading = ref(false);
+  const error = ref(null); // Current error
+  const isLoading = ref(false); // Loading state
 
   /**
-   * Gère une erreur HTTP et redirige si nécessaire
-   * @param {Error} err - L'erreur à gérer
-   * @param {Object} options - Options de gestion
+   * Handle an HTTP error and redirect if necessary
+   * @param {Error} err - Error to handle
+   * @param {Object} options - Handling options
+   * @param {boolean} options.showNotification - Show toast notification
+   * @param {boolean} options.redirectOn404 - Redirect to 404 page
+   * @param {boolean} options.redirectOn403 - Redirect to home on forbidden
+   * @param {string} options.customMessage - Custom error message
    */
   const handleError = (err, options = {}) => {
     const {
@@ -33,7 +52,7 @@ export function useErrorHandler() {
         case 404:
           console.error(
             "404 - Ressource non trouvée:",
-            err.response.config.url,
+            err.response.config.url
           );
           if (redirectOn404) {
             router.push({ name: "not-found" });
@@ -98,9 +117,10 @@ export function useErrorHandler() {
   };
 
   /**
-   * Wrapper pour exécuter une fonction async avec gestion d'erreur automatique
-   * @param {Function} fn - Fonction async à exécuter
-   * @param {Object} options - Options de gestion d'erreur
+   * Wrapper to execute an async function with automatic error handling
+   * @param {Function} fn - Async function to execute
+   * @param {Object} options - Error handling options
+   * @returns {Promise<any>} Function result
    */
   const withErrorHandling = async (fn, options = {}) => {
     isLoading.value = true;
@@ -118,9 +138,11 @@ export function useErrorHandler() {
   };
 
   /**
-   * Vérifie si une ressource existe avant de naviguer
-   * @param {Function} fetchFn - Fonction qui récupère la ressource
-   * @param {String} fallbackRoute - Route vers laquelle rediriger si 404
+   * Check if a resource exists before navigating
+   * Redirects to 404 page if resource not found
+   * @param {Function} fetchFn - Function that fetches the resource
+   * @param {string} fallbackRoute - Route name to redirect to on 404
+   * @returns {Promise<any|null>} Resource data or null if not found
    */
   const checkResourceExists = async (fetchFn, fallbackRoute = "not-found") => {
     try {
@@ -136,30 +158,32 @@ export function useErrorHandler() {
   };
 
   /**
-   * Affiche une notification (à adapter selon votre système de notification)
-   * @param {String} message - Message à afficher
-   * @param {String} type - Type de notification ('success', 'error', 'warning', 'info')
+   * Display a notification (adapt to your notification system)
+   * @param {string} message - Message to display
+   * @param {string} type - Notification type ('success', 'error', 'warning', 'info')
+   * @private
    */
   const showNotif = (message, type = "info") => {
-    // Exemple simple avec alert - à remplacer par votre système de notification
-    // (toast, snackbar, etc.)
+    // Simple console log - replace with your notification system (toast, snackbar, etc.)
     console.log(`[${type.toUpperCase()}] ${message}`);
 
-    // TODO: Intégrer avec votre système de notification
-    // Exemple:
+    // TODO: Integrate with toast notification system
+    // Example:
     // import { useToast } from '@/composables/useToast'
     // const toast = useToast()
     // toast.show(message, type)
-
-    // Pour l'instant, on utilise alert pour la démonstration mais je ne sais pas si c'est utile de mettre ces informations dans un notifcation toast
   };
 
   /**
-   * Nettoie l'erreur
+   * Clear the current error
    */
   const clearError = () => {
     error.value = null;
   };
+
+  // ============================================================================
+  // RETURN PUBLIC API
+  // ============================================================================
 
   return {
     error,
@@ -172,7 +196,7 @@ export function useErrorHandler() {
 }
 
 /**
- * Exemple d'utilisation dans un composant :
+ * Usage Example in a component:
  *
  * <script setup>
  * import { useErrorHandler } from '@/composables/useErrorHandler'

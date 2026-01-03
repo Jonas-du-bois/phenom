@@ -1,3 +1,23 @@
+<!--
+  ============================================================================
+  ObservationEditPage.vue - Edit Existing Observation Page
+  ============================================================================
+  
+  PURPOSE:
+  Allows users to edit an existing observation's details.
+  Only accessible by the observation owner or admin.
+
+  FEATURES:
+  - Pre-populated form with existing observation data
+  - Edit title, description, type, location, and other metadata
+  - Add or remove images
+  - Loading and error states
+  - Success toast on save
+
+  ROUTE: /observation/:id/edit (requires auth + ownership/admin)
+  ============================================================================
+-->
+
 <template>
   <div class="min-h-screen pt-20 pb-8 bg-[#000000]">
     <PageHeader title="Modifier l'observation" :showBack="true" />
@@ -58,11 +78,12 @@ const mapObservationToForm = (obs) => {
     try {
       const d = new Date(dateIso);
       date = d.toISOString().split("T")[0];
-      time = d.toTimeString().split(" ")[0].slice(0,5);
+      time = d.toTimeString().split(" ")[0].slice(0, 5);
     } catch {}
   }
 
-  const coords = obs?.coordinates || { lat: obs?.latitude, lng: obs?.longitude } || {};
+  const coords =
+    obs?.coordinates || { lat: obs?.latitude, lng: obs?.longitude } || {};
 
   return {
     date,
@@ -75,13 +96,16 @@ const mapObservationToForm = (obs) => {
     strangeness: obs.strangeness ?? 5,
     duration: obs.duration ?? null,
     observerTypes: obs.observerTypes || [],
-    ufoShapes: obs.ufoShapes || obs.ufoShape ? [obs.ufoShape].filter(Boolean) : [],
-    phenomena: obs.phenomena || obs.phenomenon ? [obs.phenomenon].filter(Boolean) : [],
+    ufoShapes:
+      obs.ufoShapes || obs.ufoShape ? [obs.ufoShape].filter(Boolean) : [],
+    phenomena:
+      obs.phenomena || obs.phenomenon ? [obs.phenomenon].filter(Boolean) : [],
     latitude: coords?.lat ?? obs.latitude ?? null,
     longitude: coords?.lng ?? obs.longitude ?? null,
     weather: obs.weather || "",
     witnesses: obs.witnesses ?? 1,
-    media: obs.imageUrl || (obs.images && obs.images.length ? obs.images[0] : null),
+    media:
+      obs.imageUrl || (obs.images && obs.images.length ? obs.images[0] : null),
     generateAiImage: obs.imageSource === "ai" || !!obs.generateAiImage || false,
   };
 };
@@ -131,5 +155,7 @@ const onSubmit = async (data) => {
 </script>
 
 <style scoped>
-.min-h-screen { min-height: 100vh; }
+.min-h-screen {
+  min-height: 100vh;
+}
 </style>

@@ -1,6 +1,21 @@
+<!-- ========================================================================
+     LOGIN FORM - User authentication form with validation
+     
+     Features:
+     - Email/password input fields with validation
+     - Password visibility toggle
+     - Remember me checkbox
+     - Forgot password link
+     - Server-side error handling and field mapping
+     - Social login slot for OAuth providers
+     - Signup redirect link
+     
+     Events:
+     - submit: Emits validated form data { email, password, remember }
+     ======================================================================== -->
 <template>
   <form @submit.prevent="handleSubmit" class="login-form space-y-6">
-    <!-- Logo -->
+    <!-- Logo and branding section -->
     <div class="text-center mb-8">
       <div class="flex items-center gap-2 justify-center mb-4">
         <svg

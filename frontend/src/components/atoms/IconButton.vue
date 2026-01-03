@@ -1,40 +1,92 @@
+<!--
+  ============================================================================
+  IconButton.vue - Icon-Only Button Component
+  ============================================================================
+  
+  PURPOSE:
+  A square button designed to contain only an icon (no text).
+  Used for toolbar actions, close buttons, navigation arrows, etc.
+
+  FEATURES:
+  - Multiple variants: primary, secondary, ghost
+  - Multiple sizes: sm, md, lg
+  - Required aria-label for accessibility
+  - Disabled state
+  - Slot for icon content
+
+  USAGE EXAMPLES:
+  <IconButton aria-label="Close"><CloseIcon /></IconButton>
+  <IconButton variant="primary" aria-label="Add"><PlusIcon /></IconButton>
+  <IconButton size="lg" aria-label="Menu"><MenuIcon /></IconButton>
+
+  PROPS:
+  - variant: 'primary' | 'secondary' | 'ghost' (default: 'ghost')
+  - size: 'sm' | 'md' | 'lg' (default: 'md')
+  - disabled: Whether button is disabled
+  - ariaLabel: Required accessibility label (screen readers)
+
+  EVENTS:
+  - click: Emitted when button is clicked (unless disabled)
+  ============================================================================
+-->
+
 <script setup>
 /**
- * IconButton - Bouton avec icône seule
+ * IconButton - Icon-Only Button Component
  * Design System: Phenom Search
  */
 
 defineOptions({ name: "IconButton" });
 
+// =============================================================================
+// PROPS DEFINITION
+// =============================================================================
 const props = defineProps({
+  // Visual style variant
   variant: {
     type: String,
     default: "ghost",
     validator: (v) => ["primary", "secondary", "ghost"].includes(v),
   },
+  // Size variant (affects button dimensions)
   size: {
     type: String,
     default: "md",
     validator: (v) => ["sm", "md", "lg"].includes(v),
   },
+  // Disabled state
   disabled: {
     type: Boolean,
     default: false,
   },
+  // Required: Accessibility label for screen readers
   ariaLabel: {
     type: String,
     required: true,
   },
 });
 
+// =============================================================================
+// EVENTS
+// =============================================================================
 const emit = defineEmits(["click"]);
 
+/**
+ * Handle click events (only if not disabled)
+ */
 const handleClick = (e) => {
   if (!props.disabled) {
     emit("click", e);
   }
 };
 
+// =============================================================================
+// STYLING CONFIGURATION
+// =============================================================================
+
+/**
+ * Tailwind classes for each variant
+ */
 const variantClasses = {
   primary: "bg-[#00F0FF] text-black hover:bg-[#00D0DF]",
   secondary:
@@ -42,14 +94,22 @@ const variantClasses = {
   ghost: "text-white/50 hover:text-white hover:bg-white/5",
 };
 
+/**
+ * Square dimensions for each size
+ */
 const sizeClasses = {
-  sm: "w-8 h-8",
-  md: "w-10 h-10",
-  lg: "w-12 h-12",
+  sm: "w-8 h-8",    // 32px
+  md: "w-10 h-10",  // 40px
+  lg: "w-12 h-12",  // 48px
 };
 </script>
 
 <template>
+  <!-- 
+    Icon Button
+    - type="button" prevents form submission
+    - touch-target ensures minimum 44px touch area on mobile
+  -->
   <button
     type="button"
     :disabled="disabled"
@@ -64,6 +124,7 @@ const sizeClasses = {
     ]"
     @click="handleClick"
   >
+    <!-- Slot for icon content -->
     <slot />
   </button>
 </template>

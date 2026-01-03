@@ -1,30 +1,34 @@
 /**
- * Composable pour la gestion des commentaires
- * Centralise la logique métier liée aux commentaires
+ * useComments Composable
+ *
+ * Centralized comment management logic for observations.
+ * Handles loading, creating, deleting comments and real-time updates.
+ *
+ * @module composables/useComments
  */
 
 import { ref, computed } from "vue";
 import { commentService } from "../services/commentService";
 
 export function useComments() {
-  // État - stocke les commentaires par observation ID
+  // State - stores comments indexed by observation ID
   const commentsByObservation = ref({});
   const loading = ref(false);
   const error = ref(null);
 
-  // Statistiques calculées
+  // Computed statistics
   const totalComments = computed(() => {
     return Object.values(commentsByObservation.value).reduce(
       (sum, comments) => sum + comments.length,
-      0,
+      0
     );
   });
 
   /**
-   * Charge les commentaires d'une observation
-   * @param {string} observationId - ID de l'observation
-   * @param {Object} params - Paramètres de requête (limit, page, etc.)
-   * @returns {Promise<Array>}
+   * Load comments for a specific observation
+   * @param {string} observationId - Observation ID
+   * @param {Object} params - Query parameters (limit, page, etc.)
+   * @returns {Promise<Array>} List of comments
    */
   const loadComments = async (observationId, params = { limit: 100 }) => {
     try {
@@ -33,10 +37,10 @@ export function useComments() {
 
       const response = await commentService.getByObservation(
         observationId,
-        params,
+        params
       );
 
-      // Gérer différentes structures de réponse
+      // Handle different API response structures
       let comments = [];
       if (response.data) {
         comments = response.data;
@@ -50,13 +54,13 @@ export function useComments() {
 
       console.log(
         `✅ Commentaires chargés pour ${observationId}:`,
-        comments.length,
+        comments.length
       );
       return comments;
     } catch (err) {
       console.error(
         `❌ Erreur lors du chargement des commentaires pour ${observationId}:`,
-        err,
+        err
       );
       error.value = err.response?.data?.message || err.message;
       commentsByObservation.value[observationId] = [];
@@ -67,14 +71,14 @@ export function useComments() {
   };
 
   /**
-   * Charge les commentaires pour plusieurs observations
-   * @param {Array<string>} observationIds - Liste des IDs d'observations
-   * @param {Object} params - Paramètres de requête
+   * Load comments for multiple observations sequentially
+   * @param {Array<string>} observationIds - List of observation IDs
+   * @param {Object} params - Query parameters
    * @returns {Promise<void>}
    */
   const loadCommentsForObservations = async (
     observationIds,
-    params = { limit: 100 },
+    params = { limit: 100 }
   ) => {
     for (const id of observationIds) {
       await loadComments(id, params);
@@ -82,10 +86,10 @@ export function useComments() {
   };
 
   /**
-   * Crée un commentaire
-   * @param {string} observationId - ID de l'observation
-   * @param {string} text - Texte du commentaire
-   * @returns {Promise<Object|null>}
+   * Create a new comment on an observation
+   * @param {string} observationId - Observation ID
+   * @param {string} text - Comment text content
+   * @returns {Promise<Object|null>} Created comment or null on error
    */
   const createComment = async (observationId, text) => {
     try {
@@ -95,7 +99,7 @@ export function useComments() {
       const response = await commentService.create(observationId, text);
       const comment = response.data || response;
 
-      // Ajouter à la liste locale
+      // Add to local list
       if (!commentsByObservation.value[observationId]) {
         commentsByObservation.value[observationId] = [];
       }
@@ -113,10 +117,10 @@ export function useComments() {
   };
 
   /**
-   * Supprime un commentaire
-   * @param {string} commentId - ID du commentaire
-   * @param {string} observationId - ID de l'observation (pour mise à jour locale)
-   * @returns {Promise<boolean>}
+   * Delete a comment
+   * @param {string} commentId - Comment ID to delete
+   * @param {string} observationId - Observation ID (for local list update)
+   * @returns {Promise<boolean>} True if successful
    */
   const deleteComment = async (commentId, observationId = null) => {
     try {
@@ -125,11 +129,11 @@ export function useComments() {
 
       await commentService.delete(commentId);
 
-      // Retirer de la liste locale si observationId fourni
+      // Remove from local list if observationId provided
       if (observationId && commentsByObservation.value[observationId]) {
         commentsByObservation.value[observationId] =
           commentsByObservation.value[observationId].filter(
-            (c) => c._id !== commentId,
+            (c) => c._id !== commentId
           );
       }
 
@@ -145,18 +149,18 @@ export function useComments() {
   };
 
   /**
-   * Ajoute un commentaire à la liste (temps réel WebSocket)
-   * @param {string} observationId - ID de l'observation
-   * @param {Object} comment - Nouveau commentaire
+   * Add a comment to local state (WebSocket real-time updates)
+   * @param {string} observationId - Observation ID
+   * @param {Object} comment - New comment object
    */
   const addComment = (observationId, comment) => {
     if (!commentsByObservation.value[observationId]) {
       commentsByObservation.value[observationId] = [];
     }
 
-    // Vérifier si le commentaire n'existe pas déjà
+    // Check if comment doesn't already exist
     const exists = commentsByObservation.value[observationId].some(
-      (c) => c._id === comment._id,
+      (c) => c._id === comment._id
     );
     if (!exists) {
       commentsByObservation.value[observationId].push(comment);
@@ -165,9 +169,9 @@ export function useComments() {
   };
 
   /**
-   * Supprime un commentaire de la liste (temps réel WebSocket)
-   * @param {string} observationId - ID de l'observation
-   * @param {string} commentId - ID du commentaire
+   * Remove a comment from local state (WebSocket real-time updates)
+   * @param {string} observationId - Observation ID
+   * @param {string} commentId - Comment ID to remove
    */
   const removeComment = (observationId, commentId) => {
     if (commentsByObservation.value[observationId]) {
@@ -179,48 +183,48 @@ export function useComments() {
   };
 
   /**
-   * Récupère les commentaires d'une observation depuis l'état
-   * @param {string} observationId - ID de l'observation
-   * @returns {Array} Liste des commentaires
+   * Get comments for an observation from local state
+   * @param {string} observationId - Observation ID
+   * @returns {Array} List of comments
    */
   const getComments = (observationId) => {
     return commentsByObservation.value[observationId] || [];
   };
 
   /**
-   * Compte le nombre de commentaires pour une observation
-   * @param {string} observationId - ID de l'observation
-   * @returns {number} Nombre de commentaires
+   * Get comment count for an observation
+   * @param {string} observationId - Observation ID
+   * @returns {number} Number of comments
    */
   const getCommentCount = (observationId) => {
     return commentsByObservation.value[observationId]?.length || 0;
   };
 
   /**
-   * Nettoie les commentaires d'une observation
-   * @param {string} observationId - ID de l'observation
+   * Clear comments for a specific observation
+   * @param {string} observationId - Observation ID
    */
   const clearComments = (observationId) => {
     delete commentsByObservation.value[observationId];
   };
 
   /**
-   * Nettoie tous les commentaires
+   * Clear all comments from local state
    */
   const clearAllComments = () => {
     commentsByObservation.value = {};
   };
 
   return {
-    // État
+    // State
     commentsByObservation,
     loading,
     error,
 
-    // Statistiques
+    // Computed statistics
     totalComments,
 
-    // Méthodes
+    // Methods
     loadComments,
     loadCommentsForObservations,
     createComment,

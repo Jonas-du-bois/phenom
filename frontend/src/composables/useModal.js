@@ -1,5 +1,9 @@
 /**
- * Composable pour gestion des modals
+ * useModal Composable
+ *
+ * Simple modal open/close state management.
+ *
+ * @module composables/useModal
  */
 import { ref } from "vue";
 

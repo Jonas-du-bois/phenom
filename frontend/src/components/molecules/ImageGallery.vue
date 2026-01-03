@@ -1,6 +1,49 @@
+<!--
+  ============================================================================
+  ImageGallery.vue - Swipeable image gallery/carousel
+  ============================================================================
+  
+  PURPOSE:
+  A touch-enabled image gallery that displays multiple images with swipe
+  navigation. Shows dot indicators and a counter. Handles various image
+  formats including File/Blob objects for local previews.
+  
+  FEATURES:
+  - Touch/swipe navigation (left/right)
+  - Dot indicators for current position
+  - Image counter (e.g., "1 / 5")
+  - Lazy loading for images
+  - Handles multiple image formats:
+    - String URLs
+    - File/Blob objects (creates object URLs)
+    - Objects with url/secure_url/path/src properties
+  - Auto cleanup of object URLs on unmount
+  - Configurable aspect ratio
+  
+  USAGE EXAMPLES:
+  <ImageGallery
+    :images="['url1.jpg', 'url2.jpg']"
+    aspect-ratio="16/9"
+    @image-click="openLightbox"
+  />
+  
+  <ImageGallery
+    :images="observation.images"
+    @image-click="handleClick"
+  />
+  
+  PROPS:
+  - images: Array (required) - Array of images (URLs or objects with url)
+  - aspectRatio: String (default: "4/3") - CSS aspect ratio for container
+  
+  EVENTS:
+  - @imageClick(index) - Emitted when an image is clicked with its index
+  ============================================================================
+-->
+
 <script setup>
 /**
- * ImageGallery - Galerie d'images avec swipe
+ * ImageGallery - Swipeable image gallery component
  * Design System: Phenom Search
  */
 import { ref, computed, onUnmounted } from "vue";
@@ -8,30 +51,50 @@ import { getImageUrl } from "@/utils/imageHelpers";
 
 defineOptions({ name: "ImageGallery" });
 
+// ============================================================================
+// PROPS DEFINITION
+// ============================================================================
 const props = defineProps({
+  // Array of images - can be URLs, objects with url, or File/Blob
   images: {
     type: Array,
     required: true,
-    // Format: [{ url: 'string', alt?: 'string' }] ou ['url1', 'url2']
+    // Format: [{ url: 'string', alt?: 'string' }] or ['url1', 'url2']
   },
+  // CSS aspect ratio for the image container
   aspectRatio: {
     type: String,
     default: "4/3",
   },
 });
 
+// ============================================================================
+// EVENTS
+// ============================================================================
 const emit = defineEmits(["imageClick"]);
 
-const currentIndex = ref(0);
+// ============================================================================
+// LOCAL STATE
+// ============================================================================
+const currentIndex = ref(0); // Currently displayed image index
 
-// Keep track of any ObjectURLs we create so we can revoke them
+// Track ObjectURLs we create so we can revoke them on cleanup
 const createdObjectUrls = [];
 
-// Helper: resolve a usable URL from various image shapes
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+/**
+ * Resolve a usable URL from various image shapes
+ * Handles: strings, File/Blob, objects with various URL properties
+ * @param {*} img - Image in any supported format
+ * @returns {string|null} - Resolved URL or null
+ */
 function resolveImageUrl(img) {
   if (!img && img !== 0) return null;
   if (typeof img === "string") return img;
-  // File or Blob (local preview)
+
+  // File or Blob (local preview) - create object URL
   if (typeof File !== "undefined" && img instanceof File) {
     const url = URL.createObjectURL(img);
     createdObjectUrls.push(url);
@@ -74,7 +137,13 @@ function resolveImageUrl(img) {
   return null;
 }
 
-// Normaliser les images (gère File/Blob localement pour permettre la révocation)
+// ============================================================================
+// COMPUTED PROPERTIES
+// ============================================================================
+/**
+ * Normalize all images to a consistent format with url and alt
+ * Handles File/Blob by creating object URLs (tracked for cleanup)
+ */
 const normalizedImages = computed(() => {
   return props.images
     .map((img, index) => {
@@ -100,9 +169,15 @@ const normalizedImages = computed(() => {
       const alt = (img && (img.alt || img.caption)) || `Image ${index + 1}`;
       return { url, alt };
     })
-    .filter((i) => i.url);
+    .filter((i) => i.url); // Filter out any without valid URLs
 });
 
+// ============================================================================
+// LIFECYCLE
+// ============================================================================
+/**
+ * Cleanup: revoke all object URLs we created to prevent memory leaks
+ */
 onUnmounted(() => {
   createdObjectUrls.forEach((u) => {
     try {
@@ -113,33 +188,47 @@ onUnmounted(() => {
   });
 });
 
-// Navigation tactile
+// ============================================================================
+// TOUCH NAVIGATION
+// ============================================================================
 const touchStartX = ref(0);
 const touchEndX = ref(0);
 
+/**
+ * Record touch start position
+ */
 const handleTouchStart = (e) => {
   touchStartX.value = e.touches[0].clientX;
 };
 
+/**
+ * Track touch movement
+ */
 const handleTouchMove = (e) => {
   touchEndX.value = e.touches[0].clientX;
 };
 
+/**
+ * Handle touch end - determine swipe direction and navigate
+ */
 const handleTouchEnd = () => {
   const diff = touchStartX.value - touchEndX.value;
-  const threshold = 50;
+  const threshold = 50; // Minimum swipe distance
 
   if (Math.abs(diff) > threshold) {
     if (diff > 0 && currentIndex.value < normalizedImages.value.length - 1) {
-      // Swipe left -> next
+      // Swipe left -> next image
       currentIndex.value++;
     } else if (diff < 0 && currentIndex.value > 0) {
-      // Swipe right -> prev
+      // Swipe right -> previous image
       currentIndex.value--;
     }
   }
 };
 
+/**
+ * Navigate directly to a specific image by index (dot click)
+ */
 const goTo = (index) => {
   currentIndex.value = index;
 };

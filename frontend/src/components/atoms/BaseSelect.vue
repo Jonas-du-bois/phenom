@@ -1,45 +1,96 @@
+<!--
+  ============================================================================
+  BaseSelect.vue - Dropdown Select Component
+  ============================================================================
+  
+  PURPOSE:
+  A styled native select dropdown for single-choice selection.
+  Provides a consistent look with the design system while maintaining
+  native browser behavior and accessibility.
+
+  FEATURES:
+  - Native select element (good accessibility and mobile support)
+  - Optional label with required indicator
+  - Error state with message display
+  - Disabled state
+  - Custom chevron icon
+  - Dark theme styling
+
+  USAGE EXAMPLES:
+  <BaseSelect v-model="selected" :options="options" label="Category" />
+  <BaseSelect v-model="status" :options="statusOptions" required />
+
+  PROPS:
+  - modelValue: Currently selected value (v-model)
+  - options: Array of { value, label } objects
+  - label: Optional label text
+  - placeholder: Placeholder text when nothing selected
+  - error: Error message to display
+  - disabled: Whether the select is disabled
+  - required: Whether selection is required
+
+  EVENTS:
+  - update:modelValue: Emitted when selection changes (v-model)
+  ============================================================================
+-->
+
 <script setup>
 /**
- * BaseSelect - Sélecteur dropdown
+ * BaseSelect - Dropdown Select Component
  * Design System: Phenom Search
  */
 
 defineOptions({ name: "BaseSelect" });
 
+// =============================================================================
+// PROPS DEFINITION
+// =============================================================================
 const props = defineProps({
+  // Current selected value (v-model binding)
   modelValue: {
     type: [String, Number],
     default: "",
   },
+  // Array of options: [{ value: 'val', label: 'Display Label' }]
   options: {
     type: Array,
     required: true,
-    // Format: [{ value: 'value', label: 'Label' }]
   },
+  // Label text displayed above the select
   label: {
     type: String,
     default: "",
   },
+  // Placeholder shown when no value is selected
   placeholder: {
     type: String,
     default: "Sélectionner...",
   },
+  // Error message (triggers error styling when set)
   error: {
     type: String,
     default: "",
   },
+  // Disabled state
   disabled: {
     type: Boolean,
     default: false,
   },
+  // Required field indicator
   required: {
     type: Boolean,
     default: false,
   },
 });
 
+// =============================================================================
+// EVENTS
+// =============================================================================
 const emit = defineEmits(["update:modelValue"]);
 
+/**
+ * Handle select change and emit new value
+ */
 const handleChange = (e) => {
   emit("update:modelValue", e.target.value);
 };
@@ -56,8 +107,9 @@ const handleChange = (e) => {
       <span v-if="required" class="text-[#00F0FF]">*</span>
     </label>
 
-    <!-- Select Container -->
+    <!-- Select Container (relative for positioning the chevron) -->
     <div class="relative">
+      <!-- Native Select Element -->
       <select
         :value="modelValue"
         :disabled="disabled"
@@ -72,9 +124,11 @@ const handleChange = (e) => {
         ]"
         @change="handleChange"
       >
+        <!-- Placeholder Option (disabled, cannot be reselected) -->
         <option value="" disabled class="bg-[#12151C] text-white/40">
           {{ placeholder }}
         </option>
+        <!-- Dynamic Options -->
         <option
           v-for="option in options"
           :key="option.value"
@@ -85,7 +139,7 @@ const handleChange = (e) => {
         </option>
       </select>
 
-      <!-- Chevron Icon -->
+      <!-- Chevron Down Icon (visual indicator for dropdown) -->
       <div
         class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/40"
       >
@@ -101,7 +155,7 @@ const handleChange = (e) => {
       </div>
     </div>
 
-    <!-- Error Message -->
+    <!-- Error Message (conditional) -->
     <p v-if="error" class="mt-2 text-xs text-red-500">
       {{ error }}
     </p>

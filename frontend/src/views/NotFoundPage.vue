@@ -1,3 +1,21 @@
+<!--
+  ============================================================================
+  NotFoundPage.vue - 404 Error Page
+  ============================================================================
+  
+  PURPOSE:
+  Displays a friendly 404 error page when users navigate to
+  a non-existent route.
+
+  FEATURES:
+  - Themed 404 illustration
+  - Humorous message ("disappeared into another dimension")
+  - Return to home button
+
+  ROUTE: Catch-all for unmatched routes
+  ============================================================================
+-->
+
 <template>
   <div
     class="not-found-page min-h-screen bg-[#000000] flex items-center justify-center p-4"

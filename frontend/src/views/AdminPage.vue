@@ -1,3 +1,23 @@
+<!--
+  ============================================================================
+  AdminPage.vue - Administration Panel Page
+  ============================================================================
+  
+  PURPOSE:
+  Provides admin-only functionality for managing users, observations,
+  and viewing platform statistics.
+
+  FEATURES:
+  - Dashboard statistics (users, observations, reports)
+  - Tabbed interface (Users, Observations, Reports)
+  - User management (search, role change, delete)
+  - Observation moderation (verify, delete, view reports)
+  - Report handling interface
+
+  ROUTE: /admin (requires admin role)
+  ============================================================================
+-->
+
 <template>
   <AppLayout :show-tab-bar="false">
     <template #header>

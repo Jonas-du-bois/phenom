@@ -1,40 +1,92 @@
+<!--
+  ============================================================================
+  CommentForm.vue - Comment submission form
+  ============================================================================
+  
+  PURPOSE:
+  A minimal, inline form for submitting comments on observations.
+  Features a text input with a send button in a compact horizontal layout.
+  
+  FEATURES:
+  - Text input with placeholder
+  - Send button with airplane icon
+  - Loading state with spinner
+  - Disabled state when empty or loading
+  - Submit via Enter key or button click
+  - Auto-clears input after successful submission
+  - Liquid glass design aesthetic
+  
+  USAGE EXAMPLES:
+  <CommentForm
+    :loading="isSubmitting"
+    placeholder="Écrire un commentaire..."
+    @submit="handleComment"
+  />
+  
+  PROPS:
+  - loading: Boolean (default: false) - Shows loading spinner on button
+  - placeholder: String (default: "Écrire un commentaire...") - Input placeholder
+  
+  EVENTS:
+  - @submit(content) - Emitted with trimmed comment text when form is submitted
+  ============================================================================
+-->
+
 <script setup>
 /**
- * CommentForm - Formulaire de commentaire
+ * CommentForm - Comment submission form component
  * Design System: Phenom Search - Liquid Glass Style
  */
 import { ref } from "vue";
+
 defineOptions({ name: "CommentForm" });
 
+// ============================================================================
+// PROPS DEFINITION
+// ============================================================================
 const props = defineProps({
+  // Shows loading spinner on submit button when true
   loading: {
     type: Boolean,
     default: false,
   },
+  // Placeholder text for the input field
   placeholder: {
     type: String,
     default: "Écrire un commentaire...",
   },
 });
 
+// ============================================================================
+// EVENTS
+// ============================================================================
 const emit = defineEmits(["submit"]);
 
-const content = ref("");
+// ============================================================================
+// LOCAL STATE
+// ============================================================================
+const content = ref(""); // Current comment text
 
+// ============================================================================
+// METHODS
+// ============================================================================
+/**
+ * Handle form submission
+ * - Validates that content is not empty
+ * - Emits the trimmed content
+ * - Clears the input after submission
+ */
 const handleSubmit = () => {
   const trimmedContent = content.value.trim();
   if (trimmedContent && !props.loading) {
     emit("submit", trimmedContent);
-    content.value = "";
+    content.value = ""; // Clear input after submission
   }
 };
 </script>
 
 <template>
-  <form
-    class="flex items-center gap-3 mx-2"
-    @submit.prevent="handleSubmit"
-  >
+  <form class="flex items-center gap-3 mx-2" @submit.prevent="handleSubmit">
     <!-- Input -->
     <input
       v-model="content"
@@ -93,8 +145,9 @@ const handleSubmit = () => {
 <style scoped>
 /* Effet de focus subtil avec glow */
 input:focus {
-  box-shadow: 0 0 0 1px rgba(0, 240, 255, 0.1),
-              0 0 20px rgba(0, 240, 255, 0.05);
+  box-shadow:
+    0 0 0 1px rgba(0, 240, 255, 0.1),
+    0 0 20px rgba(0, 240, 255, 0.05);
 }
 
 /* Animation du bouton au hover */

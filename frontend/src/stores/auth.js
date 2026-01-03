@@ -1,6 +1,9 @@
 /**
- * Store Pinia pour l'authentification
- * Gère l'état de l'utilisateur connecté et les tokens JWT
+ * Authentication Pinia Store
+ *
+ * Manages authenticated user state and JWT tokens.
+ * Provides login, register, logout, and profile fetching actions.
+ * Persists auth data to localStorage for session recovery.
  */
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
@@ -15,21 +18,48 @@ import {
 } from "../utils/storage";
 
 export const useAuthStore = defineStore("auth", () => {
-  // État
+  // ==========================================================================
+  // STATE
+  // ==========================================================================
+
+  /** Current authenticated user object */
   const user = ref(getUserData());
+
+  /** JWT access token */
   const token = ref(getAuthToken());
+
+  /** Loading state for async operations */
   const loading = ref(false);
+
+  /** Error message from last failed operation */
   const error = ref(null);
+
+  /** Whether store has been initialized */
   const initialized = ref(false);
 
-  // Computed
+  // ==========================================================================
+  // COMPUTED GETTERS
+  // ==========================================================================
+
+  /** Check if user is authenticated */
   const isAuthenticated = computed(() => !!token.value && !!user.value);
+
+  /** Check if user has admin role */
   const isAdmin = computed(() => user.value?.role === "admin");
+
+  /** User display name (name or email fallback) */
   const userName = computed(() => user.value?.name || user.value?.email || "");
+
+  /** User avatar URL */
   const userAvatar = computed(() => user.value?.avatar || null);
 
+  // ==========================================================================
+  // ACTIONS
+  // ==========================================================================
+
   /**
-   * Initialise l'auth store (appelé au démarrage de l'app)
+   * Initialize auth store (called on app startup)
+   * Validates existing token and fetches user profile
    */
   const initialize = async () => {
     if (initialized.value) return;
@@ -45,7 +75,9 @@ export const useAuthStore = defineStore("auth", () => {
   };
 
   /**
-   * Connexion utilisateur
+   * Login with credentials
+   * @param {Object} credentials - { email, password }
+   * @returns {Object} { success, error? }
    */
   const login = async (credentials) => {
     try {
@@ -55,7 +87,7 @@ export const useAuthStore = defineStore("auth", () => {
       const response = await authService.login(credentials);
       const { user: userData, accessToken } = response.data;
 
-      // Stocker le token et l'utilisateur
+      // Store token and user data
       token.value = accessToken;
       user.value = userData;
       saveAuthToken(accessToken);
@@ -63,7 +95,7 @@ export const useAuthStore = defineStore("auth", () => {
 
       return { success: true };
     } catch (err) {
-      error.value = err.response?.data?.message || "Erreur de connexion";
+      error.value = err.response?.data?.message || "Login error";
       return { success: false, error: error.value };
     } finally {
       loading.value = false;
@@ -71,7 +103,9 @@ export const useAuthStore = defineStore("auth", () => {
   };
 
   /**
-   * Inscription utilisateur
+   * Register new user account
+   * @param {Object} userData - { name, email, password }
+   * @returns {Object} { success, error? }
    */
   const register = async (userData) => {
     try {
@@ -88,7 +122,7 @@ export const useAuthStore = defineStore("auth", () => {
 
       return { success: true };
     } catch (err) {
-      error.value = err.response?.data?.message || "Erreur d'inscription";
+      error.value = err.response?.data?.message || "Registration error";
       return { success: false, error: error.value };
     } finally {
       loading.value = false;
@@ -96,7 +130,8 @@ export const useAuthStore = defineStore("auth", () => {
   };
 
   /**
-   * Déconnexion
+   * Logout current user
+   * Clears all auth data from state and localStorage
    */
   const logout = async () => {
     try {
@@ -109,7 +144,9 @@ export const useAuthStore = defineStore("auth", () => {
   };
 
   /**
-   * Récupère le profil utilisateur
+   * Fetch current user profile from API
+   * Updates local user state on success
+   * @returns {Object|null} User data or null
    */
   const fetchUser = async () => {
     if (!token.value) return null;
@@ -131,7 +168,7 @@ export const useAuthStore = defineStore("auth", () => {
   };
 
   /**
-   * Nettoie les données d'auth
+   * Clear all auth data (logout helper)
    */
   const clearAuth = () => {
     user.value = null;
@@ -142,7 +179,7 @@ export const useAuthStore = defineStore("auth", () => {
   };
 
   return {
-    // État
+    // State
     user,
     token,
     loading,

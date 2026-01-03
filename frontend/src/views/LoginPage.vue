@@ -1,3 +1,23 @@
+<!--
+  ============================================================================
+  LoginPage.vue - User Authentication Login Page
+  ============================================================================
+  
+  PURPOSE:
+  Provides the login form for user authentication.
+  Redirects to intended page after successful login.
+
+  FEATURES:
+  - Email and password login form
+  - Loading state during authentication
+  - Error message display (field-level or general)
+  - Redirect to original destination after login (?redirect=...)
+  - Link to signup page for new users
+
+  ROUTE: /login (guest only)
+  ============================================================================
+-->
+
 <template>
   <div
     class="login-page min-h-screen bg-[#080A0E] flex items-center justify-center p-4"
@@ -37,7 +57,9 @@ const handleLogin = async (credentials) => {
     console.error("Login error:", err);
     // Prefer field-level errors returned by the API when available
     error.value =
-      err.response?.data?.errors || err.response?.data?.message || "Email ou mot de passe incorrect";
+      err.response?.data?.errors ||
+      err.response?.data?.message ||
+      "Email ou mot de passe incorrect";
   } finally {
     loading.value = false;
   }

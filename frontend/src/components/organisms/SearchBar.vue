@@ -1,5 +1,30 @@
+<!-- ========================================================================
+     SEARCH BAR - Full-featured search input with suggestions
+     
+     Features:
+     - Real-time search input with debouncing
+     - Suggestions dropdown (appears after 2+ characters)
+     - Recent searches history display
+     - Toggle search on/off via icon click
+     - Keyboard support (Enter to submit, Escape to clear)
+     - v-model support for two-way binding
+     
+     Props:
+     - modelValue: Current search query (v-model)
+     - placeholder: Input placeholder text
+     - suggestions: Array of search suggestions
+     - recentSearches: Array of recent search terms
+     - debounce: Debounce delay in milliseconds
+     
+     Events:
+     - update:modelValue: Two-way binding update
+     - search: Triggered on search submit
+     - clear: Triggered when search cleared
+     - clear-recent: Triggered to clear recent searches
+     ======================================================================== -->
 <template>
   <div class="relative">
+    <!-- Search input container -->
     <div class="relative">
       <input
         ref="inputRef"
@@ -152,7 +177,7 @@ const isFocused = ref(false);
 let debounceTimer = null;
 
 const showSuggestions = computed(
-  () => isFocused.value && query.value.length >= 2,
+  () => isFocused.value && query.value.length >= 2
 );
 const showRecent = computed(() => isFocused.value && !query.value);
 
@@ -160,7 +185,7 @@ watch(
   () => props.modelValue,
   (val) => {
     query.value = val;
-  },
+  }
 );
 
 const handleInput = () => {

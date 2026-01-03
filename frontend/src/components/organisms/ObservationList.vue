@@ -1,3 +1,28 @@
+<!-- ========================================================================
+     OBSERVATION LIST - Scrollable list of observation cards with features
+     
+     Features:
+     - Pull-to-refresh functionality on mobile
+     - Infinite scroll with IntersectionObserver
+     - Loading skeleton placeholders
+     - Empty state with customizable icon/message
+     - Animated card transitions (enter/leave/move)
+     - Click handlers for observation and user navigation
+     
+     Props:
+     - observations: Array of observation objects to display
+     - loading: Show loading skeletons
+     - loadingMore: Show spinner at bottom during pagination
+     - hasMore: Enable infinite scroll load more
+     - showPullToRefresh: Enable pull-to-refresh gesture
+     - emptyIcon/Title/Description: Empty state customization
+     
+     Events:
+     - click: Observation card clicked
+     - user-click: User avatar/name clicked
+     - load-more: Triggered for infinite scroll pagination
+     - refresh: Triggered by pull-to-refresh
+     ======================================================================== -->
 <template>
   <div
     class="observation-list"
@@ -5,7 +30,7 @@
     @touchmove="handleTouchMove"
     @touchend="handleTouchEnd"
   >
-    <!-- Pull to refresh indicator -->
+    <!-- Pull to refresh indicator - Shows spinner or rotation arrow -->
     <div
       v-if="pullProgress > 0"
       class="flex items-center justify-center py-4 text-[#00F0FF] overflow-hidden"
@@ -228,7 +253,7 @@ const setupObserver = () => {
         }, 200);
       }
     },
-    { threshold: 0.1, rootMargin: "200px 0px" },
+    { threshold: 0.1, rootMargin: "200px 0px" }
   );
 
   try {
@@ -254,13 +279,10 @@ onUnmounted(() => {
 });
 
 // Recreate observer when hasMore flag or the ref element changes
-watch(
-  [() => props.hasMore, () => loadMoreRef.value],
-  () => {
-    // small delay to allow DOM to settle
-    setTimeout(() => setupObserver(), 50);
-  },
-);
+watch([() => props.hasMore, () => loadMoreRef.value], () => {
+  // small delay to allow DOM to settle
+  setTimeout(() => setupObserver(), 50);
+});
 
 const handleClick = (observation) => {
   emit("click", observation);

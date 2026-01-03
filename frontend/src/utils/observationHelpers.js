@@ -1,14 +1,32 @@
 /**
- * Utilitaires pour la gestion et manipulation des observations
+ * Observation Helpers - Utilities for Managing Observations
+ *
+ * Provides functions for filtering, sorting, grouping, and searching
+ * observation data. Includes geographic distance calculations using
+ * the Haversine formula.
+ *
+ * @module utils/observationHelpers
+ *
+ * Features:
+ * - Filter by type, tags, date, and geographic proximity
+ * - Group by type, date, or user
+ * - Sort by various fields
+ * - Search across multiple fields
+ * - Calculate statistics
+ * - Find similar observations
  */
 
 import { OBSERVATION_TYPES } from "../constants/observationTypes";
 
+// ============================================================================
+// FILTERING FUNCTIONS
+// ============================================================================
+
 /**
- * Filtre les observations par type
- * @param {Array} observations - Liste des observations
- * @param {string|Array<string>} types - Type(s) à filtrer
- * @returns {Array} Observations filtrées
+ * Filter observations by type code(s)
+ * @param {Array} observations - List of observations
+ * @param {string|Array<string>} types - Type code(s) to filter by
+ * @returns {Array} Filtered observations
  */
 export const filterObservationsByType = (observations, types) => {
   if (!types || types.length === 0) return observations;
@@ -17,16 +35,16 @@ export const filterObservationsByType = (observations, types) => {
 };
 
 /**
- * Filtre les observations par tags
- * @param {Array} observations - Liste des observations
- * @param {Array<string>} tags - Tags à rechercher
- * @param {boolean} matchAll - Si true, l'observation doit avoir tous les tags
- * @returns {Array} Observations filtrées
+ * Filter observations by tags
+ * @param {Array} observations - List of observations
+ * @param {Array<string>} tags - Tags to search for
+ * @param {boolean} matchAll - If true, observation must have ALL tags (AND); otherwise ANY tag (OR)
+ * @returns {Array} Filtered observations
  */
 export const filterObservationsByTags = (
   observations,
   tags,
-  matchAll = false,
+  matchAll = false
 ) => {
   if (!tags || tags.length === 0) return observations;
 
@@ -42,11 +60,11 @@ export const filterObservationsByTags = (
 };
 
 /**
- * Filtre les observations par période de temps
- * @param {Array} observations - Liste des observations
- * @param {Date} startDate - Date de début
- * @param {Date} endDate - Date de fin
- * @returns {Array} Observations filtrées
+ * Filter observations by date range
+ * @param {Array} observations - List of observations
+ * @param {Date} startDate - Start of date range
+ * @param {Date} endDate - End of date range
+ * @returns {Array} Filtered observations within date range
  */
 export const filterObservationsByDate = (observations, startDate, endDate) => {
   return observations.filter((obs) => {
@@ -58,16 +76,17 @@ export const filterObservationsByDate = (observations, startDate, endDate) => {
 };
 
 /**
- * Filtre les observations par proximité géographique
- * @param {Array} observations - Liste des observations
- * @param {Object} center - { latitude, longitude }
- * @param {number} radiusKm - Rayon en kilomètres
- * @returns {Array} Observations filtrées avec distance
+ * Filter observations by geographic proximity (Haversine formula)
+ * Returns observations sorted by distance from center point
+ * @param {Array} observations - List of observations
+ * @param {Object} center - Center point { latitude, longitude }
+ * @param {number} radiusKm - Maximum radius in kilometers
+ * @returns {Array} Filtered observations with added distance property, sorted by distance
  */
 export const filterObservationsByProximity = (
   observations,
   center,
-  radiusKm,
+  radiusKm
 ) => {
   if (!center || !center.latitude || !center.longitude) return observations;
 
@@ -92,7 +111,7 @@ export const filterObservationsByProximity = (
         center.latitude,
         center.longitude,
         lat,
-        lng,
+        lng
       );
       return { ...obs, distance };
     })
@@ -101,9 +120,9 @@ export const filterObservationsByProximity = (
 };
 
 /**
- * Groupe les observations par type
- * @param {Array} observations - Liste des observations
- * @returns {Object} Observations groupées par type
+ * Group observations by type
+ * @param {Array} observations - List of observations
+ * @returns {Object} Observations grouped by type
  */
 export const groupObservationsByType = (observations) => {
   return observations.reduce((acc, obs) => {
@@ -115,9 +134,9 @@ export const groupObservationsByType = (observations) => {
 };
 
 /**
- * Groupe les observations par date (jour)
- * @param {Array} observations - Liste des observations
- * @returns {Object} Observations groupées par date
+ * Group observations by date (day)
+ * @param {Array} observations - List of observations
+ * @returns {Object} Observations grouped by date
  */
 export const groupObservationsByDate = (observations) => {
   return observations.reduce((acc, obs) => {
@@ -130,9 +149,9 @@ export const groupObservationsByDate = (observations) => {
 };
 
 /**
- * Groupe les observations par utilisateur
- * @param {Array} observations - Liste des observations
- * @returns {Object} Observations groupées par userId
+ * Group observations by user
+ * @param {Array} observations - List of observations
+ * @returns {Object} Observations grouped by userId
  */
 export const groupObservationsByUser = (observations) => {
   return observations.reduce((acc, obs) => {
@@ -144,28 +163,28 @@ export const groupObservationsByUser = (observations) => {
 };
 
 /**
- * Trie les observations
- * @param {Array} observations - Liste des observations
- * @param {string} field - Champ à utiliser pour le tri
- * @param {string} order - 'asc' ou 'desc'
- * @returns {Array} Observations triées
+ * Sort observations
+ * @param {Array} observations - List of observations
+ * @param {string} field - Field to sort by
+ * @param {string} order - 'asc' or 'desc'
+ * @returns {Array} Sorted observations
  */
 export const sortObservations = (
   observations,
   field = "createdAt",
-  order = "desc",
+  order = "desc"
 ) => {
   return [...observations].sort((a, b) => {
     let aVal = a[field];
     let bVal = b[field];
 
-    // Gérer les dates
+    // Handle dates
     if (field === "createdAt" || field === "date" || field === "updatedAt") {
       aVal = new Date(aVal).getTime();
       bVal = new Date(bVal).getTime();
     }
 
-    // Gérer les strings
+    // Handle strings
     if (typeof aVal === "string") {
       aVal = aVal.toLowerCase();
       bVal = bVal.toLowerCase();
@@ -206,16 +225,16 @@ export const searchObservations = (observations, searchText) => {
 };
 
 /**
- * Calcule des statistiques sur les observations
- * @param {Array} observations - Liste des observations
- * @returns {Object} Statistiques
+ * Calculate statistics for observations
+ * @param {Array} observations - List of observations
+ * @returns {Object} Statistics object
  */
 export const calculateObservationStats = (observations) => {
   const stats = {
     total: observations.length,
     withImages: observations.filter((obs) => obs.images?.length > 0).length,
     withoutImages: observations.filter(
-      (obs) => !obs.images || obs.images.length === 0,
+      (obs) => !obs.images || obs.images.length === 0
     ).length,
     byType: {},
     tagCloud: {},
@@ -223,7 +242,7 @@ export const calculateObservationStats = (observations) => {
     dateRange: { oldest: null, newest: null },
   };
 
-  // Stats par type
+  // Stats by type
   observations.forEach((obs) => {
     const type = obs.type || "UNKNOWN";
     stats.byType[type] = (stats.byType[type] || 0) + 1;
@@ -236,11 +255,11 @@ export const calculateObservationStats = (observations) => {
     }
   });
 
-  // Moyenne images
+  // Average images per observation
   if (stats.total > 0) {
     const totalImages = observations.reduce(
       (sum, obs) => sum + (obs.images?.length || 0),
-      0,
+      0
     );
     stats.avgImagesPerObservation = (totalImages / stats.total).toFixed(2);
   }
@@ -248,7 +267,7 @@ export const calculateObservationStats = (observations) => {
   // Date range
   if (observations.length > 0) {
     const dates = observations.map((obs) =>
-      new Date(obs.date || obs.createdAt).getTime(),
+      new Date(obs.date || obs.createdAt).getTime()
     );
     stats.dateRange.oldest = new Date(Math.min(...dates));
     stats.dateRange.newest = new Date(Math.max(...dates));
@@ -258,8 +277,9 @@ export const calculateObservationStats = (observations) => {
 };
 
 /**
- * Vérifie si une observation a toutes les données requises
- * @param {Object} observation - Observation à vérifier
+ * Check if an observation has all required data
+ * Note: Error messages are in French for UI display
+ * @param {Object} observation - Observation to validate
  * @returns {Object} { valid: boolean, errors: Array<string> }
  */
 export const validateObservationData = (observation) => {
@@ -291,9 +311,9 @@ export const validateObservationData = (observation) => {
 };
 
 /**
- * Extrait les tags uniques de toutes les observations
- * @param {Array} observations - Liste des observations
- * @returns {Array<string>} Liste des tags uniques triés
+ * Extract unique tags from all observations
+ * @param {Array} observations - List of observations
+ * @returns {Array<string>} Sorted list of unique tags
  */
 export const extractUniqueTags = (observations) => {
   const tagsSet = new Set();
@@ -315,7 +335,7 @@ export const extractUniqueTags = (observations) => {
 export const findSimilarObservations = (
   observation,
   allObservations,
-  maxResults = 5,
+  maxResults = 5
 ) => {
   return allObservations
     .filter((obs) => obs._id !== observation._id)
@@ -327,7 +347,7 @@ export const findSimilarObservations = (
 
       // Tags en commun (+1 point par tag)
       const commonTags = (obs.tags || []).filter((tag) =>
-        (observation.tags || []).includes(tag),
+        (observation.tags || []).includes(tag)
       );
       score += commonTags.length;
 

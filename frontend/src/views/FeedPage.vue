@@ -1,3 +1,24 @@
+<!--
+  ============================================================================
+  FeedPage.vue - Main Observation Feed Page
+  ============================================================================
+  
+  PURPOSE:
+  The primary page of the app displaying a scrollable list of UFO observations.
+  Includes search, filtering, and infinite scroll loading.
+
+  FEATURES:
+  - Infinite scroll with "load more" functionality
+  - Search bar with recent searches and suggestions
+  - Filter panel for refining observations by type, date, etc.
+  - Active filter chips showing current filter state
+  - Pull-to-refresh capability
+  - Empty state with action to create new observation
+
+  ROUTE: /feed (main tab)
+  ============================================================================
+-->
+
 <template>
   <AppLayout :alert-count="alertCount">
     <template #header>
@@ -70,7 +91,6 @@
             removable
             @remove="removeFilter(filter.key)"
           />
-          
         </div>
       </div>
 
@@ -142,7 +162,7 @@ const alertCount = ref(0);
 
 // Récupérer les recherches récentes depuis le localStorage
 const recentSearches = ref(
-  JSON.parse(localStorage.getItem("recentSearches") || "[]"),
+  JSON.parse(localStorage.getItem("recentSearches") || "[]")
 );
 const searchSuggestions = ref([]);
 
@@ -254,22 +274,22 @@ const removeFilter = (key) => {
   if (key.startsWith("shape-")) {
     const shape = key.replace("shape-", "");
     filters.value.ufoShapes = filters.value.ufoShapes.filter(
-      (s) => s !== shape,
+      (s) => s !== shape
     );
   } else if (key.startsWith("phenomenon-")) {
     const phenomenon = key.replace("phenomenon-", "");
     filters.value.phenomena = filters.value.phenomena.filter(
-      (p) => p !== phenomenon,
+      (p) => p !== phenomenon
     );
   } else if (key.startsWith("observer-")) {
     const observerType = key.replace("observer-", "");
     filters.value.observerTypes = filters.value.observerTypes.filter(
-      (o) => o !== observerType,
+      (o) => o !== observerType
     );
   } else if (key.startsWith("country-")) {
     const country = key.replace("country-", "");
     filters.value.countries = filters.value.countries.filter(
-      (c) => c !== country,
+      (c) => c !== country
     );
   } else if (key === "credibility") {
     filters.value.minCredibility = 0;

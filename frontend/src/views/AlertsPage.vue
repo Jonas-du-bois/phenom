@@ -1,3 +1,24 @@
+<!--
+  ============================================================================
+  AlertsPage.vue - Notifications and Alerts Page
+  ============================================================================
+  
+  PURPOSE:
+  Displays notifications and alerts for the user, including nearby observations
+  and system notifications. Supports location-based alerts.
+
+  FEATURES:
+  - List of notifications with mark-as-read functionality
+  - Location permission request banner
+  - Mark all as read action
+  - Nearby observation alerts (location-based)
+  - Push notification settings
+  - Empty state when no alerts
+
+  ROUTE: /alerts (main tab, requires auth)
+  ============================================================================
+-->
+
 <template>
   <AppLayout>
     <template #header>
@@ -206,7 +227,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, watch } from "vue";
-import { useAuthStore } from '@/stores/auth';
+import { useAuthStore } from "@/stores/auth";
 import { useRouter } from "vue-router";
 import { AppLayout } from "@/components/layout";
 import { PageHeader } from "@/components/organisms";
@@ -225,7 +246,13 @@ const router = useRouter();
 // WebSocket (WsMini PubSub)
 import { useWebSocket } from "@/composables/useWebSocket";
 
-const { connected: wsConnected, messages: wsMessages, error: wsError, connect, disconnect } = useWebSocket();
+const {
+  connected: wsConnected,
+  messages: wsMessages,
+  error: wsError,
+  connect,
+  disconnect,
+} = useWebSocket();
 
 const alerts = ref([]);
 const loading = ref(true);
@@ -244,7 +271,8 @@ const loadSettingsFromStorage = () => {
     const raw = localStorage.getItem("phenom_settings");
     if (!raw) return;
     const s = JSON.parse(raw);
-    if (typeof s.nearbyAlerts === "boolean") nearbyAlertsEnabled.value = s.nearbyAlerts;
+    if (typeof s.nearbyAlerts === "boolean")
+      nearbyAlertsEnabled.value = s.nearbyAlerts;
     if (typeof s.alertRadius === "number") alertRadius.value = s.alertRadius;
   } catch (e) {
     // ignore
@@ -273,16 +301,20 @@ onMounted(async () => {
   // Start periodic background location checks if allowed
   const startLocationBackgroundLoop = () => {
     // stop any existing loop
-    if (locationCheckIntervalId.value) clearInterval(locationCheckIntervalId.value);
+    if (locationCheckIntervalId.value)
+      clearInterval(locationCheckIntervalId.value);
     if (!navigator.geolocation || !locationEnabled.value) return;
     // run immediately then set interval
     getCurrentLocation();
     locationCheckIntervalId.value = setInterval(() => {
       // Check permission then fetch
       try {
-        navigator.permissions?.query({ name: "geolocation" }).then((res) => {
-          if (res.state === "granted") getCurrentLocation();
-        }).catch(() => getCurrentLocation());
+        navigator.permissions
+          ?.query({ name: "geolocation" })
+          .then((res) => {
+            if (res.state === "granted") getCurrentLocation();
+          })
+          .catch(() => getCurrentLocation());
       } catch (e) {
         getCurrentLocation();
       }
@@ -343,7 +375,9 @@ onUnmounted(() => {
   const handler = window.__phenom_alerts_storage_handler;
   if (handler) window.removeEventListener("storage", handler);
   // cleanup location loop
-  try { stopLocationBackgroundLoop(); } catch (e) {}
+  try {
+    stopLocationBackgroundLoop();
+  } catch (e) {}
   // Ne pas déconnecter le WebSocket ici — la connexion est gérée globalement
 });
 
@@ -360,24 +394,36 @@ const getCurrentLocation = () => {
         try {
           const token = authStore.token;
           if (!token) return;
-          await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/v1/users/me/location`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ lat: userLocation.value.lat, lng: userLocation.value.lng, radiusKm: alertRadius.value })
-          });
+          await fetch(
+            `${import.meta.env.VITE_API_BASE_URL || ""}/api/v1/users/me/location`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                lat: userLocation.value.lat,
+                lng: userLocation.value.lng,
+                radiusKm: alertRadius.value,
+              }),
+            }
+          );
         } catch (e) {
-          console.warn('Failed to send location to backend', e);
+          console.warn("Failed to send location to backend", e);
         }
       })();
       // record last check time locally
-      try { localStorage.setItem('phenom_last_location_check', new Date().toISOString()); } catch (e) {}
+      try {
+        localStorage.setItem(
+          "phenom_last_location_check",
+          new Date().toISOString()
+        );
+      } catch (e) {}
     },
     (error) => {
       console.error("Location error:", error);
-    },
+    }
   );
 };
 
@@ -424,12 +470,18 @@ const fetchAlerts = async () => {
 
 // Helper: distance (haversine) in km
 const computeDistanceKm = (lat1, lon1, lat2, lon2) => {
-  if ([lat1, lon1, lat2, lon2].some((v) => v === null || v === undefined)) return null;
+  if ([lat1, lon1, lat2, lon2].some((v) => v === null || v === undefined))
+    return null;
   const toRad = (v) => (v * Math.PI) / 180;
   const R = 6371; // km
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
-  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 };
@@ -453,11 +505,17 @@ watch(
 
       // If observation has coordinates, compute distance
       let distance = null;
-      const obsCoords = obs?.coordinates || obs?.location?.coordinates || obs?.coords;
+      const obsCoords =
+        obs?.coordinates || obs?.location?.coordinates || obs?.coords;
       if (userLocation.value && obsCoords) {
         const lat = obsCoords.lat ?? obsCoords[0];
         const lng = obsCoords.lng ?? obsCoords[1];
-        distance = computeDistanceKm(userLocation.value.lat, userLocation.value.lng, lat, lng);
+        distance = computeDistanceKm(
+          userLocation.value.lat,
+          userLocation.value.lng,
+          lat,
+          lng
+        );
         if (distance !== null) distance = Math.round(distance * 10) / 10; // 1 decimal
       }
 
@@ -469,13 +527,14 @@ watch(
           observation: obs,
           message: event.type || "Nouvelle observation",
           distance: distance !== null ? distance : undefined,
-          createdAt: event.timestamp || latest.receivedAt || new Date().toISOString(),
+          createdAt:
+            event.timestamp || latest.receivedAt || new Date().toISOString(),
           read: false,
         });
       }
     }
   },
-  { deep: true },
+  { deep: true }
 );
 
 const viewAlert = (alert) => {
@@ -485,7 +544,7 @@ const viewAlert = (alert) => {
   // Navigate to observation
   if (alert.observation?._id || alert.observationId) {
     router.push(
-      `/observation/${alert.observation?._id || alert.observationId}`,
+      `/observation/${alert.observation?._id || alert.observationId}`
     );
   }
 };

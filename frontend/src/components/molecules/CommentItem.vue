@@ -1,6 +1,41 @@
+<!--
+  ============================================================================
+  CommentItem.vue - Single comment display component
+  ============================================================================
+  
+  PURPOSE:
+  Displays a single comment with user avatar, name, relative date,
+  and comment text. Includes delete button for the comment author.
+  
+  FEATURES:
+  - User avatar with fallback
+  - User name display
+  - Relative timestamp (e.g., "5min", "2h", "3j")
+  - Comment text with word wrapping
+  - Delete button (only visible to comment author)
+  - Bottom border separator (except last item)
+  
+  USAGE EXAMPLES:
+  <CommentItem
+    :comment="commentObject"
+    :current-user-id="loggedInUserId"
+    @delete="handleDelete"
+    @user-click="navigateToProfile"
+  />
+  
+  PROPS:
+  - comment: Object (required) - Comment data with userId, text, createdAt
+  - currentUserId: String - ID of the logged-in user (for delete permission)
+  
+  EVENTS:
+  - @delete(comment) - Emitted when delete button is clicked
+  - @user-click(user) - Emitted when user avatar/name is clicked
+  ============================================================================
+-->
+
 <script setup>
 /**
- * CommentItem - Élément de commentaire
+ * CommentItem - Single comment display component
  * Design System: Phenom Search
  */
 import { computed } from "vue";
@@ -8,20 +43,35 @@ import BaseAvatar from "../atoms/BaseAvatar.vue";
 
 defineOptions({ name: "CommentItem" });
 
+// ============================================================================
+// PROPS DEFINITION
+// ============================================================================
 const props = defineProps({
+  // The comment object containing userId, text, createdAt, etc.
   comment: {
     type: Object,
     required: true,
   },
+  // ID of the currently logged-in user (to show/hide delete button)
   currentUserId: {
     type: String,
     default: "",
   },
 });
 
+// ============================================================================
+// EVENTS
+// ============================================================================
 const emit = defineEmits(["delete", "user-click"]);
 
-// Formater la date relative
+// ============================================================================
+// COMPUTED PROPERTIES
+// ============================================================================
+
+/**
+ * Format the comment date as a relative time string
+ * Examples: "À l'instant", "5min", "2h", "3j", "15 janv."
+ */
 const relativeDate = computed(() => {
   const date = new Date(props.comment.createdAt);
   const now = new Date();
@@ -35,27 +85,39 @@ const relativeDate = computed(() => {
   if (diffHours < 24) return `${diffHours}h`;
   if (diffDays < 7) return `${diffDays}j`;
 
+  // For older comments, show the actual date
   return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
 });
 
-// API renvoie userId (objet) et non user
+/**
+ * Get user name from comment
+ * API may return userId (object) or user, depending on population
+ */
 const userName = computed(() => {
   return props.comment.userId?.name || props.comment.user?.name || "Anonyme";
 });
 
-// Avatar de l'utilisateur
+/**
+ * Get user avatar URL from comment
+ */
 const userAvatar = computed(() => {
   return (
     props.comment.userId?.avatar?.url || props.comment.user?.avatar?.url || ""
   );
 });
 
-// Texte du commentaire (API renvoie text, pas content)
+/**
+ * Get comment text
+ * API may return 'text' or 'content' field
+ */
 const commentText = computed(() => {
   return props.comment.text || props.comment.content || "";
 });
 
-// L'utilisateur peut supprimer son propre commentaire
+/**
+ * Check if current user can delete this comment
+ * Only the comment author can delete their own comments
+ */
 const canDelete = computed(() => {
   const commentUserId = props.comment.userId?._id || props.comment.user?._id;
   return props.currentUserId && commentUserId === props.currentUserId;

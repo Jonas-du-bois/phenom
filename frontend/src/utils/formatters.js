@@ -1,11 +1,29 @@
 /**
- * Utilitaires de formatage de données
+ * Data Formatting Utilities
+ *
+ * Provides functions for formatting dates, numbers, and text for display.
+ * All date formatting uses French locale (fr-FR) for consistency with the UI.
+ *
+ * @module utils/formatters
+ *
+ * Functions:
+ * - formatDate: Full date with time
+ * - formatDateShort: Short date only
+ * - formatRelativeTime: Relative time (e.g., "5 minutes ago")
+ * - getInitials: User initials from name
+ * - formatNumber: Number with locale formatting
+ * - formatFileSize: Human-readable file size
+ * - truncate: Text truncation with ellipsis
  */
 
+// ============================================================================
+// DATE FORMATTING
+// ============================================================================
+
 /**
- * Formate une date en format français lisible
- * @param {string|Date} date - Date à formater
- * @returns {string} Date formatée
+ * Format a date in French readable format with time
+ * @param {string|Date} date - Date to format
+ * @returns {string} Formatted date (e.g., "13 novembre 2025 à 14:30")
  */
 export const formatDate = (date) => {
   if (!date) return "Date inconnue";
@@ -19,20 +37,25 @@ export const formatDate = (date) => {
 };
 
 /**
- * Formate une date en format court
- * @param {string|Date} date - Date à formater
- * @returns {string} Date formatée (ex: 13/11/2025)
+ * Format a date in short format (date only, no time)
+ * @param {string|Date} date - Date to format
+ * @returns {string} Formatted date (e.g., "13/11/2025")
  */
 export const formatDateShort = (date) => {
   if (!date) return "N/A";
   return new Date(date).toLocaleDateString("fr-FR");
 };
 
+// ============================================================================
+// RELATIVE TIME
+// ============================================================================
+
 /**
- * Formate une date en format relatif (il y a X minutes/heures/jours)
- * @param {string|Date} date - Date à formater
- * @param {boolean} short - Format court (5min) vs long (5 minutes)
- * @returns {string} Temps relatif
+ * Format a date as relative time (e.g., "5 minutes ago")
+ * Falls back to short date format after 7 days
+ * @param {string|Date} date - Date to format
+ * @param {boolean} short - Short format (5min) vs long format (5 minutes)
+ * @returns {string} Relative time in French (e.g., "Il y a 5 minutes")
  */
 export const formatRelativeTime = (date, short = false) => {
   if (!date) return "Inconnu";
@@ -62,10 +85,15 @@ export const formatRelativeTime = (date, short = false) => {
   return formatDateShort(date);
 };
 
+// ============================================================================
+// USER FORMATTING
+// ============================================================================
+
 /**
- * Récupère les initiales d'un utilisateur
- * @param {Object} user - Objet utilisateur (comment, user, etc.)
- * @returns {string} Initiales (ex: "JD")
+ * Get user initials from user object
+ * Handles various user object structures (comment author, user, etc.)
+ * @param {Object} user - User object (may have nested userId or author)
+ * @returns {string} Initials (e.g., "JD" for "John Doe")
  */
 export const getInitials = (user) => {
   // Essayer d'obtenir le nom depuis différents champs
@@ -85,10 +113,14 @@ export const getInitials = (user) => {
   return name.substring(0, 2).toUpperCase();
 };
 
+// ============================================================================
+// NUMBER FORMATTING
+// ============================================================================
+
 /**
- * Formate un nombre en format lisible (ex: 1234 -> 1,234)
- * @param {number} num - Nombre à formater
- * @returns {string} Nombre formaté
+ * Format a number with locale-specific thousand separators
+ * @param {number} num - Number to format
+ * @returns {string} Formatted number (e.g., "1 234" in French)
  */
 export const formatNumber = (num) => {
   if (num === null || num === undefined) return "0";
@@ -96,9 +128,9 @@ export const formatNumber = (num) => {
 };
 
 /**
- * Formate une taille de fichier en format lisible
- * @param {number} bytes - Taille en bytes
- * @returns {string} Taille formatée (ex: "1.5 MB")
+ * Format a file size in human-readable format
+ * @param {number} bytes - Size in bytes
+ * @returns {string} Formatted size (e.g., "1.50 MB")
  */
 export const formatFileSize = (bytes) => {
   if (!bytes || bytes === 0) return "0 B";
@@ -110,11 +142,15 @@ export const formatFileSize = (bytes) => {
   return `${size} ${sizes[i]}`;
 };
 
+// ============================================================================
+// TEXT FORMATTING
+// ============================================================================
+
 /**
- * Tronque un texte avec des points de suspension
- * @param {string} text - Texte à tronquer
- * @param {number} maxLength - Longueur maximale
- * @returns {string} Texte tronqué
+ * Truncate text with ellipsis if it exceeds max length
+ * @param {string} text - Text to truncate
+ * @param {number} maxLength - Maximum length before truncation (default: 100)
+ * @returns {string} Truncated text with "..." or original if shorter
  */
 export const truncate = (text, maxLength = 100) => {
   if (!text || text.length <= maxLength) return text;

@@ -1,3 +1,26 @@
+<!--
+  ============================================================================
+  ObservationDetailPage.vue - Single Observation Detail View
+  ============================================================================
+  
+  PURPOSE:
+  Displays complete details of a single UFO observation including
+  images, metadata, description, location map, and comments.
+
+  FEATURES:
+  - Full-screen image gallery with swipe navigation
+  - Observation metadata (type, date, location, credibility)
+  - Description and witness information
+  - Interactive map showing observation location
+  - Comments section with add/delete functionality
+  - Edit/delete actions for observation owner
+  - Sharing functionality
+  - Verification badge for verified observations
+
+  ROUTE: /observation/:id
+  ============================================================================
+-->
+
 <template>
   <div class="observation-detail-page min-h-screen bg-[#000000] mb-8 mt-16">
     <!-- Loading state -->
@@ -124,12 +147,12 @@
           @user-click="goToProfile"
         />
 
-          <!-- Comment form (sticky bottom) -->
-      <CommentForm
-        v-if="isAuthenticated"
-        :loading="submittingComment"
-        @submit="submitComment"
-      />
+        <!-- Comment form (sticky bottom) -->
+        <CommentForm
+          v-if="isAuthenticated"
+          :loading="submittingComment"
+          @submit="submitComment"
+        />
       </div>
 
       <!-- Options menu -->
@@ -143,7 +166,9 @@
 
             <div
               class="absolute bottom-0 left-0 right-0 rounded-t-2xl overflow-hidden py-2.5 px-4 bg-white/[0.02] border border-white/[0.08] text-white text-sm transition-all backdrop-blur-sm"
-              :style="{ paddingBottom: '12px' + 'env(safe-area-inset-bottom, 0px)' }"
+              :style="{
+                paddingBottom: '12px' + 'env(safe-area-inset-bottom, 0px)',
+              }"
             >
               <div class="py-2">
                 <button
@@ -360,7 +385,7 @@ watch(
       comments.value = newObs.comments;
     }
   },
-  { immediate: true },
+  { immediate: true }
 );
 
 const currentUserId = computed(() => authUser.value?._id || authUser.value?.id);
@@ -382,7 +407,7 @@ const images = computed(() => {
     imgs.push(
       typeof observation.value.imageUrl === "string"
         ? observation.value.imageUrl
-        : getImageUrl(observation.value.imageUrl),
+        : getImageUrl(observation.value.imageUrl)
     );
   }
 
@@ -445,7 +470,7 @@ watch(
       // Si le hash est supprimé, remonter en haut
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
-  },
+  }
 );
 
 const fetchObservation = async () => {
@@ -475,10 +500,10 @@ const deleteComment = async (comment) => {
   try {
     await commentStore.removeComment(
       route.params.id,
-      comment._id || comment.id,
+      comment._id || comment.id
     );
     comments.value = comments.value.filter(
-      (c) => (c._id || c.id) !== (comment._id || comment.id),
+      (c) => (c._id || c.id) !== (comment._id || comment.id)
     );
     toast.success("Commentaire supprimé");
   } catch {

@@ -1,28 +1,59 @@
 /**
- * Composable pour accès caméra et capture photo
- * Gère l'accès à la caméra, la capture et la sélection de fichiers
+ * Camera Composable
+ *
+ * Manages camera access, photo capture, and file selection.
+ * Provides a unified interface for device camera and gallery access.
+ *
+ * Features:
+ * - Start/stop camera stream with front/back switching
+ * - Capture photos from video stream
+ * - Open file picker for gallery selection
+ * - Error handling with user-friendly messages
  */
 import { ref, onUnmounted } from "vue";
 
 export function useCamera() {
+  // ==========================================================================
+  // REACTIVE STATE
+  // ==========================================================================
+
+  /** MediaStream from camera */
   const stream = ref(null);
+
+  /** Error message if camera access fails */
   const error = ref(null);
+
+  /** Whether camera is currently active */
   const isActive = ref(false);
+
+  /** Reference to video HTML element */
   const videoRef = ref(null);
-  const facingMode = ref("environment"); // "user" pour selfie, "environment" pour arrière
+
+  /** Camera direction: "user" (front) or "environment" (back) */
+  const facingMode = ref("environment");
+
+  // ==========================================================================
+  // CAMERA LIFECYCLE
+  // ==========================================================================
 
   /**
-   * Démarre la caméra
+   * Start the camera stream
+   * @param {Object} options - Camera options
+   * @param {string} options.facingMode - "user" for selfie, "environment" for back camera
+   * @param {number} options.width - Desired video width
+   * @param {number} options.height - Desired video height
+   * @returns {Promise<MediaStream>} The camera stream
    */
   const startCamera = async (options = {}) => {
     try {
       error.value = null;
 
-      // Arrêter un stream existant
+      // Stop any existing stream first
       if (stream.value) {
         stopCamera();
       }
 
+      // Configure media constraints
       const constraints = {
         video: {
           facingMode: options.facingMode || facingMode.value,
@@ -32,10 +63,11 @@ export function useCamera() {
         audio: false,
       };
 
+      // Request camera access
       stream.value = await navigator.mediaDevices.getUserMedia(constraints);
       isActive.value = true;
 
-      // Attacher au video element si fourni
+      // Attach stream to video element if provided
       if (videoRef.value) {
         videoRef.value.srcObject = stream.value;
         await videoRef.value.play();
@@ -43,7 +75,7 @@ export function useCamera() {
 
       return stream.value;
     } catch (err) {
-      console.error("❌ Erreur accès caméra:", err);
+      console.error("❌ Camera access error:", err);
       error.value = getErrorMessage(err);
       isActive.value = false;
       throw err;
@@ -51,14 +83,16 @@ export function useCamera() {
   };
 
   /**
-   * Arrête la caméra
+   * Stop the camera stream and release resources
    */
   const stopCamera = () => {
     if (stream.value) {
+      // Stop all tracks to release camera
       stream.value.getTracks().forEach((track) => track.stop());
       stream.value = null;
     }
 
+    // Clear video element
     if (videoRef.value) {
       videoRef.value.srcObject = null;
     }
@@ -66,18 +100,28 @@ export function useCamera() {
     isActive.value = false;
   };
 
+  // ==========================================================================
+  // PHOTO CAPTURE
+  // ==========================================================================
+
   /**
-   * Capture une photo depuis le stream vidéo
+   * Capture a photo from the video stream
+   * @param {Object} options - Capture options
+   * @param {number} options.width - Output width (default: video width)
+   * @param {number} options.height - Output height (default: video height)
+   * @param {number} options.quality - JPEG quality 0-1 (default: 0.9)
+   * @param {boolean} options.mirror - Mirror image for front camera (default: true)
+   * @returns {Promise<Object>} Photo data { file, blob, dataUrl, width, height }
    */
   const capturePhoto = (options = {}) => {
     if (!videoRef.value || !isActive.value) {
-      throw new Error("Caméra non active");
+      throw new Error("Camera not active");
     }
 
     const video = videoRef.value;
     const canvas = document.createElement("canvas");
 
-    // Dimensions de la capture
+    // Set capture dimensions
     const width = options.width || video.videoWidth;
     const height = options.height || video.videoHeight;
 
@@ -86,19 +130,21 @@ export function useCamera() {
 
     const ctx = canvas.getContext("2d");
 
-    // Miroir si caméra frontale
+    // Mirror image for front camera (selfie mode)
     if (facingMode.value === "user" && options.mirror !== false) {
       ctx.translate(width, 0);
       ctx.scale(-1, 1);
     }
 
+    // Draw video frame to canvas
     ctx.drawImage(video, 0, 0, width, height);
 
-    // Retourner comme Blob
+    // Convert to Blob and return
     return new Promise((resolve, reject) => {
       canvas.toBlob(
         (blob) => {
           if (blob) {
+            // Create File object for upload
             const file = new File([blob], `photo-${Date.now()}.jpg`, {
               type: "image/jpeg",
             });
@@ -110,21 +156,23 @@ export function useCamera() {
               height,
             });
           } else {
-            reject(new Error("Échec de la capture"));
+            reject(new Error("Capture failed"));
           }
         },
         "image/jpeg",
-        options.quality || 0.9,
+        options.quality || 0.9
       );
     });
   };
 
   /**
-   * Change de caméra (frontale/arrière)
+   * Switch between front and back camera
+   * @returns {Promise<string>} New facing mode
    */
   const switchCamera = async () => {
     facingMode.value = facingMode.value === "user" ? "environment" : "user";
 
+    // Restart camera with new facing mode if active
     if (isActive.value) {
       await startCamera();
     }
@@ -132,26 +180,37 @@ export function useCamera() {
     return facingMode.value;
   };
 
+  // ==========================================================================
+  // GALLERY / FILE SELECTION
+  // ==========================================================================
+
   /**
-   * Ouvre le sélecteur de fichiers pour la galerie
+   * Open file picker for image selection
+   * @param {Object} options - Picker options
+   * @param {string} options.accept - File types (default: "image/*")
+   * @param {boolean} options.multiple - Allow multiple selection (default: true)
+   * @param {string} options.capture - Force camera on mobile ("camera")
+   * @returns {Promise<Array>} Selected files with previews
    */
   const openGallery = (options = {}) => {
     return new Promise((resolve, reject) => {
+      // Create hidden file input
       const input = document.createElement("input");
       input.type = "file";
       input.accept = options.accept || "image/*";
       input.multiple = options.multiple ?? true;
-      input.capture = options.capture; // "camera" pour forcer la caméra sur mobile
+      input.capture = options.capture; // "camera" forces camera on mobile
 
+      // Handle file selection
       input.onchange = (event) => {
         const files = Array.from(event.target.files || []);
 
         if (files.length === 0) {
-          reject(new Error("Aucun fichier sélectionné"));
+          reject(new Error("No file selected"));
           return;
         }
 
-        // Créer des previews pour chaque fichier
+        // Create previews for each file
         Promise.all(
           files.map(
             (file) =>
@@ -167,21 +226,28 @@ export function useCamera() {
                   });
                 };
                 reader.readAsDataURL(file);
-              }),
-          ),
+              })
+          )
         ).then(resolve);
       };
 
+      // Handle cancel
       input.oncancel = () => {
-        reject(new Error("Sélection annulée"));
+        reject(new Error("Selection cancelled"));
       };
 
+      // Trigger file picker
       input.click();
     });
   };
 
+  // ==========================================================================
+  // UTILITIES
+  // ==========================================================================
+
   /**
-   * Vérifie si la caméra est disponible
+   * Check if camera is available on this device
+   * @returns {Promise<boolean>} True if camera exists
    */
   const checkCameraAvailable = async () => {
     try {
@@ -193,37 +259,48 @@ export function useCamera() {
   };
 
   /**
-   * Obtient le message d'erreur approprié
+   * Get user-friendly error message for camera errors
+   * @param {Error} err - The error object
+   * @returns {string} User-friendly message
    */
   const getErrorMessage = (err) => {
     switch (err.name) {
       case "NotAllowedError":
-        return "Accès à la caméra refusé. Veuillez autoriser l'accès dans les paramètres.";
+        return "Camera access denied. Please allow access in settings.";
       case "NotFoundError":
-        return "Aucune caméra détectée sur cet appareil.";
+        return "No camera detected on this device.";
       case "NotReadableError":
-        return "La caméra est utilisée par une autre application.";
+        return "Camera is in use by another application.";
       case "OverconstrainedError":
-        return "Les paramètres demandés ne sont pas supportés.";
+        return "Requested camera settings are not supported.";
       default:
-        return err.message || "Erreur d'accès à la caméra";
+        return err.message || "Camera access error";
     }
   };
 
   /**
-   * Attache une référence video element
+   * Set the video element reference
+   * @param {HTMLVideoElement} ref - Video element
    */
   const setVideoRef = (ref) => {
     videoRef.value = ref;
   };
 
-  // Cleanup au démontage
+  // ==========================================================================
+  // CLEANUP
+  // ==========================================================================
+
+  // Stop camera when component unmounts
   onUnmounted(() => {
     stopCamera();
   });
 
+  // ==========================================================================
+  // RETURN PUBLIC API
+  // ==========================================================================
+
   return {
-    // État
+    // State
     stream,
     error,
     isActive,

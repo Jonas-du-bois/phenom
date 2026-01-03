@@ -1,6 +1,22 @@
 /**
- * Types d'observations OVNI/Phénomènes - Tous les types avec leurs couleurs
+ * Observation Types - UFO/Phenomenon Type Codes with Colors
+ *
+ * Comprehensive list of observation type codes used to categorize UFO sightings.
+ * Each type has a 3-letter code, French label, English description, color, and icon.
+ *
+ * @module constants/observationTypes
+ *
+ * These codes are compatible with the Phenom Search API and cover:
+ * - Event types (WAV, HST, LND, SUB, OBS)
+ * - Evidence types (TCH, SND, RAY, SIG, PHT, RDA, TRC)
+ * - Effect types (ANI, HUM, INJ, VEH, BLD, VEG)
+ * - Entity types (NOC, OID, CNT)
+ * - Special types (ODD, CMF, MID, COV, OGA)
  */
+
+// ============================================================================
+// OBSERVATION TYPES DEFINITION
+// ============================================================================
 export const OBSERVATION_TYPES = {
   WAV: {
     code: "WAV",
@@ -193,7 +209,11 @@ export const OBSERVATION_TYPES = {
   },
 };
 
-// Liste des types pour les sélecteurs (format tableau)
+// ============================================================================
+// DROPDOWN OPTIONS FOR SELECTORS
+// ============================================================================
+
+// Array format for use in dropdown/select components
 export const OBSERVATION_TYPE_OPTIONS = Object.entries(OBSERVATION_TYPES).map(
   ([code, data]) => ({
     value: code,
@@ -201,26 +221,30 @@ export const OBSERVATION_TYPE_OPTIONS = Object.entries(OBSERVATION_TYPES).map(
     description: data.description,
     color: data.color,
     icon: data.icon,
-  }),
+  })
 );
 
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
+
 /**
- * Convertit un code d'observation (3 lettres) en label complet
- * @param {string} code - Code à 3 lettres (ex: "WAV")
- * @returns {string} Label complet ou le code si inconnu
+ * Convert an observation code (3 letters) to its full label
+ * @param {string} code - 3-letter code (e.g., "WAV")
+ * @returns {string} Full French label or the code if unknown
  * @example
  * getObservationLabel('WAV') // "Vague/cluster/flap"
  * getObservationLabel('TCH') // "Détails techniques"
- * getObservationLabel('XXX') // "XXX" (code inconnu)
+ * getObservationLabel('XXX') // "XXX" (unknown code)
  */
 export const getObservationLabel = (code) => {
   return OBSERVATION_TYPES[code]?.label || code;
 };
 
 /**
- * Convertit un code d'observation en description complète
- * @param {string} code - Code à 3 lettres
- * @returns {string} Description ou le code si inconnu
+ * Convert an observation code to its full description
+ * @param {string} code - 3-letter code
+ * @returns {string} English description or the code if unknown
  * @example
  * getObservationDescription('WAV') // "Wave/cluster/flap"
  */
@@ -229,9 +253,9 @@ export const getObservationDescription = (code) => {
 };
 
 /**
- * Récupère la couleur associée à un type d'observation
- * @param {string} code - Code à 3 lettres
- * @returns {string} Couleur hexadécimale
+ * Get the color associated with an observation type
+ * @param {string} code - 3-letter code
+ * @returns {string} Hex color code (defaults to gray)
  * @example
  * getObservationColor('WAV') // "#7B3FF2"
  */
@@ -240,9 +264,9 @@ export const getObservationColor = (code) => {
 };
 
 /**
- * Vérifie si un code d'observation est valide
- * @param {string} code - Code à vérifier
- * @returns {boolean} true si le code existe
+ * Check if an observation code is valid
+ * @param {string} code - Code to verify
+ * @returns {boolean} true if the code exists in OBSERVATION_TYPES
  * @example
  * isValidObservationType('WAV') // true
  * isValidObservationType('XXX') // false

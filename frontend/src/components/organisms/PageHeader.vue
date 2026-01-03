@@ -1,3 +1,28 @@
+<!-- ========================================================================
+     PAGE HEADER - Fixed top navigation bar with liquid glass styling
+     
+     Features:
+     - Fixed position with safe area inset support
+     - Liquid glass (glassmorphism) background effect
+     - Optional back button with custom navigation
+     - Optional search button
+     - Customizable title (text or slot)
+     - Default Phenom logo when no title provided
+     - Optional menu button
+     - Left/right/below slots for custom content
+     
+     Props:
+     - title: Header title text
+     - showBack: Display back navigation button
+     - showSearch: Display search button
+     - showMenu: Display menu button
+     - backTo: Custom back navigation route
+     
+     Events:
+     - back: Triggered when back button clicked
+     - search: Triggered when search button clicked
+     - menu: Triggered when menu button clicked
+     ======================================================================== -->
 <template>
   <header
     class="fixed top-4 left-0 right-0 z-40 mx-5"
@@ -5,7 +30,7 @@
   >
     <div class="liquid-glass-header rounded-2xl">
       <div class="flex items-center justify-between h-14 px-4">
-        <!-- Left section -->
+        <!-- Left section - Back button, search button, custom slot -->
         <div class="flex items-center gap-3 min-w-[60px]">
           <button
             v-if="showBack"
@@ -60,7 +85,9 @@
             <slot name="title" />
           </template>
           <template v-else-if="title">
-            <h1 class="text-lg font-semibold text-white truncate">{{ title }}</h1>
+            <h1 class="text-lg font-semibold text-white truncate">
+              {{ title }}
+            </h1>
           </template>
           <template v-else>
             <!-- Phenom logo -->
@@ -238,7 +265,7 @@ const handleBack = () => {
 
 /* Overlay gradient for depth - exact same as navbar */
 .liquid-glass-header::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;

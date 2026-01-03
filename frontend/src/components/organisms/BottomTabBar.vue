@@ -1,9 +1,14 @@
 <template>
+  <!-- ========================================================================
+       BOTTOM NAVIGATION BAR
+       Fixed at bottom with liquid glass effect and safe-area padding
+       ======================================================================== -->
   <nav
     class="liquid-glass-nav fixed bottom-4 left-0 right-0 z-50 max-w-screen mx-5"
     :style="{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }"
   >
     <div class="flex items-center justify-around h-16">
+      <!-- Navigation tabs loop -->
       <router-link
         v-for="tab in tabs"
         :key="tab.name"
@@ -11,10 +16,15 @@
         class="tab-item flex flex-col items-center justify-center gap-1 min-w-[64px] h-full px-3 transition-all duration-200"
         :class="{ active: isActive(tab) }"
       >
-        <!-- Camera tab special styling -->
+        <!-- ================================================================
+             CAMERA TAB - Special centered button with gradient border
+             ================================================================ -->
         <template v-if="tab.name === 'camera'">
           <div class="camera-button-v3-wrapper w-14 h-14 -mt-2">
-            <div class="camera-button-v3 w-full h-full rounded-full flex items-center justify-center transition-all duration-300 active:scale-95">
+            <div
+              class="camera-button-v3 w-full h-full rounded-full flex items-center justify-center transition-all duration-300 active:scale-95"
+            >
+              <!-- Plus icon for adding new observation -->
               <svg
                 class="w-7 h-7 text-white"
                 fill="none"
@@ -29,13 +39,15 @@
                 />
               </svg>
             </div>
-          </div> 
+          </div>
         </template>
 
-        <!-- Normal tabs -->
+        <!-- ================================================================
+             NORMAL TABS - Icon + Label
+             ================================================================ -->
         <template v-else>
           <div class="icon-wrapper relative">
-            <!-- Feed icon -->
+            <!-- Feed/Home icon -->
             <svg
               v-if="tab.name === 'feed'"
               class="w-6 h-6"
@@ -67,7 +79,7 @@
               />
             </svg>
 
-            <!-- Alerts icon -->
+            <!-- Alerts/Notifications icon -->
             <svg
               v-else-if="tab.name === 'alerts'"
               class="w-6 h-6"
@@ -83,7 +95,7 @@
               />
             </svg>
 
-            <!-- Profile icon -->
+            <!-- Profile/User icon -->
             <svg
               v-else-if="tab.name === 'profile'"
               class="w-6 h-6"
@@ -99,7 +111,7 @@
               />
             </svg>
 
-            <!-- Notification badge -->
+            <!-- Notification badge (shown on alerts tab) -->
             <span
               v-if="tab.badge && tab.badge > 0"
               class="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-[#00F0FF] text-black text-xs font-semibold rounded-full flex items-center justify-center px-1"
@@ -108,6 +120,7 @@
             </span>
           </div>
 
+          <!-- Tab label -->
           <span class="text-xs font-medium tracking-wide">{{ tab.label }}</span>
         </template>
       </router-link>
@@ -116,28 +129,69 @@
 </template>
 
 <script setup>
+/**
+ * BottomTabBar - Main navigation component for the app
+ *
+ * Fixed bottom navigation with liquid glass design featuring:
+ * - 5 tabs: Feed, Map, Camera (centered CTA), Alerts, Profile
+ * - Active state highlighting with cyan color
+ * - Badge support for notification count
+ * - Safe area inset support for notched devices
+ */
+
+// ============================================================================
+// IMPORTS
+// ============================================================================
 import { computed } from "vue";
 import { useRoute } from "vue-router";
 
+// ============================================================================
+// COMPONENT OPTIONS
+// ============================================================================
 defineOptions({ name: "BottomTabBar" });
 
+// ============================================================================
+// PROPS
+// ============================================================================
 const props = defineProps({
+  /** Number of unread alerts to display as badge */
   alertCount: {
     type: Number,
     default: 0,
   },
 });
 
+// ============================================================================
+// DEPENDENCIES
+// ============================================================================
 const route = useRoute();
 
+// ============================================================================
+// COMPUTED PROPERTIES
+// ============================================================================
+
+/**
+ * Tab configuration array
+ * Defines all navigation tabs with their icons, labels, and routes
+ */
 const tabs = computed(() => [
   { name: "feed", label: "Feed", to: "/feed" },
   { name: "map", label: "Map", to: "/map" },
-  { name: "camera", label: "", to: "/camera" },
+  { name: "camera", label: "", to: "/camera" }, // No label for camera button
   { name: "alerts", label: "Alertes", to: "/alerts", badge: props.alertCount },
   { name: "profile", label: "Profil", to: "/profile" },
 ]);
 
+// ============================================================================
+// METHODS
+// ============================================================================
+
+/**
+ * Determines if a tab is currently active based on route
+ * Special handling for feed tab (matches both "/" and "/feed")
+ * @param {Object} tab - Tab configuration object
+ * @returns {boolean} Whether the tab is active
+ */
 const isActive = (tab) => {
   if (tab.to === "/feed") {
     return route.path === "/" || route.path === "/feed";
@@ -146,23 +200,32 @@ const isActive = (tab) => {
 };
 </script>
 
+<!-- ============================================================================
+     SCOPED STYLES
+     Includes liquid glass effect and camera button styling
+     ============================================================================ -->
 <style scoped>
+/* Base tab item styling */
 .tab-item {
   color: rgba(255, 255, 255, 0.5);
 }
 
+/* Active tab state - cyan color */
 .tab-item.active {
   color: #00f0ff;
 }
 
+/* Touch feedback for inactive tabs */
 .tab-item:not(.active):active {
   color: rgba(255, 255, 255, 0.7);
 }
 
+/* Thicker stroke for active tab icons */
 .tab-item.active .icon-wrapper svg {
   stroke-width: 2;
 }
 
+/* POTENTIALLY UNUSED: Old camera button style - replaced by v3 */
 .camera-button {
   box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
 }
@@ -171,63 +234,81 @@ const isActive = (tab) => {
   box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
 }
 
+/* Camera button v3 - Wrapper with gradient border effect */
 .camera-button-v3-wrapper {
   position: relative;
   filter: drop-shadow(0 0 20px rgba(0, 240, 255, 0.3));
 }
 
+/* Animated gradient border using pseudo-element and mask */
 .camera-button-v3-wrapper::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: -2px;
   border-radius: 9999px;
   padding: 2px;
-  background: linear-gradient(135deg, #00F0FF, #A855F7, #00F0FF);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  background: linear-gradient(135deg, #00f0ff, #a855f7, #00f0ff);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-  /* animation pour le bouton camera */
+  /* COMMENTED OUT: Rotating border animation - can be enabled */
   /* animation: rotate-border 10s linear infinite; */
 }
 
+/* Camera button inner styling with glass effect */
 .camera-button-v3 {
-  background: linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(168, 85, 247, 0.15));
+  background: linear-gradient(
+    135deg,
+    rgba(0, 240, 255, 0.15),
+    rgba(168, 85, 247, 0.15)
+  );
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.15);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
-/* Liquid glass navbar */
+/* Liquid glass navigation bar - Main container styling */
 .liquid-glass-nav {
   position: fixed;
   left: 1.25rem;
   right: 1.25rem;
   bottom: 1rem;
   border-radius: 1rem;
-  background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.03),
+    rgba(255, 255, 255, 0.01)
+  );
   -webkit-backdrop-filter: blur(18px) saturate(140%);
   backdrop-filter: blur(18px) saturate(140%);
-  border: 1px solid rgba(255,255,255,0.06);
-  box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 10px 30px rgba(2, 6, 23, 0.6);
   overflow: visible;
 }
 
+/* Light reflection overlay for glass depth */
 .liquid-glass-nav::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0));
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.06),
+    rgba(255, 255, 255, 0)
+  );
   mix-blend-mode: overlay;
 }
 
-/* Ensure tab items remain transparent and inherit glass color */
+/* Tab items inside glass nav */
 .liquid-glass-nav .tab-item {
   background: transparent;
-  color: rgba(255,255,255,0.9);
+  color: rgba(255, 255, 255, 0.9);
   flex: 1 1 0;
-  min-width: 0; /* allow items to shrink uniformly */
+  min-width: 0; /* Allow items to shrink uniformly */
   padding-top: 0.35rem;
   padding-bottom: 0.35rem;
 }
@@ -236,7 +317,7 @@ const isActive = (tab) => {
   color: #00f0ff;
 }
 
-/* Layout tweaks for balanced spacing and centered camera */
+/* Layout for balanced spacing */
 .liquid-glass-nav > div {
   display: flex;
   align-items: center;
@@ -247,6 +328,7 @@ const isActive = (tab) => {
   height: auto;
 }
 
+/* Icon wrapper centering */
 .liquid-glass-nav .icon-wrapper {
   display: flex;
   align-items: center;
@@ -254,13 +336,15 @@ const isActive = (tab) => {
   height: 28px;
 }
 
+/* Camera button elevated position */
 .camera-button-v3-wrapper {
   position: relative;
   filter: drop-shadow(0 0 20px rgba(0, 240, 255, 0.3));
   z-index: 60;
-  transform: translateY(-15%); /* lift the camera button to overlap the nav */
+  transform: translateY(-15%); /* Lift button to overlap nav edge */
 }
 
+/* Camera button size */
 .camera-button-v3 {
   width: 56px;
   height: 56px;
@@ -269,13 +353,18 @@ const isActive = (tab) => {
   justify-content: center;
 }
 
+/* Tab label spacing */
 .liquid-glass-nav .tab-item .text-xs {
   margin-top: 2px;
 }
 
+/* UNUSED: Animation keyframes for rotating gradient border */
 @keyframes rotate-border {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
-
 </style>

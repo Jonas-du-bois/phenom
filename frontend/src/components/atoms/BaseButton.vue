@@ -1,45 +1,106 @@
+<!--
+  ============================================================================
+  BaseButton.vue - Reusable Button Component
+  ============================================================================
+  
+  PURPOSE:
+  A versatile button component with multiple style variants and states.
+  Used throughout the application for user interactions like form submissions,
+  navigation actions, and triggering operations.
+
+  FEATURES:
+  - Multiple variants: primary (cyan), secondary (outlined), ghost, danger
+  - Multiple sizes: sm, md, lg, full (full width)
+  - Loading state with animated spinner
+  - Disabled state with visual feedback
+  - Slot-based content for icons and text
+
+  USAGE EXAMPLES:
+  <BaseButton>Click me</BaseButton>
+  <BaseButton variant="secondary" size="lg">Secondary</BaseButton>
+  <BaseButton variant="danger" :loading="isLoading">Delete</BaseButton>
+  <BaseButton type="submit" size="full">Submit Form</BaseButton>
+
+  PROPS:
+  - variant: 'primary' | 'secondary' | 'ghost' | 'danger' (default: 'primary')
+  - size: 'sm' | 'md' | 'lg' | 'full' (default: 'md')
+  - disabled: Disables the button
+  - loading: Shows loading spinner and prevents clicks
+  - type: HTML button type - 'button' | 'submit' | 'reset'
+
+  EVENTS:
+  - click: Emitted when button is clicked (unless disabled/loading)
+  ============================================================================
+-->
+
 <script setup>
 /**
- * BaseButton - Composant bouton réutilisable
- * Variants: primary, secondary, ghost
+ * BaseButton - Reusable Button Component
+ * Variants: primary, secondary, ghost, danger
  * Design System: Phenom Search
  */
 
 defineOptions({ name: "BaseButton" });
 
+// =============================================================================
+// PROPS DEFINITION
+// =============================================================================
 const props = defineProps({
+  // Visual style variant
   variant: {
     type: String,
     default: "primary",
     validator: (v) => ["primary", "secondary", "ghost", "danger"].includes(v),
   },
+  // Size variant (affects padding and font size)
   size: {
     type: String,
     default: "md",
     validator: (v) => ["sm", "md", "lg", "full"].includes(v),
   },
+  // Whether the button is disabled
   disabled: {
     type: Boolean,
     default: false,
   },
+  // Whether to show loading spinner
   loading: {
     type: Boolean,
     default: false,
   },
+  // HTML button type attribute
   type: {
     type: String,
     default: "button",
   },
 });
 
+// =============================================================================
+// EVENTS
+// =============================================================================
 const emit = defineEmits(["click"]);
 
+/**
+ * Handle click events
+ * Only emits if button is not disabled or loading
+ */
 const handleClick = (e) => {
   if (!props.disabled && !props.loading) {
     emit("click", e);
   }
 };
 
+// =============================================================================
+// STYLING CONFIGURATION
+// =============================================================================
+
+/**
+ * Tailwind classes for each variant
+ * - primary: Solid cyan background (main CTA)
+ * - secondary: Transparent with border (secondary actions)
+ * - ghost: No background, subtle hover (tertiary actions)
+ * - danger: Red theme for destructive actions
+ */
 const variantClasses = {
   primary: "bg-[#00F0FF] text-black hover:bg-[#00D0DF] active:scale-[0.98]",
   secondary:
@@ -49,15 +110,24 @@ const variantClasses = {
     "bg-red-500/20 text-red-500 border border-red-500/30 hover:bg-red-500/30",
 };
 
+/**
+ * Tailwind classes for each size
+ */
 const sizeClasses = {
-  sm: "px-3 py-2 text-xs",
-  md: "px-4 py-3 text-sm",
-  lg: "px-6 py-4 text-base",
-  full: "w-full px-4 py-4 text-sm",
+  sm: "px-3 py-2 text-xs",       // Small - compact buttons
+  md: "px-4 py-3 text-sm",       // Medium - default
+  lg: "px-6 py-4 text-base",     // Large - prominent buttons
+  full: "w-full px-4 py-4 text-sm", // Full width - form submissions
 };
 </script>
 
 <template>
+  <!-- 
+    Button Element
+    - Uses native button for accessibility
+    - Applies variant and size classes dynamically
+    - touch-target class ensures minimum 44px touch area on mobile
+  -->
   <button
     :type="type"
     :disabled="disabled || loading"
@@ -75,7 +145,11 @@ const sizeClasses = {
     ]"
     @click="handleClick"
   >
-    <!-- Loading Spinner -->
+    <!-- 
+      Loading Spinner (conditional)
+      - Displayed when loading prop is true
+      - Animated spinning SVG
+    -->
     <svg
       v-if="loading"
       class="w-4 h-4 animate-spin"
@@ -97,6 +171,7 @@ const sizeClasses = {
       />
     </svg>
 
+    <!-- Default slot for button content (text, icons, etc.) -->
     <slot />
   </button>
 </template>

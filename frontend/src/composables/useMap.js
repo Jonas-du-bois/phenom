@@ -1,6 +1,10 @@
 /**
- * Composable pour la gestion de la carte interactive
- * YAGNI: Seulement les fonctionnalités nécessaires pour afficher et interagir
+ * useMap Composable
+ *
+ * Interactive map management for displaying observation markers.
+ * YAGNI: Only essential features for map display and interaction.
+ *
+ * @module composables/useMap
  */
 import { ref, computed } from "vue";
 
@@ -11,19 +15,22 @@ export function useMap() {
   const userLocation = ref(null);
   const loading = ref(false);
 
-  // Configuration par défaut
-  const defaultCenter = [46.603354, 1.888334]; // Centre de la France
+  // Default configuration
+  const defaultCenter = [46.603354, 1.888334]; // Center of France
   const defaultZoom = 6;
 
   /**
-   * Initialiser la carte
+   * Initialize the map instance
+   * @param {Object} mapInstance - Leaflet map instance
    */
   const initMap = (mapInstance) => {
     map.value = mapInstance;
   };
 
   /**
-   * Ajouter un marker
+   * Add a marker for an observation
+   * @param {Object} observation - Observation data with location
+   * @returns {Object|null} Created marker or null if no coordinates
    */
   const addMarker = (observation) => {
     if (!observation.location?.coordinates) return null;
@@ -42,28 +49,31 @@ export function useMap() {
   };
 
   /**
-   * Ajouter plusieurs markers
+   * Add markers for multiple observations
+   * @param {Array} observations - List of observations
    */
   const addMarkers = (observations) => {
     observations.forEach((obs) => addMarker(obs));
   };
 
   /**
-   * Supprimer un marker
+   * Remove a marker by observation ID
+   * @param {string} observationId - ID of the observation
    */
   const removeMarker = (observationId) => {
     markers.value = markers.value.filter((m) => m.id !== observationId);
   };
 
   /**
-   * Nettoyer tous les markers
+   * Clear all markers from the map
    */
   const clearMarkers = () => {
     markers.value = [];
   };
 
   /**
-   * Centrer sur un marker
+   * Center map on a specific marker
+   * @param {string} observationId - ID of the observation to center on
    */
   const centerOnMarker = (observationId) => {
     const marker = markers.value.find((m) => m.id === observationId);
@@ -74,7 +84,8 @@ export function useMap() {
   };
 
   /**
-   * Obtenir la position de l'utilisateur
+   * Get the user's current location
+   * @returns {Promise<Object>} User location with lat, lng, accuracy
    */
   const getUserLocation = () => {
     return new Promise((resolve, reject) => {
@@ -102,13 +113,14 @@ export function useMap() {
           enableHighAccuracy: true,
           timeout: 10000,
           maximumAge: 0,
-        },
+        }
       );
     });
   };
 
   /**
-   * Centrer sur l'utilisateur
+   * Center map on user's current location
+   * @returns {Promise<Object>} User location
    */
   const centerOnUser = async () => {
     try {
@@ -118,13 +130,13 @@ export function useMap() {
       }
       return location;
     } catch (error) {
-      console.error("Erreur géolocalisation:", error);
+      console.error("Geolocation error:", error);
       throw error;
     }
   };
 
   /**
-   * Calculer les bounds pour contenir tous les markers
+   * Calculate bounds to fit all markers
    */
   const fitBounds = () => {
     if (!map.value || markers.value.length === 0) return;
@@ -134,7 +146,7 @@ export function useMap() {
   };
 
   return {
-    // État
+    // State
     map,
     markers,
     selectedMarker,

@@ -1,12 +1,29 @@
 /**
- * Utilitaires pour la gestion et manipulation des commentaires
+ * Comment Helpers - Utilities for Managing Comments
+ *
+ * Provides functions for sorting, filtering, searching, and grouping
+ * comment data on observations.
+ *
+ * @module utils/commentHelpers
+ *
+ * Features:
+ * - Sort by date (newest/oldest first)
+ * - Filter by user or date range
+ * - Search within comment content and author names
+ * - Group by user or date
+ * - Count comments per observation
+ * - Calculate comment statistics
  */
 
+// ============================================================================
+// SORTING
+// ============================================================================
+
 /**
- * Trie les commentaires
- * @param {Array} comments - Liste des commentaires
- * @param {string} order - 'asc' (plus anciens d'abord) ou 'desc' (plus récents d'abord)
- * @returns {Array} Commentaires triés
+ * Sort comments by creation date
+ * @param {Array} comments - List of comments
+ * @param {string} order - 'asc' (oldest first) or 'desc' (newest first)
+ * @returns {Array} Sorted comments
  */
 export const sortComments = (comments, order = "desc") => {
   return [...comments].sort((a, b) => {
@@ -16,11 +33,15 @@ export const sortComments = (comments, order = "desc") => {
   });
 };
 
+// ============================================================================
+// FILTERING
+// ============================================================================
+
 /**
- * Filtre les commentaires par utilisateur
- * @param {Array} comments - Liste des commentaires
- * @param {string} userId - ID de l'utilisateur
- * @returns {Array} Commentaires de l'utilisateur
+ * Filter comments by user
+ * @param {Array} comments - List of comments
+ * @param {string} userId - User ID to filter by
+ * @returns {Array} Comments by the specified user
  */
 export const filterCommentsByUser = (comments, userId) => {
   if (!userId) return comments;
@@ -31,11 +52,11 @@ export const filterCommentsByUser = (comments, userId) => {
 };
 
 /**
- * Filtre les commentaires par période de temps
- * @param {Array} comments - Liste des commentaires
- * @param {Date} startDate - Date de début
- * @param {Date} endDate - Date de fin
- * @returns {Array} Commentaires filtrés
+ * Filter comments by date range
+ * @param {Array} comments - List of comments
+ * @param {Date} startDate - Start date of the range
+ * @param {Date} endDate - End date of the range
+ * @returns {Array} Filtered comments within the date range
  */
 export const filterCommentsByDate = (comments, startDate, endDate) => {
   return comments.filter((comment) => {
@@ -46,11 +67,15 @@ export const filterCommentsByDate = (comments, startDate, endDate) => {
   });
 };
 
+// ============================================================================
+// SEARCH
+// ============================================================================
+
 /**
- * Recherche dans les commentaires
- * @param {Array} comments - Liste des commentaires
- * @param {string} searchText - Texte à rechercher
- * @returns {Array} Commentaires correspondants
+ * Search within comments (content and author name)
+ * @param {Array} comments - List of comments
+ * @param {string} searchText - Text to search for
+ * @returns {Array} Matching comments
  */
 export const searchComments = (comments, searchText) => {
   if (!searchText || searchText.trim() === "") return comments;
@@ -63,10 +88,14 @@ export const searchComments = (comments, searchText) => {
   });
 };
 
+// ============================================================================
+// GROUPING
+// ============================================================================
+
 /**
- * Groupe les commentaires par utilisateur
- * @param {Array} comments - Liste des commentaires
- * @returns {Object} Commentaires groupés par userId
+ * Group comments by user
+ * @param {Array} comments - List of comments
+ * @returns {Object} Comments grouped by userId
  */
 export const groupCommentsByUser = (comments) => {
   return comments.reduce((acc, comment) => {
@@ -78,9 +107,9 @@ export const groupCommentsByUser = (comments) => {
 };
 
 /**
- * Groupe les commentaires par date (jour)
- * @param {Array} comments - Liste des commentaires
- * @returns {Object} Commentaires groupés par date
+ * Group comments by date (day)
+ * @param {Array} comments - List of comments
+ * @returns {Object} Comments grouped by date (ISO date string keys)
  */
 export const groupCommentsByDate = (comments) => {
   return comments.reduce((acc, comment) => {
@@ -92,9 +121,13 @@ export const groupCommentsByDate = (comments) => {
   }, {});
 };
 
+// ============================================================================
+// STATISTICS
+// ============================================================================
+
 /**
- * Compte le nombre de commentaires par observation
- * @param {Array} comments - Liste des commentaires
+ * Count comments per observation
+ * @param {Array} comments - List of comments
  * @returns {Object} { observationId: count }
  */
 export const countCommentsByObservation = (comments) => {
@@ -106,9 +139,9 @@ export const countCommentsByObservation = (comments) => {
 };
 
 /**
- * Calcule des statistiques sur les commentaires
- * @param {Array} comments - Liste des commentaires
- * @returns {Object} Statistiques
+ * Calculate statistics for a list of comments
+ * @param {Array} comments - List of comments
+ * @returns {Object} Statistics object { total, byUser, avgLength, dateRange }
  */
 export const calculateCommentStats = (comments) => {
   const stats = {
@@ -120,7 +153,7 @@ export const calculateCommentStats = (comments) => {
 
   if (comments.length === 0) return stats;
 
-  // Stats par utilisateur
+  // Stats by user
   comments.forEach((comment) => {
     const userId = comment.userId?._id || comment.userId;
     const userName = comment.userId?.name || "Anonyme";
@@ -130,10 +163,10 @@ export const calculateCommentStats = (comments) => {
     stats.byUser[userId].count++;
   });
 
-  // Longueur moyenne
+  // Average length
   const totalLength = comments.reduce(
     (sum, comment) => sum + (comment.content?.length || 0),
-    0,
+    0
   );
   stats.avgLength = Math.round(totalLength / comments.length);
 
@@ -145,9 +178,13 @@ export const calculateCommentStats = (comments) => {
   return stats;
 };
 
+// ============================================================================
+// VALIDATION
+// ============================================================================
+
 /**
- * Valide les données d'un commentaire
- * @param {Object} commentData - Données du commentaire
+ * Validate comment data before submission
+ * @param {Object} commentData - Comment data to validate
  * @returns {Object} { valid: boolean, errors: Array<string> }
  */
 export const validateCommentData = (commentData) => {
@@ -171,10 +208,14 @@ export const validateCommentData = (commentData) => {
   };
 };
 
+// ============================================================================
+// FORMATTING
+// ============================================================================
+
 /**
- * Formate un commentaire pour l'affichage
- * @param {Object} comment - Commentaire à formater
- * @returns {Object} Commentaire formaté
+ * Format a comment for display in UI
+ * @param {Object} comment - Comment to format
+ * @returns {Object|null} Formatted comment with author info
  */
 export const formatCommentForDisplay = (comment) => {
   if (!comment) return null;
@@ -195,9 +236,9 @@ export const formatCommentForDisplay = (comment) => {
 };
 
 /**
- * Vérifie si un commentaire est récent (moins de 24h)
- * @param {Object} comment - Commentaire à vérifier
- * @returns {boolean}
+ * Check if a comment was created recently (less than 24 hours ago)
+ * @param {Object} comment - Comment to check
+ * @returns {boolean} True if comment is recent
  */
 export const isRecentComment = (comment) => {
   const commentDate = new Date(comment.createdAt);
@@ -206,24 +247,32 @@ export const isRecentComment = (comment) => {
   return diffHours < 24;
 };
 
+// ============================================================================
+// SANITIZATION
+// ============================================================================
+
 /**
- * Nettoie le contenu d'un commentaire
- * @param {string} content - Contenu du commentaire
- * @returns {string} Contenu nettoyé
+ * Sanitize comment content by removing HTML and limiting length
+ * @param {string} content - Comment content
+ * @returns {string} Cleaned content
  */
 export const sanitizeCommentContent = (content) => {
   return content
     .trim()
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "") // Supprime les scripts
-    .replace(/<[^>]*>/g, "") // Supprime les balises HTML
-    .slice(0, 1000); // Limite à 1000 caractères
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "") // Remove scripts
+    .replace(/<[^>]*>/g, "") // Remove HTML tags
+    .slice(0, 1000); // Limit to 1000 characters
 };
 
+// ============================================================================
+// TOP COMMENTERS
+// ============================================================================
+
 /**
- * Trouve les utilisateurs les plus actifs en commentaires
- * @param {Array} comments - Liste des commentaires
- * @param {number} limit - Nombre de résultats
- * @returns {Array} Top utilisateurs avec leur nombre de commentaires
+ * Get the most active commenters
+ * @param {Array} comments - List of comments
+ * @param {number} limit - Number of results to return (default: 5)
+ * @returns {Array} Top users with their comment counts
  */
 export const getTopCommenters = (comments, limit = 5) => {
   const userCounts = {};

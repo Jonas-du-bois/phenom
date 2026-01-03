@@ -1,15 +1,34 @@
 /**
- * Utilitaires pour la gestion des images avec Cloudinary
- * Les images sont maintenant stockées sur Cloudinary avec URLs publiques
+ * Image Handling Utilities for Cloudinary
+ *
+ * Provides functions for working with Cloudinary-hosted images.
+ * Images are stored on Cloudinary with public URLs, eliminating
+ * the need for authentication when loading images.
+ *
+ * @module utils/imageHelpers
+ *
+ * Features:
+ * - Get image URLs with optional Cloudinary transformations
+ * - Generate SVG placeholder images
+ * - Validate image files before upload
+ * - Create image previews from File objects
+ * - Handle image loading errors gracefully
  */
 
 import { countCachedImages } from "./avatarCache";
 
+// ============================================================================
+// CLOUDINARY IMAGE URL HANDLING
+// ============================================================================
+
 /**
- * Récupère l'URL d'une image Cloudinary
- * @param {Object} imageData - Données de l'image contenant l'URL Cloudinary
- * @param {Object} options - Options de transformation (optionnel)
- * @returns {string} URL de l'image Cloudinary ou placeholder
+ * Get a Cloudinary image URL with optional transformations
+ * @param {Object} imageData - Image data object containing the Cloudinary URL
+ * @param {Object} options - Transformation options
+ * @param {number} options.width - Desired width
+ * @param {number} options.height - Desired height
+ * @param {string} options.crop - Crop mode (e.g., 'fill', 'fit', 'scale')
+ * @returns {string} Cloudinary URL (possibly with transformations) or placeholder
  */
 export const getImageUrl = (imageData, options = {}) => {
   // Si imageData est undefined/null, retourner placeholder
@@ -40,36 +59,47 @@ export const getImageUrl = (imageData, options = {}) => {
 };
 
 /**
- * Charge toutes les images d'une observation
- * Avec Cloudinary, plus besoin de charger via l'API !
- * @param {Object} observation - Observation contenant des images
+ * Load all images for an observation
+ * With Cloudinary, URLs are already public - no API call needed!
+ * This function is kept for backwards compatibility and logging.
+ * @param {Object} observation - Observation containing images array
  * @returns {Promise<void>}
  */
 export const loadImagesForObservation = async (observation) => {
   // Plus rien à faire, les URLs sont déjà publiques
   console.log(
-    `📸 ${observation.images?.length || 0} images Cloudinary pour observation ${observation._id}`,
+    `📸 ${observation.images?.length || 0} images Cloudinary pour observation ${observation._id}`
   );
 };
 
+// ============================================================================
+// PLACEHOLDER IMAGES
+// ============================================================================
+
 /**
- * Génère une image placeholder SVG inline
- * @param {string} text - Texte à afficher
- * @param {number} width - Largeur de l'image
- * @param {number} height - Hauteur de l'image
- * @returns {string} Data URL SVG
+ * Generate an inline SVG placeholder image
+ * Used when actual images fail to load or are unavailable
+ * @param {string} text - Text to display in placeholder (default: "Image")
+ * @param {number} width - Image width in pixels (default: 400)
+ * @param {number} height - Image height in pixels (default: 300)
+ * @returns {string} Data URL containing SVG placeholder
  */
 export const getPlaceholderImage = (
   text = "Image",
   width = 400,
-  height = 300,
+  height = 300
 ) => {
   return `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><rect width="${width}" height="${height}" fill="%23e5e7eb"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="14" fill="%239ca3af">${encodeURIComponent(text)}</text></svg>`;
 };
 
+// ============================================================================
+// ERROR HANDLING
+// ============================================================================
+
 /**
- * Gestionnaire d'erreur pour les images
- * @param {Event} event - Événement error de l'image
+ * Error handler for image loading failures
+ * Replaces broken image with placeholder and adds visual indicator
+ * @param {Event} event - Image error event
  */
 export const handleImageError = (event) => {
   console.warn("❌ Image blob non disponible");
@@ -77,10 +107,16 @@ export const handleImageError = (event) => {
   event.target.classList.add("opacity-50");
 };
 
+// ============================================================================
+// FILE VALIDATION
+// ============================================================================
+
 /**
- * Valide un fichier image avant upload
- * @param {File} file - Fichier à valider
- * @param {Object} options - Options de validation
+ * Validate an image file before upload
+ * @param {File} file - File to validate
+ * @param {Object} options - Validation options
+ * @param {number} options.maxSize - Max file size in bytes (default: 10MB)
+ * @param {string[]} options.allowedTypes - Allowed MIME types (default: jpeg, png, webp)
  * @returns {Object} { valid: boolean, error: string|null }
  */
 export const validateImageFile = (file, options = {}) => {
@@ -112,9 +148,10 @@ export const validateImageFile = (file, options = {}) => {
 };
 
 /**
- * Crée un aperçu d'une image sélectionnée
- * @param {File} file - Fichier image
- * @returns {Promise<string>} URL de l'aperçu (data URL)
+ * Create a preview of a selected image file
+ * Uses FileReader to generate a data URL for immediate display
+ * @param {File} file - Image file to preview
+ * @returns {Promise<string>} Data URL of the image
  */
 export const createImagePreview = (file) => {
   return new Promise((resolve, reject) => {
@@ -125,9 +162,14 @@ export const createImagePreview = (file) => {
   });
 };
 
+// ============================================================================
+// CACHE UTILITIES
+// ============================================================================
+
 /**
- * Récupère le nombre d'images en cache
- * @returns {number} Nombre d'images
+ * Get the number of cached avatar images
+ * Wraps the avatarCache countCachedImages with error handling
+ * @returns {Promise<number>} Count of cached images (0 on error)
  */
 export const getCachedImageCount = async () => {
   try {

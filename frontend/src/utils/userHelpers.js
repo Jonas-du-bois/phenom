@@ -1,30 +1,51 @@
 /**
- * Utilitaires pour la gestion et manipulation des utilisateurs
+ * User Helpers - Utilities for User Management
+ *
+ * Provides functions for user role checking, permission validation,
+ * and user data formatting.
+ *
+ * @module utils/userHelpers
+ *
+ * Features:
+ * - Role checks (admin, viewer)
+ * - Ownership verification
+ * - Permission checks for edit/delete operations
+ * - User display name formatting
+ * - User data validation and sanitization
+ * - Default avatar generation
  */
 
+// ============================================================================
+// ROLE CHECKS
+// ============================================================================
+
 /**
- * Vérifie si un utilisateur est admin
- * @param {Object} user - Objet utilisateur
- * @returns {boolean}
+ * Check if a user has the admin role
+ * @param {Object} user - User object
+ * @returns {boolean} True if user is an admin
  */
 export const isAdmin = (user) => {
   return user?.role === "admin";
 };
 
 /**
- * Vérifie si un utilisateur est viewer
- * @param {Object} user - Objet utilisateur
- * @returns {boolean}
+ * Check if a user has the viewer role
+ * @param {Object} user - User object
+ * @returns {boolean} True if user is a viewer
  */
 export const isViewer = (user) => {
   return user?.role === "viewer";
 };
 
+// ============================================================================
+// OWNERSHIP AND PERMISSIONS
+// ============================================================================
+
 /**
- * Vérifie si un utilisateur est propriétaire d'une ressource
- * @param {Object} user - Objet utilisateur
- * @param {Object} resource - Ressource avec userId
- * @returns {boolean}
+ * Check if a user owns a resource
+ * @param {Object} user - User object
+ * @param {Object} resource - Resource with userId field
+ * @returns {boolean} True if user is the owner of the resource
  */
 export const isOwner = (user, resource) => {
   if (!user || !resource) return false;
@@ -34,30 +55,34 @@ export const isOwner = (user, resource) => {
 };
 
 /**
- * Vérifie si un utilisateur peut éditer une ressource
- * @param {Object} user - Objet utilisateur
- * @param {Object} resource - Ressource à éditer
- * @returns {boolean}
+ * Check if a user can edit a resource (admin or owner)
+ * @param {Object} user - User object
+ * @param {Object} resource - Resource to edit
+ * @returns {boolean} True if user can edit
  */
 export const canEdit = (user, resource) => {
   return isAdmin(user) || isOwner(user, resource);
 };
 
 /**
- * Vérifie si un utilisateur peut supprimer une ressource
- * @param {Object} user - Objet utilisateur
- * @param {Object} resource - Ressource à supprimer
- * @returns {boolean}
+ * Check if a user can delete a resource (admin or owner)
+ * @param {Object} user - User object
+ * @param {Object} resource - Resource to delete
+ * @returns {boolean} True if user can delete
  */
 export const canDelete = (user, resource) => {
   return isAdmin(user) || isOwner(user, resource);
 };
 
+// ============================================================================
+// USER DISPLAY
+// ============================================================================
+
 /**
- * Obtient le nom complet ou les initiales de l'utilisateur
- * @param {Object} user - Objet utilisateur
- * @param {boolean} initials - Si true, retourne les initiales
- * @returns {string}
+ * Get user's display name or initials
+ * @param {Object} user - User object
+ * @param {boolean} initials - If true, return initials only (max 2 chars)
+ * @returns {string} Display name or initials ("Anonyme" if no user)
  */
 export const getUserDisplayName = (user, initials = false) => {
   if (!user) return "Anonyme";
@@ -77,9 +102,9 @@ export const getUserDisplayName = (user, initials = false) => {
 };
 
 /**
- * Formate les informations utilisateur pour l'affichage
- * @param {Object} user - Objet utilisateur
- * @returns {Object} Données formatées
+ * Format user object for display in UI
+ * @param {Object} user - User object
+ * @returns {Object|null} Formatted user data with computed fields
  */
 export const formatUserForDisplay = (user) => {
   if (!user) return null;
@@ -99,15 +124,16 @@ export const formatUserForDisplay = (user) => {
 };
 
 /**
- * Valide les données d'un utilisateur
- * @param {Object} userData - Données utilisateur à valider
- * @param {boolean} isUpdate - Si true, certains champs sont optionnels (mise à jour partielle)
+ * Validate user data
+ * Note: Error messages are in French for end-user display
+ * @param {Object} userData - User data to validate
+ * @param {boolean} isUpdate - If true, some fields are optional (partial update)
  * @returns {Object} { valid: boolean, errors: Object }
  */
 export const validateUserData = (userData, isUpdate = false) => {
   const errors = {};
 
-  // Nom - en mode update, on valide seulement si le champ est rempli
+  // Name - in update mode, only validate if field is filled
   const hasName = userData.name !== undefined && userData.name.trim() !== "";
   if (!isUpdate && !hasName) {
     errors.name = "Le nom doit contenir au moins 2 caractères";
@@ -119,7 +145,7 @@ export const validateUserData = (userData, isUpdate = false) => {
     }
   }
 
-  // Email - en mode update, on valide seulement si le champ est rempli
+  // Email - in update mode, only validate if field is filled
   const hasEmail = userData.email !== undefined && userData.email.trim() !== "";
   if (!isUpdate && !hasEmail) {
     errors.email = "Email invalide";
@@ -130,7 +156,7 @@ export const validateUserData = (userData, isUpdate = false) => {
     }
   }
 
-  // Mot de passe (uniquement à la création ou si fourni)
+  // Password (only on creation or if provided)
   if (!isUpdate || (userData.password && userData.password.length > 0)) {
     if (userData.password && userData.password.length < 6) {
       errors.password = "Le mot de passe doit contenir au moins 6 caractères";
@@ -154,20 +180,20 @@ export const validateUserData = (userData, isUpdate = false) => {
 };
 
 /**
- * Filtre une liste d'utilisateurs
- * @param {Array} users - Liste des utilisateurs
- * @param {Object} filters - Filtres { role, searchText }
- * @returns {Array} Utilisateurs filtrés
+ * Filter a list of users
+ * @param {Array} users - List of users
+ * @param {Object} filters - Filters { role, searchText }
+ * @returns {Array} Filtered users
  */
 export const filterUsers = (users, filters = {}) => {
   let filtered = [...users];
 
-  // Filtre par rôle
+  // Filter by role
   if (filters.role) {
     filtered = filtered.filter((user) => user.role === filters.role);
   }
 
-  // Recherche textuelle
+  // Text search
   if (filters.searchText) {
     const search = filters.searchText.toLowerCase().trim();
     filtered = filtered.filter((user) => {
@@ -184,11 +210,11 @@ export const filterUsers = (users, filters = {}) => {
 };
 
 /**
- * Trie une liste d'utilisateurs
- * @param {Array} users - Liste des utilisateurs
- * @param {string} field - Champ de tri (name, email, createdAt, role)
- * @param {string} order - 'asc' ou 'desc'
- * @returns {Array} Utilisateurs triés
+ * Sort a list of users
+ * @param {Array} users - List of users
+ * @param {string} field - Sort field (name, email, createdAt, role)
+ * @param {string} order - 'asc' or 'desc'
+ * @returns {Array} Sorted users
  */
 export const sortUsers = (users, field = "name", order = "asc") => {
   return [...users].sort((a, b) => {
@@ -214,9 +240,9 @@ export const sortUsers = (users, field = "name", order = "asc") => {
 };
 
 /**
- * Calcule des statistiques sur les utilisateurs
- * @param {Array} users - Liste des utilisateurs
- * @returns {Object} Statistiques
+ * Calculate statistics for users
+ * @param {Array} users - List of users
+ * @returns {Object} Statistics object
  */
 export const calculateUserStats = (users) => {
   return {
@@ -229,10 +255,10 @@ export const calculateUserStats = (users) => {
 };
 
 /**
- * Nettoie les données utilisateur pour envoi au serveur
- * N'inclut que les champs non vides pour permettre les mises à jour partielles
- * @param {Object} userData - Données utilisateur
- * @returns {Object} Données nettoyées
+ * Sanitize user data for server submission
+ * Only includes non-empty fields for partial updates
+ * @param {Object} userData - User data
+ * @returns {Object} Sanitized data
  */
 export const sanitizeUserData = (userData) => {
   const sanitized = {};
@@ -261,18 +287,18 @@ export const sanitizeUserData = (userData) => {
 };
 
 /**
- * Génère un avatar par défaut basé sur les initiales
- * @param {Object} user - Objet utilisateur
+ * Generate a default avatar based on initials
+ * @param {Object} user - User object
  * @returns {Object} { initials, color, backgroundColor }
  */
 export const generateDefaultAvatar = (user) => {
   const initials = getUserDisplayName(user, true);
 
-  // Couleurs basées sur la première lettre
+  // Colors based on first letter
   const colors = [
-    { bg: "#FF6B6B", text: "#FFFFFF" }, // Rouge
+    { bg: "#FF6B6B", text: "#FFFFFF" }, // Red
     { bg: "#4ECDC4", text: "#FFFFFF" }, // Turquoise
-    { bg: "#45B7D1", text: "#FFFFFF" }, // Bleu
+    { bg: "#45B7D1", text: "#FFFFFF" }, // Blue
     { bg: "#96CEB4", text: "#FFFFFF" }, // Vert
     { bg: "#FFEAA7", text: "#2D3436" }, // Jaune
     { bg: "#DFE6E9", text: "#2D3436" }, // Gris

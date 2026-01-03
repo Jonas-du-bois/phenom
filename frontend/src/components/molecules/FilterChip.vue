@@ -1,31 +1,94 @@
+<!--
+  ============================================================================
+  FilterChip.vue - Clickable filter chip/tag component
+  ============================================================================
+  
+  PURPOSE:
+  A toggle-able chip/tag component used in filter panels. Users can click
+  to select/deselect filter options. Supports optional count display and
+  remove button for active chips.
+  
+  FEATURES:
+  - Active/inactive toggle states
+  - Cyan highlight when active
+  - Optional count badge (e.g., "(12)")
+  - Optional remove button for selected chips
+  - Uppercase text with letter spacing
+  - Pill/capsule shape with rounded corners
+  - Smooth transitions
+  
+  USAGE EXAMPLES:
+  <FilterChip
+    label="UFO"
+    :active="isSelected"
+    :count="12"
+    :removable="true"
+    @click="toggleFilter"
+    @remove="removeFilter"
+  />
+  
+  PROPS:
+  - label: String (required) - Text displayed on the chip
+  - active: Boolean (default: false) - Active/selected state
+  - selected: Boolean (default: false) - Alias for active
+  - removable: Boolean (default: false) - Show remove button when active
+  - count: Number (default: null) - Optional count to display
+  
+  EVENTS:
+  - @click - Emitted when chip is clicked
+  - @remove - Emitted when remove button is clicked (only if removable)
+  ============================================================================
+-->
+
 <script setup>
+/**
+ * FilterChip - Toggleable filter chip component
+ * Design System: Phenom Search - Dark theme with cyan accents
+ */
 defineOptions({ name: "FilterChip" });
 
+// ============================================================================
+// PROPS DEFINITION
+// ============================================================================
 const props = defineProps({
+  // Text displayed on the chip
   label: {
     type: String,
     required: true,
   },
+  // Whether the chip is in active/selected state
   active: {
     type: Boolean,
     default: false,
   },
+  // Alias for active (for compatibility)
   selected: {
     type: Boolean,
     default: false,
   },
+  // Whether to show a remove button when active
   removable: {
     type: Boolean,
     default: false,
   },
+  // Optional count to display next to the label
   count: {
     type: Number,
     default: null,
   },
 });
 
+// ============================================================================
+// EVENTS
+// ============================================================================
 const emit = defineEmits(["click", "remove"]);
 
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+/**
+ * Check if chip is in active state (either active or selected prop)
+ */
 const isActive = () => props.active || props.selected;
 </script>
 

@@ -1,3 +1,24 @@
+<!--
+  ============================================================================
+  ProfilePage.vue - User Profile Page
+  ============================================================================
+  
+  PURPOSE:
+  Displays a user's profile including their avatar, bio, statistics,
+  and list of observations. Works for both own profile and other users.
+
+  FEATURES:
+  - User avatar and basic info display
+  - Statistics (observations count, comments, likes)
+  - Settings button (own profile only)
+  - Back navigation (other user profiles)
+  - Observation list from this user
+  - Loading and error states
+
+  ROUTE: /profile (own) or /profile/:id (other user)
+  ============================================================================
+-->
+
 <template>
   <AppLayout :show-tab-bar="isOwnProfile">
     <template #header>
@@ -40,14 +61,18 @@
     <div class="profile-page">
       <!-- Loading -->
       <template v-if="loading">
-        <div class="flex items-center justify-center py-12 mt-16 min-h-[calc(100vh-4rem)]">
+        <div
+          class="flex items-center justify-center py-12 mt-16 min-h-[calc(100vh-4rem)]"
+        >
           <LoadingSpinner size="lg" />
         </div>
       </template>
 
       <!-- Error -->
       <template v-else-if="error">
-        <div class="flex items-center justify-center py-12 px-4 mt-16 min-h-[calc(100vh-4rem)]">
+        <div
+          class="flex items-center justify-center py-12 px-4 mt-16 min-h-[calc(100vh-4rem)]"
+        >
           <ErrorState
             :title="error"
             description="Impossible de charger le profil."
@@ -286,7 +311,7 @@ const averageCredibility = computed(() => {
   if (!userObservationsList.value.length) return "0";
   const sum = userObservationsList.value.reduce(
     (acc, o) => acc + (o.credibility || o.credibilityScore || 0),
-    0,
+    0
   );
   return (sum / userObservationsList.value.length).toFixed(1);
 });
@@ -305,7 +330,7 @@ watch(
   () => route.params.userId,
   () => {
     fetchProfile();
-  },
+  }
 );
 
 const fetchProfile = async () => {
@@ -359,7 +384,7 @@ const fetchProfile = async () => {
         await observationStore.fetchObservations({ limit: 50 });
         const id = userId;
         userObservationsList.value = observationStore.observations.filter(
-          (o) => (o.user?._id || o.user?.id || o.user) === id,
+          (o) => (o.user?._id || o.user?.id || o.user) === id
         );
         stats.value.observations = userObservationsList.value.length;
       } catch (e) {

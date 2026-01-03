@@ -1,6 +1,10 @@
 /**
- * Store Pinia pour le profil utilisateur
- * KISS: Wrapper simple autour du service
+ * User Profile Pinia Store
+ *
+ * Simple wrapper around the user service for profile management.
+ * Handles fetching, updating profile, avatar, password, and account deletion.
+ *
+ * @module stores/user
  */
 import { defineStore } from "pinia";
 import { ref } from "vue";
@@ -19,7 +23,7 @@ export const useUserStore = defineStore("user", () => {
       profile.value = response.data || response;
       return profile.value;
     } catch (err) {
-      error.value = err.response?.data?.message || "Erreur de chargement";
+      error.value = err.response?.data?.message || "Failed to load profile";
       throw err;
     } finally {
       loading.value = false;
@@ -34,7 +38,7 @@ export const useUserStore = defineStore("user", () => {
       profile.value = response.data || response;
       return profile.value;
     } catch (err) {
-      error.value = err.response?.data?.message || "Erreur de mise à jour";
+      error.value = err.response?.data?.message || "Failed to update profile";
       throw err;
     } finally {
       loading.value = false;
@@ -45,7 +49,7 @@ export const useUserStore = defineStore("user", () => {
     loading.value = true;
     error.value = null;
     try {
-      // Le service gère le FormData
+      // Service handles FormData
       const response = await userService.updateAvatar(file);
       // response is the backend payload (axios response.data), try several shapes
       // Backend typically returns: { success: true, data: { url, publicId } }
@@ -55,7 +59,7 @@ export const useUserStore = defineStore("user", () => {
       }
       return profile.value;
     } catch (err) {
-      error.value = err.response?.data?.message || "Erreur upload avatar";
+      error.value = err.response?.data?.message || "Failed to upload avatar";
       throw err;
     } finally {
       loading.value = false;
@@ -68,8 +72,7 @@ export const useUserStore = defineStore("user", () => {
     try {
       await userService.changePassword(passwords);
     } catch (err) {
-      error.value =
-        err.response?.data?.message || "Erreur changement mot de passe";
+      error.value = err.response?.data?.message || "Failed to change password";
       throw err;
     } finally {
       loading.value = false;
@@ -82,7 +85,7 @@ export const useUserStore = defineStore("user", () => {
       await userService.deleteAccount();
       profile.value = null;
     } catch (err) {
-      error.value = err.response?.data?.message || "Erreur suppression compte";
+      error.value = err.response?.data?.message || "Failed to delete account";
       throw err;
     } finally {
       loading.value = false;

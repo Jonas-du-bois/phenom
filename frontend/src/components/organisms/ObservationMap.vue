@@ -1,6 +1,30 @@
+<!-- ========================================================================
+     OBSERVATION MAP - Interactive Leaflet map with clustered markers
+     
+     Features:
+     - Leaflet map with dark/satellite tile layers
+     - MarkerCluster grouping with custom glass styling
+     - Color-coded markers by credibility (red/yellow/cyan)
+     - Custom zoom controls overlay
+     - Center on user location button
+     - Layer toggle (dark/satellite)
+     - Observation count badge
+     - Slide-up popup for selected observation
+     - Bounds change events for dynamic loading
+     
+     Props:
+     - observations: Array of observations with coordinates
+     - center: Initial map center [lat, lng]
+     - zoom: Initial zoom level
+     - loading: Show loading spinner overlay
+     
+     Events:
+     - bounds-change: Map viewport changed { north, south, east, west }
+     - marker-click: Marker clicked with observation data
+     ======================================================================== -->
 <template>
   <div ref="mapContainer" class="observation-map w-full h-full bg-[#080A0E]">
-    <!-- Map loading state -->
+    <!-- Map loading state - Full screen spinner overlay -->
     <div
       v-if="loading"
       class="absolute inset-0 flex items-center justify-center bg-[#080A0E]"
@@ -208,7 +232,7 @@ watch(
       updateMarkers();
     }
   },
-  { deep: true },
+  { deep: true }
 );
 
 const initMap = async () => {

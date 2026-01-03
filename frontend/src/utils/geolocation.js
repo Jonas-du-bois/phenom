@@ -1,9 +1,27 @@
 /**
- * Utilitaires pour la géolocalisation
+ * Geolocation Utilities
+ *
+ * Provides functions for working with GPS coordinates and geolocation.
+ * Wraps the browser's Geolocation API with Promise-based interface
+ * and adds utility functions for coordinate formatting and distance calculation.
+ *
+ * @module utils/geolocation
+ *
+ * Features:
+ * - Get current position (Promise-based)
+ * - Watch position in real-time
+ * - Calculate distance between two points (Haversine formula)
+ * - Generate OpenStreetMap and Google Maps URLs
+ * - Format coordinates for display
+ * - Validate coordinate values
  */
 
+// ============================================================================
+// GEOLOCATION OPTIONS
+// ============================================================================
+
 /**
- * Options par défaut pour la géolocalisation
+ * Default options for the Geolocation API
  */
 const DEFAULT_GEOLOCATION_OPTIONS = {
   enableHighAccuracy: true,
@@ -12,9 +30,9 @@ const DEFAULT_GEOLOCATION_OPTIONS = {
 };
 
 /**
- * Récupère la position GPS actuelle de l'utilisateur
- * @param {Object} options - Options de géolocalisation
- * @returns {Promise<Object>} { latitude, longitude, accuracy } ou erreur
+ * Get the user's current GPS position
+ * @param {Object} options - Geolocation options
+ * @returns {Promise<Object>} { latitude, longitude, accuracy } or error
  */
 export const getCurrentPosition = (options = {}) => {
   return new Promise((resolve, reject) => {
@@ -58,17 +76,17 @@ export const getCurrentPosition = (options = {}) => {
 
         reject(new Error(errorMessage));
       },
-      mergedOptions,
+      mergedOptions
     );
   });
 };
 
 /**
- * Surveille la position GPS en temps réel
- * @param {Function} onSuccess - Callback appelé à chaque mise à jour de position
- * @param {Function} onError - Callback appelé en cas d'erreur
- * @param {Object} options - Options de géolocalisation
- * @returns {number} ID du watcher (pour arrêter la surveillance avec clearWatch)
+ * Watch GPS position in real-time
+ * @param {Function} onSuccess - Callback called on each position update
+ * @param {Function} onError - Callback called on error
+ * @param {Object} options - Geolocation options
+ * @returns {number} Watcher ID (to stop watching with clearWatch)
  */
 export const watchPosition = (onSuccess, onError, options = {}) => {
   if (!navigator.geolocation) {
@@ -97,13 +115,13 @@ export const watchPosition = (onSuccess, onError, options = {}) => {
         onError(new Error(getGeolocationErrorMessage(error)));
       }
     },
-    mergedOptions,
+    mergedOptions
   );
 };
 
 /**
- * Arrête la surveillance de position
- * @param {number} watchId - ID du watcher
+ * Stop position watching
+ * @param {number} watchId - Watcher ID
  */
 export const clearPositionWatch = (watchId) => {
   if (watchId && navigator.geolocation) {
@@ -112,22 +130,22 @@ export const clearPositionWatch = (watchId) => {
 };
 
 /**
- * Génère une URL OpenStreetMap avec marqueur
- * @param {Array<number>} coordinates - [longitude, latitude] (format GeoJSON)
- * @param {number} zoom - Niveau de zoom (1-18)
- * @returns {string} URL OpenStreetMap
+ * Generate an OpenStreetMap URL with marker
+ * @param {Array<number>} coordinates - [longitude, latitude] (GeoJSON format)
+ * @param {number} zoom - Zoom level (1-18)
+ * @returns {string} OpenStreetMap URL
  */
 export const getOpenStreetMapUrl = (coordinates, zoom = 15) => {
   const [lng, lat] = coordinates;
-  // mlat/mlon ajoute un marqueur, #map définit le zoom et le centre
+  // mlat/mlon adds a marker, #map defines zoom and center
   return `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=${zoom}/${lat}/${lng}`;
 };
 
 /**
- * Génère une URL Google Maps avec marqueur
- * @param {Array<number>} coordinates - [longitude, latitude] (format GeoJSON)
- * @param {number} zoom - Niveau de zoom (1-21)
- * @returns {string} URL Google Maps
+ * Generate a Google Maps URL with marker
+ * @param {Array<number>} coordinates - [longitude, latitude] (GeoJSON format)
+ * @param {number} zoom - Zoom level (1-21)
+ * @returns {string} Google Maps URL
  */
 export const getGoogleMapsUrl = (coordinates, zoom = 15) => {
   const [lng, lat] = coordinates;
@@ -135,13 +153,13 @@ export const getGoogleMapsUrl = (coordinates, zoom = 15) => {
 };
 
 /**
- * Calcule la distance entre deux points GPS (formule de Haversine)
+ * Calculate the distance between two GPS points (Haversine formula)
  * @param {Object} point1 - { latitude, longitude }
  * @param {Object} point2 - { latitude, longitude }
- * @returns {number} Distance en kilomètres
+ * @returns {number} Distance in kilometers
  */
 export const calculateDistance = (point1, point2) => {
-  const R = 6371; // Rayon de la Terre en km
+  const R = 6371; // Earth radius in km
   const dLat = toRadians(point2.latitude - point1.latitude);
   const dLon = toRadians(point2.longitude - point1.longitude);
 
@@ -158,22 +176,26 @@ export const calculateDistance = (point1, point2) => {
   return distance;
 };
 
+// ============================================================================
+// COORDINATE FORMATTING AND VALIDATION
+// ============================================================================
+
 /**
- * Formate les coordonnées GPS en format lisible
+ * Format GPS coordinates in human-readable format
  * @param {number} latitude - Latitude
  * @param {number} longitude - Longitude
- * @param {number} precision - Nombre de décimales
- * @returns {string} Coordonnées formatées
+ * @param {number} precision - Decimal places (default: 6)
+ * @returns {string} Formatted coordinates (e.g., "46.818200°, 8.227500°")
  */
 export const formatCoordinates = (latitude, longitude, precision = 6) => {
   return `${latitude.toFixed(precision)}°, ${longitude.toFixed(precision)}°`;
 };
 
 /**
- * Vérifie si des coordonnées sont valides
- * @param {number} latitude - Latitude
- * @param {number} longitude - Longitude
- * @returns {boolean} true si valides
+ * Validate GPS coordinates
+ * @param {number} latitude - Latitude (-90 to 90)
+ * @param {number} longitude - Longitude (-180 to 180)
+ * @returns {boolean} True if coordinates are valid
  */
 export const isValidCoordinates = (latitude, longitude) => {
   return (
@@ -186,19 +208,25 @@ export const isValidCoordinates = (latitude, longitude) => {
   );
 };
 
+// ============================================================================
+// INTERNAL HELPERS
+// ============================================================================
+
 /**
- * Convertit des degrés en radians
- * @param {number} degrees - Degrés
- * @returns {number} Radians
+ * Convert degrees to radians
+ * @param {number} degrees - Angle in degrees
+ * @returns {number} Angle in radians
+ * @private
  */
 const toRadians = (degrees) => {
   return degrees * (Math.PI / 180);
 };
 
 /**
- * Récupère le message d'erreur de géolocalisation
- * @param {GeolocationPositionError} error - Erreur de géolocalisation
- * @returns {string} Message d'erreur
+ * Get human-readable geolocation error message
+ * @param {GeolocationPositionError} error - Geolocation API error
+ * @returns {string} French error message for UI display
+ * @private
  */
 const getGeolocationErrorMessage = (error) => {
   switch (error.code) {
@@ -214,25 +242,27 @@ const getGeolocationErrorMessage = (error) => {
 };
 
 /**
- * Vérifie si la géolocalisation est supportée
- * @returns {boolean} true si supportée
+ * Check if geolocation is supported by the browser
+ * @returns {boolean} True if geolocation API is available
  */
 export const isGeolocationSupported = () => {
   return "geolocation" in navigator;
 };
 
-// === Observation Coordinates Helpers ===
+// ============================================================================
+// OBSERVATION COORDINATES HELPERS
+// ============================================================================
 
 /**
- * Extrait les coordonnées d'une observation
- * Gère les deux formats: coordinates.lat/lng et location.coordinates
- * @param {Object} observation - L'observation
- * @returns {{ lat: number, lng: number } | null} Coordonnées ou null
+ * Extract coordinates from an observation object
+ * Handles both formats: coordinates.lat/lng and location.coordinates (GeoJSON)
+ * @param {Object} observation - Observation object
+ * @returns {{ lat: number, lng: number } | null} Coordinates or null if not found
  */
 export const getObservationCoordinates = (observation) => {
   if (!observation) return null;
 
-  // Format backend: coordinates.lat et coordinates.lng
+  // Backend format: coordinates.lat and coordinates.lng
   if (
     observation.coordinates?.lat != null &&
     observation.coordinates?.lng != null
@@ -243,7 +273,7 @@ export const getObservationCoordinates = (observation) => {
     };
   }
 
-  // Format GeoJSON: location.coordinates [lng, lat]
+  // GeoJSON format: location.coordinates [lng, lat]
   if (
     Array.isArray(observation.location?.coordinates) &&
     observation.location.coordinates.length >= 2
@@ -258,18 +288,18 @@ export const getObservationCoordinates = (observation) => {
 };
 
 /**
- * Vérifie si une observation a des coordonnées valides
- * @param {Object} observation - L'observation
- * @returns {boolean} true si coordonnées présentes
+ * Check if an observation has valid coordinates
+ * @param {Object} observation - Observation object
+ * @returns {boolean} True if coordinates are present
  */
 export const hasValidCoordinates = (observation) => {
   return getObservationCoordinates(observation) !== null;
 };
 
 /**
- * Retourne les coordonnées au format Leaflet [lat, lng]
- * @param {Object} observation - L'observation
- * @returns {[number, number] | null} [lat, lng] ou null
+ * Get coordinates in Leaflet format [lat, lng]
+ * @param {Object} observation - Observation object
+ * @returns {[number, number] | null} [lat, lng] or null
  */
 export const getLeafletCoordinates = (observation) => {
   const coords = getObservationCoordinates(observation);

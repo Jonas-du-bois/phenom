@@ -1,10 +1,31 @@
 /**
- * Utilitaires pour la validation de formulaires
+ * Form Validation Utilities
+ *
+ * Provides validation functions for form inputs.
+ * All functions return { valid: boolean, error: string|null }
+ * Error messages are in French for UI consistency.
+ *
+ * @module utils/validators
+ *
+ * Validators:
+ * - validateEmail: Email format validation
+ * - validatePassword: Password strength validation
+ * - validatePasswordMatch: Password confirmation matching
+ * - validateName: Username/name validation
+ * - validateText: Generic text validation
+ * - validateTag: Tag format validation
+ * - validateCoordinates: GPS coordinates validation
+ * - validateDate: Date validation
+ * - validateForm: Multi-field form validation
  */
 
+// ============================================================================
+// EMAIL VALIDATION
+// ============================================================================
+
 /**
- * Valide une adresse email
- * @param {string} email - Email à valider
+ * Validate an email address
+ * @param {string} email - Email to validate
  * @returns {Object} { valid: boolean, error: string|null }
  */
 export const validateEmail = (email) => {
@@ -20,10 +41,19 @@ export const validateEmail = (email) => {
   return { valid: true, error: null };
 };
 
+// ============================================================================
+// PASSWORD VALIDATION
+// ============================================================================
+
 /**
- * Valide un mot de passe
- * @param {string} password - Mot de passe à valider
- * @param {Object} options - Options de validation
+ * Validate a password with configurable strength requirements
+ * @param {string} password - Password to validate
+ * @param {Object} options - Validation options
+ * @param {number} options.minLength - Minimum length (default: 6)
+ * @param {boolean} options.requireUppercase - Require uppercase letter
+ * @param {boolean} options.requireLowercase - Require lowercase letter
+ * @param {boolean} options.requireNumber - Require digit
+ * @param {boolean} options.requireSpecialChar - Require special character
  * @returns {Object} { valid: boolean, error: string|null }
  */
 export const validatePassword = (password, options = {}) => {
@@ -78,9 +108,9 @@ export const validatePassword = (password, options = {}) => {
 };
 
 /**
- * Valide la correspondance de deux mots de passe
- * @param {string} password - Mot de passe
- * @param {string} confirmPassword - Confirmation du mot de passe
+ * Validate that two passwords match (for confirmation)
+ * @param {string} password - Original password
+ * @param {string} confirmPassword - Confirmation password
  * @returns {Object} { valid: boolean, error: string|null }
  */
 export const validatePasswordMatch = (password, confirmPassword) => {
@@ -95,10 +125,17 @@ export const validatePasswordMatch = (password, confirmPassword) => {
   return { valid: true, error: null };
 };
 
+// ============================================================================
+// NAME AND TEXT VALIDATION
+// ============================================================================
+
 /**
- * Valide un nom d'utilisateur
- * @param {string} name - Nom à valider
- * @param {Object} options - Options de validation
+ * Validate a username or display name
+ * @param {string} name - Name to validate
+ * @param {Object} options - Validation options
+ * @param {number} options.minLength - Minimum length (default: 2)
+ * @param {number} options.maxLength - Maximum length (default: 50)
+ * @param {boolean} options.required - Whether field is required (default: true)
  * @returns {Object} { valid: boolean, error: string|null }
  */
 export const validateName = (name, options = {}) => {
@@ -130,9 +167,13 @@ export const validateName = (name, options = {}) => {
 };
 
 /**
- * Valide un texte (description, commentaire, etc.)
- * @param {string} text - Texte à valider
- * @param {Object} options - Options de validation
+ * Validate generic text (descriptions, comments, etc.)
+ * @param {string} text - Text to validate
+ * @param {Object} options - Validation options
+ * @param {number} options.minLength - Minimum length (default: 1)
+ * @param {number} options.maxLength - Maximum length (default: 1000)
+ * @param {boolean} options.required - Whether field is required (default: true)
+ * @param {string} options.fieldName - Field name for error messages
  * @returns {Object} { valid: boolean, error: string|null }
  */
 export const validateText = (text, options = {}) => {
@@ -169,9 +210,10 @@ export const validateText = (text, options = {}) => {
 };
 
 /**
- * Valide un tag
- * @param {string} tag - Tag à valider
- * @param {Array<string>} existingTags - Tags déjà existants
+ * Validate a tag
+ * Note: Error messages are in French for end-user display
+ * @param {string} tag - Tag to validate
+ * @param {Array<string>} existingTags - Existing tags
  * @returns {Object} { valid: boolean, error: string|null }
  */
 export const validateTag = (tag, existingTags = []) => {
@@ -196,7 +238,7 @@ export const validateTag = (tag, existingTags = []) => {
     return { valid: false, error: "Ce tag existe déjà" };
   }
 
-  // Vérifier les caractères invalides
+  // Check for invalid characters
   if (!/^[a-zA-Z0-9À-ÿ\s-_]+$/.test(trimmedTag)) {
     return { valid: false, error: "Le tag contient des caractères invalides" };
   }
@@ -205,7 +247,8 @@ export const validateTag = (tag, existingTags = []) => {
 };
 
 /**
- * Valide des coordonnées GPS
+ * Validate GPS coordinates
+ * Note: Error messages are in French for end-user display
  * @param {number} latitude - Latitude
  * @param {number} longitude - Longitude
  * @returns {Object} { valid: boolean, error: string|null }
@@ -236,9 +279,10 @@ export const validateCoordinates = (latitude, longitude) => {
 };
 
 /**
- * Valide une date
- * @param {string|Date} date - Date à valider
- * @param {Object} options - Options de validation
+ * Validate a date
+ * Note: Error messages are in French for end-user display
+ * @param {string|Date} date - Date to validate
+ * @param {Object} options - Validation options
  * @returns {Object} { valid: boolean, error: string|null }
  */
 export const validateDate = (date, options = {}) => {
@@ -281,9 +325,9 @@ export const validateDate = (date, options = {}) => {
 };
 
 /**
- * Valide un formulaire complet
- * @param {Object} formData - Données du formulaire
- * @param {Object} validationRules - Règles de validation { field: validator }
+ * Validate a complete form
+ * @param {Object} formData - Form data
+ * @param {Object} validationRules - Validation rules { field: validator }
  * @returns {Object} { valid: boolean, errors: Object }
  */
 export const validateForm = (formData, validationRules) => {

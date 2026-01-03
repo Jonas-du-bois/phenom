@@ -1,3 +1,30 @@
+<!--
+  ============================================================================
+  CameraPage.vue - Camera Capture and Observation Creation Page
+  ============================================================================
+  
+  PURPOSE:
+  Multi-step observation creation flow with camera capture capability.
+  Allows users to take photos or select from gallery, then add observation details.
+
+  FEATURES:
+  - Live camera preview with capture button
+  - Photo gallery selection alternative
+  - Flash toggle control
+  - Camera flip (front/back) control
+  - Multi-step form for observation details
+  - GPS location capture
+  - Image preview and management
+
+  MODES:
+  - camera: Live camera viewfinder
+  - preview: Photo preview before proceeding
+  - form: Observation details form
+
+  ROUTE: /camera (requires auth, hides tab bar)
+  ============================================================================
+-->
+
 <template>
   <AppLayout :show-tab-bar="false">
     <div class="camera-page min-h-screen bg-[#000000] flex flex-col">
@@ -167,7 +194,7 @@
         </div>
       </template>
 
-        <!-- <div class="flex-1 overflow-y-auto p-4 mt-18">
+      <!-- <div class="flex-1 overflow-y-auto p-4 mt-18">
           <ObservationForm
             ref="formRef"
             :initial-data="formData"
@@ -198,7 +225,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
-import { PageHeader, ObservationForm} from "@/components/organisms";
+import { PageHeader, ObservationForm } from "@/components/organisms";
 import { AppLayout } from "@/components/layout";
 import { IconButton, BaseButton, ErrorState } from "@/components/atoms";
 import { useObservationStore } from "@/stores/observation";
@@ -327,7 +354,7 @@ const capturePhoto = () => {
       capturing.value = false;
     },
     "image/jpeg",
-    0.9,
+    0.9
   );
 };
 
@@ -385,7 +412,7 @@ const handleSubmit = async (data) => {
       console.error(
         "Création observation: réponse invalide",
         newObs,
-        observationStore.error,
+        observationStore.error
       );
       throw new Error("Réponse de création invalide");
     }
@@ -404,7 +431,7 @@ const handleSubmit = async (data) => {
       try {
         await observationStore.uploadObservationImages(
           newObs._id || newObs.id,
-          mediaFile,
+          mediaFile
         );
       } catch (err) {
         // ignore upload error here; store.error will contain message
