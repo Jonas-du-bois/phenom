@@ -1,22 +1,22 @@
-import User from '../../../src/models/User.js';
-import adminData from '../data/admin.data.js';
+import User from "../../../src/models/User.js";
+import adminData from "../data/admin.data.js";
 
 /**
- * Seed l'administrateur principal
+ * Seeds the main administrator account
  */
 export async function seedAdmin() {
   try {
-    console.log('👤 Seed de l\'administrateur...');
+    console.log("👤 Seed de l'administrateur...");
 
-    // Vérifier si l'admin existe déjà
+    // Check if admin already exists
     const existingAdmin = await User.findOne({ email: adminData.email });
 
     if (existingAdmin) {
-      console.log('   ⚠️  Admin déjà existant, suppression...');
+      console.log("   ⚠️  Admin déjà existant, suppression...");
       await User.deleteOne({ email: adminData.email });
     }
 
-    // Créer l'admin
+    // Create the admin user
     const admin = await User.create(adminData);
 
     console.log(`   ✅ Admin créé: ${admin.name} (${admin.email})`);
@@ -24,7 +24,7 @@ export async function seedAdmin() {
 
     return admin;
   } catch (error) {
-    console.error('   ❌ Erreur lors du seed admin:', error.message);
+    console.error("   ❌ Erreur lors du seed admin:", error.message);
     throw error;
   }
 }

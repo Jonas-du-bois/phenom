@@ -1,24 +1,24 @@
-import User from '../../../src/models/User.js';
-import usersData from '../data/users.data.js';
+import User from "../../../src/models/User.js";
+import usersData from "../data/users.data.js";
 
 /**
- * Seed les utilisateurs normaux
+ * Seeds regular users
  */
 export async function seedUsers() {
   try {
-    console.log('\n👥 Seed des utilisateurs...');
+    console.log("\n👥 Seed des utilisateurs...");
 
     const createdUsers = [];
 
     for (const userData of usersData) {
-      // Vérifier si l'utilisateur existe déjà
+      // Check if user already exists
       const existing = await User.findOne({ email: userData.email });
 
       if (existing) {
         await User.deleteOne({ email: userData.email });
       }
 
-      // Créer l'utilisateur
+      // Create the user
       const user = await User.create(userData);
       createdUsers.push(user);
 
@@ -30,7 +30,7 @@ export async function seedUsers() {
 
     return createdUsers;
   } catch (error) {
-    console.error('   ❌ Erreur lors du seed utilisateurs:', error.message);
+    console.error("   ❌ Erreur lors du seed utilisateurs:", error.message);
     throw error;
   }
 }

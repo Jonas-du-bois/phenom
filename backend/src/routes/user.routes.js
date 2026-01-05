@@ -1,30 +1,40 @@
-import express from 'express';
-import multer from 'multer';
-import userController from '../controllers/user.controller.js';
-import { authenticate } from '../middleware/auth.js';
-import { validate } from '../middleware/validate.js';
+/**
+ * @file user.routes.js
+ * @description User routes for profile management, password change, and avatar handling.
+ * All routes require authentication.
+ */
+import express from "express";
+import multer from "multer";
+import userController from "../controllers/user.controller.js";
+import { authenticate } from "../middleware/auth.js";
+import { validate } from "../middleware/validate.js";
 import {
   updateProfileValidation,
   changePasswordValidation,
-  getUserObservationsValidation
-} from '../validators/user.validator.js';
+  getUserObservationsValidation,
+} from "../validators/user.validator.js";
 
 const router = express.Router();
 
-// Configuration de multer pour l'upload d'avatar
+// Multer configuration for avatar uploads
 const avatarUpload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB max pour avatar
+    fileSize: 5 * 1024 * 1024, // 5MB max for avatar
   },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Type de fichier non autorisé. Types acceptés: JPEG, PNG, WebP'), false);
+      cb(
+        new Error(
+          "Type de fichier non autorisé. Types acceptés: JPEG, PNG, WebP"
+        ),
+        false
+      );
     }
-  }
+  },
 });
 
 /**
@@ -55,11 +65,7 @@ const avatarUpload = multer({
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get(
-  '/me',
-  authenticate,
-  userController.getProfile
-);
+router.get("/me", authenticate, userController.getProfile);
 
 /**
  * @swagger
@@ -96,11 +102,7 @@ router.get(
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get(
-  '/me/stats',
-  authenticate,
-  userController.getUserStats
-);
+router.get("/me/stats", authenticate, userController.getUserStats);
 
 /**
  * @swagger
@@ -162,7 +164,7 @@ router.get(
  *               $ref: '#/components/schemas/Error'
  */
 router.put(
-  '/me',
+  "/me",
   authenticate,
   updateProfileValidation,
   validate,
@@ -222,7 +224,7 @@ router.put(
  *               $ref: '#/components/schemas/Error'
  */
 router.patch(
-  '/me/password',
+  "/me/password",
   authenticate,
   changePasswordValidation,
   validate,
@@ -258,11 +260,7 @@ router.patch(
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.delete(
-  '/me',
-  authenticate,
-  userController.deleteAccount
-);
+router.delete("/me", authenticate, userController.deleteAccount);
 
 /**
  * @swagger
@@ -343,7 +341,7 @@ router.delete(
  *               $ref: '#/components/schemas/Error'
  */
 router.get(
-  '/me/observations',
+  "/me/observations",
   authenticate,
   getUserObservationsValidation,
   validate,
@@ -400,9 +398,9 @@ router.get(
  *         description: Non authentifié
  */
 router.post(
-  '/me/avatar',
+  "/me/avatar",
   authenticate,
-  avatarUpload.single('avatar'),
+  avatarUpload.single("avatar"),
   userController.uploadAvatar
 );
 
@@ -433,17 +431,9 @@ router.post(
  *       401:
  *         description: Non authentifié
  */
-router.delete(
-  '/me/avatar',
-  authenticate,
-  userController.deleteAvatar
-);
+router.delete("/me/avatar", authenticate, userController.deleteAvatar);
 
 // Endpoint pour mettre à jour la position courante (pour alertes de proximité)
-router.post(
-  '/me/location',
-  authenticate,
-  userController.updateLocation
-);
+router.post("/me/location", authenticate, userController.updateLocation);
 
 export default router;

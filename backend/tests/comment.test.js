@@ -1,10 +1,10 @@
-import request from 'supertest';
-import app from '../src/app.js';
-import User from '../src/models/User.js';
-import Observation from '../src/models/Observation.js';
-import Comment from '../src/models/Comment.js';
+import request from "supertest";
+import app from "../src/app.js";
+import User from "../src/models/User.js";
+import Observation from "../src/models/Observation.js";
+import Comment from "../src/models/Comment.js";
 
-describe('Comment Endpoints', () => {
+describe("Comment Endpoints", () => {
   let authToken;
   let userId;
   let observationId;
@@ -13,19 +13,19 @@ describe('Comment Endpoints', () => {
   let otherUserId;
 
   // Helper pour créer un utilisateur et obtenir un token
-  const createAuthenticatedUser = async (email = `testuser${Date.now()}@example.com`) => {
+  const createAuthenticatedUser = async (
+    email = `testuser${Date.now()}@example.com`
+  ) => {
     const user = await User.create({
-      name: 'Test User',
+      name: "Test User",
       email,
-      password: 'Password123'
+      password: "Password123",
     });
 
-    const loginResponse = await request(app)
-      .post('/api/v1/auth/login')
-      .send({
-        email,
-        password: 'Password123'
-      });
+    const loginResponse = await request(app).post("/api/v1/auth/login").send({
+      email,
+      password: "Password123",
+    });
 
     if (!loginResponse.body || !loginResponse.body.data) {
       throw new Error(`Login failed: ${JSON.stringify(loginResponse.body)}`);
@@ -33,31 +33,31 @@ describe('Comment Endpoints', () => {
 
     return {
       user,
-      token: loginResponse.body.data.accessToken
+      token: loginResponse.body.data.accessToken,
     };
   };
 
   beforeEach(async () => {
-    // Créer l'utilisateur principal
+    // Create the main user
     const auth = await createAuthenticatedUser();
     authToken = auth.token;
     userId = auth.user._id;
 
-    // Créer un autre utilisateur pour les tests de permission
-    const otherAuth = await createAuthenticatedUser('otheruser@example.com');
+    // Create another user for permission tests
+    const otherAuth = await createAuthenticatedUser("otheruser@example.com");
     otherUserToken = otherAuth.token;
     otherUserId = otherAuth.user._id;
 
-    // Créer une observation de test
+    // Create a test observation
     const observation = await Observation.create({
-      title: 'Test Observation',
-      description: 'Test description for comments',
+      title: "Test Observation",
+      description: "Test description for comments",
       date: new Date(),
       location: {
-        type: 'Point',
-        coordinates: [2.3522, 48.8566]
+        type: "Point",
+        coordinates: [2.3522, 48.8566],
       },
-      userId
+      userId,
     });
     observationId = observation._id;
   });
@@ -69,81 +69,82 @@ describe('Comment Endpoints', () => {
   });
 
   // ==============================================================
-  // POST /api/v1/observations/:id/comments - Créer un commentaire
+  // POST /api/v1/observations/:id/comments - Create a comment
   // ==============================================================
-  describe('POST /api/v1/observations/:id/comments', () => {
-    it('should create a new comment successfully', async () => {
+  describe("POST /api/v1/observations/:id/comments", () => {
+    it("should create a new comment successfully", async () => {
       const commentData = {
-        text: 'Great observation!'
+        text: "Great observation!",
       };
 
       const response = await request(app)
         .post(`/api/v1/observations/${observationId}/comments`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${authToken}`)
         .send(commentData)
         .expect(201);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data).toHaveProperty('_id');
+      expect(response.body.data).toHaveProperty("_id");
       expect(response.body.data.text).toBe(commentData.text);
       expect(response.body.data.observationId).toBe(observationId.toString());
 
       // userId peut être populé, donc vérifier _id ou le string
-      const returnedUserId = response.body.data.userId._id || response.body.data.userId;
+      const returnedUserId =
+        response.body.data.userId._id || response.body.data.userId;
       expect(returnedUserId).toBe(userId.toString());
     });
 
-    it('should fail without authentication', async () => {
+    it("should fail without authentication", async () => {
       const response = await request(app)
         .post(`/api/v1/observations/${observationId}/comments`)
-        .send({ text: 'Test comment' })
+        .send({ text: "Test comment" })
         .expect(401);
 
       expect(response.body.success).toBe(false);
     });
 
-    it('should fail with missing text', async () => {
+    it("should fail with missing text", async () => {
       const response = await request(app)
         .post(`/api/v1/observations/${observationId}/comments`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${authToken}`)
         .send({})
         .expect(400);
 
       expect(response.body.success).toBe(false);
     });
 
-    it('should fail with text too long', async () => {
-      const longText = 'a'.repeat(501); // Max 500 caractères
+    it("should fail with text too long", async () => {
+      const longText = "a".repeat(501); // Max 500 caractères
 
       const response = await request(app)
         .post(`/api/v1/observations/${observationId}/comments`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${authToken}`)
         .send({ text: longText })
         .expect(400);
 
       expect(response.body.success).toBe(false);
     });
 
-    it('should sanitize XSS in comment text', async () => {
+    it("should sanitize XSS in comment text", async () => {
       const xssText = '<script>alert("XSS")</script>Commentaire';
 
       const response = await request(app)
         .post(`/api/v1/observations/${observationId}/comments`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${authToken}`)
         .send({ text: xssText })
         .expect(201);
 
-      expect(response.body.data.text).not.toContain('<script>');
-      expect(response.body.data.text).toContain('Commentaire');
+      expect(response.body.data.text).not.toContain("<script>");
+      expect(response.body.data.text).toContain("Commentaire");
     });
 
-    it('should fail for non-existent observation', async () => {
-      const fakeId = '507f1f77bcf86cd799439011';
+    it("should fail for non-existent observation", async () => {
+      const fakeId = "507f1f77bcf86cd799439011";
 
       const response = await request(app)
         .post(`/api/v1/observations/${fakeId}/comments`)
-        .set('Authorization', `Bearer ${authToken}`)
-        .send({ text: 'Test comment' })
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ text: "Test comment" })
         .expect(404);
 
       expect(response.body.success).toBe(false);
@@ -153,29 +154,29 @@ describe('Comment Endpoints', () => {
   // ==============================================================
   // GET /api/v1/observations/:id/comments - Liste des commentaires
   // ==============================================================
-  describe('GET /api/v1/observations/:id/comments', () => {
+  describe("GET /api/v1/observations/:id/comments", () => {
     beforeEach(async () => {
       // Créer plusieurs commentaires de test
       await Comment.create([
         {
-          text: 'First comment',
+          text: "First comment",
           observationId,
-          userId
+          userId,
         },
         {
-          text: 'Second comment',
+          text: "Second comment",
           observationId,
-          userId: otherUserId
+          userId: otherUserId,
         },
         {
-          text: 'Third comment',
+          text: "Third comment",
           observationId,
-          userId
-        }
+          userId,
+        },
       ]);
     });
 
-    it('should get all comments without authentication', async () => {
+    it("should get all comments without authentication", async () => {
       const response = await request(app)
         .get(`/api/v1/observations/${observationId}/comments`)
         .expect(200);
@@ -184,7 +185,7 @@ describe('Comment Endpoints', () => {
       expect(response.body.data.length).toBe(3);
     });
 
-    it('should support pagination', async () => {
+    it("should support pagination", async () => {
       const response = await request(app)
         .get(`/api/v1/observations/${observationId}/comments?page=1&limit=2`)
         .expect(200);
@@ -197,17 +198,17 @@ describe('Comment Endpoints', () => {
       expect(response.body.pagination.total).toBe(3);
     });
 
-    it('should return empty array for observation with no comments', async () => {
+    it("should return empty array for observation with no comments", async () => {
       // Créer une nouvelle observation sans commentaires
       const newObs = await Observation.create({
-        title: 'No comments',
-        description: 'Observation without comments',
+        title: "No comments",
+        description: "Observation without comments",
         date: new Date(),
         location: {
-          type: 'Point',
-          coordinates: [2.3522, 48.8566]
+          type: "Point",
+          coordinates: [2.3522, 48.8566],
         },
-        userId
+        userId,
       });
 
       const response = await request(app)
@@ -218,8 +219,8 @@ describe('Comment Endpoints', () => {
       expect(response.body.data.length).toBe(0);
     });
 
-    it('should return 404 for non-existent observation', async () => {
-      const fakeId = '507f1f77bcf86cd799439011';
+    it("should return 404 for non-existent observation", async () => {
+      const fakeId = "507f1f77bcf86cd799439011";
 
       const response = await request(app)
         .get(`/api/v1/observations/${fakeId}/comments`)
@@ -228,39 +229,39 @@ describe('Comment Endpoints', () => {
       expect(response.body.success).toBe(false);
     });
 
-    it('should populate user information', async () => {
+    it("should populate user information", async () => {
       const response = await request(app)
         .get(`/api/v1/observations/${observationId}/comments`)
         .expect(200);
 
       expect(response.body.data[0].userId).toBeDefined();
       expect(response.body.data[0].userId.name).toBeDefined();
-      expect(response.body.data[0].userId).not.toHaveProperty('password');
+      expect(response.body.data[0].userId).not.toHaveProperty("password");
     });
   });
 
   // ==============================================================
   // PUT /api/v1/comments/:id - Mettre à jour un commentaire
   // ==============================================================
-  describe('PUT /api/v1/comments/:id', () => {
+  describe("PUT /api/v1/comments/:id", () => {
     beforeEach(async () => {
       // Créer un commentaire de test
       const comment = await Comment.create({
-        text: 'Original comment',
+        text: "Original comment",
         observationId,
-        userId
+        userId,
       });
       commentId = comment._id;
     });
 
-    it('should update comment successfully', async () => {
+    it("should update comment successfully", async () => {
       const updateData = {
-        text: 'Updated comment text'
+        text: "Updated comment text",
       };
 
       const response = await request(app)
         .put(`/api/v1/comments/${commentId}`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${authToken}`)
         .send(updateData)
         .expect(200);
 
@@ -268,67 +269,68 @@ describe('Comment Endpoints', () => {
       expect(response.body.data.text).toBe(updateData.text);
     });
 
-    it('should fail without authentication', async () => {
+    it("should fail without authentication", async () => {
       const response = await request(app)
         .put(`/api/v1/comments/${commentId}`)
-        .send({ text: 'Updated text' })
+        .send({ text: "Updated text" })
         .expect(401);
 
       expect(response.body.success).toBe(false);
     });
 
-    it('should fail when updating comment of another user', async () => {
+    it("should fail when updating comment of another user", async () => {
       const response = await request(app)
         .put(`/api/v1/comments/${commentId}`)
-        .set('Authorization', `Bearer ${otherUserToken}`)
-        .send({ text: 'Trying to update' })
+        .set("Authorization", `Bearer ${otherUserToken}`)
+        .send({ text: "Trying to update" })
         .expect(403);
 
       expect(response.body.success).toBe(false);
     });
 
-    it('should return 404 for non-existent comment', async () => {
-      const fakeId = '507f1f77bcf86cd799439011';
+    it("should return 404 for non-existent comment", async () => {
+      const fakeId = "507f1f77bcf86cd799439011";
 
       const response = await request(app)
         .put(`/api/v1/comments/${fakeId}`)
-        .set('Authorization', `Bearer ${authToken}`)
-        .send({ text: 'Updated text' })
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ text: "Updated text" })
         .expect(404);
 
       expect(response.body.success).toBe(false);
     });
 
-    it('should sanitize XSS in update', async () => {
+    it("should sanitize XSS in update", async () => {
       const xssText = '<script>alert("XSS")</script>Updated';
 
       const response = await request(app)
         .put(`/api/v1/comments/${commentId}`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${authToken}`)
         .send({ text: xssText })
         .expect(200);
 
-      expect(response.body.data.text).not.toContain('<script>');
-      expect(response.body.data.text).toContain('Updated');
+      expect(response.body.data.text).not.toContain("<script>");
+      expect(response.body.data.text).toContain("Updated");
     });
 
-    it('should not allow changing observationId or userId', async () => {
+    it("should not allow changing observationId or userId", async () => {
       const maliciousUpdate = {
-        text: 'Updated',
-        observationId: '507f1f77bcf86cd799439011',
-        userId: otherUserId
+        text: "Updated",
+        observationId: "507f1f77bcf86cd799439011",
+        userId: otherUserId,
       };
 
       const response = await request(app)
         .put(`/api/v1/comments/${commentId}`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${authToken}`)
         .send(maliciousUpdate)
         .expect(200);
 
       // observationId et userId ne devraient pas avoir changé
       expect(response.body.data.observationId).toBe(observationId.toString());
 
-      const returnedUserId = response.body.data.userId._id || response.body.data.userId;
+      const returnedUserId =
+        response.body.data.userId._id || response.body.data.userId;
       expect(returnedUserId).toBe(userId.toString());
     });
   });
@@ -336,21 +338,21 @@ describe('Comment Endpoints', () => {
   // ==============================================================
   // DELETE /api/v1/comments/:id - Supprimer un commentaire
   // ==============================================================
-  describe('DELETE /api/v1/comments/:id', () => {
+  describe("DELETE /api/v1/comments/:id", () => {
     beforeEach(async () => {
       // Créer un commentaire de test
       const comment = await Comment.create({
-        text: 'Comment to delete',
+        text: "Comment to delete",
         observationId,
-        userId
+        userId,
       });
       commentId = comment._id;
     });
 
-    it('should delete comment successfully', async () => {
+    it("should delete comment successfully", async () => {
       const response = await request(app)
         .delete(`/api/v1/comments/${commentId}`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${authToken}`)
         .expect(204);
 
       // Vérifier que le commentaire a été supprimé
@@ -358,7 +360,7 @@ describe('Comment Endpoints', () => {
       expect(deletedComment).toBeNull();
     });
 
-    it('should fail without authentication', async () => {
+    it("should fail without authentication", async () => {
       const response = await request(app)
         .delete(`/api/v1/comments/${commentId}`)
         .expect(401);
@@ -366,21 +368,21 @@ describe('Comment Endpoints', () => {
       expect(response.body.success).toBe(false);
     });
 
-    it('should fail when deleting comment of another user', async () => {
+    it("should fail when deleting comment of another user", async () => {
       const response = await request(app)
         .delete(`/api/v1/comments/${commentId}`)
-        .set('Authorization', `Bearer ${otherUserToken}`)
+        .set("Authorization", `Bearer ${otherUserToken}`)
         .expect(403);
 
       expect(response.body.success).toBe(false);
     });
 
-    it('should return 404 for non-existent comment', async () => {
-      const fakeId = '507f1f77bcf86cd799439011';
+    it("should return 404 for non-existent comment", async () => {
+      const fakeId = "507f1f77bcf86cd799439011";
 
       const response = await request(app)
         .delete(`/api/v1/comments/${fakeId}`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${authToken}`)
         .expect(404);
 
       expect(response.body.success).toBe(false);
@@ -390,35 +392,37 @@ describe('Comment Endpoints', () => {
   // ==============================================================
   // Security and Edge Cases
   // ==============================================================
-  describe('Security and Edge Cases', () => {
-    it('should not expose sensitive user data in comments', async () => {
+  describe("Security and Edge Cases", () => {
+    it("should not expose sensitive user data in comments", async () => {
       const comment = await Comment.create({
-        text: 'Test comment',
+        text: "Test comment",
         observationId,
-        userId
+        userId,
       });
 
       const response = await request(app)
         .get(`/api/v1/observations/${observationId}/comments`)
         .expect(200);
 
-      expect(response.body.data[0].userId).not.toHaveProperty('password');
-      expect(response.body.data[0].userId).not.toHaveProperty('refreshToken');
+      expect(response.body.data[0].userId).not.toHaveProperty("password");
+      expect(response.body.data[0].userId).not.toHaveProperty("refreshToken");
     });
 
-    it('should handle concurrent comment creation', async () => {
-      const commentData = { text: 'Concurrent comment' };
+    it("should handle concurrent comment creation", async () => {
+      const commentData = { text: "Concurrent comment" };
 
-      const promises = Array(3).fill().map(() =>
-        request(app)
-          .post(`/api/v1/observations/${observationId}/comments`)
-          .set('Authorization', `Bearer ${authToken}`)
-          .send(commentData)
-      );
+      const promises = Array(3)
+        .fill()
+        .map(() =>
+          request(app)
+            .post(`/api/v1/observations/${observationId}/comments`)
+            .set("Authorization", `Bearer ${authToken}`)
+            .send(commentData)
+        );
 
       const responses = await Promise.all(promises);
 
-      responses.forEach(response => {
+      responses.forEach((response) => {
         expect([201]).toContain(response.status);
       });
 
@@ -430,57 +434,57 @@ describe('Comment Endpoints', () => {
   // ==============================================================
   // Tests WebSocket
   // ==============================================================
-  describe('WebSocket Events', () => {
-    it('should create comment successfully (WebSocket events tested implicitly)', async () => {
+  describe("WebSocket Events", () => {
+    it("should create comment successfully (WebSocket events tested implicitly)", async () => {
       const commentData = {
-        text: 'Test comment for WebSocket'
+        text: "Test comment for WebSocket",
       };
 
       const response = await request(app)
         .post(`/api/v1/observations/${observationId}/comments`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${authToken}`)
         .send(commentData)
         .expect(201);
 
       // Vérifier que le commentaire est créé (WebSocket publishToChannel sera appelé)
       expect(response.body.success).toBe(true);
-      expect(response.body.data).toHaveProperty('text', commentData.text);
+      expect(response.body.data).toHaveProperty("text", commentData.text);
     });
 
-    it('should update comment successfully (WebSocket events tested implicitly)', async () => {
+    it("should update comment successfully (WebSocket events tested implicitly)", async () => {
       // Créer un commentaire
       const comment = await Comment.create({
-        text: 'Original comment text',
+        text: "Original comment text",
         observationId,
-        userId
+        userId,
       });
 
       const updateData = {
-        text: 'Updated comment text'
+        text: "Updated comment text",
       };
 
       const response = await request(app)
         .put(`/api/v1/comments/${comment._id}`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${authToken}`)
         .send(updateData)
         .expect(200);
 
       // Vérifier que le commentaire est mis à jour (WebSocket publishToChannel sera appelé)
       expect(response.body.success).toBe(true);
-      expect(response.body.data.text).toBe('Updated comment text');
+      expect(response.body.data.text).toBe("Updated comment text");
     });
 
-    it('should delete comment successfully (WebSocket events tested implicitly)', async () => {
+    it("should delete comment successfully (WebSocket events tested implicitly)", async () => {
       // Créer un commentaire
       const comment = await Comment.create({
-        text: 'Comment to delete',
+        text: "Comment to delete",
         observationId,
-        userId
+        userId,
       });
 
       await request(app)
         .delete(`/api/v1/comments/${comment._id}`)
-        .set('Authorization', `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${authToken}`)
         .expect(204);
 
       // Vérifier que le commentaire est supprimé (WebSocket publishToChannel sera appelé)

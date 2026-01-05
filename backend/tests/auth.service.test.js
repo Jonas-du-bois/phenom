@@ -1,20 +1,24 @@
-import User from '../src/models/User.js';
-import authService from '../src/services/auth.service.js';
-import userService from '../src/services/user.service.js';
+import User from "../src/models/User.js";
+import authService from "../src/services/auth.service.js";
+import userService from "../src/services/user.service.js";
 
-describe('Auth Service Direct Tests', () => {
-  describe('getProfile', () => {
+/**
+ * Auth Service Direct Tests
+ * Tests authentication service methods directly without HTTP layer
+ */
+describe("Auth Service Direct Tests", () => {
+  describe("getProfile", () => {
     let user;
 
     beforeEach(async () => {
       user = await User.create({
-        name: 'Test User',
+        name: "Test User",
         email: `profile${Date.now()}@example.com`,
-        password: 'Password123'
+        password: "Password123",
       });
     });
 
-    it('should get user profile by ID', async () => {
+    it("should get user profile by ID", async () => {
       const profile = await userService.getProfile(user._id);
 
       expect(profile).toBeDefined();
@@ -23,19 +27,19 @@ describe('Auth Service Direct Tests', () => {
       expect(profile.password).toBeUndefined();
     });
 
-    it('should throw error for non-existent user', async () => {
+    it("should throw error for non-existent user", async () => {
       await expect(
-        userService.getProfile('507f1f77bcf86cd799439011')
-      ).rejects.toThrow('USER_NOT_FOUND');
+        userService.getProfile("507f1f77bcf86cd799439011")
+      ).rejects.toThrow("USER_NOT_FOUND");
     });
   });
 
-  describe('signup', () => {
-    it('should create new user with tokens', async () => {
+  describe("signup", () => {
+    it("should create new user with tokens", async () => {
       const userData = {
-        name: 'New User',
+        name: "New User",
         email: `newuser${Date.now()}@example.com`,
-        password: 'Password123'
+        password: "Password123",
       };
 
       const result = await authService.signup(userData);
@@ -48,40 +52,40 @@ describe('Auth Service Direct Tests', () => {
       expect(result.user.password).toBeUndefined();
     });
 
-    it('should throw error for duplicate email', async () => {
+    it("should throw error for duplicate email", async () => {
       const email = `duplicate${Date.now()}@example.com`;
       await User.create({
-        name: 'Existing User',
+        name: "Existing User",
         email,
-        password: 'Password123'
+        password: "Password123",
       });
 
       await expect(
         authService.signup({
-          name: 'Another User',
+          name: "Another User",
           email,
-          password: 'Password123'
+          password: "Password123",
         })
-      ).rejects.toThrow('EMAIL_ALREADY_EXISTS');
+      ).rejects.toThrow("EMAIL_ALREADY_EXISTS");
     });
   });
 
-  describe('login', () => {
+  describe("login", () => {
     let user;
-    const password = 'Password123';
+    const password = "Password123";
 
     beforeEach(async () => {
       user = await User.create({
-        name: 'Test User',
+        name: "Test User",
         email: `login${Date.now()}@example.com`,
-        password
+        password,
       });
     });
 
-    it('should login with valid credentials', async () => {
+    it("should login with valid credentials", async () => {
       const result = await authService.login({
         email: user.email,
-        password
+        password,
       });
 
       expect(result).toBeDefined();
@@ -90,34 +94,34 @@ describe('Auth Service Direct Tests', () => {
       expect(result.refreshToken).toBeDefined();
     });
 
-    it('should throw error for non-existent email', async () => {
+    it("should throw error for non-existent email", async () => {
       await expect(
         authService.login({
-          email: 'nonexistent@example.com',
-          password
+          email: "nonexistent@example.com",
+          password,
         })
-      ).rejects.toThrow('INVALID_CREDENTIALS');
+      ).rejects.toThrow("INVALID_CREDENTIALS");
     });
 
-    it('should throw error for wrong password', async () => {
+    it("should throw error for wrong password", async () => {
       await expect(
         authService.login({
           email: user.email,
-          password: 'WrongPassword'
+          password: "WrongPassword",
         })
-      ).rejects.toThrow('INVALID_CREDENTIALS');
+      ).rejects.toThrow("INVALID_CREDENTIALS");
     });
   });
 
-  describe('refreshToken', () => {
+  describe("refreshToken", () => {
     let user;
     let refreshToken;
 
     beforeEach(async () => {
       const userData = {
-        name: 'Test User',
+        name: "Test User",
         email: `refresh${Date.now()}@example.com`,
-        password: 'Password123'
+        password: "Password123",
       };
 
       const result = await authService.signup(userData);
@@ -125,7 +129,7 @@ describe('Auth Service Direct Tests', () => {
       refreshToken = result.refreshToken;
     });
 
-    it('should refresh tokens with valid refresh token', async () => {
+    it("should refresh tokens with valid refresh token", async () => {
       const result = await authService.refreshToken(refreshToken);
 
       expect(result).toBeDefined();
@@ -134,117 +138,119 @@ describe('Auth Service Direct Tests', () => {
       expect(result.accessToken).not.toBe(refreshToken);
     });
 
-    it('should throw error for missing refresh token', async () => {
-      await expect(
-        authService.refreshToken()
-      ).rejects.toThrow('REFRESH_TOKEN_REQUIRED');
+    it("should throw error for missing refresh token", async () => {
+      await expect(authService.refreshToken()).rejects.toThrow(
+        "REFRESH_TOKEN_REQUIRED"
+      );
     });
 
-    it('should throw error for invalid refresh token', async () => {
-      await expect(
-        authService.refreshToken('invalid-token')
-      ).rejects.toThrow('INVALID_REFRESH_TOKEN');
+    it("should throw error for invalid refresh token", async () => {
+      await expect(authService.refreshToken("invalid-token")).rejects.toThrow(
+        "INVALID_REFRESH_TOKEN"
+      );
     });
 
-    it('should throw error when user no longer exists', async () => {
-      // Supprimer l'utilisateur
+    it("should throw error when user no longer exists", async () => {
+      // Delete the user
       await User.findByIdAndDelete(user._id);
 
-      await expect(
-        authService.refreshToken(refreshToken)
-      ).rejects.toThrow('USER_NOT_FOUND');
+      await expect(authService.refreshToken(refreshToken)).rejects.toThrow(
+        "USER_NOT_FOUND"
+      );
     });
   });
 
-  describe('forgotPassword', () => {
+  describe("forgotPassword", () => {
     let user;
 
     beforeEach(async () => {
       user = await User.create({
-        name: 'Test User',
+        name: "Test User",
         email: `forgot${Date.now()}@example.com`,
-        password: 'Password123'
+        password: "Password123",
       });
     });
 
-    it('should generate reset token for existing user', async () => {
+    it("should generate reset token for existing user", async () => {
       const result = await authService.forgotPassword(user.email);
 
       expect(result).toBeDefined();
-      expect(result.message).toContain('réinitialisation');
+      expect(result.message).toContain("réinitialisation");
 
-      // En développement, le token devrait être retourné
-      if (process.env.NODE_ENV === 'development') {
+      // In development, the token should be returned
+      if (process.env.NODE_ENV === "development") {
         expect(result.resetToken).toBeDefined();
       }
     });
 
-    it('should return generic message for non-existent email', async () => {
-      const result = await authService.forgotPassword('nonexistent@example.com');
+    it("should return generic message for non-existent email", async () => {
+      const result = await authService.forgotPassword(
+        "nonexistent@example.com"
+      );
 
       expect(result).toBeDefined();
-      expect(result.message).toContain('réinitialisation');
-      // Ne devrait pas révéler que l'email n'existe pas
+      expect(result.message).toContain("réinitialisation");
+      // Should not reveal that the email doesn't exist
       expect(result.resetToken).toBeUndefined();
     });
   });
 
-  describe('resetPassword', () => {
+  describe("resetPassword", () => {
     let user;
     let resetToken;
 
     beforeEach(async () => {
       user = await User.create({
-        name: 'Test User',
+        name: "Test User",
         email: `reset${Date.now()}@example.com`,
-        password: 'OldPassword123'
+        password: "OldPassword123",
       });
 
-      // Générer un token de réinitialisation
-      const { generateAccessToken } = await import('../src/config/jwt.js');
+      // Generate a reset token
+      const { generateAccessToken } = await import("../src/config/jwt.js");
       resetToken = generateAccessToken({
         userId: user._id.toString(),
-        type: 'reset-password'
+        type: "reset-password",
       });
     });
 
-    it('should reset password with valid token', async () => {
-      const newPassword = 'NewPassword123';
+    it("should reset password with valid token", async () => {
+      const newPassword = "NewPassword123";
       const result = await authService.resetPassword(resetToken, newPassword);
 
       expect(result).toBe(true);
 
-      // Vérifier que le mot de passe a changé
-      const updatedUser = await User.findById(user._id).select('+password');
+      // Verify that the password has changed
+      const updatedUser = await User.findById(user._id).select("+password");
       const isValid = await updatedUser.comparePassword(newPassword);
       expect(isValid).toBe(true);
     });
 
-    it('should throw error for invalid token', async () => {
+    it("should throw error for invalid token", async () => {
       await expect(
-        authService.resetPassword('invalid-token', 'NewPassword123')
-      ).rejects.toThrow('INVALID_RESET_TOKEN');
+        authService.resetPassword("invalid-token", "NewPassword123")
+      ).rejects.toThrow("INVALID_RESET_TOKEN");
     });
 
-    it('should throw error for wrong token type', async () => {
-      const { generateAccessToken } = await import('../src/config/jwt.js');
+    it("should throw error for wrong token type", async () => {
+      const { generateAccessToken } = await import("../src/config/jwt.js");
       const wrongToken = generateAccessToken({
         userId: user._id.toString(),
-        type: 'access' // Mauvais type
+        type: "access", // Wrong type
       });
 
       await expect(
-        authService.resetPassword(wrongToken, 'NewPassword123')
-      ).rejects.toThrow('INVALID_RESET_TOKEN');
+        authService.resetPassword(wrongToken, "NewPassword123")
+      ).rejects.toThrow("INVALID_RESET_TOKEN");
     });
 
-    it('should throw error when user no longer exists', async () => {
-      // Supprimer l'utilisateur
+    it("should throw error when user no longer exists", async () => {
+      // Delete the user
       await User.findByIdAndDelete(user._id);
 
       await expect(
-        authService.resetPassword(resetToken, 'NewPassword123')
-      ).rejects.toThrow('USER_NOT_FOUND');
+        authService.resetPassword(resetToken, "NewPassword123")
+      ).rejects.toThrow("USER_NOT_FOUND");
     });
   });
 });

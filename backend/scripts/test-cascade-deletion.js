@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 /**
- * Script de vérification de la suppression en cascade
+ * Cascade deletion verification script
  *
- * Ce script permet de tester manuellement la suppression en cascade
- * en créant des données de test et en les supprimant.
+ * This script allows manual testing of cascade deletion
+ * by creating test data and deleting it.
  *
  * Usage:
  *   node scripts/test-cascade-deletion.js
@@ -19,10 +19,10 @@ import observationService from '../src/services/observation.service.js';
 import adminService from '../src/services/admin.service.js';
 import userService from '../src/services/user.service.js';
 
-// Charger les variables d'environnement
+// Load environment variables
 dotenv.config();
 
-// Couleurs pour la console
+// Console colors
 const colors = {
   reset: '\x1b[0m',
   bright: '\x1b[1m',
@@ -57,7 +57,7 @@ async function connectDB() {
 async function createTestData() {
   section('1. CRÉATION DES DONNÉES DE TEST');
 
-  // Créer un utilisateur de test
+  // Create a test user
   const user = await User.create({
     name: 'Cascade Test User',
     email: 'cascade_test@example.com',
@@ -67,7 +67,7 @@ async function createTestData() {
 
   log(`✅ Utilisateur créé: ${user.name} (${user._id})`, 'green');
 
-  // Créer deux observations
+  // Create two observations
   const obs1 = await Observation.create({
     title: 'Observation Test 1',
     description: 'Première observation de test pour cascade deletion',
@@ -129,7 +129,7 @@ async function createTestData() {
   log(`✅ Observation 2 créée: ${obs2.title} (${obs2._id})`, 'green');
   log(`   └─ ${obs2.images.length} image`, 'blue');
 
-  // Créer des commentaires
+  // Create comments
   const comment1 = await Comment.create({
     observationId: obs1._id,
     userId: user._id,
@@ -195,7 +195,7 @@ async function testObservationDeletion(obsId) {
     throw error;
   }
 
-  // Vérifier que l'observation est supprimée
+  // Verify that observation is deleted
   const obsAfter = await Observation.findById(obsId);
   if (!obsAfter) {
     log('✅ Observation supprimée de la base', 'green');
@@ -203,7 +203,7 @@ async function testObservationDeletion(obsId) {
     log('❌ L\'observation existe encore !', 'red');
   }
 
-  // Vérifier que les commentaires sont supprimés
+  // Verify that comments are deleted
   const commentsAfter = await Comment.find({ observationId: obsId });
   if (commentsAfter.length === 0) {
     log(`✅ ${commentsBefore.length} commentaire(s) supprimé(s) en cascade`, 'green');
@@ -215,7 +215,7 @@ async function testObservationDeletion(obsId) {
 async function testAdminDeletion() {
   section('4. TEST: SUPPRESSION D\'OBSERVATION (Service Admin)');
 
-  // Créer une nouvelle observation pour tester la suppression admin
+  // Create a new observation to test admin deletion
   const user = await User.findOne({ email: 'cascade_test@example.com' });
 
   const obsAdmin = await Observation.create({
@@ -261,7 +261,7 @@ async function testAdminDeletion() {
     throw error;
   }
 
-  // Vérifications
+  // Verifications
   const obsAfter = await Observation.findById(obsAdmin._id);
   const commentsAfter = await Comment.find({ observationId: obsAdmin._id });
 
@@ -308,7 +308,7 @@ async function testUserAccountDeletion(userId) {
     throw error;
   }
 
-  // Vérifications
+  // Verifications
   const userAfter = await User.findById(userId);
   const obsAfter = await Observation.find({ userId });
   const commentsAfter = await Comment.find({ userId });
@@ -337,7 +337,7 @@ async function testUserAccountDeletion(userId) {
 async function cleanup() {
   section('6. NETTOYAGE FINAL');
 
-  // Nettoyer toutes les données de test restantes
+  // Clean up all remaining test data
   await User.deleteMany({ email: 'cascade_test@example.com' });
   await Observation.deleteMany({ title: /Test/ });
   await Comment.deleteMany({ text: /test/i });
@@ -351,29 +351,29 @@ async function main() {
 
     await connectDB();
 
-    // Nettoyage préalable pour éviter les doublons
+    // Pre-cleanup to avoid duplicates
     log('🧹 Nettoyage préalable...', 'yellow');
     await User.deleteMany({ email: 'cascade_test@example.com' });
     await Observation.deleteMany({ title: /Test/ });
     await Comment.deleteMany({ text: /test/i });
     log('✅ Nettoyage préalable terminé\n', 'green');
 
-    // Créer les données de test
+    // Create test data
     const { user, obs1, obs2 } = await createTestData();
 
-    // Vérifier que tout existe
+    // Verify everything exists
     await verifyDataExists(user._id, obs1._id, obs2._id);
 
-    // Test 1: Suppression d'observation (service utilisateur)
+    // Test 1: Observation deletion (user service)
     await testObservationDeletion(obs1._id);
 
-    // Test 2: Suppression d'observation (service admin)
+    // Test 2: Observation deletion (admin service)
     await testAdminDeletion();
 
-    // Test 3: Suppression de compte utilisateur (supprimera obs2 restante)
+    // Test 3: User account deletion (will delete remaining obs2)
     await testUserAccountDeletion(user._id);
 
-    // Nettoyage final
+    // Final cleanup
     await cleanup();
 
     section('✅ TOUS LES TESTS SONT PASSÉS !');
@@ -392,5 +392,5 @@ async function main() {
   }
 }
 
-// Exécuter le script
+// Run the script
 main();

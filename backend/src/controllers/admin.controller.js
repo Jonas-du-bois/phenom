@@ -1,46 +1,61 @@
-import adminService from '../services/admin.service.js';
-import { successResponse, notFoundResponse } from '../utils/response.js';
-import { paginatedResponse } from '../utils/pagination.js';
+import adminService from "../services/admin.service.js";
+import { successResponse, notFoundResponse } from "../utils/response.js";
+import { paginatedResponse } from "../utils/pagination.js";
 
 /**
- * Contrôleur d'administration
+ * Administration controller
+ * Handles admin-only operations for user, observation, and comment management
  */
 class AdminController {
   /**
-   * Récupère la liste des utilisateurs
+   * Retrieves the list of users
    * GET /admin/users
    */
   async getUsers(req, res, next) {
     try {
       const { users, pagination } = await adminService.getUsers(req.query);
 
-      return res.status(200).json(
-        paginatedResponse(users, pagination.total, pagination.page, pagination.limit)
-      );
+      return res
+        .status(200)
+        .json(
+          paginatedResponse(
+            users,
+            pagination.total,
+            pagination.page,
+            pagination.limit
+          )
+        );
     } catch (error) {
       next(error);
     }
   }
 
   /**
-   * Change le rôle d'un utilisateur
+   * Changes a user's role
    * PUT /admin/users/:id/role
    */
   async updateUserRole(req, res, next) {
     try {
-      const user = await adminService.updateUserRole(req.params.id, req.body.role);
+      const user = await adminService.updateUserRole(
+        req.params.id,
+        req.body.role
+      );
 
-      return successResponse(res, user, 'Rôle utilisateur mis à jour avec succès');
+      return successResponse(
+        res,
+        user,
+        "Rôle utilisateur mis à jour avec succès"
+      );
     } catch (error) {
-      if (error.message === 'USER_NOT_FOUND') {
-        return notFoundResponse(res, 'Utilisateur non trouvé');
+      if (error.message === "USER_NOT_FOUND") {
+        return notFoundResponse(res, "Utilisateur non trouvé");
       }
       next(error);
     }
   }
 
   /**
-   * Récupère les statistiques globales
+   * Retrieves global statistics
    * GET /admin/stats
    */
   async getStats(req, res, next) {
@@ -54,41 +69,41 @@ class AdminController {
   }
 
   /**
-   * Supprime une observation (admin)
+   * Deletes an observation (admin)
    * DELETE /admin/observations/:id
    */
   async deleteObservation(req, res, next) {
     try {
       await adminService.deleteObservation(req.params.id);
 
-      return successResponse(res, {}, 'Observation supprimée avec succès');
+      return successResponse(res, {}, "Observation supprimée avec succès");
     } catch (error) {
-      if (error.message === 'OBSERVATION_NOT_FOUND') {
-        return notFoundResponse(res, 'Observation non trouvée');
+      if (error.message === "OBSERVATION_NOT_FOUND") {
+        return notFoundResponse(res, "Observation non trouvée");
       }
       next(error);
     }
   }
 
   /**
-   * Supprime un commentaire (admin)
+   * Deletes a comment (admin)
    * DELETE /admin/comments/:id
    */
   async deleteComment(req, res, next) {
     try {
       await adminService.deleteComment(req.params.id);
 
-      return successResponse(res, {}, 'Commentaire supprimé avec succès');
+      return successResponse(res, {}, "Commentaire supprimé avec succès");
     } catch (error) {
-      if (error.message === 'COMMENT_NOT_FOUND') {
-        return notFoundResponse(res, 'Commentaire non trouvé');
+      if (error.message === "COMMENT_NOT_FOUND") {
+        return notFoundResponse(res, "Commentaire non trouvé");
       }
       next(error);
     }
   }
 
   /**
-   * Récupère toutes les observations (admin)
+   * Retrieves all observations (admin)
    * GET /admin/observations
    */
   async getAllObservations(req, res, next) {
@@ -98,7 +113,7 @@ class AdminController {
       return res.json({
         success: true,
         data: result.data,
-        pagination: result.pagination
+        pagination: result.pagination,
       });
     } catch (error) {
       next(error);
@@ -106,12 +121,12 @@ class AdminController {
   }
 
   /**
-   * Récupère les statistiques globales
+   * Retrieves global statistics
    * GET /admin/stats
    */
 
   /**
-   * Rejette une observation
+   * Rejects an observation
    * POST /admin/observations/:id/reject
    */
   async rejectObservation(req, res, next) {
@@ -120,19 +135,27 @@ class AdminController {
       const adminId = req.user._id;
       const { reason } = req.body;
 
-      const observation = await adminService.rejectObservation(observationId, adminId, reason);
+      const observation = await adminService.rejectObservation(
+        observationId,
+        adminId,
+        reason
+      );
 
-      return successResponse(res, observation, 'Observation rejetée avec succès');
+      return successResponse(
+        res,
+        observation,
+        "Observation rejetée avec succès"
+      );
     } catch (error) {
-      if (error.message === 'OBSERVATION_NOT_FOUND') {
-        return notFoundResponse(res, 'Observation non trouvée');
+      if (error.message === "OBSERVATION_NOT_FOUND") {
+        return notFoundResponse(res, "Observation non trouvée");
       }
       next(error);
     }
   }
 
   /**
-   * Suspend un utilisateur
+   * Suspends a user
    * POST /admin/users/:id/suspend
    */
   async suspendUser(req, res, next) {
@@ -140,17 +163,17 @@ class AdminController {
       const userId = req.params.id;
       const user = await adminService.suspendUser(userId, req.body);
 
-      return successResponse(res, user, 'Utilisateur suspendu avec succès');
+      return successResponse(res, user, "Utilisateur suspendu avec succès");
     } catch (error) {
-      if (error.message === 'USER_NOT_FOUND') {
-        return notFoundResponse(res, 'Utilisateur non trouvé');
+      if (error.message === "USER_NOT_FOUND") {
+        return notFoundResponse(res, "Utilisateur non trouvé");
       }
       next(error);
     }
   }
 
   /**
-   * Réactive un utilisateur suspendu
+   * Reactivates a suspended user
    * POST /admin/users/:id/activate
    */
   async activateUser(req, res, next) {
@@ -158,17 +181,17 @@ class AdminController {
       const userId = req.params.id;
       const user = await adminService.activateUser(userId);
 
-      return successResponse(res, user, 'Utilisateur réactivé avec succès');
+      return successResponse(res, user, "Utilisateur réactivé avec succès");
     } catch (error) {
-      if (error.message === 'USER_NOT_FOUND') {
-        return notFoundResponse(res, 'Utilisateur non trouvé');
+      if (error.message === "USER_NOT_FOUND") {
+        return notFoundResponse(res, "Utilisateur non trouvé");
       }
       next(error);
     }
   }
 
   /**
-   * Récupère tous les commentaires (admin)
+   * Retrieves all comments (admin)
    * GET /admin/comments
    */
   async getAllComments(req, res, next) {
@@ -178,7 +201,7 @@ class AdminController {
       return res.json({
         success: true,
         data: result.data,
-        pagination: result.pagination
+        pagination: result.pagination,
       });
     } catch (error) {
       next(error);
@@ -186,7 +209,7 @@ class AdminController {
   }
 
   /**
-   * Récupère les détails d'un utilisateur (admin)
+   * Retrieves a user's details (admin)
    * GET /admin/users/:id
    */
   async getUserDetails(req, res, next) {
@@ -195,8 +218,8 @@ class AdminController {
 
       return successResponse(res, user);
     } catch (error) {
-      if (error.message === 'USER_NOT_FOUND') {
-        return notFoundResponse(res, 'Utilisateur non trouvé');
+      if (error.message === "USER_NOT_FOUND") {
+        return notFoundResponse(res, "Utilisateur non trouvé");
       }
       next(error);
     }

@@ -1,47 +1,50 @@
 /**
- * Configuration pour le traitement et la compression d'images
+ * Configuration for image processing and compression
+ *
+ * This module exports settings for image upload, compression quality,
+ * maximum dimensions, and format-specific options.
  */
 export const imageConfig = {
-  // Qualité de compression (0-100)
-  // 85 = excellent compromis qualité/taille
+  // Compression quality (0-100)
+  // 85 = excellent quality/size compromise
   quality: parseInt(process.env.IMAGE_QUALITY) || 85,
 
-  // Dimensions maximales (pixels)
+  // Maximum dimensions (pixels)
   maxWidth: parseInt(process.env.IMAGE_MAX_WIDTH) || 1920,
   maxHeight: parseInt(process.env.IMAGE_MAX_HEIGHT) || 1920,
 
-  // Taille maximale du fichier original (bytes)
+  // Maximum original file size (bytes)
   maxFileSize: parseInt(process.env.IMAGE_MAX_SIZE) || 10 * 1024 * 1024, // 10MB
 
-  // Formats MIME acceptés
-  allowedFormats: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
+  // Accepted MIME formats
+  allowedFormats: ["image/jpeg", "image/jpg", "image/png", "image/webp"],
 
-  // Options de compression par format
+  // Compression options per format
   jpeg: {
     quality: parseInt(process.env.JPEG_QUALITY) || 85,
-    progressive: true,      // Chargement progressif
-    mozjpeg: true          // Meilleur algorithme de compression
+    progressive: true, // Progressive loading
+    mozjpeg: true, // Better compression algorithm
   },
 
   png: {
     quality: parseInt(process.env.PNG_QUALITY) || 85,
-    compressionLevel: 9,   // Maximum compression (0-9)
-    adaptiveFiltering: true
+    compressionLevel: 9, // Maximum compression (0-9)
+    adaptiveFiltering: true,
   },
 
   webp: {
     quality: parseInt(process.env.WEBP_QUALITY) || 85,
-    effort: 6              // Balance qualité/vitesse (0-6)
+    effort: 6, // Quality/speed balance (0-6)
   },
 
-  // Redimensionnement
+  // Resizing options
   resize: {
-    fit: 'inside',         // Garde le ratio d'aspect
-    withoutEnlargement: true // N'agrandit pas les petites images
+    fit: "inside", // Preserves aspect ratio
+    withoutEnlargement: true, // Does not upscale small images
   },
 
-  // Verbose logging (utile pour debug)
-  verbose: process.env.IMAGE_VERBOSE === 'true' || false
+  // Verbose logging (useful for debugging)
+  verbose: process.env.IMAGE_VERBOSE === "true" || false,
 };
 
 export default imageConfig;

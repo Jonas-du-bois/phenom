@@ -1,12 +1,17 @@
-import express from 'express';
-import authRoutes from './auth.routes.js';
-import userRoutes from './user.routes.js';
-import observationRoutes from './observation.routes.js';
-import commentRoutes from './comment.routes.js';
-import pushRoutes from './push.routes.js';
-import adminRoutes from './admin.routes.js';
-import imageRoutes from './image.routes.js';
-import filterRoutes from './filter.routes.js';
+/**
+ * @file index.js
+ * @description Main router that aggregates all API route modules.
+ * Compatible with both Phenom App and Phenom Search.
+ */
+import express from "express";
+import authRoutes from "./auth.routes.js";
+import userRoutes from "./user.routes.js";
+import observationRoutes from "./observation.routes.js";
+import commentRoutes from "./comment.routes.js";
+import pushRoutes from "./push.routes.js";
+import adminRoutes from "./admin.routes.js";
+import imageRoutes from "./image.routes.js";
+import filterRoutes from "./filter.routes.js";
 
 const router = express.Router();
 
@@ -15,30 +20,30 @@ const router = express.Router();
 // Compatible with both Phenom App and Phenom Search
 // ============================================
 
-// Routes des filtres (valeurs disponibles pour l'UI)
-router.use('/filters', filterRoutes);
+// Filter routes (available values for UI dropdowns)
+router.use("/filters", filterRoutes);
 
-// Routes d'authentification
-router.use('/auth', authRoutes);
+// Authentication routes
+router.use("/auth", authRoutes);
 
-// Routes des utilisateurs
-router.use('/users', userRoutes);
+// User routes
+router.use("/users", userRoutes);
 
-// Push subscriptions
-router.use('/push', pushRoutes);
+// Push notification subscriptions
+router.use("/push", pushRoutes);
 
-// Routes des images
-router.use('/', imageRoutes);
+// Image routes
+router.use("/", imageRoutes);
 
-// Routes des observations (CRUD + filtres avancés + statistiques)
-// Public: GET (lecture)
-// Protected: POST/PUT/DELETE (création/modification/suppression)
-router.use('/observations', observationRoutes);
+// Observation routes (CRUD + advanced filters + statistics)
+// Public: GET (read)
+// Protected: POST/PUT/DELETE (create/update/delete)
+router.use("/observations", observationRoutes);
 
-// Routes des commentaires
-router.use('/', commentRoutes);
+// Comment routes
+router.use("/", commentRoutes);
 
-// Routes d'administration
-router.use('/admin', adminRoutes);
+// Administration routes
+router.use("/admin", adminRoutes);
 
 export default router;

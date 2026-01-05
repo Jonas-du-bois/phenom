@@ -1,16 +1,25 @@
+<!-- 
+  Phenom API Documentation Landing Page
+  Main entry point for API documentation, linking to REST and WebSocket docs
+-->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+  <!-- Document metadata -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Phenom API - Documentation</title>
+  
+  <!-- Embedded styles for the documentation page -->
   <style>
+    /* CSS Reset */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
     
+    /* Main body with gradient background */
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -21,6 +30,7 @@
       padding: 20px;
     }
     
+    /* Main card container */
     .container {
       max-width: 900px;
       width: 100%;
@@ -30,6 +40,7 @@
       overflow: hidden;
     }
     
+    /* Page header with gradient */
     .header {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
@@ -47,6 +58,7 @@
       opacity: 0.9;
     }
     
+    /* Main content area */
     .content {
       padding: 40px 30px;
     }
@@ -58,6 +70,7 @@
       line-height: 1.6;
     }
     
+    /* Documentation cards grid (REST API and WebSocket) */
     .cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -65,6 +78,7 @@
       margin-bottom: 30px;
     }
     
+    /* Individual documentation card with hover effects */
     .card {
       background: #f8f9fa;
       border-radius: 12px;
@@ -99,6 +113,7 @@
       line-height: 1.5;
     }
     
+    /* Features list section */
     .features {
       background: #f8f9fa;
       border-radius: 12px;
@@ -128,11 +143,13 @@
       gap: 10px;
     }
     
+    /* Checkmark icon for feature items */
     .features li::before {
       content: '✅';
       font-size: 1.2rem;
     }
     
+    /* Page footer with version info */
     .footer {
       text-align: center;
       padding: 20px;
@@ -143,13 +160,17 @@
   </style>
 </head>
 <body>
+  <!-- Main page container -->
   <div class="container">
+    <!-- Header with title and subtitle -->
     <div class="header">
       <h1>🛸 Phenom API</h1>
       <p>Plateforme d'observations OVNI</p>
     </div>
     
+    <!-- Main content area -->
     <div class="content">
+      <!-- Welcome description -->
       <div class="description">
         <p>
           Bienvenue sur la documentation de l'API Phenom. Cette API permet de gérer 
@@ -158,13 +179,16 @@
         </p>
       </div>
       
+      <!-- Documentation type selection cards -->
       <div class="cards">
+        <!-- REST API Swagger documentation link -->
         <a href="/api-docs/rest" class="card">
           <div class="card-icon">📚</div>
           <h2>API REST</h2>
           <p>Documentation Swagger interactive pour tester tous les endpoints REST de l'API</p>
         </a>
         
+        <!-- WebSocket AsyncAPI documentation link -->
         <a href="/api-docs/websocket" class="card">
           <div class="card-icon">🔌</div>
           <h2>WebSocket</h2>
@@ -172,6 +196,7 @@
         </a>
       </div>
       
+      <!-- API features list -->
       <div class="features">
         <h3>🎯 Fonctionnalités principales</h3>
         <ul>
@@ -187,6 +212,7 @@
       </div>
     </div>
     
+    <!-- Footer with version and health check link -->
     <div class="footer">
       <p>Phenom API v3.1.2 | <a href="/health" style="color: #667eea;">Health Check</a></p>
     </div>

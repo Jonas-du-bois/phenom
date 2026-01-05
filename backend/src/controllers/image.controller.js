@@ -1,38 +1,44 @@
-import imageService from '../services/image.service.js';
-import { successResponse, errorResponse, notFoundResponse } from '../utils/response.js';
-import { publishObservationEvent } from '../config/websocket.js';
+import imageService from "../services/image.service.js";
+import {
+  successResponse,
+  errorResponse,
+  notFoundResponse,
+} from "../utils/response.js";
+import { publishObservationEvent } from "../config/websocket.js";
 
 /**
- * Contrôleur pour la gestion des images avec Cloudinary
+ * Controller for image management with Cloudinary
+ * Handles upload, update, delete, and listing of observation images
  */
 class ImageController {
   /**
-   * Upload une ou plusieurs images pour une observation
+   * Uploads one or more images for an observation
+   * POST /observations/:id/images
    */
   async uploadImage(req, res, next) {
     try {
       const { observationId } = req.params;
       const userId = req.user._id;
 
-      // Gérer plusieurs fichiers
+      // Handle multiple files
       const files = req.files || (req.file ? [req.file] : []);
 
       if (!files || files.length === 0) {
-        return errorResponse(res, 'Aucune image fournie', 400);
+        return errorResponse(res, "Aucune image fournie", 400);
       }
 
-      const Observation = (await import('../models/Observation.js')).default;
+      const Observation = (await import("../models/Observation.js")).default;
       const observation = await Observation.findById(observationId);
 
       if (!observation) {
-        return notFoundResponse(res, 'Observation non trouvée');
+        return notFoundResponse(res, "Observation non trouvée");
       }
 
       if (observation.userId.toString() !== userId.toString()) {
-        return errorResponse(res, 'Non autorisé', 403);
+        return errorResponse(res, "Non autorisé", 403);
       }
 
-      // Upload toutes les images
+      // Upload all images
       const uploadedImages = [];
 
       for (const file of files) {
@@ -49,7 +55,7 @@ class ImageController {
           size: imageData.size,
           format: imageData.format,
           width: imageData.width,
-          height: imageData.height
+          height: imageData.height,
         });
 
         uploadedImages.push(imageData);
@@ -57,13 +63,19 @@ class ImageController {
 
       await observation.save();
 
-      // Publier un événement WebSocket pour notifier que l'observation a été mise à jour avec une image
-      const populatedObservation = await Observation.findById(observationId).populate('userId', 'name email avatar');
-      publishObservationEvent('observation:updated', populatedObservation.toObject());
+      // Publish a WebSocket event to notify that the observation was updated with an image
+      const populatedObservation = await Observation.findById(
+        observationId
+      ).populate("userId", "name email avatar");
+      publishObservationEvent(
+        "observation:updated",
+        populatedObservation.toObject()
+      );
 
-      const message = uploadedImages.length === 1
-        ? 'Image uploadée avec succès'
-        : `${uploadedImages.length} images uploadées avec succès`;
+      const message =
+        uploadedImages.length === 1
+          ? "Image uploadée avec succès"
+          : `${uploadedImages.length} images uploadées avec succès`;
 
       return successResponse(res, uploadedImages, message, 201);
     } catch (error) {
@@ -72,7 +84,8 @@ class ImageController {
   }
 
   /**
-   * Supprime une image
+   * Deletes an image
+   * DELETE /observations/:id/images/:publicId
    */
   async deleteImage(req, res, next) {
     try {
@@ -81,37 +94,48 @@ class ImageController {
       const userId = req.user._id;
       const userRole = req.user.role;
 
-      const Observation = (await import('../models/Observation.js')).default;
+      const Observation = (await import("../models/Observation.js")).default;
       const observation = await Observation.findById(observationId);
 
       if (!observation) {
-        return notFoundResponse(res, 'Observation non trouvée');
+        return notFoundResponse(res, "Observation non trouvée");
       }
 
-      if (observation.userId.toString() !== userId.toString() && userRole !== 'admin') {
-        return errorResponse(res, 'Non autorisé', 403);
+      if (
+        observation.userId.toString() !== userId.toString() &&
+        userRole !== "admin"
+      ) {
+        return errorResponse(res, "Non autorisé", 403);
       }
 
       await imageService.deleteImage(publicId);
 
-      observation.images = observation.images.filter(img => img.publicId !== publicId);
+      observation.images = observation.images.filter(
+        (img) => img.publicId !== publicId
+      );
       await observation.save();
 
-      // Publier un événement WebSocket pour notifier que l'observation a été mise à jour (image supprimée)
-      const populatedObservation = await Observation.findById(observationId).populate('userId', 'name email avatar');
-      publishObservationEvent('observation:updated', populatedObservation.toObject());
+      // Publish a WebSocket event to notify that the observation was updated (image deleted)
+      const populatedObservation = await Observation.findById(
+        observationId
+      ).populate("userId", "name email avatar");
+      publishObservationEvent(
+        "observation:updated",
+        populatedObservation.toObject()
+      );
 
-      return successResponse(res, {}, 'Image supprimée avec succès');
+      return successResponse(res, {}, "Image supprimée avec succès");
     } catch (error) {
-      if (error.message === 'IMAGE_NOT_FOUND') {
-        return notFoundResponse(res, 'Image non trouvée');
+      if (error.message === "IMAGE_NOT_FOUND") {
+        return notFoundResponse(res, "Image non trouvée");
       }
       next(error);
     }
   }
 
   /**
-   * Modifie/remplace une image existante
+   * Modifies/replaces an existing image
+   * PUT /observations/:id/images/:publicId
    */
   async updateImage(req, res, next) {
     try {
@@ -120,30 +144,32 @@ class ImageController {
       const userId = req.user._id;
 
       if (!req.file) {
-        return errorResponse(res, 'Aucune image fournie', 400);
+        return errorResponse(res, "Aucune image fournie", 400);
       }
 
-      const Observation = (await import('../models/Observation.js')).default;
+      const Observation = (await import("../models/Observation.js")).default;
       const observation = await Observation.findById(observationId);
 
       if (!observation) {
-        return notFoundResponse(res, 'Observation non trouvée');
+        return notFoundResponse(res, "Observation non trouvée");
       }
 
       if (observation.userId.toString() !== userId.toString()) {
-        return errorResponse(res, 'Non autorisé', 403);
+        return errorResponse(res, "Non autorisé", 403);
       }
 
-      // Vérifier que l'ancienne image existe
-      const oldImageIndex = observation.images.findIndex(img => img.publicId === oldPublicId);
+      // Verify that the old image exists
+      const oldImageIndex = observation.images.findIndex(
+        (img) => img.publicId === oldPublicId
+      );
       if (oldImageIndex === -1) {
-        return notFoundResponse(res, 'Image non trouvée');
+        return notFoundResponse(res, "Image non trouvée");
       }
 
-      // Supprimer l'ancienne image sur Cloudinary
+      // Delete the old image on Cloudinary
       await imageService.deleteImage(oldPublicId);
 
-      // Uploader la nouvelle image
+      // Upload the new image
       const newImageData = await imageService.uploadImage(
         req.file.buffer,
         req.file.originalname,
@@ -151,39 +177,45 @@ class ImageController {
         observationId
       );
 
-      // Remplacer l'ancienne image par la nouvelle dans le tableau
+      // Replace the old image with the new one in the array
       observation.images[oldImageIndex] = {
         publicId: newImageData.publicId,
         url: newImageData.url,
         size: newImageData.size,
         format: newImageData.format,
         width: newImageData.width,
-        height: newImageData.height
+        height: newImageData.height,
       };
       await observation.save();
 
-      // Publier un événement WebSocket pour notifier que l'observation a été mise à jour
-      const populatedObservation = await Observation.findById(observationId).populate('userId', 'name email avatar');
-      publishObservationEvent('observation:updated', populatedObservation.toObject());
+      // Publish a WebSocket event to notify that the observation was updated
+      const populatedObservation = await Observation.findById(
+        observationId
+      ).populate("userId", "name email avatar");
+      publishObservationEvent(
+        "observation:updated",
+        populatedObservation.toObject()
+      );
 
-      return successResponse(res, newImageData, 'Image modifiée avec succès');
+      return successResponse(res, newImageData, "Image modifiée avec succès");
     } catch (error) {
       next(error);
     }
   }
 
   /**
-   * Liste les images d'une observation
+   * Lists images of an observation
+   * GET /observations/:id/images
    */
   async listImages(req, res, next) {
     try {
       const { observationId } = req.params;
 
-      const Observation = (await import('../models/Observation.js')).default;
+      const Observation = (await import("../models/Observation.js")).default;
       const observation = await Observation.findById(observationId);
 
       if (!observation) {
-        return notFoundResponse(res, 'Observation non trouvée');
+        return notFoundResponse(res, "Observation non trouvée");
       }
 
       return successResponse(res, observation.images);

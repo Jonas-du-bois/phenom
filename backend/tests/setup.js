@@ -1,42 +1,46 @@
-import mongoose from 'mongoose';
-import { connectDB, disconnectDB } from '../src/config/database.js';
+import mongoose from "mongoose";
+import { connectDB, disconnectDB } from "../src/config/database.js";
 
-// Nettoyage avant tous les tests d'un fichier
+// Cleanup before all tests in a file
 beforeAll(async () => {
-  // Déconnecter si déjà connecté
+  // Disconnect if already connected
   if (mongoose.connection.readyState !== 0) {
-    console.log(`⚠️  Mongoose déjà connecté (state: ${mongoose.connection.readyState}), déconnexion...`);
+    console.log(
+      `⚠️  Mongoose déjà connecté (state: ${mongoose.connection.readyState}), déconnexion...`
+    );
     await mongoose.disconnect();
   }
 
-  // Définir l'environnement de test
-  process.env.NODE_ENV = 'test';
-  // Utiliser MONGODB_TEST_URI pour les tests (prioritaire si défini, sinon fallback sur MONGODB_URI)
+  // Set test environment
+  process.env.NODE_ENV = "test";
+  // Use MONGODB_TEST_URI for tests (priority if defined, otherwise fallback to MONGODB_URI)
   if (!process.env.MONGODB_TEST_URI && process.env.MONGODB_URI) {
     process.env.MONGODB_TEST_URI = process.env.MONGODB_URI;
-    console.log('✓ MONGODB_TEST_URI défini depuis MONGODB_URI');
+    console.log("✓ MONGODB_TEST_URI défini depuis MONGODB_URI");
   }
   if (!process.env.MONGODB_TEST_URI) {
-    process.env.MONGODB_TEST_URI = 'mongodb://localhost:27017/phenom_test';
-    console.log('✓ MONGODB_TEST_URI défini par défaut (local)');
+    process.env.MONGODB_TEST_URI = "mongodb://localhost:27017/phenom_test";
+    console.log("✓ MONGODB_TEST_URI défini par défaut (local)");
   }
-  process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-secret-key';
+  process.env.JWT_SECRET = process.env.JWT_SECRET || "test-secret-key";
   process.env.JWT_REFRESH_SECRET =
-    process.env.JWT_REFRESH_SECRET || 'test-refresh-secret-key';
+    process.env.JWT_REFRESH_SECRET || "test-refresh-secret-key";
 
-  console.log('🔌 Connexion à MongoDB pour les tests...');
-  // Connexion à la base de test
+  console.log("🔌 Connexion à MongoDB pour les tests...");
+  // Connect to test database
   await connectDB();
-  console.log(`✅ Tests connectés à MongoDB (state: ${mongoose.connection.readyState})`);
+  console.log(
+    `✅ Tests connectés à MongoDB (state: ${mongoose.connection.readyState})`
+  );
 
-  // Nettoyage initial
+  // Initial cleanup
   const collections = mongoose.connection.collections;
   for (const key in collections) {
     await collections[key].deleteMany({});
   }
-}, 30000); // Timeout de 30s pour la connexion MongoDB Atlas
+}, 30000); // 30s timeout for MongoDB Atlas connection
 
-// Nettoyage avant chaque test (plus sûr que afterEach)
+// Cleanup before each test (safer than afterEach)
 beforeEach(async () => {
   const collections = mongoose.connection.collections;
 
@@ -45,7 +49,7 @@ beforeEach(async () => {
   }
 });
 
-// Nettoyage après tous les tests
+// Cleanup after all tests
 afterAll(async () => {
   await disconnectDB();
-}, 30000); // Timeout de 30s pour la déconnexion
+}, 30000); // 30s timeout for disconnection

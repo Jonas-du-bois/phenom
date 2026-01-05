@@ -1,6 +1,12 @@
-import express from 'express';
-import observationService from '../services/observation.service.js';
-import { asyncHandler } from '../utils/asyncHandler.js';
+/**
+ * @file filter.routes.js
+ * @description Filter routes for retrieving available filter values.
+ * Provides lists of countries, locales, observer types, UFO shapes, and phenomena.
+ * Compatible with Phenom Search API format.
+ */
+import express from "express";
+import observationService from "../services/observation.service.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 const router = express.Router();
 
@@ -32,13 +38,16 @@ const router = express.Router();
  *                   items:
  *                     type: string
  */
-router.get('/countries', asyncHandler(async (req, res) => {
-  const countries = await observationService.getFilterValues('countries');
-  return res.status(200).json({
-    success: true,
-    data: countries
-  });
-}));
+router.get(
+  "/countries",
+  asyncHandler(async (req, res) => {
+    const countries = await observationService.getFilterValues("countries");
+    return res.status(200).json({
+      success: true,
+      data: countries,
+    });
+  })
+);
 
 /**
  * @swagger
@@ -50,13 +59,16 @@ router.get('/countries', asyncHandler(async (req, res) => {
  *       200:
  *         description: Liste des types de localités
  */
-router.get('/locales', asyncHandler(async (req, res) => {
-  const locales = await observationService.getFilterValues('locales');
-  return res.status(200).json({
-    success: true,
-    data: locales
-  });
-}));
+router.get(
+  "/locales",
+  asyncHandler(async (req, res) => {
+    const locales = await observationService.getFilterValues("locales");
+    return res.status(200).json({
+      success: true,
+      data: locales,
+    });
+  })
+);
 
 /**
  * @swagger
@@ -86,13 +98,16 @@ router.get('/locales', asyncHandler(async (req, res) => {
  *                         type: string
  *                         example: Ground Observers - Observateur(s) au sol
  */
-router.get('/observer-types', asyncHandler(async (req, res) => {
-  const types = await observationService.getFilterValues('observer-types');
-  return res.status(200).json({
-    success: true,
-    data: types
-  });
-}));
+router.get(
+  "/observer-types",
+  asyncHandler(async (req, res) => {
+    const types = await observationService.getFilterValues("observer-types");
+    return res.status(200).json({
+      success: true,
+      data: types,
+    });
+  })
+);
 
 /**
  * @swagger
@@ -104,13 +119,16 @@ router.get('/observer-types', asyncHandler(async (req, res) => {
  *       200:
  *         description: Liste des formes avec descriptions
  */
-router.get('/ufo-shapes', asyncHandler(async (req, res) => {
-  const shapes = await observationService.getFilterValues('ufo-shapes');
-  return res.status(200).json({
-    success: true,
-    data: shapes
-  });
-}));
+router.get(
+  "/ufo-shapes",
+  asyncHandler(async (req, res) => {
+    const shapes = await observationService.getFilterValues("ufo-shapes");
+    return res.status(200).json({
+      success: true,
+      data: shapes,
+    });
+  })
+);
 
 /**
  * @swagger
@@ -122,12 +140,15 @@ router.get('/ufo-shapes', asyncHandler(async (req, res) => {
  *       200:
  *         description: Liste des phénomènes avec descriptions
  */
-router.get('/phenomena', asyncHandler(async (req, res) => {
-  const phenomena = await observationService.getFilterValues('phenomena');
-  return res.status(200).json({
-    success: true,
-    data: phenomena
-  });
-}));
+router.get(
+  "/phenomena",
+  asyncHandler(async (req, res) => {
+    const phenomena = await observationService.getFilterValues("phenomena");
+    return res.status(200).json({
+      success: true,
+      data: phenomena,
+    });
+  })
+);
 
 export default router;

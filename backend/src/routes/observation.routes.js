@@ -1,18 +1,23 @@
-import express from 'express';
-import observationController from '../controllers/observation.controller.js';
-import { authenticate } from '../middleware/auth.js';
-import { isOwnerOrAdmin } from '../middleware/authorize.js';
-import { validate } from '../middleware/validate.js';
+/**
+ * @file observation.routes.js
+ * @description Observation routes for CRUD operations, search, and statistics.
+ * Supports geospatial queries, advanced filtering, and AI image generation.
+ */
+import express from "express";
+import observationController from "../controllers/observation.controller.js";
+import { authenticate } from "../middleware/auth.js";
+import { isOwnerOrAdmin } from "../middleware/authorize.js";
+import { validate } from "../middleware/validate.js";
 import {
   createObservationValidation,
   updateObservationValidation,
   getObservationsValidation,
   idParamValidation,
-  nearbyObservationsValidation
-} from '../validators/observation.validator.js';
-import { createLimiter } from '../middleware/rateLimiter.js';
-import observationService from '../services/observation.service.js';
-import { asyncHandler } from '../utils/asyncHandler.js';
+  nearbyObservationsValidation,
+} from "../validators/observation.validator.js";
+import { createLimiter } from "../middleware/rateLimiter.js";
+import observationService from "../services/observation.service.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 const router = express.Router();
 
@@ -87,7 +92,7 @@ const router = express.Router();
  *               $ref: '#/components/schemas/Error'
  */
 router.get(
-  '/nearby',
+  "/nearby",
   nearbyObservationsValidation,
   validate,
   observationController.getNearbyObservations
@@ -129,10 +134,7 @@ router.get(
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get(
-  '/stats',
-  observationController.getObservationStats
-);
+router.get("/stats", observationController.getObservationStats);
 
 /**
  * @swagger
@@ -205,13 +207,16 @@ router.get(
  *                     sightingsWithImages:
  *                       type: integer
  */
-router.get('/statistics', asyncHandler(async (req, res) => {
-  const stats = await observationService.getStatistics();
-  return res.status(200).json({
-    success: true,
-    data: stats
-  });
-}));
+router.get(
+  "/statistics",
+  asyncHandler(async (req, res) => {
+    const stats = await observationService.getStatistics();
+    return res.status(200).json({
+      success: true,
+      data: stats,
+    });
+  })
+);
 
 /**
  * @swagger
@@ -253,10 +258,7 @@ router.get('/statistics', asyncHandler(async (req, res) => {
  *       500:
  *         description: Erreur serveur
  */
-router.get(
-  '/popular-types',
-  observationController.getPopularTypes
-);
+router.get("/popular-types", observationController.getPopularTypes);
 
 /**
  * @swagger
@@ -448,7 +450,7 @@ router.get(
  *               $ref: '#/components/schemas/Error'
  */
 router.get(
-  '/',
+  "/",
   getObservationsValidation,
   validate,
   observationController.getObservations
@@ -606,7 +608,7 @@ router.get(
  *               $ref: '#/components/schemas/Error'
  */
 router.post(
-  '/',
+  "/",
   authenticate,
   createLimiter,
   createObservationValidation,
@@ -655,7 +657,7 @@ router.post(
  *               $ref: '#/components/schemas/Error'
  */
 router.get(
-  '/:id',
+  "/:id",
   idParamValidation,
   validate,
   observationController.getObservationById
@@ -791,7 +793,7 @@ router.get(
  *               $ref: '#/components/schemas/Error'
  */
 router.put(
-  '/:id',
+  "/:id",
   authenticate,
   updateObservationValidation,
   validate,
@@ -870,7 +872,7 @@ router.put(
  *               $ref: '#/components/schemas/Error'
  */
 router.delete(
-  '/:id',
+  "/:id",
   authenticate,
   idParamValidation,
   validate,
@@ -941,7 +943,7 @@ router.delete(
  *                   example: "Échec de la génération d'image IA: GEMINI_API_KEY non configurée"
  */
 router.post(
-  '/:id/generate-ai-image',
+  "/:id/generate-ai-image",
   authenticate,
   idParamValidation,
   validate,

@@ -1,30 +1,42 @@
-import express from 'express';
-import multer from 'multer';
-import imageController from '../controllers/image.controller.js';
-import { authenticate } from '../middleware/auth.js';
-import { param } from 'express-validator';
-import { validate } from '../middleware/validate.js';
+/**
+ * @file image.routes.js
+ * @description Image routes for uploading, updating, and deleting observation images.
+ * Uses Cloudinary for image storage with automatic compression.
+ */
+import express from "express";
+import multer from "multer";
+import imageController from "../controllers/image.controller.js";
+import { authenticate } from "../middleware/auth.js";
+import { param } from "express-validator";
+import { validate } from "../middleware/validate.js";
 
 const router = express.Router();
 
+// Validation for observation ID parameter
 const observationIdValidation = [
-  param('observationId').isMongoId().withMessage('ID d\'observation invalide')
+  param("observationId").isMongoId().withMessage("ID d'observation invalide"),
 ];
 
+// Multer configuration for image uploads
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB par fichier
-    files: 10 // Maximum 10 fichiers par upload
+    fileSize: 10 * 1024 * 1024, // 10MB per file
+    files: 10, // Maximum 10 files per upload
   },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Type de fichier non autorisé. Types acceptés: JPEG, PNG, WebP'), false);
+      cb(
+        new Error(
+          "Type de fichier non autorisé. Types acceptés: JPEG, PNG, WebP"
+        ),
+        false
+      );
     }
-  }
+  },
 });
 
 /**
@@ -112,7 +124,12 @@ const upload = multer({
  *       404:
  *         description: Observation non trouvée
  */
-router.post('/observations/:observationId/images', authenticate, upload.array('images', 10), imageController.uploadImage);
+router.post(
+  "/observations/:observationId/images",
+  authenticate,
+  upload.array("images", 10),
+  imageController.uploadImage
+);
 
 /**
  * @swagger
@@ -170,7 +187,13 @@ router.post('/observations/:observationId/images', authenticate, upload.array('i
  *       404:
  *         description: Observation non trouvée
  */
-router.get('/observations/:observationId/images', authenticate, observationIdValidation, validate, imageController.listImages);
+router.get(
+  "/observations/:observationId/images",
+  authenticate,
+  observationIdValidation,
+  validate,
+  imageController.listImages
+);
 
 /**
  * @swagger
@@ -250,7 +273,12 @@ router.get('/observations/:observationId/images', authenticate, observationIdVal
  *       404:
  *         description: Observation ou image non trouvée
  */
-router.put('/observations/:observationId/images/:publicId', authenticate, upload.single('image'), imageController.updateImage);
+router.put(
+  "/observations/:observationId/images/:publicId",
+  authenticate,
+  upload.single("image"),
+  imageController.updateImage
+);
 
 /**
  * @swagger
@@ -294,6 +322,12 @@ router.put('/observations/:observationId/images/:publicId', authenticate, upload
  *       404:
  *         description: Image ou observation non trouvée
  */
-router.delete('/observations/:observationId/images/:publicId', authenticate, observationIdValidation, validate, imageController.deleteImage);
+router.delete(
+  "/observations/:observationId/images/:publicId",
+  authenticate,
+  observationIdValidation,
+  validate,
+  imageController.deleteImage
+);
 
 export default router;

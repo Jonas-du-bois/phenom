@@ -1,12 +1,17 @@
-import userService from '../services/user.service.js';
-import { successResponse, errorResponse, notFoundResponse } from '../utils/response.js';
+import userService from "../services/user.service.js";
+import {
+  successResponse,
+  errorResponse,
+  notFoundResponse,
+} from "../utils/response.js";
 
 /**
- * Contrôleur pour la gestion des utilisateurs
+ * Controller for user management
+ * Handles profile, password, avatar, and account operations
  */
 class UserController {
   /**
-   * Récupère le profil de l'utilisateur connecté
+   * Retrieves the logged-in user's profile
    * GET /users/me
    */
   async getProfile(req, res, next) {
@@ -16,15 +21,15 @@ class UserController {
 
       return successResponse(res, profile);
     } catch (error) {
-      if (error.message === 'USER_NOT_FOUND') {
-        return notFoundResponse(res, 'Utilisateur non trouvé');
+      if (error.message === "USER_NOT_FOUND") {
+        return notFoundResponse(res, "Utilisateur non trouvé");
       }
       next(error);
     }
   }
 
   /**
-   * Récupère les statistiques de l'utilisateur connecté
+   * Retrieves the logged-in user's statistics
    * GET /users/me/stats
    */
   async getUserStats(req, res, next) {
@@ -34,52 +39,52 @@ class UserController {
 
       return successResponse(res, stats);
     } catch (error) {
-      if (error.message === 'USER_NOT_FOUND') {
-        return notFoundResponse(res, 'Utilisateur non trouvé');
+      if (error.message === "USER_NOT_FOUND") {
+        return notFoundResponse(res, "Utilisateur non trouvé");
       }
       next(error);
     }
   }
 
   /**
-   * Met à jour le profil de l'utilisateur connecté
+   * Updates the logged-in user's profile
    * PUT /users/me
    */
   async updateProfile(req, res, next) {
     try {
       const userId = req.user._id;
 
-      // Filtrer les champs autorisés (whitelist)
-      // Ignorer les champs vides pour permettre la mise à jour partielle
-      const allowedFields = ['name', 'email', 'bio'];
+      // Filter allowed fields (whitelist)
+      // Ignore empty fields to allow partial updates
+      const allowedFields = ["name", "email", "bio"];
       const updates = {};
-      allowedFields.forEach(field => {
-        if (req.body[field] !== undefined && req.body[field] !== '') {
+      allowedFields.forEach((field) => {
+        if (req.body[field] !== undefined && req.body[field] !== "") {
           updates[field] = req.body[field];
         }
       });
 
-      // Vérifier qu'il y a au moins un champ à mettre à jour
+      // Verify that there is at least one field to update
       if (Object.keys(updates).length === 0) {
-        return errorResponse(res, 'Aucun champ à mettre à jour', 400);
+        return errorResponse(res, "Aucun champ à mettre à jour", 400);
       }
 
       const user = await userService.updateProfile(userId, updates);
 
-      return successResponse(res, user, 'Profil mis à jour avec succès');
+      return successResponse(res, user, "Profil mis à jour avec succès");
     } catch (error) {
-      if (error.message === 'USER_NOT_FOUND') {
-        return notFoundResponse(res, 'Utilisateur non trouvé');
+      if (error.message === "USER_NOT_FOUND") {
+        return notFoundResponse(res, "Utilisateur non trouvé");
       }
-      if (error.message === 'EMAIL_ALREADY_EXISTS') {
-        return errorResponse(res, 'Cet email est déjà utilisé', 400);
+      if (error.message === "EMAIL_ALREADY_EXISTS") {
+        return errorResponse(res, "Cet email est déjà utilisé", 400);
       }
       next(error);
     }
   }
 
   /**
-   * Change le mot de passe de l'utilisateur connecté
+   * Changes the logged-in user's password
    * PATCH /users/me/password
    */
   async changePassword(req, res, next) {
@@ -89,23 +94,27 @@ class UserController {
 
       await userService.changePassword(userId, currentPassword, newPassword);
 
-      return successResponse(res, null, 'Mot de passe modifié avec succès');
+      return successResponse(res, null, "Mot de passe modifié avec succès");
     } catch (error) {
-      if (error.message === 'USER_NOT_FOUND') {
-        return notFoundResponse(res, 'Utilisateur non trouvé');
+      if (error.message === "USER_NOT_FOUND") {
+        return notFoundResponse(res, "Utilisateur non trouvé");
       }
-      if (error.message === 'INVALID_CURRENT_PASSWORD') {
-        return errorResponse(res, 'Mot de passe actuel incorrect', 400);
+      if (error.message === "INVALID_CURRENT_PASSWORD") {
+        return errorResponse(res, "Mot de passe actuel incorrect", 400);
       }
-      if (error.message === 'NEW_PASSWORD_SAME_AS_CURRENT') {
-        return errorResponse(res, 'Le nouveau mot de passe doit être différent de l\'ancien', 400);
+      if (error.message === "NEW_PASSWORD_SAME_AS_CURRENT") {
+        return errorResponse(
+          res,
+          "Le nouveau mot de passe doit être différent de l'ancien",
+          400
+        );
       }
       next(error);
     }
   }
 
   /**
-   * Supprime le compte de l'utilisateur connecté
+   * Deletes the logged-in user's account
    * DELETE /users/me
    */
   async deleteAccount(req, res, next) {
@@ -113,17 +122,17 @@ class UserController {
       const userId = req.user._id;
       await userService.deleteAccount(userId);
 
-      return successResponse(res, {}, 'Compte supprimé avec succès');
+      return successResponse(res, {}, "Compte supprimé avec succès");
     } catch (error) {
-      if (error.message === 'USER_NOT_FOUND') {
-        return notFoundResponse(res, 'Utilisateur non trouvé');
+      if (error.message === "USER_NOT_FOUND") {
+        return notFoundResponse(res, "Utilisateur non trouvé");
       }
       next(error);
     }
   }
 
   /**
-   * Met à jour la position actuelle de l'utilisateur
+   * Updates the user's current position
    * POST /users/me/location
    */
   async updateLocation(req, res, next) {
@@ -131,16 +140,30 @@ class UserController {
       const userId = req.user._id;
       const { lat, lng, radiusKm = 50 } = req.body;
 
-      if (typeof lat !== 'number' || typeof lng !== 'number') {
-        return errorResponse(res, 'lat and lng are required and must be numbers', 400);
+      if (typeof lat !== "number" || typeof lng !== "number") {
+        return errorResponse(
+          res,
+          "lat and lng are required and must be numbers",
+          400
+        );
       }
 
       // Store/update last location on PushSubscription documents if present
-      const PushSubscription = (await import('../models/PushSubscription.js')).default;
-      await PushSubscription.updateMany({ userId }, { $set: { 'lastLocation.lat': lat, 'lastLocation.lng': lng, 'lastLocation.updatedAt': new Date() } });
+      const PushSubscription = (await import("../models/PushSubscription.js"))
+        .default;
+      await PushSubscription.updateMany(
+        { userId },
+        {
+          $set: {
+            "lastLocation.lat": lat,
+            "lastLocation.lng": lng,
+            "lastLocation.updatedAt": new Date(),
+          },
+        }
+      );
 
       // Find nearby observations and notify user via WS + WebPush
-      const Observation = (await import('../models/Observation.js')).default;
+      const Observation = (await import("../models/Observation.js")).default;
 
       // Try a geoNear aggregation using GeoJSON `locationPoint` if available (more efficient)
       let toNotify = [];
@@ -149,19 +172,22 @@ class UserController {
         const agg = await Observation.aggregate([
           {
             $geoNear: {
-              near: { type: 'Point', coordinates: [lng, lat] },
-              distanceField: 'dist.calculated',
+              near: { type: "Point", coordinates: [lng, lat] },
+              distanceField: "dist.calculated",
               maxDistance: meters,
-              spherical: true
-            }
+              spherical: true,
+            },
           },
-          { $limit: 200 }
+          { $limit: 200 },
         ]).allowDiskUse(true);
 
-        // normalize results
-        toNotify = agg.map((doc) => ({ obs: doc, distance: Math.round((doc.dist?.calculated || 0) / 100) / 10 }));
+        // Normalize results
+        toNotify = agg.map((doc) => ({
+          obs: doc,
+          distance: Math.round((doc.dist?.calculated || 0) / 100) / 10,
+        }));
       } catch (geoErr) {
-        // fallback to bounding box + haversine if $geoNear not available or no locationPoint
+        // Fallback to bounding box + haversine if $geoNear not available or no locationPoint
         const deg = radiusKm / 111; // ~111 km per degree latitude
         const minLat = lat - deg;
         const maxLat = lat + deg;
@@ -169,16 +195,22 @@ class UserController {
         const maxLng = lng + deg;
 
         const candidates = await Observation.find({
-          'coordinates.lat': { $gte: minLat, $lte: maxLat },
-          'coordinates.lng': { $gte: minLng, $lte: maxLng }
-        }).limit(200).lean();
+          "coordinates.lat": { $gte: minLat, $lte: maxLat },
+          "coordinates.lng": { $gte: minLng, $lte: maxLng },
+        })
+          .limit(200)
+          .lean();
 
         const toKm = (lat1, lon1, lat2, lon2) => {
-          const toRad = v => (v * Math.PI) / 180;
+          const toRad = (v) => (v * Math.PI) / 180;
           const R = 6371;
           const dLat = toRad(lat2 - lat1);
           const dLon = toRad(lon2 - lon1);
-          const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+          const a =
+            Math.sin(dLat / 2) ** 2 +
+            Math.cos(toRad(lat1)) *
+              Math.cos(toRad(lat2)) *
+              Math.sin(dLon / 2) ** 2;
           const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
           return R * c;
         };
@@ -186,25 +218,30 @@ class UserController {
         for (const obs of candidates) {
           if (!obs.coordinates || obs.coordinates.lat === undefined) continue;
           const d = toKm(lat, lng, obs.coordinates.lat, obs.coordinates.lng);
-          if (d <= radiusKm) toNotify.push({ obs, distance: Math.round(d * 10) / 10 });
+          if (d <= radiusKm)
+            toNotify.push({ obs, distance: Math.round(d * 10) / 10 });
         }
-
       }
 
-      // Notify via WS and WebPush
-      const webpushService = (await import('../services/webpush.service.js')).default;
-      const { publishObservationEvent } = await import('../config/websocket.js');
+      // Notify via WebSocket and WebPush
+      const webpushService = (await import("../services/webpush.service.js"))
+        .default;
+      const { publishObservationEvent } = await import(
+        "../config/websocket.js"
+      );
 
       for (const item of toNotify) {
-        // Publish WS event
-        publishObservationEvent('observation:nearby', item.obs);
+        // Publish WebSocket event
+        publishObservationEvent("observation:nearby", item.obs);
 
         // Send WebPush to user's subscriptions
-        await webpushService.notifyUserPush(userId, {
-          title: 'Alerte : observation proche',
-          body: item.obs.location || 'Nouvelle observation proche',
-          data: { url: `/observation/${item.obs._id}` }
-        }).catch(() => {});
+        await webpushService
+          .notifyUserPush(userId, {
+            title: "Alerte : observation proche",
+            body: item.obs.location || "Nouvelle observation proche",
+            data: { url: `/observation/${item.obs._id}` },
+          })
+          .catch(() => {});
       }
 
       return successResponse(res, { checked: toNotify.length });
@@ -214,7 +251,7 @@ class UserController {
   }
 
   /**
-   * Récupère les observations de l'utilisateur connecté
+   * Retrieves the logged-in user's observations
    * GET /users/me/observations
    */
   async getUserObservations(req, res, next) {
@@ -225,7 +262,7 @@ class UserController {
       return res.json({
         success: true,
         data: result.data,
-        pagination: result.pagination
+        pagination: result.pagination,
       });
     } catch (error) {
       next(error);
@@ -233,7 +270,7 @@ class UserController {
   }
 
   /**
-   * Upload ou met à jour l'avatar de l'utilisateur
+   * Uploads or updates the user's avatar
    * POST /users/me/avatar
    */
   async uploadAvatar(req, res, next) {
@@ -241,7 +278,7 @@ class UserController {
       const userId = req.user._id;
 
       if (!req.file) {
-        return errorResponse(res, 'Aucune image fournie', 400);
+        return errorResponse(res, "Aucune image fournie", 400);
       }
 
       const avatar = await userService.uploadAvatar(
@@ -250,17 +287,17 @@ class UserController {
         req.file.mimetype
       );
 
-      return successResponse(res, avatar, 'Avatar mis à jour avec succès');
+      return successResponse(res, avatar, "Avatar mis à jour avec succès");
     } catch (error) {
-      if (error.message === 'USER_NOT_FOUND') {
-        return notFoundResponse(res, 'Utilisateur non trouvé');
+      if (error.message === "USER_NOT_FOUND") {
+        return notFoundResponse(res, "Utilisateur non trouvé");
       }
       next(error);
     }
   }
 
   /**
-   * Supprime l'avatar de l'utilisateur
+   * Deletes the user's avatar
    * DELETE /users/me/avatar
    */
   async deleteAvatar(req, res, next) {
@@ -268,13 +305,13 @@ class UserController {
       const userId = req.user._id;
       await userService.deleteAvatar(userId);
 
-      return successResponse(res, null, 'Avatar supprimé avec succès');
+      return successResponse(res, null, "Avatar supprimé avec succès");
     } catch (error) {
-      if (error.message === 'USER_NOT_FOUND') {
-        return notFoundResponse(res, 'Utilisateur non trouvé');
+      if (error.message === "USER_NOT_FOUND") {
+        return notFoundResponse(res, "Utilisateur non trouvé");
       }
-      if (error.message === 'NO_AVATAR') {
-        return errorResponse(res, 'Aucun avatar à supprimer', 400);
+      if (error.message === "NO_AVATAR") {
+        return errorResponse(res, "Aucun avatar à supprimer", 400);
       }
       next(error);
     }

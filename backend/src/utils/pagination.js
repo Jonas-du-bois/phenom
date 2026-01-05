@@ -1,7 +1,7 @@
 /**
- * Extrait les paramètres de pagination depuis la requête
- * @param {Object} query - Objet query de la requête Express
- * @returns {Object} Paramètres de pagination
+ * Extracts pagination parameters from the request
+ * @param {Object} query - Express request query object
+ * @returns {Object} Pagination parameters
  */
 export const getPaginationParams = (query) => {
   const page = Math.max(1, parseInt(query.page) || 1);
@@ -15,11 +15,11 @@ export const getPaginationParams = (query) => {
 };
 
 /**
- * Crée un objet de métadonnées de pagination
- * @param {number} total - Nombre total d'éléments
- * @param {number} page - Page actuelle
- * @param {number} limit - Nombre d'éléments par page
- * @returns {Object} Métadonnées de pagination
+ * Creates a pagination metadata object
+ * @param {number} total - Total number of elements
+ * @param {number} page - Current page
+ * @param {number} limit - Number of elements per page
+ * @returns {Object} Pagination metadata
  */
 export const createPaginationMeta = (total, page, limit) => {
   const totalPages = Math.ceil(total / limit);
@@ -30,22 +30,22 @@ export const createPaginationMeta = (total, page, limit) => {
     total,
     totalPages,
     hasNext: page < totalPages,
-    hasPrev: page > 1
+    hasPrev: page > 1,
   };
 };
 
 /**
- * Formate la réponse paginée
- * @param {Array} data - Données à retourner
- * @param {number} total - Nombre total d'éléments
- * @param {number} page - Page actuelle
- * @param {number} limit - Nombre d'éléments par page
- * @returns {Object} Réponse formatée
+ * Formats the paginated response
+ * @param {Array} data - Data to return
+ * @param {number} total - Total number of elements
+ * @param {number} page - Current page
+ * @param {number} limit - Number of elements per page
+ * @returns {Object} Formatted response
  */
 export const paginatedResponse = (data, total, page, limit) => {
   return {
     success: true,
     data,
-    pagination: createPaginationMeta(total, page, limit)
+    pagination: createPaginationMeta(total, page, limit),
   };
 };

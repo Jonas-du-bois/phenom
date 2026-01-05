@@ -1,16 +1,15 @@
-import sharp from 'sharp';
-import imageConfig from '../config/image.config.js';
+import sharp from "sharp";
+import imageConfig from "../config/image.config.js";
 
 /**
- * Utilitaire de compression d'images
- * Responsabilité unique : transformer et optimiser les images
+ * Image compression utility
+ * Single responsibility: transform and optimize images
  */
 class ImageCompressor {
-
   /**
-   * Compresse une image selon son type MIME
-   * @param {Buffer} buffer - Buffer de l'image originale
-   * @param {string} mimetype - Type MIME de l'image (image/jpeg, image/png, image/webp)
+   * Compresses an image according to its MIME type
+   * @param {Buffer} buffer - Original image buffer
+   * @param {string} mimetype - Image MIME type (image/jpeg, image/png, image/webp)
    * @returns {Promise<{buffer: Buffer, mimetype: string, metadata: Object}>}
    */
   async compress(buffer, mimetype) {
@@ -18,16 +17,16 @@ class ImageCompressor {
       const startTime = Date.now();
       const originalSize = buffer.length;
 
-      // Initialiser Sharp avec le buffer
+      // Initialize Sharp with the buffer
       let sharpInstance = sharp(buffer);
 
-      // Obtenir les métadonnées de l'image
+      // Get image metadata
       const metadata = await sharpInstance.metadata();
 
-      // 1. Rotation automatique selon EXIF (photos smartphones)
+      // 1. Auto-rotation based on EXIF (smartphone photos)
       sharpInstance = sharpInstance.rotate();
 
-      // 2. Redimensionnement si nécessaire
+      // 2. Resize if necessary
       if (this._needsResize(metadata)) {
         sharpInstance = sharpInstance.resize(
           imageConfig.maxWidth,
@@ -36,18 +35,18 @@ class ImageCompressor {
         );
       }
 
-      // 3. Compression selon le format
+      // 3. Compress according to format
       const { buffer: compressedBuffer, mimetype: outputMimetype } =
         await this._compressByFormat(sharpInstance, mimetype);
 
-      // 4. Calculer les statistiques
+      // 4. Calculate statistics
       const compressionStats = this._calculateStats(
         originalSize,
         compressedBuffer.length,
         startTime
       );
 
-      // 5. Logger si verbose
+      // 5. Log if verbose
       if (imageConfig.verbose) {
         this._logCompression(compressionStats);
       }
@@ -63,17 +62,19 @@ class ImageCompressor {
           processingTime: compressionStats.processingTime,
           originalDimensions: {
             width: metadata.width,
-            height: metadata.height
-          }
-        }
+            height: metadata.height,
+          },
+        },
       };
     } catch (error) {
-      throw new Error(`Erreur lors de la compression de l'image: ${error.message}`);
+      throw new Error(
+        `Erreur lors de la compression de l'image: ${error.message}`
+      );
     }
   }
 
   /**
-   * Vérifie si l'image doit être redimensionnée
+   * Checks if the image needs to be resized
    * @private
    */
   _needsResize(metadata) {
@@ -84,7 +85,7 @@ class ImageCompressor {
   }
 
   /**
-   * Compresse l'image selon son format
+   * Compresses the image according to its format
    * @private
    */
   async _compressByFormat(sharpInstance, mimetype) {
@@ -92,42 +93,40 @@ class ImageCompressor {
     let outputMimetype;
 
     switch (mimetype.toLowerCase()) {
-    case 'image/jpeg':
-    case 'image/jpg':
-      compressedBuffer = await sharpInstance
-        .jpeg(imageConfig.jpeg)
-        .toBuffer();
-      outputMimetype = 'image/jpeg';
-      break;
+      case "image/jpeg":
+      case "image/jpg":
+        compressedBuffer = await sharpInstance
+          .jpeg(imageConfig.jpeg)
+          .toBuffer();
+        outputMimetype = "image/jpeg";
+        break;
 
-    case 'image/png':
-      compressedBuffer = await sharpInstance
-        .png(imageConfig.png)
-        .toBuffer();
-      outputMimetype = 'image/png';
-      break;
+      case "image/png":
+        compressedBuffer = await sharpInstance.png(imageConfig.png).toBuffer();
+        outputMimetype = "image/png";
+        break;
 
-    case 'image/webp':
-      compressedBuffer = await sharpInstance
-        .webp(imageConfig.webp)
-        .toBuffer();
-      outputMimetype = 'image/webp';
-      break;
+      case "image/webp":
+        compressedBuffer = await sharpInstance
+          .webp(imageConfig.webp)
+          .toBuffer();
+        outputMimetype = "image/webp";
+        break;
 
-    default:
-      // Si format inconnu, convertir en JPEG par défaut
-      console.warn(`Format ${mimetype} non supporté, conversion en JPEG`);
-      compressedBuffer = await sharpInstance
-        .jpeg(imageConfig.jpeg)
-        .toBuffer();
-      outputMimetype = 'image/jpeg';
+      default:
+        // If unknown format, convert to JPEG by default
+        console.warn(`Format ${mimetype} non supporté, conversion en JPEG`);
+        compressedBuffer = await sharpInstance
+          .jpeg(imageConfig.jpeg)
+          .toBuffer();
+        outputMimetype = "image/jpeg";
     }
 
     return { buffer: compressedBuffer, mimetype: outputMimetype };
   }
 
   /**
-   * Calcule les statistiques de compression
+   * Calculates compression statistics
    * @private
    */
   _calculateStats(originalSize, compressedSize, startTime) {
@@ -140,24 +139,32 @@ class ImageCompressor {
       compressedSize,
       savedBytes,
       compressionRatio: `${compressionRatio}%`,
-      processingTime: `${processingTime}ms`
+      processingTime: `${processingTime}ms`,
     };
   }
 
   /**
-   * Log les informations de compression
+   * Logs compression information
    * @private
    */
   _logCompression(stats) {
-    console.log('\n🗜️  Compression d\'image:');
-    console.log(`   📸 Taille originale:  ${this._formatBytes(stats.originalSize)}`);
-    console.log(`   ✅ Taille compressée: ${this._formatBytes(stats.compressedSize)}`);
-    console.log(`   📉 Économie:          ${stats.compressionRatio} (${this._formatBytes(stats.savedBytes)})`);
+    console.log("\n🗜️  Compression d'image:");
+    console.log(
+      `   📸 Taille originale:  ${this._formatBytes(stats.originalSize)}`
+    );
+    console.log(
+      `   ✅ Taille compressée: ${this._formatBytes(stats.compressedSize)}`
+    );
+    console.log(
+      `   📉 Économie:          ${stats.compressionRatio} (${this._formatBytes(
+        stats.savedBytes
+      )})`
+    );
     console.log(`   ⏱️  Temps:             ${stats.processingTime}\n`);
   }
 
   /**
-   * Formate les bytes en format lisible
+   * Formats bytes into a readable format
    * @private
    */
   _formatBytes(bytes) {

@@ -1,88 +1,96 @@
-import Comment from '../models/Comment.js';
-import Observation from '../models/Observation.js';
-import { getPaginationParams, createPaginationMeta } from '../utils/pagination.js';
-import { NotFoundError } from '../utils/errors.js';
+import Comment from "../models/Comment.js";
+import Observation from "../models/Observation.js";
+import {
+  getPaginationParams,
+  createPaginationMeta,
+} from "../utils/pagination.js";
+import { NotFoundError } from "../utils/errors.js";
 
 /**
- * Service de gestion des commentaires
+ * @file comment.service.js
+ * @description Comment management service.
+ * Handles CRUD operations for observation comments.
  */
 class CommentService {
   /**
-   * Valide qu'une observation existe
-   * @param {string} observationId - ID de l'observation
-   * @throws {NotFoundError} Si l'observation n'existe pas
+   * Validates that an observation exists
+   * @param {string} observationId - Observation ID
+   * @throws {NotFoundError} If the observation does not exist
    * @private
    */
   async _validateObservationExists(observationId) {
     const observation = await Observation.findById(observationId);
     if (!observation) {
-      throw new NotFoundError('Observation non trouvée');
+      throw new NotFoundError("Observation non trouvée");
     }
     return observation;
   }
 
   /**
-   * Récupère les commentaires d'une observation
-   * @param {string} observationId - ID de l'observation
-   * @param {Object} filters - Filtres de pagination
-   * @returns {Object} Liste paginée de commentaires
+   * Retrieves comments for an observation
+   * @param {string} observationId - Observation ID
+   * @param {Object} filters - Pagination filters
+   * @returns {Object} Paginated list of comments
    */
   async getCommentsByObservation(observationId, filters = {}) {
-    // Vérifier que l'observation existe
+    // Verify that the observation exists
     await this._validateObservationExists(observationId);
 
     const { page, limit, skip } = getPaginationParams(filters);
 
     const [comments, total] = await Promise.all([
       Comment.find({ observationId })
-        .populate('userId', 'name email avatar')
+        .populate("userId", "name email avatar")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean(),
-      Comment.countDocuments({ observationId })
+      Comment.countDocuments({ observationId }),
     ]);
 
     return {
       comments,
-      pagination: createPaginationMeta(total, page, limit)
+      pagination: createPaginationMeta(total, page, limit),
     };
   }
 
   /**
-   * Crée un nouveau commentaire
-   * @param {string} observationId - ID de l'observation
-   * @param {Object} commentData - Données du commentaire
-   * @param {string} userId - ID de l'utilisateur
-   * @returns {Object} Commentaire créé
+   * Creates a new comment
+   * @param {string} observationId - Observation ID
+   * @param {Object} commentData - Comment data
+   * @param {string} userId - User ID
+   * @returns {Object} Created comment
    */
   async createComment(observationId, commentData, userId) {
-    // Vérifier que l'observation existe
+    // Verify that the observation exists
     await this._validateObservationExists(observationId);
 
     const comment = await Comment.create({
       ...commentData,
       observationId,
-      userId
+      userId,
     });
 
-    const populatedComment = await comment.populate('userId', 'name email avatar');
+    const populatedComment = await comment.populate(
+      "userId",
+      "name email avatar"
+    );
 
-    // Le WebSocket sera publié dans le contrôleur
+    // WebSocket event will be published in the controller
     return populatedComment;
   }
 
   /**
-   * Met à jour un commentaire
-   * @param {string} commentId - ID du commentaire
-   * @param {Object} updateData - Données à mettre à jour
-   * @returns {Object} Commentaire mis à jour
+   * Updates a comment
+   * @param {string} commentId - Comment ID
+   * @param {Object} updateData - Data to update
+   * @returns {Object} Updated comment
    */
   async updateComment(commentId, updateData) {
-    // Whitelist des champs modifiables
-    const allowedFields = ['text'];
+    // Whitelist of editable fields
+    const allowedFields = ["text"];
     const filteredData = Object.keys(updateData)
-      .filter(key => allowedFields.includes(key))
+      .filter((key) => allowedFields.includes(key))
       .reduce((obj, key) => {
         obj[key] = updateData[key];
         return obj;
@@ -92,49 +100,51 @@ class CommentService {
       commentId,
       { $set: filteredData },
       { new: true, runValidators: true }
-    ).populate('userId', 'name email avatar');
+    ).populate("userId", "name email avatar");
 
     if (!comment) {
-      throw new NotFoundError('Commentaire non trouvé');
+      throw new NotFoundError("Commentaire non trouvé");
     }
 
-    // Le WebSocket sera publié dans le contrôleur
+    // WebSocket event will be published in the controller
     return comment;
   }
 
   /**
-   * Supprime un commentaire
-   * @param {string} commentId - ID du commentaire
-   * @returns {Object} Commentaire supprimé
+   * Deletes a comment
+   * @param {string} commentId - Comment ID
+   * @returns {Object} Deleted comment
    */
   async deleteComment(commentId) {
     const comment = await Comment.findByIdAndDelete(commentId);
 
     if (!comment) {
-      throw new NotFoundError('Commentaire non trouvé');
+      throw new NotFoundError("Commentaire non trouvé");
     }
 
-    // Le WebSocket sera publié dans le contrôleur
+    // WebSocket event will be published in the controller
     return comment;
   }
 
   /**
-   * Récupère le propriétaire d'un commentaire
-   * @param {string} commentId - ID du commentaire
-   * @returns {string} ID du propriétaire
+   * Retrieves the owner of a comment
+   * @param {string} commentId - Comment ID
+   * @returns {string} Owner ID
    */
   async getCommentOwnerId(commentId) {
-    const comment = await Comment.findById(commentId).select('userId');
+    const comment = await Comment.findById(commentId).select("userId");
     if (!comment) {
-      throw new NotFoundError('Commentaire non trouvé pour vérification de propriété');
+      throw new NotFoundError(
+        "Commentaire non trouvé pour vérification de propriété"
+      );
     }
     return comment?.userId;
   }
 
   /**
-   * Supprime tous les commentaires d'une observation
-   * @param {string} observationId - ID de l'observation
-   * @returns {Object} Résultat de la suppression
+   * Deletes all comments for an observation
+   * @param {string} observationId - Observation ID
+   * @returns {Object} Deletion result
    */
   async deleteCommentsByObservation(observationId) {
     return await Comment.deleteMany({ observationId });

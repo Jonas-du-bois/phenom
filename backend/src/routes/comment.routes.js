@@ -1,16 +1,21 @@
-import express from 'express';
-import commentController from '../controllers/comment.controller.js';
-import { authenticate } from '../middleware/auth.js';
-import { isOwnerOrAdmin } from '../middleware/authorize.js';
-import { validate } from '../middleware/validate.js';
+/**
+ * @file comment.routes.js
+ * @description Comment routes for CRUD operations on observation comments.
+ * Includes ownership verification for update/delete operations.
+ */
+import express from "express";
+import commentController from "../controllers/comment.controller.js";
+import { authenticate } from "../middleware/auth.js";
+import { isOwnerOrAdmin } from "../middleware/authorize.js";
+import { validate } from "../middleware/validate.js";
 import {
   createCommentValidation,
   updateCommentValidation,
   getCommentsValidation,
-  commentIdValidation
-} from '../validators/comment.validator.js';
-import { createLimiter } from '../middleware/rateLimiter.js';
-import commentService from '../services/comment.service.js';
+  commentIdValidation,
+} from "../validators/comment.validator.js";
+import { createLimiter } from "../middleware/rateLimiter.js";
+import commentService from "../services/comment.service.js";
 
 const router = express.Router();
 
@@ -90,7 +95,7 @@ const router = express.Router();
  *               $ref: '#/components/schemas/Error'
  */
 router.get(
-  '/observations/:id/comments',
+  "/observations/:id/comments",
   getCommentsValidation,
   validate,
   commentController.getComments
@@ -184,7 +189,7 @@ router.get(
  *               $ref: '#/components/schemas/Error'
  */
 router.post(
-  '/observations/:id/comments',
+  "/observations/:id/comments",
   authenticate,
   createLimiter,
   createCommentValidation,
@@ -280,7 +285,7 @@ router.post(
  *               $ref: '#/components/schemas/Error'
  */
 router.put(
-  '/comments/:id',
+  "/comments/:id",
   authenticate,
   updateCommentValidation,
   validate,
@@ -362,7 +367,7 @@ router.put(
  *               $ref: '#/components/schemas/Error'
  */
 router.delete(
-  '/comments/:id',
+  "/comments/:id",
   authenticate,
   commentIdValidation,
   validate,

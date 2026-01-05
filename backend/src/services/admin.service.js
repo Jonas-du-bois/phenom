@@ -1,73 +1,78 @@
-import User from '../models/User.js';
-import Observation from '../models/Observation.js';
-import Comment from '../models/Comment.js';
-import { getPaginationParams, createPaginationMeta } from '../utils/pagination.js';
+import User from "../models/User.js";
+import Observation from "../models/Observation.js";
+import Comment from "../models/Comment.js";
+import {
+  getPaginationParams,
+  createPaginationMeta,
+} from "../utils/pagination.js";
 
 /**
- * Service d'administration
+ * @file admin.service.js
+ * @description Administration service for managing users, observations, and comments.
+ * Provides admin-only operations and statistics.
  */
 class AdminService {
   /**
-   * Récupère la liste des utilisateurs
-   * @param {Object} filters - Filtres de recherche
-   * @returns {Object} Liste paginée d'utilisateurs
+   * Retrieves the list of users
+   * @param {Object} filters - Search filters
+   * @returns {Object} Paginated list of users
    */
   async getUsers(filters = {}) {
     const { page, limit, skip } = getPaginationParams(filters);
     const query = {};
 
-    // Filtre par rôle
+    // Filter by role
     if (filters.role) {
       query.role = filters.role;
     }
 
-    // Filtre de recherche
+    // Search filter
     if (filters.search) {
       query.$or = [
-        { name: { $regex: filters.search, $options: 'i' } },
-        { email: { $regex: filters.search, $options: 'i' } }
+        { name: { $regex: filters.search, $options: "i" } },
+        { email: { $regex: filters.search, $options: "i" } },
       ];
     }
 
     const [users, total] = await Promise.all([
       User.find(query)
-        .select('-password')
+        .select("-password")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean(),
-      User.countDocuments(query)
+      User.countDocuments(query),
     ]);
 
     return {
       users,
-      pagination: createPaginationMeta(total, page, limit)
+      pagination: createPaginationMeta(total, page, limit),
     };
   }
 
   /**
-   * Change le rôle d'un utilisateur
-   * @param {string} userId - ID de l'utilisateur
-   * @param {string} role - Nouveau rôle
-   * @returns {Object} Utilisateur mis à jour
+   * Changes a user's role
+   * @param {string} userId - User ID
+   * @param {string} role - New role
+   * @returns {Object} Updated user
    */
   async updateUserRole(userId, role) {
     const user = await User.findByIdAndUpdate(
       userId,
       { role },
       { new: true }
-    ).select('-password');
+    ).select("-password");
 
     if (!user) {
-      throw new Error('USER_NOT_FOUND');
+      throw new Error("USER_NOT_FOUND");
     }
 
     return user;
   }
 
   /**
-   * Récupère les statistiques globales
-   * @returns {Object} Statistiques
+   * Retrieves global statistics
+   * @returns {Object} Statistics
    */
   async getStats() {
     const [
@@ -75,7 +80,7 @@ class AdminService {
       totalObservations,
       totalComments,
       recentObservations,
-      topContributors
+      topContributors,
     ] = await Promise.all([
       User.countDocuments(),
       Observation.countDocuments(),
@@ -83,9 +88,9 @@ class AdminService {
       Observation.find()
         .sort({ createdAt: -1 })
         .limit(5)
-        .populate('userId', 'name email avatar')
+        .populate("userId", "name email avatar")
         .lean(),
-      this._getTopContributors()
+      this._getTopContributors(),
     ]);
 
     return {
@@ -93,211 +98,215 @@ class AdminService {
       totalObservations,
       totalComments,
       recentObservations,
-      topContributors
+      topContributors,
     };
   }
 
   /**
-   * Récupère les utilisateurs les plus actifs
+   * Retrieves the most active users
    * @private
-   * @returns {Array} Top contributeurs
+   * @returns {Array} Top contributors
    */
   async _getTopContributors() {
     return await Observation.aggregate([
       {
         $group: {
-          _id: '$userId',
-          count: { $sum: 1 }
-        }
+          _id: "$userId",
+          count: { $sum: 1 },
+        },
       },
       {
-        $sort: { count: -1 }
+        $sort: { count: -1 },
       },
       {
-        $limit: 5
+        $limit: 5,
       },
       {
         $lookup: {
-          from: 'users',
-          localField: '_id',
-          foreignField: '_id',
-          as: 'user'
-        }
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "user",
+        },
       },
       {
-        $unwind: '$user'
+        $unwind: "$user",
       },
       {
         $project: {
           _id: 1,
           count: 1,
-          name: '$user.name',
-          email: '$user.email'
-        }
-      }
+          name: "$user.name",
+          email: "$user.email",
+        },
+      },
     ]);
   }
 
   /**
-   * Supprime une observation (admin)
-   * @param {string} observationId - ID de l'observation
-   * @returns {Object} Observation supprimée
+   * Deletes an observation (admin)
+   * @param {string} observationId - Observation ID
+   * @returns {Object} Deleted observation
    */
   async deleteObservation(observationId) {
     const observation = await Observation.findByIdAndDelete(observationId);
 
     if (!observation) {
-      throw new Error('OBSERVATION_NOT_FOUND');
+      throw new Error("OBSERVATION_NOT_FOUND");
     }
 
-    // Supprimer toutes les images associées sur Cloudinary
+    // Delete all associated images on Cloudinary
     try {
-      const imageService = (await import('./image.service.js')).default;
-      const deletedImages = await imageService.deleteAllImagesForObservation(observationId);
-      console.log(`✅ [Admin] ${deletedImages} image(s) supprimée(s) de Cloudinary`);
+      const imageService = (await import("./image.service.js")).default;
+      const deletedImages = await imageService.deleteAllImagesForObservation(
+        observationId
+      );
+      console.log(
+        `✅ [Admin] ${deletedImages} image(s) supprimée(s) de Cloudinary`
+      );
     } catch (error) {
-      console.error(`❌ [Admin] Erreur lors de la suppression des images: ${error.message}`);
+      console.error(
+        `❌ [Admin] Erreur lors de la suppression des images: ${error.message}`
+      );
     }
 
-    // Supprimer tous les commentaires associés
+    // Delete all associated comments
     await Comment.deleteMany({ observationId });
 
     return observation;
   }
 
   /**
-   * Supprime un commentaire (admin)
-   * @param {string} commentId - ID du commentaire
-   * @returns {Object} Commentaire supprimé
+   * Deletes a comment (admin)
+   * @param {string} commentId - Comment ID
+   * @returns {Object} Deleted comment
    */
   async deleteComment(commentId) {
     const comment = await Comment.findByIdAndDelete(commentId);
 
     if (!comment) {
-      throw new Error('COMMENT_NOT_FOUND');
+      throw new Error("COMMENT_NOT_FOUND");
     }
 
     return comment;
   }
 
   /**
-   * Récupère toutes les observations avec filtres admin
-   * @param {Object} filters - Filtres de recherche
-   * @returns {Object} Liste paginée d'observations
+   * Retrieves all observations with admin filters
+   * @param {Object} filters - Search filters
+   * @returns {Object} Paginated list of observations
    */
   async getAllObservations(filters = {}) {
     const { page, limit, skip } = getPaginationParams(filters);
     const query = {};
 
-    // Filtre par statut
+    // Filter by status
     if (filters.status) {
       query.status = filters.status;
     }
 
-    // Filtre par signalement
-    if (filters.flagged === 'true') {
+    // Filter by flagged
+    if (filters.flagged === "true") {
       query.flagged = true;
     }
 
-    // Filtre par utilisateur
+    // Filter by user
     if (filters.userId) {
       query.userId = filters.userId;
     }
 
-    // Gestion du tri
-    const sortBy = filters.sortBy || 'createdAt';
-    const order = filters.order === 'asc' ? 1 : -1;
+    // Handle sorting
+    const sortBy = filters.sortBy || "createdAt";
+    const order = filters.order === "asc" ? 1 : -1;
     const sortOptions = { [sortBy]: order };
 
     const [observations, total] = await Promise.all([
       Observation.find(query)
-        .populate('userId', 'name email avatar')
+        .populate("userId", "name email avatar")
         .sort(sortOptions)
         .skip(skip)
         .limit(limit)
         .lean(),
-      Observation.countDocuments(query)
+      Observation.countDocuments(query),
     ]);
 
     return {
       data: observations,
-      pagination: createPaginationMeta(total, page, limit)
+      pagination: createPaginationMeta(total, page, limit),
     };
   }
 
   /**
-   * Récupère tous les commentaires avec filtres admin
-   * @param {Object} filters - Filtres de recherche
-   * @returns {Object} Liste paginée de commentaires
+   * Retrieves all comments with admin filters
+   * @param {Object} filters - Search filters
+   * @returns {Object} Paginated list of comments
    */
   async getAllComments(filters = {}) {
     const { page, limit, skip } = getPaginationParams(filters);
     const query = {};
 
-    // Filtre par signalement
-    if (filters.flagged === 'true') {
+    // Filter by flagged
+    if (filters.flagged === "true") {
       query.flagged = true;
     }
 
-    // Filtre par utilisateur
+    // Filter by user
     if (filters.userId) {
       query.userId = filters.userId;
     }
 
-    // Filtre par observation
+    // Filter by observation
     if (filters.observationId) {
       query.observationId = filters.observationId;
     }
 
     const [comments, total] = await Promise.all([
       Comment.find(query)
-        .populate('userId', 'name email avatar')
-        .populate('observationId', 'title')
+        .populate("userId", "name email avatar")
+        .populate("observationId", "title")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean(),
-      Comment.countDocuments(query)
+      Comment.countDocuments(query),
     ]);
 
     return {
       data: comments,
-      pagination: createPaginationMeta(total, page, limit)
+      pagination: createPaginationMeta(total, page, limit),
     };
   }
 
   /**
-   * Récupère les détails d'un utilisateur (admin)
-   * @param {string} userId - ID de l'utilisateur
-   * @returns {Object} Détails complets de l'utilisateur
+   * Retrieves a user's details (admin)
+   * @param {string} userId - User ID
+   * @returns {Object} Complete user details
    */
   async getUserDetails(userId) {
-    const user = await User.findById(userId).select('-password');
+    const user = await User.findById(userId).select("-password");
     if (!user) {
-      throw new Error('USER_NOT_FOUND');
+      throw new Error("USER_NOT_FOUND");
     }
 
-    // Récupérer les statistiques détaillées
-    const [observationsCount, commentsCount, observations, comments] = await Promise.all([
-      Observation.countDocuments({ userId }),
-      Comment.countDocuments({ userId }),
-      Observation.find({ userId })
-        .sort({ createdAt: -1 })
-        .limit(10)
-        .lean(),
-      Comment.find({ userId })
-        .sort({ createdAt: -1 })
-        .limit(10)
-        .populate('observationId', 'title')
-        .lean()
-    ]);
+    // Retrieve detailed statistics
+    const [observationsCount, commentsCount, observations, comments] =
+      await Promise.all([
+        Observation.countDocuments({ userId }),
+        Comment.countDocuments({ userId }),
+        Observation.find({ userId }).sort({ createdAt: -1 }).limit(10).lean(),
+        Comment.find({ userId })
+          .sort({ createdAt: -1 })
+          .limit(10)
+          .populate("observationId", "title")
+          .lean(),
+      ]);
 
     return {
       ...user.toObject(),
       observationsCount,
       commentsCount,
       recentObservations: observations,
-      recentComments: comments
+      recentComments: comments,
     };
   }
 }

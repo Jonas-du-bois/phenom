@@ -1,12 +1,16 @@
-import { createWebSocketServer, startWebSocketServer, publishToChannel } from '../src/config/websocket.js';
-import http from 'http';
+import {
+  createWebSocketServer,
+  startWebSocketServer,
+  publishToChannel,
+} from "../src/config/websocket.js";
+import http from "http";
 
-describe('WebSocket Configuration', () => {
+describe("WebSocket Configuration", () => {
   let server;
   let wss;
 
   beforeEach(() => {
-    // Créer un serveur HTTP de test
+    // Create a test HTTP server
     server = http.createServer();
   });
 
@@ -16,47 +20,51 @@ describe('WebSocket Configuration', () => {
     }
   });
 
-  describe('createWebSocketServer', () => {
-    it('should create a WebSocket server with PubSub', () => {
+  describe("createWebSocketServer", () => {
+    it("should create a WebSocket server with PubSub", () => {
       wss = createWebSocketServer(server);
 
       expect(wss).toBeDefined();
       expect(wss.pub).toBeDefined();
     });
 
-    it('should configure channels correctly', () => {
+    it("should configure channels correctly", () => {
       wss = createWebSocketServer(server);
 
       expect(wss).toBeDefined();
-      // Vérifier que le serveur est configuré avec PubSub
-      expect(typeof wss.pub).toBe('function');
+      // Verify the server is configured with PubSub
+      expect(typeof wss.pub).toBe("function");
     });
   });
 
-  describe('startWebSocketServer', () => {
-    it('should start the WebSocket server', () => {
+  describe("startWebSocketServer", () => {
+    it("should start the WebSocket server", () => {
       wss = createWebSocketServer(server);
 
-      // Juste vérifier que la fonction s'exécute sans erreur
+      // Just verify the function executes without error
       expect(() => startWebSocketServer()).not.toThrow();
     });
   });
 
-  describe('publishToChannel', () => {
-    it('should publish message to channel without error', () => {
+  describe("publishToChannel", () => {
+    it("should publish message to channel without error", () => {
       wss = createWebSocketServer(server);
 
-      const testData = { id: '123', title: 'Test' };
+      const testData = { id: "123", title: "Test" };
 
-      // Vérifier que la fonction s'exécute sans erreur
-      expect(() => publishToChannel('observations', 'observation:created', testData)).not.toThrow();
+      // Verify the function executes without error
+      expect(() =>
+        publishToChannel("observations", "observation:created", testData)
+      ).not.toThrow();
     });
 
-    it('should handle publishing when WebSocket is not available', () => {
-      // Ne pas créer de serveur WebSocket
+    it("should handle publishing when WebSocket is not available", () => {
+      // Do not create a WebSocket server
 
-      // Vérifier que la fonction gère gracieusement l'absence de WebSocket
-      expect(() => publishToChannel('observations', 'observation:created', { id: '789' })).not.toThrow();
+      // Verify the function gracefully handles the absence of WebSocket
+      expect(() =>
+        publishToChannel("observations", "observation:created", { id: "789" })
+      ).not.toThrow();
     });
   });
 });

@@ -1,5 +1,6 @@
 /**
- * Données de l'administrateur principal
+ * Main administrator seed data
+ * This file contains the default admin credentials used for seeding the database
  */
 export const adminData = {
   name: 'Admin Phenom',

@@ -1,34 +1,34 @@
 /**
- * Coordonnées GPS des villes principales
- * Format MongoDB GeoJSON: [longitude, latitude]
+ * GPS coordinates for major cities
+ * MongoDB GeoJSON format: [longitude, latitude]
  *
- * ⚠️ ATTENTION: L'ordre est [lng, lat] (inversé par rapport à Google Maps!)
+ * ⚠️ WARNING: Order is [lng, lat] (reversed compared to Google Maps!)
  */
 
 export const GPS_COORDINATES = {
-  // === SUISSE ===
+  // === SWITZERLAND ===
   suisse: {
     lausanne: [6.6323, 46.5197],
     geneve: [6.1432, 46.2044],
-    berne: [7.4474, 46.9480],
+    berne: [7.4474, 46.948],
     zurich: [8.5417, 47.3769],
     lucerne: [8.3093, 47.0502],
     montreux: [6.9111, 46.4312],
-    neuchatel: [6.9306, 46.9920],
-    fribourg: [7.1512, 46.8060],
+    neuchatel: [6.9306, 46.992],
+    fribourg: [7.1512, 46.806],
     lugano: [8.9511, 46.0037],
     basel: [7.5886, 47.5596],
-    sion: [7.3586, 46.2330],
+    sion: [7.3586, 46.233],
     vevey: [6.8435, 46.4604],
     nyon: [6.2391, 46.3826],
     yverdon: [6.6414, 46.7784],
-    morges: [6.4988, 46.5104]
+    morges: [6.4988, 46.5104],
   },
 
   // === FRANCE ===
   france: {
     paris: [2.3522, 48.8566],
-    lyon: [4.8357, 45.7640],
+    lyon: [4.8357, 45.764],
     marseille: [5.3698, 43.2965],
     toulouse: [1.4442, 43.6047],
     nice: [7.2619, 43.7102],
@@ -41,16 +41,16 @@ export const GPS_COORDINATES = {
     nantes: [-1.5536, 47.2184],
     grenoble: [5.7243, 45.1885],
     annecy: [6.1294, 45.8992],
-    dijon: [5.0415, 47.3220],
+    dijon: [5.0415, 47.322],
     tours: [0.6833, 47.3941],
-    metz: [6.1757, 49.1193]
-  }
+    metz: [6.1757, 49.1193],
+  },
 };
 
 /**
- * Helper pour obtenir les coordonnées d'une ville
- * @param {string} country - 'suisse' ou 'france'
- * @param {string} city - nom de la ville (minuscules)
+ * Helper to get coordinates for a city
+ * @param {string} country - 'suisse' or 'france'
+ * @param {string} city - city name (lowercase)
  * @returns {Array} [longitude, latitude]
  */
 export const getCoordinates = (country, city) => {
@@ -62,33 +62,33 @@ export const getCoordinates = (country, city) => {
 };
 
 /**
- * Helper pour créer un GeoJSON Point
+ * Helper to create a GeoJSON Point
  * @param {Array} coordinates - [longitude, latitude]
  * @returns {Object} GeoJSON Point
  */
 export const createGeoPoint = (coordinates) => {
   return {
-    type: 'Point',
-    coordinates: coordinates
+    type: "Point",
+    coordinates: coordinates,
   };
 };
 
 /**
- * Exemples d'utilisation:
+ * Usage examples:
  *
  * import { GPS_COORDINATES, getCoordinates, createGeoPoint } from './gps-coordinates.js';
  *
- * // Méthode 1: Directement
+ * // Method 1: Directly
  * const lausanne = GPS_COORDINATES.suisse.lausanne; // [6.6323, 46.5197]
  *
- * // Méthode 2: Avec helper
+ * // Method 2: With helper
  * const paris = getCoordinates('france', 'paris'); // [2.3522, 48.8566]
  *
- * // Méthode 3: Créer un GeoJSON Point
+ * // Method 3: Create a GeoJSON Point
  * const location = createGeoPoint(GPS_COORDINATES.suisse.geneve);
  * // { type: 'Point', coordinates: [6.1432, 46.2044] }
  *
- * // Méthode 4: Chainer les helpers
+ * // Method 4: Chain helpers
  * const observation = {
  *   title: 'Mon observation',
  *   location: createGeoPoint(getCoordinates('france', 'lyon'))
@@ -96,17 +96,17 @@ export const createGeoPoint = (coordinates) => {
  */
 
 /**
- * Liste de toutes les villes disponibles
+ * List of all available cities
  */
 export const AVAILABLE_CITIES = {
   suisse: Object.keys(GPS_COORDINATES.suisse).sort(),
-  france: Object.keys(GPS_COORDINATES.france).sort()
+  france: Object.keys(GPS_COORDINATES.france).sort(),
 };
 
 /**
- * Trouver la ville la plus proche de coordonnées données
+ * Find the nearest city to given coordinates
  * @param {Array} targetCoords - [longitude, latitude]
- * @param {string} country - 'suisse' ou 'france' (optionnel)
+ * @param {string} country - 'suisse' or 'france' (optional)
  * @returns {Object} { city, country, distance, coordinates }
  */
 export const findNearestCity = (targetCoords, country = null) => {
@@ -114,13 +114,13 @@ export const findNearestCity = (targetCoords, country = null) => {
   let nearest = null;
   let minDistance = Infinity;
 
-  const countries = country ? [country] : ['suisse', 'france'];
+  const countries = country ? [country] : ["suisse", "france"];
 
-  countries.forEach(countryName => {
+  countries.forEach((countryName) => {
     Object.entries(GPS_COORDINATES[countryName]).forEach(([city, coords]) => {
       const [lng, lat] = coords;
 
-      // Distance euclidienne simple (suffisant pour ce cas)
+      // Simple Euclidean distance (sufficient for this use case)
       const distance = Math.sqrt(
         Math.pow(lng - targetLng, 2) + Math.pow(lat - targetLat, 2)
       );
@@ -131,7 +131,7 @@ export const findNearestCity = (targetCoords, country = null) => {
           city,
           country: countryName,
           distance: distance.toFixed(4),
-          coordinates: coords
+          coordinates: coords,
         };
       }
     });
@@ -141,7 +141,7 @@ export const findNearestCity = (targetCoords, country = null) => {
 };
 
 /**
- * Vérifier si des coordonnées sont valides
+ * Check if coordinates are valid
  * @param {Array} coordinates - [longitude, latitude]
  * @returns {boolean}
  */
@@ -152,18 +152,20 @@ export const areValidCoordinates = (coordinates) => {
 
   const [lng, lat] = coordinates;
 
-  // Longitude: -180 à 180
-  // Latitude: -90 à 90
+  // Longitude: -180 to 180
+  // Latitude: -90 to 90
   return (
-    typeof lng === 'number' &&
-    typeof lat === 'number' &&
-    lng >= -180 && lng <= 180 &&
-    lat >= -90 && lat <= 90
+    typeof lng === "number" &&
+    typeof lat === "number" &&
+    lng >= -180 &&
+    lng <= 180 &&
+    lat >= -90 &&
+    lat <= 90
   );
 };
 
 /**
- * Formater les coordonnées pour l'affichage
+ * Format coordinates for display
  * @param {Array} coordinates - [longitude, latitude]
  * @returns {string}
  */
