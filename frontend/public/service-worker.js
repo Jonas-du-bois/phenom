@@ -14,7 +14,7 @@
 // ============================================================================
 
 /** Cache version - increment to invalidate old caches */
-const CACHE_NAME = "phenom-pwa-v1";
+const CACHE_NAME = "phenom-pwa-v2";
 
 /** Static assets to cache on install for offline support */
 const ASSETS_TO_CACHE = ["/", "/index.html", "/manifest.json"];
@@ -59,12 +59,53 @@ self.addEventListener("activate", (event) => {
 /**
  * Fetch event - Network-first with cache fallback strategy
  * Attempts network request, falls back to cache if offline
+ * 
+ * IMPORTANT: Only handle same-origin requests to avoid CORS issues
+ * External resources (fonts, APIs, CDNs) should not be intercepted
  */
 self.addEventListener("fetch", (event) => {
+  const url = new URL(event.request.url);
+  
+  // Skip cross-origin requests entirely - let browser handle them normally
+  // This prevents CORS issues with Google Fonts, external APIs, CDNs, etc.
+  if (url.origin !== self.location.origin) {
+    return; // Don't call event.respondWith() - let request pass through
+  }
+  
+  // Skip API requests - they should always go to network
+  if (url.pathname.startsWith('/api/')) {
+    return;
+  }
+  
+  // Skip WebSocket upgrade requests
+  if (event.request.headers.get('upgrade') === 'websocket') {
+    return;
+  }
+  
+  // For same-origin static assets: cache-first, then network
   event.respondWith(
-    caches
-      .match(event.request)
-      .then((cached) => cached || fetch(event.request).catch(() => cached))
+    caches.match(event.request).then((cached) => {
+      if (cached) {
+        return cached;
+      }
+      return fetch(event.request)
+        .then((response) => {
+          // Don't cache non-successful responses
+          if (!response || response.status !== 200 || response.type !== 'basic') {
+            return response;
+          }
+          // Clone the response for caching
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+          return response;
+        })
+        .catch(() => {
+          // Return cached version if network fails (offline)
+          return cached;
+        });
+    })
   );
 });
 
