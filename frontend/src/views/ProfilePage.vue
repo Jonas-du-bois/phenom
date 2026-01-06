@@ -218,7 +218,7 @@
                   v-if="obs?.images?.length || obs.image || obs.imageUrl"
                   :src="getObsImageUrl(obs)"
                   alt=""
-                  class="w-full h-full object-cover"
+                  class="w-full h-full object-cover rounded-lg"
                 />
                 <div
                   v-else
@@ -274,7 +274,6 @@ import {
   EmptyState,
 } from "@/components/atoms";
 import { useAuthStore } from "@/stores/auth";
-import { useUserStore } from "@/stores/user";
 import { useObservationStore } from "@/stores/observation";
 import { userService } from "@/services/userService";
 import { getImageUrl } from "@/utils/imageHelpers";
@@ -284,7 +283,6 @@ defineOptions({ name: "ProfilePage" });
 
 const route = useRoute();
 const authStore = useAuthStore();
-const userStore = useUserStore();
 const observationStore = useObservationStore();
 
 const { user: authUser } = storeToRefs(authStore);

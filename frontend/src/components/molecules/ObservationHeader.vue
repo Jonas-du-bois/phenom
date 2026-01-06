@@ -111,9 +111,13 @@ const userName = computed(() => {
 
 /**
  * Gets the user avatar URL
+ * Handles both string URL and object with url property
  */
 const userAvatar = computed(() => {
-  return userData.value?.avatar || "";
+  const avatar = userData.value?.avatar;
+  if (!avatar) return "";
+  // Handle both string URL and object with url property
+  return typeof avatar === "string" ? avatar : avatar.url || "";
 });
 </script>
 

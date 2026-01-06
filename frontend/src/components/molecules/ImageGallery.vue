@@ -235,7 +235,7 @@ const goTo = (index) => {
 </script>
 
 <template>
-  <div class="relative bg-[#12151C] overflow-hidden">
+  <div class="relative bg-[#000000] overflow-hidden">
     <!-- Images Container -->
     <div
       class="relative w-full"
@@ -252,12 +252,18 @@ const goTo = (index) => {
         loading="lazy"
         @click="emit('imageClick', currentIndex)"
       />
+
+      <!-- Top gradient overlay for smooth blend with header -->
+      <div class="gallery-gradient-top"></div>
+
+      <!-- Bottom gradient overlay for smooth blend with content -->
+      <div class="gallery-gradient-bottom"></div>
     </div>
 
     <!-- Indicators (dots) -->
     <div
       v-if="normalizedImages.length > 1"
-      class="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2"
+      class="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10"
     >
       <button
         v-for="(_, index) in normalizedImages"
@@ -276,9 +282,45 @@ const goTo = (index) => {
     <!-- Counter -->
     <div
       v-if="normalizedImages.length > 1"
-      class="absolute top-3 right-3 px-2 py-1 bg-black/50 text-xs text-white/70"
+      class="absolute top-3 right-3 px-2 py-1 bg-black/50 rounded-lg text-xs text-white/70 z-10"
     >
       {{ currentIndex + 1 }} / {{ normalizedImages.length }}
     </div>
   </div>
 </template>
+
+<style scoped>
+/* Top gradient - smooth blend with header/navbar */
+.gallery-gradient-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.7) 0%,
+    rgba(0, 0, 0, 0.4) 40%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Bottom gradient - smooth blend with content below */
+.gallery-gradient-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.6) 0%,
+    rgba(0, 0, 0, 0.3) 50%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+</style>

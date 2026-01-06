@@ -634,6 +634,57 @@ video {
    Vue Transitions
    ============================================ */
 
+/* Page Transition - Default (subtle fade + scale) */
+.page-enter-active,
+.page-leave-active {
+  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(8px) scale(0.98);
+}
+
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.98);
+}
+
+/* Page Slide Forward (entering deeper into app) */
+.page-slide-forward-enter-active,
+.page-slide-forward-leave-active {
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.page-slide-forward-enter-from {
+  opacity: 0;
+  transform: translateX(30%);
+}
+
+.page-slide-forward-leave-to {
+  opacity: 0;
+  transform: translateX(-15%);
+}
+
+/* Page Slide Back (going back in navigation) */
+.page-slide-back-enter-active,
+.page-slide-back-leave-active {
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.page-slide-back-enter-from {
+  opacity: 0;
+  transform: translateX(-30%);
+}
+
+.page-slide-back-leave-to {
+  opacity: 0;
+  transform: translateX(15%);
+}
+
 /* Fade */
 .fade-enter-active,
 .fade-leave-active {

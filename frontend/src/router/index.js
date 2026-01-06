@@ -17,6 +17,7 @@
 
 import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
+import { getScrollPosition, saveScrollPosition, restoreScrollPosition } from "@/composables/usePageTransition";
 
 // ============================================================================
 // AUTHENTICATION HELPERS
@@ -57,21 +58,13 @@ const router = createRouter({
 
   /**
    * Scroll behavior configuration
-   * Controls how the page scrolls when navigating between routes
+   * Returns false to disable native scroll behavior - we handle it manually
+   * for proper support of the main content container (not window)
    */
-  scrollBehavior(to, from, savedPosition) {
-    // Browser back/forward: restore previous scroll position
-    if (savedPosition) {
-      return savedPosition;
-    }
-
-    // Hash links: scroll to top instantly, let component handle hash scroll
-    if (to.hash) {
-      return { top: 0, behavior: "instant" };
-    }
-
-    // Default: smooth scroll to top of page
-    return { top: 0, behavior: "smooth" };
+  scrollBehavior() {
+    // Return false to prevent any automatic scrolling
+    // Scroll restoration is handled by afterEach hook with restoreScrollPosition
+    return false;
   },
 
   // ============================================================================
@@ -231,8 +224,23 @@ const router = createRouter({
 /**
  * Global navigation guard - runs before each route change
  * Handles authentication and authorization checks
+ * Also saves scroll position when navigating deeper
  */
 router.beforeEach((to, from, next) => {
+  // ---- SCROLL POSITION SAVING ----
+  // Save scroll position when going from a shallow page to a deeper one
+  // (e.g., /feed -> /observation/123)
+  if (from.path) {
+    const getDepth = (path) => path?.split("/").filter(Boolean).length || 0;
+    const toDepth = getDepth(to.path);
+    const fromDepth = getDepth(from.path);
+    
+    // Going deeper: save current scroll position
+    if (toDepth > fromDepth) {
+      saveScrollPosition(from.path);
+    }
+  }
+
   // Extract route meta requirements
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
   const requiresAdmin = to.matched.some((record) => record.meta.requiresAdmin);
@@ -278,6 +286,33 @@ router.beforeEach((to, from, next) => {
 
   // All checks passed: proceed with navigation
   next();
+});
+
+/**
+ * After navigation hook - handles scroll position restoration
+ * Runs after the navigation has completed and transition starts
+ */
+router.afterEach((to, from) => {
+  const getDepth = (path) => path?.split("/").filter(Boolean).length || 0;
+  const toDepth = getDepth(to.path);
+  const fromDepth = getDepth(from?.path);
+  const isGoingBack = from?.path && fromDepth > toDepth;
+  
+  // After transition completes, handle scroll
+  setTimeout(() => {
+    if (isGoingBack) {
+      // Restore saved scroll position when going back
+      restoreScrollPosition(to.path);
+    } else {
+      // Scroll to top for new pages
+      const main = document.querySelector("main.overflow-y-auto");
+      if (main) {
+        main.scrollTo({ top: 0, behavior: "instant" });
+      } else {
+        window.scrollTo({ top: 0, behavior: "instant" });
+      }
+    }
+  }, 350); // Slightly after transition (300ms)
 });
 
 export default router;

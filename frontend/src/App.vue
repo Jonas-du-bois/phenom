@@ -17,9 +17,9 @@
   <AppLayout :show-tab-bar="showTabBar">
     <!-- Router view with scoped slot for transition control -->
     <router-view v-slot="{ Component }">
-      <!-- Page transition: fade out old page, then fade in new page -->
-      <transition name="page" mode="out-in">
-        <component :is="Component" />
+      <!-- Page transition: directional based on navigation -->
+      <transition :name="transitionName" mode="out-in">
+        <component :is="Component" :key="$route.path" />
       </transition>
     </router-view>
   </AppLayout>
@@ -32,12 +32,14 @@
  * Handles:
  * - Tab bar visibility logic (hidden on auth/camera pages)
  * - Auth store initialization on mount
+ * - Intelligent page transition direction (via usePageTransition)
  */
 
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { AppLayout } from "./components/layout";
 import { useAuthStore } from "./stores/auth";
+import { usePageTransition } from "./composables";
 
 // ============================================================================
 // COMPOSABLES & STORES
@@ -45,6 +47,9 @@ import { useAuthStore } from "./stores/auth";
 
 const router = useRouter();
 const authStore = useAuthStore();
+
+// Page transition with intelligent direction detection
+const { transitionName } = usePageTransition();
 
 // ============================================================================
 // TAB BAR VISIBILITY

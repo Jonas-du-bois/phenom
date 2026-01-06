@@ -27,6 +27,30 @@ import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import "./style.css";
 
 // ============================================================================
+// PASSIVE EVENT LISTENER FIX
+// ============================================================================
+
+// Fix Chrome warning about non-passive touch event listeners
+// This makes touch scrolling more responsive by telling the browser
+// we won't call preventDefault() on touch events
+(function () {
+  if (typeof EventTarget !== "undefined") {
+    const originalAddEventListener = EventTarget.prototype.addEventListener;
+    EventTarget.prototype.addEventListener = function (type, listener, options) {
+      // Make touch events passive by default (unless explicitly set)
+      if (type === "touchstart" || type === "touchmove" || type === "wheel") {
+        if (typeof options === "boolean") {
+          options = { capture: options, passive: true };
+        } else if (typeof options === "object" || options === undefined) {
+          options = { ...options, passive: options?.passive ?? true };
+        }
+      }
+      return originalAddEventListener.call(this, type, listener, options);
+    };
+  }
+})();
+
+// ============================================================================
 // APPLICATION BOOTSTRAP
 // ============================================================================
 

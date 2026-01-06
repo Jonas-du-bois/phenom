@@ -148,7 +148,6 @@ const observationStore = useObservationStore();
 const filterStore = useFilterStore();
 
 const { observations, loading, pagination } = storeToRefs(observationStore);
-const { activeFilters } = storeToRefs(filterStore);
 
 const loadingMore = ref(false);
 const hasMore = computed(() => pagination.value.hasMore);

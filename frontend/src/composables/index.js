@@ -55,6 +55,9 @@ export { useMap } from "./useMap";
 /** Modal open/close state management */
 export { useModal } from "./useModal";
 
+/** Page transition logic with directional animations */
+export { usePageTransition, PAGE_TRANSITIONS } from "./usePageTransition";
+
 /** Toast notification system (success, error, warning, info) */
 export { useToast } from "./useToast";
 
