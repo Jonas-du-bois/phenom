@@ -16,6 +16,7 @@
   - Edit/delete actions for observation owner
   - Sharing functionality
   - Verification badge for verified observations
+  - Liquid glass design aesthetic
 
   ROUTE: /observation/:id
   ============================================================================
@@ -66,45 +67,98 @@
         @image-click="openFullscreen"
       />
 
-      <!-- Observation info -->
-      <div class="px-4 py-4 space-y-4">
-        <!-- Title -->
-        <!-- <h1 class="text-xl font-semibold text-white">
-          {{ observation.title }}
-        </h1> -->
+      <!-- Observation info - Liquid glass card -->
+      <div class="px-5 py-6 space-y-5">
+        <!-- Main content card -->
+        <div class="liquid-glass-card rounded-2xl p-5 space-y-4">
+          <!-- Type badge with tooltip -->
+          <div class="flex items-center gap-2 flex-wrap">
+            <GlassTooltip 
+              :content="getTypeTooltipContent(observation.type)"
+              :icon="getTypeIcon(observation.type)"
+            >
+              <BaseBadge :variant="typeBadgeVariant" class="badge-glow badge-interactive">
+                {{ observation.type?.toUpperCase() || "OBSERVATION" }}
+              </BaseBadge>
+            </GlassTooltip>
+            <GlassTooltip 
+              v-if="observation.verified" 
+              content="Cette observation a été vérifiée par notre équipe de modération"
+              icon="✓"
+            >
+              <BaseBadge variant="success" class="badge-glow badge-interactive">
+                ✓ Vérifié
+              </BaseBadge>
+            </GlassTooltip>
+          </div>
 
-        <!-- Type badge -->
-        <div class="flex items-center gap-2">
-          <BaseBadge :variant="typeBadgeVariant">
-            {{ observation.type?.toUpperCase() || "OBSERVATION" }}
-          </BaseBadge>
-          <!-- <BaseBadge v-if="observation.verified" variant="success">
-            Vérifié
-          </BaseBadge> -->
+          <!-- Description with enhanced typography -->
+          <p class="text-white/85 text-base leading-relaxed whitespace-pre-wrap">
+            {{ observation.description }}
+          </p>
         </div>
 
-        <!-- Description -->
-        <p class="text-white/80 text-base leading-relaxed whitespace-pre-wrap">
-          {{ observation.description }}
-        </p>
+        <!-- Metadata card -->
+        <div class="liquid-glass-card rounded-2xl overflow-hidden">
+          <ObservationMeta :observation="observation" />
+        </div>
 
-        <!-- Metadata -->
-        <ObservationMeta :observation="observation" />
-
-        <!-- Map preview -->
+        <!-- Map preview - Liquid glass style -->
         <div
           v-if="observation.location?.coordinates"
-          class="h-40 rounded-xl overflow-hidden"
+          class="liquid-glass-card rounded-2xl h-44 overflow-hidden cursor-pointer group"
           @click="
             $router.push({ path: '/map', query: { focus: observation._id } })
           "
         >
           <div
-            class="w-full h-full bg-[#12151C] flex items-center justify-center"
+            class="w-full h-full flex items-center justify-center relative"
           >
-            <div class="text-center">
+            <!-- Subtle grid pattern background -->
+            <div class="absolute inset-0 opacity-20 bg-grid-pattern"></div>
+            
+            <div class="text-center relative z-10">
+              <!-- Map pin icon with glow -->
+              <div class="map-icon-wrapper inline-flex items-center justify-center w-14 h-14 rounded-full mb-3">
+                <svg
+                  class="w-7 h-7 text-[#00F0FF]"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.5"
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.5"
+                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+              </div>
+              <p class="text-sm text-white/70 group-hover:text-[#00F0FF] transition-colors">
+                Voir sur la carte
+              </p>
+              <p class="text-xs text-white/40 mt-1">
+                {{ observation.location?.name || observation.country || 'Localisation' }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Comments section - Liquid glass card -->
+      <div class="px-5 py-4" id="comments">
+        <div class="liquid-glass-card rounded-2xl p-5">
+          <!-- Section header -->
+          <div class="flex items-center gap-3 mb-5">
+            <div class="comment-icon-wrapper flex items-center justify-center w-9 h-9 rounded-xl">
               <svg
-                class="w-8 h-8 mx-auto text-[#00F0FF] mb-2"
+                class="w-5 h-5 text-[#00F0FF]"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -113,151 +167,160 @@
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   stroke-width="1.5"
-                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                />
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="1.5"
-                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
                 />
               </svg>
-              <p class="text-sm text-white/60">Voir sur la carte</p>
             </div>
+            <div>
+              <h2 class="text-base font-semibold text-white">
+                Commentaires
+              </h2>
+              <span v-if="comments.length" class="text-xs text-white/40">
+                {{ comments.length }} commentaire{{ comments.length > 1 ? 's' : '' }}
+              </span>
+            </div>
+          </div>
+
+          <CommentList
+            :comments="comments"
+            :loading="false"
+            :loading-more="false"
+            :has-more="false"
+            :current-user-id="currentUserId"
+            @delete="deleteComment"
+            @user-click="goToProfile"
+          />
+
+          <!-- Comment form -->
+          <div v-if="isAuthenticated" class="mt-4 pt-4 border-t border-white/[0.06]">
+            <CommentForm
+              :loading="submittingComment"
+              @submit="submitComment"
+            />
           </div>
         </div>
       </div>
 
-      <!-- Comments section -->
-      <div class="px-4 py-4" id="comments">
-        <h2 class="text-lg font-semibold text-white mb-4">
-          Commentaires
-          <span v-if="comments.length" class="text-white/40 font-normal">
-            ({{ comments.length }})
-          </span>
-        </h2>
-
-        <CommentList
-          :comments="comments"
-          :loading="false"
-          :loading-more="false"
-          :has-more="false"
-          :current-user-id="currentUserId"
-          @delete="deleteComment"
-          @user-click="goToProfile"
-        />
-
-        <!-- Comment form (sticky bottom) -->
-        <CommentForm
-          v-if="isAuthenticated"
-          :loading="submittingComment"
-          @submit="submitComment"
-        />
-      </div>
-
-      <!-- Options menu -->
+      <!-- Options menu - Liquid glass bottom sheet -->
       <Teleport to="body">
-        <Transition name="fade">
-          <div v-if="showMenu" class="fixed inset-0 z-50 rounded-2xl">
+        <Transition name="slide-up">
+          <div v-if="showMenu" class="fixed inset-0 z-50">
+            <!-- Backdrop with blur -->
             <div
-              class="absolute inset-0 bg-black/60"
+              class="absolute inset-0 bg-black/70 backdrop-blur-sm"
               @click="showMenu = false"
             />
 
+            <!-- Bottom sheet -->
             <div
-              class="absolute bottom-0 left-0 right-0 rounded-t-2xl overflow-hidden py-2.5 px-4 bg-white/[0.02] border border-white/[0.08] text-white text-sm transition-all backdrop-blur-sm"
+              class="liquid-glass-sheet absolute bottom-0 left-0 right-0 rounded-t-3xl overflow-hidden"
               :style="{
-                paddingBottom: '12px' + 'env(safe-area-inset-bottom, 0px)',
+                paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
               }"
             >
-              <div class="py-2">
+              <!-- Handle indicator -->
+              <div class="flex justify-center pt-3 pb-2">
+                <div class="w-10 h-1 rounded-full bg-white/20"></div>
+              </div>
+
+              <!-- Menu items -->
+              <div class="px-4 py-2 space-y-1">
                 <button
                   @click="shareObservation"
-                  class="w-full px-4 py-3 flex items-center gap-3 text-white"
+                  class="menu-item w-full px-4 py-3.5 flex items-center gap-4 text-white rounded-xl"
                 >
-                  <svg
-                    class="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="1.5"
-                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                    />
-                  </svg>
-                  <span>Partager</span>
+                  <div class="menu-icon-wrapper flex items-center justify-center w-10 h-10 rounded-xl">
+                    <svg
+                      class="w-5 h-5 text-[#00F0FF]"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="1.5"
+                        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                      />
+                    </svg>
+                  </div>
+                  <span class="font-medium">Partager</span>
                 </button>
 
                 <template v-if="isOwner">
                   <button
                     @click="editObservation"
-                    class="w-full px-4 py-3 flex items-center gap-3 text-white"
+                    class="menu-item w-full px-4 py-3.5 flex items-center gap-4 text-white rounded-xl"
                   >
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="1.5"
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                      />
-                    </svg>
-                    <span>Modifier</span>
+                    <div class="menu-icon-wrapper flex items-center justify-center w-10 h-10 rounded-xl">
+                      <svg
+                        class="w-5 h-5 text-[#00F0FF]"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="1.5"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        />
+                      </svg>
+                    </div>
+                    <span class="font-medium">Modifier</span>
                   </button>
 
                   <button
                     @click="confirmDelete"
-                    class="w-full px-4 py-3 flex items-center gap-3 text-red-400"
+                    class="menu-item menu-item-danger w-full px-4 py-3.5 flex items-center gap-4 rounded-xl"
                   >
-                    <svg
-                      class="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="1.5"
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                    <span>Supprimer</span>
+                    <div class="menu-icon-wrapper menu-icon-danger flex items-center justify-center w-10 h-10 rounded-xl">
+                      <svg
+                        class="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="1.5"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                    </div>
+                    <span class="font-medium">Supprimer</span>
                   </button>
                 </template>
               </div>
 
-              <button
-                @click="showMenu = false"
-                class="w-full px-4 py-4 text-center text-white bg-white/[0.02] border-2 border-white rounded-2xl cursor-pointer active:bg-white/[0.06] active:scale-95 transition-transform shadow-sm ring-1 ring-white/10 focus:outline-none"
-              >
-                Annuler
-              </button>
+              <!-- Cancel button -->
+              <div class="px-4 pt-3">
+                <button
+                  @click="showMenu = false"
+                  class="cancel-button w-full px-4 py-4 text-center text-white font-medium rounded-2xl transition-all"
+                >
+                  Annuler
+                </button>
+              </div>
             </div>
           </div>
         </Transition>
 
-        <!-- Fullscreen Gallery Modal -->
+        <!-- Fullscreen Gallery Modal - Enhanced with glass UI -->
         <Transition name="fade">
           <div
             v-if="showFullscreenGallery && images.length"
-            class="fixed inset-0 z-50 bg-black flex items-center justify-center"
+            class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center"
             @click="closeFullscreen"
           >
-            <!-- Close button -->
+            <!-- Close button with glass effect -->
             <button
-              class="absolute top-4 right-4 z-10 p-2 text-white/80 hover:text-white"
+              class="gallery-nav-button absolute top-4 right-4 z-10 flex items-center justify-center w-11 h-11 rounded-full"
               @click="closeFullscreen"
             >
               <svg
-                class="w-8 h-8"
+                class="w-6 h-6 text-white"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -271,8 +334,8 @@
               </svg>
             </button>
 
-            <!-- Image counter -->
-            <div class="absolute top-4 left-4 text-white/60 text-sm">
+            <!-- Image counter with glass pill -->
+            <div class="gallery-counter absolute top-4 left-4 px-4 py-2 rounded-full text-sm text-white/90">
               {{ fullscreenIndex + 1 }} / {{ images.length }}
             </div>
 
@@ -284,14 +347,14 @@
               @click.stop
             />
 
-            <!-- Navigation arrows -->
+            <!-- Navigation arrows with glass effect -->
             <button
               v-if="fullscreenIndex > 0"
-              class="absolute left-4 p-2 text-white/80 hover:text-white"
+              class="gallery-nav-button absolute left-4 flex items-center justify-center w-12 h-12 rounded-full"
               @click.stop="fullscreenIndex--"
             >
               <svg
-                class="w-10 h-10"
+                class="w-7 h-7 text-white"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -307,11 +370,11 @@
 
             <button
               v-if="fullscreenIndex < images.length - 1"
-              class="absolute right-4 p-2 text-white/80 hover:text-white"
+              class="gallery-nav-button absolute right-4 flex items-center justify-center w-12 h-12 rounded-full"
               @click.stop="fullscreenIndex++"
             >
               <svg
-                class="w-10 h-10"
+                class="w-7 h-7 text-white"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -339,7 +402,9 @@ import {
   ErrorState,
   BaseButton,
   BaseBadge,
+  GlassTooltip,
 } from "@/components/atoms";
+import { getObservationLabel, OBSERVATION_TYPES } from "@/constants";
 import {
   ObservationHeader,
   ObservationMeta,
@@ -428,6 +493,64 @@ const typeBadgeVariant = computed(() => {
   if (type === "entity") return "warning";
   return "default";
 });
+
+// ============================================================================
+// TOOLTIP HELPERS
+// ============================================================================
+
+/**
+ * Get the full French description for a type code
+ * @param {string} type - The observation type code
+ * @returns {string} Full French description
+ */
+const getTypeTooltipContent = (type) => {
+  if (!type) return "Type d'observation non spécifié";
+  
+  const typeUpper = type.toUpperCase();
+  const typeData = OBSERVATION_TYPES[typeUpper];
+  
+  if (typeData) {
+    return typeData.label;
+  }
+  
+  // Fallback for common types not in the constant
+  const fallbacks = {
+    UFO: "Objet Volant Non Identifié",
+    OVNI: "Objet Volant Non Identifié",
+    ENTITY: "Entité ou créature non identifiée",
+    PAN: "Phénomène Aérien Non Identifié",
+    UAP: "Unidentified Aerial Phenomenon",
+  };
+  
+  return fallbacks[typeUpper] || getObservationLabel(typeUpper);
+};
+
+/**
+ * Get the icon for a type code
+ * @param {string} type - The observation type code
+ * @returns {string} Emoji icon
+ */
+const getTypeIcon = (type) => {
+  if (!type) return "👁️";
+  
+  const typeUpper = type.toUpperCase();
+  const typeData = OBSERVATION_TYPES[typeUpper];
+  
+  if (typeData?.icon) {
+    return typeData.icon;
+  }
+  
+  // Fallback icons for common types
+  const fallbackIcons = {
+    UFO: "🛸",
+    OVNI: "🛸",
+    ENTITY: "👽",
+    PAN: "🛸",
+    UAP: "🛸",
+  };
+  
+  return fallbackIcons[typeUpper] || "👁️";
+};
 
 // Forcer le scroll en haut immédiatement lors de la création du composant
 // Ceci s'exécute de manière synchrone avant le rendu
@@ -543,10 +666,10 @@ const shareObservation = async () => {
   }
 };
 
-const reportObservation = () => {
+/* const reportObservation = () => {
   showMenu.value = false;
   toast.info("La fonctionnalité de signalement sera bientôt disponible");
-};
+}; */
 
 const editObservation = () => {
   showMenu.value = false;
@@ -574,12 +697,271 @@ const goBack = () => {
 </script>
 
 <style scoped>
+/* ============================================================================
+   LIQUID GLASS DESIGN SYSTEM - Observation Detail Page
+   ============================================================================ */
+
+/* Main content card - frosted glass effect */
+.liquid-glass-card {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.04),
+    rgba(255, 255, 255, 0.01)
+  );
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 
+    0 10px 40px rgba(2, 6, 23, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Light reflection overlay */
+.liquid-glass-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.06),
+    rgba(255, 255, 255, 0)
+  );
+  mix-blend-mode: overlay;
+}
+
+/* Badge glow effect for type badges */
+.badge-glow {
+  filter: drop-shadow(0 0 6px rgba(0, 240, 255, 0.2));
+}
+
+/* Interactive badge styling (with tooltip) */
+.badge-interactive {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.badge-interactive:hover {
+  filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.35));
+  transform: translateY(-1px);
+}
+
+.badge-interactive:active {
+  transform: scale(0.97);
+}
+
+/* Map icon wrapper with subtle glow */
+.map-icon-wrapper {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 240, 255, 0.1),
+    rgba(0, 240, 255, 0.02)
+  );
+  border: 1px solid rgba(0, 240, 255, 0.15);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
+}
+
+/* Comment section icon */
+.comment-icon-wrapper {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 240, 255, 0.12),
+    rgba(0, 240, 255, 0.03)
+  );
+  border: 1px solid rgba(0, 240, 255, 0.12);
+}
+
+/* Subtle grid pattern for map preview */
+.bg-grid-pattern {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* ============================================================================
+   BOTTOM SHEET - Liquid Glass Style
+   ============================================================================ */
+
+.liquid-glass-sheet {
+  background: linear-gradient(
+    180deg,
+    rgba(30, 30, 40, 0.95),
+    rgba(20, 20, 28, 0.98)
+  );
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 -10px 50px rgba(0, 0, 0, 0.5);
+}
+
+.liquid-glass-sheet::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.04),
+    transparent
+  );
+  border-radius: inherit;
+}
+
+/* Menu item styling */
+.menu-item {
+  background: transparent;
+  transition: all 0.2s ease;
+}
+
+.menu-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.menu-item:active {
+  background: rgba(255, 255, 255, 0.08);
+  transform: scale(0.98);
+}
+
+.menu-item-danger {
+  color: #f87171;
+}
+
+/* Menu icon wrappers */
+.menu-icon-wrapper {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 240, 255, 0.1),
+    rgba(0, 240, 255, 0.02)
+  );
+  border: 1px solid rgba(0, 240, 255, 0.12);
+}
+
+.menu-icon-danger {
+  background: linear-gradient(
+    135deg,
+    rgba(248, 113, 113, 0.12),
+    rgba(248, 113, 113, 0.03)
+  );
+  border: 1px solid rgba(248, 113, 113, 0.15);
+  color: #f87171;
+}
+
+/* Cancel button */
+.cancel-button {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.06),
+    rgba(255, 255, 255, 0.02)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(10px);
+}
+
+.cancel-button:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.04)
+  );
+}
+
+.cancel-button:active {
+  transform: scale(0.98);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.12),
+    rgba(255, 255, 255, 0.06)
+  );
+}
+
+/* ============================================================================
+   FULLSCREEN GALLERY - Glass UI Controls
+   ============================================================================ */
+
+.gallery-nav-button {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.08),
+    rgba(255, 255, 255, 0.02)
+  );
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+}
+
+.gallery-nav-button:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.15),
+    rgba(255, 255, 255, 0.05)
+  );
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.gallery-nav-button:active {
+  transform: scale(0.95);
+}
+
+.gallery-counter {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.08),
+    rgba(255, 255, 255, 0.02)
+  );
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================================================
+   TRANSITIONS & ANIMATIONS
+   ============================================================================ */
+
+/* Fade transition */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.2s ease;
+  transition: opacity 0.25s ease;
 }
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+/* Slide up transition for bottom sheet */
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.slide-up-enter-active .liquid-glass-sheet,
+.slide-up-leave-active .liquid-glass-sheet {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.slide-up-enter-from,
+.slide-up-leave-to {
+  opacity: 0;
+}
+
+.slide-up-enter-from .liquid-glass-sheet,
+.slide-up-leave-to .liquid-glass-sheet {
+  transform: translateY(100%);
+}
+
+/* Subtle glow animation for interactive elements */
+@keyframes subtle-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(0, 240, 255, 0.15);
+  }
 }
 </style>

@@ -244,6 +244,7 @@ defineOptions({ name: "AppLayout" });
 // =============================================================================
 // PROPS DEFINITION
 // =============================================================================
+// eslint-disable-next-line no-unused-vars
 const props = defineProps({
   // Whether to display the bottom tab bar navigation
   showTabBar: {

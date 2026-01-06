@@ -18,8 +18,12 @@
 // ============================================================================
 import { computed } from "vue";
 import BaseBadge from "../atoms/BaseBadge.vue";
+import GlassTooltip from "../atoms/GlassTooltip.vue";
 import CredibilityGauge from "../atoms/CredibilityGauge.vue";
 import StrangenessGauge from "../atoms/StrangenessGauge.vue";
+import { getUfoShapeByCode, getUfoShapeLabel } from "@/constants/ufoShapes";
+import { getObserverTypeByCode, getObserverTypeLabel } from "@/constants/observerTypes";
+import { PHENOMENA } from "@/constants/phenomena";
 
 // ============================================================================
 // COMPONENT OPTIONS
@@ -42,6 +46,68 @@ const props = defineProps({
 // ============================================================================
 /** Emitted when user clicks on the location section (to open map) */
 const emit = defineEmits(["locationClick"]);
+
+// ============================================================================
+// TOOLTIP HELPERS
+// ============================================================================
+
+/**
+ * Get shape tooltip content
+ * @param {string} code - Shape code
+ * @returns {string} Full French label
+ */
+const getShapeTooltip = (code) => {
+  return getUfoShapeLabel(code);
+};
+
+/**
+ * Get shape icon
+ * @param {string} code - Shape code
+ * @returns {string} Emoji icon
+ */
+const getShapeIcon = (code) => {
+  const shape = getUfoShapeByCode(code);
+  return shape?.icon || "🛸";
+};
+
+/**
+ * Get observer type tooltip content
+ * @param {string} code - Observer type code
+ * @returns {string} Full French label
+ */
+const getObserverTooltip = (code) => {
+  return getObserverTypeLabel(code);
+};
+
+/**
+ * Get observer type icon
+ * @param {string} code - Observer type code
+ * @returns {string} Emoji icon
+ */
+const getObserverIcon = (code) => {
+  const observer = getObserverTypeByCode(code);
+  return observer?.icon || "👁️";
+};
+
+/**
+ * Get phenomenon tooltip content
+ * @param {string} code - Phenomenon code
+ * @returns {string} Full French label
+ */
+const getPhenomenonTooltip = (code) => {
+  const phenomenon = PHENOMENA.find(p => p.code === code);
+  return phenomenon?.label || code;
+};
+
+/**
+ * Get phenomenon icon
+ * @param {string} code - Phenomenon code
+ * @returns {string} Emoji icon
+ */
+const getPhenomenonIcon = (code) => {
+  const phenomenon = PHENOMENA.find(p => p.code === code);
+  return phenomenon?.icon || "✨";
+};
 
 // ============================================================================
 // COMPUTED PROPERTIES
@@ -95,9 +161,9 @@ const formattedDateTime = computed(() => {
 <template>
   <!-- ========================================================================
        MAIN CONTAINER
-       Black background with vertical spacing between sections
+       Transparent background to integrate with liquid glass cards
        ======================================================================== -->
-  <div class="px-4 py-4 space-y-4 bg-[#000000]">
+  <div class="px-4 py-4 space-y-4">
     <!-- ======================================================================
          GAUGES SECTION - Credibility & Strangeness indicators
          Displayed side by side, centered
@@ -175,13 +241,16 @@ const formattedDateTime = computed(() => {
         🛸 Formes observées
       </p>
       <div class="flex flex-wrap gap-2">
-        <BaseBadge
+        <GlassTooltip
           v-for="shape in observation.ufoShapes"
           :key="shape"
-          variant="cyan"
+          :content="getShapeTooltip(shape)"
+          :icon="getShapeIcon(shape)"
         >
-          {{ shape }}
-        </BaseBadge>
+          <BaseBadge variant="cyan" class="badge-interactive">
+            {{ shape }}
+          </BaseBadge>
+        </GlassTooltip>
       </div>
     </div>
 
@@ -194,13 +263,16 @@ const formattedDateTime = computed(() => {
         👁️ Types d'observateurs
       </p>
       <div class="flex flex-wrap gap-2">
-        <BaseBadge
+        <GlassTooltip
           v-for="type in observation.observerTypes"
           :key="type"
-          variant="default"
+          :content="getObserverTooltip(type)"
+          :icon="getObserverIcon(type)"
         >
-          {{ type }}
-        </BaseBadge>
+          <BaseBadge variant="default" class="badge-interactive">
+            {{ type }}
+          </BaseBadge>
+        </GlassTooltip>
       </div>
     </div>
 
@@ -213,14 +285,34 @@ const formattedDateTime = computed(() => {
         ✨ Phénomènes
       </p>
       <div class="flex flex-wrap gap-2">
-        <BaseBadge
+        <GlassTooltip
           v-for="phenomenon in observation.phenomena"
           :key="phenomenon"
-          variant="default"
+          :content="getPhenomenonTooltip(phenomenon)"
+          :icon="getPhenomenonIcon(phenomenon)"
         >
-          {{ phenomenon }}
-        </BaseBadge>
+          <BaseBadge variant="default" class="badge-interactive">
+            {{ phenomenon }}
+          </BaseBadge>
+        </GlassTooltip>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+/* Interactive badge styling (with tooltip) */
+.badge-interactive {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.badge-interactive:hover {
+  filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.3));
+  transform: translateY(-1px);
+}
+
+.badge-interactive:active {
+  transform: scale(0.97);
+}
+</style>

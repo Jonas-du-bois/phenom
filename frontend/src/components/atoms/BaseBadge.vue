@@ -45,6 +45,7 @@ defineOptions({ name: "BaseBadge" });
 // =============================================================================
 // PROPS DEFINITION
 // =============================================================================
+// eslint-disable-next-line no-unused-vars
 const props = defineProps({
   // Color variant of the badge
   // Each variant has matching background, border, and text colors

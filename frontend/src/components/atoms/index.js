@@ -45,6 +45,7 @@ export { default as BaseAvatar } from "./BaseAvatar.vue";     // User avatar
 export { default as LoadingSpinner } from "./LoadingSpinner.vue"; // Loading indicator
 export { default as EmptyState } from "./EmptyState.vue";     // Empty content placeholder
 export { default as ErrorState } from "./ErrorState.vue";     // Error display
+export { default as GlassTooltip } from "./GlassTooltip.vue"; // Liquid glass tooltip/popup
 
 // =============================================================================
 // VISUALS
