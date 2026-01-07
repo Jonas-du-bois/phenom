@@ -74,7 +74,7 @@
       class="flex-1 overflow-y-auto overscroll-contain"
       :style="{
         paddingTop: hasContentPadding
-          ? 'calc(3.5rem + env(safe-area-inset-top, 0px))'
+          ? 'calc(2.5rem + env(safe-area-inset-top, 0px))'
           : undefined,
         paddingBottom: showTabBar
           ? 'calc(5.5rem + env(safe-area-inset-bottom, 0px))'

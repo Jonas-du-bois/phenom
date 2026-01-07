@@ -50,10 +50,9 @@
     </template>
 
     <div class="map-page h-screen relative">
-      <!-- Map (full screen but leaves space for bottom navbar) -->
+      <!-- Map (full screen, passes under both navbars) -->
       <div 
-        class="absolute top-0 left-0 right-0 overflow-hidden z-0"
-        :style="{ bottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))' }"
+        class="absolute inset-0 overflow-hidden z-0"
       >
         <ObservationMap
           ref="mapRef"

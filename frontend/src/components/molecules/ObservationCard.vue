@@ -10,7 +10,7 @@
 // ============================================================================
 // IMPORTS
 // ============================================================================
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { getImageUrl } from "@/utils/imageHelpers";
 import { useRouter } from "vue-router";
 
@@ -24,6 +24,7 @@ import BaseButton from "../atoms/BaseButton.vue";
 // Stores and composables
 import { useCommentStore } from "@/stores/comment";
 import { useToast } from "@/composables/useToast";
+import { useWebSocket } from "@/composables/useWebSocket";
 import { formatRelativeTime } from "@/utils/formatters";
 
 // ============================================================================
@@ -53,6 +54,7 @@ const emit = defineEmits(["click", "comment", "share"]);
 const router = useRouter();
 const commentStore = useCommentStore();
 const toast = useToast();
+const { messages: wsMessages } = useWebSocket();
 
 // ============================================================================
 // LOCAL STATE
@@ -62,7 +64,52 @@ const commentText = ref(""); // New comment input text
 const isSubmittingComment = ref(false); // Loading state for comment submission
 const isLoadingComments = ref(false); // Loading state for fetching comments
 const comments = ref([]); // List of comments for this observation
-const localCommentCount = ref(0); // Tracks locally added comments count
+const wsCommentDelta = ref(0); // Tracks comment count changes from WebSocket
+
+// ============================================================================
+// WEBSOCKET - Real-time comment updates (only when comments section is visible)
+// ============================================================================
+watch(
+  wsMessages,
+  (msgs) => {
+    if (!msgs || msgs.length === 0) return;
+    const lastMsg = msgs[msgs.length - 1];
+    
+    // Only process comment events for this observation
+    if (!lastMsg.type?.startsWith("comment:")) return;
+    const eventObservationId = lastMsg.data?.observationId;
+    if (eventObservationId !== props.observation._id) return;
+
+    const comment = lastMsg.data?.comment;
+    if (!comment) return;
+
+    if (lastMsg.type === "comment:created") {
+      // Always update the count delta
+      wsCommentDelta.value++;
+      // Only update the list if comments section is visible
+      if (showComments.value) {
+        const exists = comments.value.some((c) => c._id === comment._id);
+        if (!exists) {
+          comments.value.unshift(comment);
+        }
+      }
+    } else if (lastMsg.type === "comment:updated") {
+      if (showComments.value) {
+        const idx = comments.value.findIndex((c) => c._id === comment._id);
+        if (idx !== -1) {
+          comments.value[idx] = comment;
+        }
+      }
+    } else if (lastMsg.type === "comment:deleted") {
+      // Always update the count delta
+      wsCommentDelta.value--;
+      if (showComments.value) {
+        comments.value = comments.value.filter((c) => c._id !== comment._id);
+      }
+    }
+  },
+  { deep: true }
+);
 
 // ============================================================================
 // COMPUTED PROPERTIES - Data formatting and extraction
@@ -153,7 +200,7 @@ const userAvatar = computed(() => {
 
 /**
  * Gets the total comment count
- * Handles different API response formats and adds locally created comments
+ * Handles different API response formats and adds WebSocket delta
  */
 const commentCount = computed(() => {
   const base =
@@ -161,7 +208,7 @@ const commentCount = computed(() => {
     props.observation.commentCount ??
     props.observation.comments?.length ??
     0;
-  return base + localCommentCount.value;
+  return base + wsCommentDelta.value;
 });
 
 // ============================================================================
@@ -209,25 +256,15 @@ const loadComments = async () => {
 
 /**
  * Submits a new comment to the API
- * Updates local state and clears input on success
+ * The WebSocket will handle adding the comment to the list and updating the count
  */
 const submitComment = async () => {
   if (!commentText.value.trim() || isSubmittingComment.value) return;
 
   isSubmittingComment.value = true;
   try {
-    // POTENTIALLY UNUSED: newComment variable is assigned but never used
-    // The commented code below was intended to use it
-    const newComment = await commentStore.addComment(
-      props.observation._id,
-      commentText.value
-    );
-    localCommentCount.value++;
-    comments.value = commentStore.comments;
-    /* DEAD CODE: This block is commented out and unused
-    if (newComment) {
-      comments.value.unshift(newComment)
-    } */
+    await commentStore.addComment(props.observation._id, commentText.value);
+    // WebSocket will handle adding the comment to the list and updating wsCommentDelta
     commentText.value = "";
     toast.success("Commentaire envoyé");
   } catch {
