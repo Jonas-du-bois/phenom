@@ -96,13 +96,13 @@
       {{ error }}
     </div>
 
-    <!-- Username -->
+    <!-- Name -->
     <TextInput
-      v-model="form.username"
-      label="Nom d'utilisateur"
-      placeholder="votre_pseudo"
-      autocomplete="username"
-      :error="errors.username"
+      v-model="form.name"
+      label="Nom"
+      placeholder="Votre nom"
+      autocomplete="name"
+      :error="errors.name"
       required
     >
       <template #leftIcon>
@@ -344,7 +344,7 @@ defineProps({
 const emit = defineEmits(["submit"]);
 
 const form = reactive({
-  username: "",
+  name: "",
   email: "",
   password: "",
   confirmPassword: "",
@@ -352,7 +352,7 @@ const form = reactive({
 });
 
 const errors = reactive({
-  username: "",
+  name: "",
   email: "",
   password: "",
   confirmPassword: "",
@@ -402,11 +402,11 @@ const validate = () => {
   let isValid = true;
   Object.keys(errors).forEach((key) => (errors[key] = ""));
 
-  if (!form.username || form.username.length < 3) {
-    errors.username = "Le pseudo doit contenir au moins 3 caractères";
+  if (!form.name || form.name.length < 2) {
+    errors.name = "Le nom doit contenir au moins 2 caractères";
     isValid = false;
-  } else if (!/^[a-zA-Z0-9_]+$/.test(form.username)) {
-    errors.username = "Caractères autorisés : lettres, chiffres, underscore";
+  } else if (form.name.length > 50) {
+    errors.name = "Le nom ne peut pas dépasser 50 caractères";
     isValid = false;
   }
 
@@ -421,8 +421,8 @@ const validate = () => {
   if (!form.password) {
     errors.password = "Le mot de passe est requis";
     isValid = false;
-  } else if (form.password.length < 8) {
-    errors.password = "Au moins 8 caractères requis";
+  } else if (form.password.length < 6) {
+    errors.password = "Au moins 6 caractères requis";
     isValid = false;
   }
 
@@ -442,7 +442,7 @@ const validate = () => {
 const handleSubmit = () => {
   if (!validate()) return;
   emit("submit", {
-    username: form.username,
+    name: form.name,
     email: form.email,
     password: form.password,
   });
