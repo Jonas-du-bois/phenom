@@ -92,20 +92,22 @@ export function useWebSocket() {
       // Subscribe to channels with callbacks
       await ws.value.sub("observations", (data) => {
         console.log("📨 Message observations:", data);
-        messages.value.push({
+        // Create new array reference for Vue reactivity
+        messages.value = [...messages.value, {
           channel: "observations",
           data,
           receivedAt: new Date().toISOString(),
-        });
+        }];
       });
 
       await ws.value.sub("comments", (data) => {
         console.log("📨 Message comments:", data);
-        messages.value.push({
+        // Create new array reference for Vue reactivity
+        messages.value = [...messages.value, {
           channel: "comments",
           data,
           receivedAt: new Date().toISOString(),
-        });
+        }];
       });
 
       console.log("✅ Subscribed to channels: observations, comments");

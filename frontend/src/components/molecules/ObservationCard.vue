@@ -85,23 +85,26 @@ watch(
     if (eventObservationId !== props.observation._id) return;
 
     const comment = payload.data?.comment;
-    if (!comment) return;
 
     if (payload.type === "comment:created") {
       // Always update the count delta
       wsCommentDelta.value++;
       // Only update the list if comments section is visible
-      if (showComments.value) {
+      if (showComments.value && comment) {
         const exists = comments.value.some((c) => c._id === comment._id);
         if (!exists) {
-          comments.value.unshift(comment);
+          // Create new array for reactivity
+          comments.value = [comment, ...comments.value];
         }
       }
     } else if (payload.type === "comment:updated") {
-      if (showComments.value) {
+      if (showComments.value && comment) {
         const idx = comments.value.findIndex((c) => c._id === comment._id);
         if (idx !== -1) {
-          comments.value[idx] = comment;
+          // Create new array for reactivity
+          comments.value = comments.value.map((c, i) =>
+            i === idx ? comment : c
+          );
         }
       }
     } else if (payload.type === "comment:deleted") {
@@ -113,8 +116,7 @@ watch(
         comments.value = comments.value.filter((c) => c._id !== deletedId);
       }
     }
-  },
-  { deep: true }
+  }
 );
 
 // ============================================================================

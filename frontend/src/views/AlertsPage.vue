@@ -238,10 +238,12 @@ import {
   LoadingSpinner,
   EmptyState,
 } from "@/components/atoms";
+import { useToast } from "@/composables/useToast";
 
 defineOptions({ name: "AlertsPage" });
 
 const router = useRouter();
+const toast = useToast();
 
 // WebSocket (WsMini PubSub)
 import { useWebSocket } from "@/composables/useWebSocket";
@@ -375,9 +377,9 @@ onUnmounted(() => {
   const handler = window.__phenom_alerts_storage_handler;
   if (handler) window.removeEventListener("storage", handler);
   // cleanup location loop
-  try {
-    stopLocationBackgroundLoop();
-  } catch (e) {}
+  if (typeof window.__phenom_alerts_stop_location_loop === "function") {
+    window.__phenom_alerts_stop_location_loop();
+  }
   // Ne pas déconnecter le WebSocket ici — la connexion est gérée globalement
 });
 
@@ -486,6 +488,9 @@ const computeDistanceKm = (lat1, lon1, lat2, lon2) => {
   return R * c;
 };
 
+// Track processed message IDs to avoid duplicates
+const processedMessageIds = ref(new Set());
+
 // Watch WebSocket messages and create alerts when an observation event is received
 watch(
   wsMessages,
@@ -493,48 +498,88 @@ watch(
     if (!msgs || !msgs.length) return;
     const latest = msgs[msgs.length - 1];
 
+    // Create unique message ID to avoid processing same message twice
+    const msgId = latest.receivedAt || JSON.stringify(latest);
+    if (processedMessageIds.value.has(msgId)) return;
+    processedMessageIds.value.add(msgId);
+
     // Support different shapes depending on source: either wrapper { channel, data, receivedAt }
     // or raw message { type, data, timestamp }
-    const channel = latest.channel || latest.channel;
+    const channel = latest.channel;
     const payload = latest.data || latest;
 
     // Only handle observations channel / observation events
     if (channel === "observations" || payload?.type?.includes("observation")) {
       const event = payload;
+      const eventType = event.type || "";
+      
+      // Process new observations and nearby alerts
+      // Backend sends "observation:created" for new obs and "observation:nearby" for proximity alerts
+      if (!eventType.includes("created") && !eventType.includes("nearby")) return;
+      
       const obs = event.data || event;
+      const obsId = obs?._id || obs?.id;
+
+      // Check if we already have this observation in alerts
+      if (obsId && alerts.value.some((a) => a.id === obsId)) return;
 
       // If observation has coordinates, compute distance
       let distance = null;
       const obsCoords =
-        obs?.coordinates || obs?.location?.coordinates || obs?.coords;
+        obs?.coordinates || obs?.location?.coordinates || obs?.locationPoint?.coordinates || obs?.coords;
       if (userLocation.value && obsCoords) {
-        const lat = obsCoords.lat ?? obsCoords[0];
-        const lng = obsCoords.lng ?? obsCoords[1];
-        distance = computeDistanceKm(
-          userLocation.value.lat,
-          userLocation.value.lng,
-          lat,
-          lng
-        );
-        if (distance !== null) distance = Math.round(distance * 10) / 10; // 1 decimal
+        // MongoDB stores as [lng, lat], so we need to handle both formats
+        let lat, lng;
+        if (Array.isArray(obsCoords)) {
+          // GeoJSON format: [lng, lat]
+          lng = obsCoords[0];
+          lat = obsCoords[1];
+        } else {
+          lat = obsCoords.lat ?? obsCoords.latitude;
+          lng = obsCoords.lng ?? obsCoords.longitude;
+        }
+        
+        if (lat !== undefined && lng !== undefined) {
+          distance = computeDistanceKm(
+            userLocation.value.lat,
+            userLocation.value.lng,
+            lat,
+            lng
+          );
+          if (distance !== null) distance = Math.round(distance * 10) / 10; // 1 decimal
+        }
       }
 
-      // Only add alert if no user location or within radius
+      // Only add alert if within radius (or no location available)
       if (distance === null || distance <= alertRadius.value) {
-        const id = obs?._id || obs?.id || `alert_${Date.now()}`;
-        alerts.value.unshift({
-          id,
-          observation: obs,
-          message: event.type || "Nouvelle observation",
+        const alertId = obsId || `alert_${Date.now()}`;
+        const newAlert = {
+          id: alertId,
+          observation: {
+            ...obs,
+            title: obs.title || obs.phenomenonType || "Observation",
+            imageUrl: obs.images?.[0]?.url || obs.images?.[0] || null,
+          },
+          message: `Nouvelle observation à ${distance !== null ? distance + " km" : "proximité"}`,
           distance: distance !== null ? distance : undefined,
           createdAt:
             event.timestamp || latest.receivedAt || new Date().toISOString(),
           read: false,
+        };
+        
+        // Add to alerts list (create new array for reactivity)
+        alerts.value = [newAlert, ...alerts.value];
+        
+        // Show toast notification
+        toast.show({
+          type: "info",
+          title: "Nouvelle observation à proximité",
+          message: newAlert.observation.title,
+          duration: 5000,
         });
       }
     }
-  },
-  { deep: true }
+  }
 );
 
 const viewAlert = (alert) => {

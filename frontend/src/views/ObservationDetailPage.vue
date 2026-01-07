@@ -480,7 +480,8 @@ watch(
           (c) => (c._id || c.id) === (newComment._id || newComment.id)
         );
         if (!exists && newComment._id) {
-          comments.value.unshift(newComment);
+          // Create new array for reactivity
+          comments.value = [newComment, ...comments.value];
           console.log("📨 Nouveau commentaire reçu via WebSocket");
         }
         break;
@@ -491,7 +492,10 @@ watch(
           (c) => (c._id || c.id) === (updatedComment._id || updatedComment.id)
         );
         if (index !== -1) {
-          comments.value[index] = updatedComment;
+          // Create new array for reactivity
+          comments.value = comments.value.map((c, i) => 
+            i === index ? updatedComment : c
+          );
           console.log("📨 Commentaire mis à jour via WebSocket");
         }
         break;
@@ -507,8 +511,7 @@ watch(
         break;
       }
     }
-  },
-  { deep: true }
+  }
 );
 
 const currentUserId = computed(() => authUser.value?._id || authUser.value?.id);
