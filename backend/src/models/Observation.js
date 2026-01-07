@@ -108,15 +108,17 @@ const observationSchema = new mongoose.Schema({
     }
   },
   // GeoJSON point for efficient geospatial queries (optional, populated when available)
+  // NOTE: This field should only be set when coordinates are available.
+  // Do NOT set default values here - it will break the 2dsphere index.
   locationPoint: {
     type: {
       type: String,
-      enum: ['Point'],
-      default: 'Point'
+      enum: ['Point']
+      // No default - locationPoint should be undefined when no coordinates
     },
     coordinates: {
-      type: [Number], // [lng, lat]
-      default: undefined
+      type: [Number] // [lng, lat]
+      // No default - must have valid coordinates for GeoJSON
     }
   },
   observerTypes: {
@@ -226,6 +228,63 @@ observationSchema.index({ tags: 1 });
 observationSchema.index({ 'coordinates.lat': 1, 'coordinates.lng': 1 }, { sparse: true });
 // 2dsphere index for GeoJSON point
 observationSchema.index({ locationPoint: '2dsphere' }, { sparse: true });
+
+/**
+ * Pre-save middleware to handle locationPoint GeoJSON field.
+ * Only populates locationPoint when valid coordinates are provided.
+ * This prevents MongoDB 2dsphere index errors when coordinates are missing.
+ */
+observationSchema.pre('save', function(next) {
+  // Check if we have valid coordinates
+  if (this.coordinates && 
+      typeof this.coordinates.lat === 'number' && 
+      typeof this.coordinates.lng === 'number' &&
+      !isNaN(this.coordinates.lat) && 
+      !isNaN(this.coordinates.lng)) {
+    // Set locationPoint for geospatial queries
+    this.locationPoint = {
+      type: 'Point',
+      coordinates: [this.coordinates.lng, this.coordinates.lat] // GeoJSON format: [lng, lat]
+    };
+  } else {
+    // Clear locationPoint if no valid coordinates
+    this.locationPoint = undefined;
+  }
+  next();
+});
+
+/**
+ * Pre-findOneAndUpdate middleware to handle locationPoint on updates.
+ */
+observationSchema.pre('findOneAndUpdate', function(next) {
+  const update = this.getUpdate();
+  
+  // Handle $set operations
+  const setData = update.$set || update;
+  
+  if (setData.coordinates) {
+    const coords = setData.coordinates;
+    if (typeof coords.lat === 'number' && 
+        typeof coords.lng === 'number' &&
+        !isNaN(coords.lat) && 
+        !isNaN(coords.lng)) {
+      // Set locationPoint
+      if (update.$set) {
+        update.$set.locationPoint = {
+          type: 'Point',
+          coordinates: [coords.lng, coords.lat]
+        };
+      } else {
+        update.locationPoint = {
+          type: 'Point',
+          coordinates: [coords.lng, coords.lat]
+        };
+      }
+    }
+  }
+  
+  next();
+});
 
 // Text search index
 observationSchema.index({

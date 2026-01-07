@@ -58,16 +58,18 @@ describe("Observation Endpoints", () => {
   describe("POST /api/v1/observations", () => {
     it("should create a new observation successfully", async () => {
       const observationData = {
-        title: "Strange lights in the sky",
-        description: "I saw multiple bright lights moving in formation",
-        date: "2024-10-15T20:30:00.000Z",
-        location: {
-          type: "Point",
-          coordinates: [2.3522, 48.8566], // Paris
+        description: "I saw multiple bright lights moving in formation over the city",
+        date: "2024-10-15",
+        time: "20:30",
+        location: "Paris, France",
+        country: "France",
+        coordinates: {
+          lat: 48.8566,
+          lng: 2.3522
         },
-        weather: "clear",
         duration: 300,
-        witnesses: 2,
+        credibility: 7,
+        strangeness: 6
       };
 
       const response = await request(app)
@@ -78,23 +80,18 @@ describe("Observation Endpoints", () => {
 
       expect(response.body.success).toBe(true);
       expect(response.body.data).toHaveProperty("_id");
-      expect(response.body.data.title).toBe(observationData.title);
       expect(response.body.data.description).toBe(observationData.description);
+      expect(response.body.data.location).toBe(observationData.location);
+      expect(response.body.data.country).toBe(observationData.country);
       expect(response.body.data.userId._id).toBe(userId.toString());
-      expect(response.body.data.location.coordinates).toEqual(
-        observationData.location.coordinates
-      );
     });
 
     it("should fail without authentication", async () => {
       const observationData = {
-        title: "Test",
-        description: "Test description",
-        date: "2024-10-15T20:30:00.000Z",
-        location: {
-          type: "Point",
-          coordinates: [2.3522, 48.8566],
-        },
+        description: "Test description for authentication test",
+        date: "2024-10-15",
+        location: "Paris, France",
+        country: "France"
       };
 
       const response = await request(app)
@@ -123,13 +120,14 @@ describe("Observation Endpoints", () => {
 
     it("should fail with invalid coordinates", async () => {
       const observationData = {
-        title: "Test",
-        description: "Test description",
-        date: "2024-10-15T20:30:00.000Z",
-        location: {
-          type: "Point",
-          coordinates: [200, 100], // Invalid coordinates
-        },
+        description: "Test description with invalid coordinates values",
+        date: "2024-10-15",
+        location: "Unknown location",
+        country: "Unknown",
+        coordinates: {
+          lat: 200, // Invalid latitude (must be -90 to 90)
+          lng: 100
+        }
       };
 
       const response = await request(app)
@@ -141,15 +139,12 @@ describe("Observation Endpoints", () => {
       expect(response.body.success).toBe(false);
     });
 
-    it("should sanitize XSS in title and description", async () => {
+    it("should sanitize XSS in description", async () => {
       const observationData = {
-        title: '<script>alert("XSS")</script>',
-        description: "<img src=x onerror=alert(1)>",
-        date: "2024-10-15T20:30:00.000Z",
-        location: {
-          type: "Point",
-          coordinates: [2.3522, 48.8566],
-        },
+        description: "<script>alert('XSS')</script> Normal text <img src=x onerror=alert(1)>",
+        date: "2024-10-15",
+        location: "Test location for XSS test",
+        country: "Test Country"
       };
 
       const response = await request(app)
@@ -161,7 +156,7 @@ describe("Observation Endpoints", () => {
       expect([201, 400]).toContain(response.status);
 
       if (response.status === 201) {
-        expect(response.body.data.title).not.toContain("<script>");
+        expect(response.body.data.description).not.toContain("<script>");
         expect(response.body.data.description).not.toContain("<img");
       }
     });
@@ -172,36 +167,30 @@ describe("Observation Endpoints", () => {
   // ==============================================================
   describe("GET /api/v1/observations", () => {
     beforeEach(async () => {
-      // Créer plusieurs observations de test
+      // Créer plusieurs observations de test (format Phenom Search)
       await Observation.create([
         {
-          title: "Observation 1",
-          description: "Description 1",
-          date: new Date("2024-10-15"),
-          location: {
-            type: "Point",
-            coordinates: [2.3522, 48.8566],
-          },
+          description: "First observation description with enough characters",
+          date: "2024-10-15",
+          location: "Paris, France",
+          country: "France",
+          coordinates: { lat: 48.8566, lng: 2.3522 },
           userId,
         },
         {
-          title: "Observation 2",
-          description: "Description 2",
-          date: new Date("2024-10-16"),
-          location: {
-            type: "Point",
-            coordinates: [2.2945, 48.8584],
-          },
+          description: "Second observation description with enough characters",
+          date: "2024-10-16",
+          location: "Lyon, France",
+          country: "France",
+          coordinates: { lat: 48.8584, lng: 2.2945 },
           userId,
         },
         {
-          title: "Observation 3",
-          description: "Description 3",
-          date: new Date("2024-10-17"),
-          location: {
-            type: "Point",
-            coordinates: [-0.1276, 51.5074], // Londres
-          },
+          description: "Third observation description with enough characters",
+          date: "2024-10-17",
+          location: "London, UK",
+          country: "United Kingdom",
+          coordinates: { lat: 51.5074, lng: -0.1276 },
           userId: otherUserId,
         },
       ]);
@@ -230,19 +219,19 @@ describe("Observation Endpoints", () => {
       expect(response.body.pagination.total).toBe(3);
     });
 
-    it("should support sorting by title desc", async () => {
+    it("should support sorting by date desc", async () => {
       const response = await request(app)
-        .get("/api/v1/observations?sortBy=title&order=desc")
+        .get("/api/v1/observations?sortBy=date&order=desc")
         .expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.data.length).toBe(3);
 
-      // Vérifier que le tri est correct (3, 2, 1 en ordre desc)
-      const titles = response.body.data.map((obs) => obs.title);
-      expect(titles[0]).toBe("Observation 3");
-      expect(titles[1]).toBe("Observation 2");
-      expect(titles[2]).toBe("Observation 1");
+      // Vérifier que le tri est correct par date décroissante
+      const dates = response.body.data.map((obs) => obs.date);
+      expect(dates[0]).toBe("2024-10-17");
+      expect(dates[1]).toBe("2024-10-16");
+      expect(dates[2]).toBe("2024-10-15");
     });
 
     it("should support sorting by createdAt asc", async () => {
@@ -264,13 +253,11 @@ describe("Observation Endpoints", () => {
     it("should support text search", async () => {
       // Créer une observation avec un terme recherchable
       await Observation.create({
-        title: "UFO spotted in Lausanne",
-        description: "Amazing sighting in Lausanne, Switzerland",
-        date: new Date("2024-10-18"),
-        location: {
-          type: "Point",
-          coordinates: [6.6323, 46.5197],
-        },
+        description: "Amazing UFO sighting in Lausanne, Switzerland with bright lights",
+        date: "2024-10-18",
+        location: "Lausanne, Switzerland",
+        country: "Switzerland",
+        coordinates: { lat: 46.5197, lng: 6.6323 },
         userId,
       });
 
@@ -284,7 +271,7 @@ describe("Observation Endpoints", () => {
       // Vérifier que les résultats contiennent le terme recherché
       const hasSearchTerm = response.body.data.some(
         (obs) =>
-          obs.title.includes("Lausanne") || obs.description.includes("Lausanne")
+          obs.location.includes("Lausanne") || obs.description.includes("Lausanne")
       );
       expect(hasSearchTerm).toBe(true);
     });
@@ -304,13 +291,11 @@ describe("Observation Endpoints", () => {
   describe("GET /api/v1/observations/:id", () => {
     beforeEach(async () => {
       const obs = await Observation.create({
-        title: "Test Observation",
-        description: "Test description",
-        date: new Date(),
-        location: {
-          type: "Point",
-          coordinates: [2.3522, 48.8566],
-        },
+        description: "Test description for GET by ID endpoint testing",
+        date: "2024-10-15",
+        location: "Paris, France",
+        country: "France",
+        coordinates: { lat: 48.8566, lng: 2.3522 },
         userId,
       });
       observationId = obs._id;
@@ -323,7 +308,7 @@ describe("Observation Endpoints", () => {
 
       expect(response.body.success).toBe(true);
       expect(response.body.data._id).toBe(observationId.toString());
-      expect(response.body.data.title).toBe("Test Observation");
+      expect(response.body.data.location).toBe("Paris, France");
     });
 
     it("should return 404 for non-existent observation", async () => {
@@ -361,13 +346,11 @@ describe("Observation Endpoints", () => {
   describe("PUT /api/v1/observations/:id", () => {
     beforeEach(async () => {
       const obs = await Observation.create({
-        title: "Original Title",
-        description: "Original description",
-        date: new Date(),
-        location: {
-          type: "Point",
-          coordinates: [2.3522, 48.8566],
-        },
+        description: "Original description for update testing purposes",
+        date: "2024-10-15",
+        location: "Original Location",
+        country: "France",
+        coordinates: { lat: 48.8566, lng: 2.3522 },
         userId,
       });
       observationId = obs._id;
@@ -375,8 +358,8 @@ describe("Observation Endpoints", () => {
 
     it("should update observation successfully", async () => {
       const updateData = {
-        title: "Updated Title",
-        description: "Updated description here with enough chars",
+        description: "Updated description here with enough characters for validation",
+        location: "Updated Location, France",
       };
 
       const response = await request(app)
@@ -386,14 +369,14 @@ describe("Observation Endpoints", () => {
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data.title).toBe(updateData.title);
       expect(response.body.data.description).toBe(updateData.description);
+      expect(response.body.data.location).toBe(updateData.location);
       expect(response.body.data.userId._id).toBe(userId.toString());
     });
 
     it("should fail without authentication", async () => {
       const updateData = {
-        title: "Updated Title",
+        description: "Updated description attempt",
       };
 
       const response = await request(app)
@@ -406,7 +389,7 @@ describe("Observation Endpoints", () => {
 
     it("should fail when updating observation of another user", async () => {
       const updateData = {
-        title: "Updated Title",
+        description: "Updated by other user attempt",
       };
 
       const response = await request(app)
@@ -420,7 +403,7 @@ describe("Observation Endpoints", () => {
 
     it("should not allow changing userId", async () => {
       const updateData = {
-        title: "Updated Title",
+        description: "Updated with userId change attempt for testing",
         userId: otherUserId,
       };
 
@@ -436,8 +419,7 @@ describe("Observation Endpoints", () => {
 
     it("should sanitize XSS in updates", async () => {
       const updateData = {
-        title: '<script>alert("XSS")</script>',
-        description: "<img src=x onerror=alert(1)>",
+        description: "<script>alert('XSS')</script> Normal content <img src=x onerror=alert(1)>",
       };
 
       const response = await request(app)
@@ -448,7 +430,7 @@ describe("Observation Endpoints", () => {
       expect([200, 400]).toContain(response.status);
 
       if (response.status === 200) {
-        expect(response.body.data.title).not.toContain("<script>");
+        expect(response.body.data.description).not.toContain("<script>");
         expect(response.body.data.description).not.toContain("<img");
       }
     });
@@ -460,13 +442,10 @@ describe("Observation Endpoints", () => {
   describe("DELETE /api/v1/observations/:id", () => {
     beforeEach(async () => {
       const obs = await Observation.create({
-        title: "To Delete",
-        description: "This will be deleted",
-        date: new Date(),
-        location: {
-          type: "Point",
-          coordinates: [2.3522, 48.8566],
-        },
+        description: "This observation will be deleted during testing",
+        date: "2024-10-15",
+        location: "Delete Test Location",
+        country: "France",
         userId,
       });
       observationId = obs._id;
@@ -519,33 +498,27 @@ describe("Observation Endpoints", () => {
       // Créer des observations à différentes distances
       await Observation.create([
         {
-          title: "Near Paris",
-          description: "Very close to Paris center",
-          date: new Date(),
-          location: {
-            type: "Point",
-            coordinates: [2.3522, 48.8566], // Paris
-          },
+          description: "Very close to Paris center for nearby search",
+          date: "2024-10-15",
+          location: "Paris, France",
+          country: "France",
+          coordinates: { lat: 48.8566, lng: 2.3522 },
           userId,
         },
         {
-          title: "Near Paris 2",
-          description: "Also close to Paris",
-          date: new Date(),
-          location: {
-            type: "Point",
-            coordinates: [2.36, 48.86], // ~3km de Paris
-          },
+          description: "Also close to Paris for nearby search testing",
+          date: "2024-10-16",
+          location: "Near Paris, France",
+          country: "France",
+          coordinates: { lat: 48.86, lng: 2.36 },
           userId,
         },
         {
-          title: "Far from Paris",
-          description: "Very far from Paris",
-          date: new Date(),
-          location: {
-            type: "Point",
-            coordinates: [-0.1276, 51.5074], // Londres
-          },
+          description: "Very far from Paris in London for distance test",
+          date: "2024-10-17",
+          location: "London, UK",
+          country: "United Kingdom",
+          coordinates: { lat: 51.5074, lng: -0.1276 },
           userId: otherUserId,
         },
       ]);
@@ -598,23 +571,19 @@ describe("Observation Endpoints", () => {
     beforeEach(async () => {
       await Observation.create([
         {
-          title: "Obs 1",
-          description: "Test observation 1",
-          date: new Date("2024-10-15"),
-          location: {
-            type: "Point",
-            coordinates: [2.3522, 48.8566],
-          },
+          description: "Test observation 1 for statistics testing",
+          date: "2024-10-15",
+          location: "Paris, France",
+          country: "France",
+          coordinates: { lat: 48.8566, lng: 2.3522 },
           userId,
         },
         {
-          title: "Obs 2",
-          description: "Test observation 2",
-          date: new Date("2024-10-16"),
-          location: {
-            type: "Point",
-            coordinates: [2.3522, 48.8566],
-          },
+          description: "Test observation 2 for statistics testing",
+          date: "2024-10-16",
+          location: "Lyon, France",
+          country: "France",
+          coordinates: { lat: 45.7640, lng: 4.8357 },
           userId: otherUserId,
         },
       ]);
@@ -658,13 +627,10 @@ describe("Observation Endpoints", () => {
 
     it("should rate limit observation creation", async () => {
       const observationData = {
-        title: "Test",
-        description: "Test description",
-        date: new Date().toISOString(),
-        location: {
-          type: "Point",
-          coordinates: [2.3522, 48.8566],
-        },
+        description: "Test description for rate limit testing with enough chars",
+        date: "2024-10-15",
+        location: "Paris, France",
+        country: "France"
       };
 
       // Créer 5 observations successives
@@ -686,25 +652,22 @@ describe("Observation Endpoints", () => {
 
     it("should handle concurrent updates correctly", async () => {
       const obs = await Observation.create({
-        title: "Original",
-        description: "Test description for concurrent updates",
-        date: new Date(),
-        location: {
-          type: "Point",
-          coordinates: [2.3522, 48.8566],
-        },
+        description: "Test description for concurrent updates with enough length",
+        date: "2024-10-15",
+        location: "Original Location",
+        country: "France",
         userId: securityUserId,
       });
 
       const update1 = request(app)
         .put(`/api/v1/observations/${obs._id}`)
         .set("Authorization", `Bearer ${securityAuthToken}`)
-        .send({ title: "Update 1" });
+        .send({ location: "Update Location 1" });
 
       const update2 = request(app)
         .put(`/api/v1/observations/${obs._id}`)
         .set("Authorization", `Bearer ${securityAuthToken}`)
-        .send({ title: "Update 2" });
+        .send({ location: "Update Location 2" });
 
       const [response1, response2] = await Promise.all([update1, update2]);
 
@@ -714,13 +677,10 @@ describe("Observation Endpoints", () => {
 
     it("should not expose sensitive user data in observations", async () => {
       const obs = await Observation.create({
-        title: "Test",
-        description: "Test description here",
-        date: new Date(),
-        location: {
-          type: "Point",
-          coordinates: [2.3522, 48.8566],
-        },
+        description: "Test description for security test with enough chars",
+        date: "2024-10-15",
+        location: "Paris, France",
+        country: "France",
         userId: securityUserId,
       });
 
@@ -743,13 +703,10 @@ describe("Observation Endpoints", () => {
         .post("/api/v1/observations")
         .set("Authorization", `Bearer ${expiredToken}`)
         .send({
-          title: "Test",
-          description: "Test description with valid length",
-          date: new Date(),
-          location: {
-            type: "Point",
-            coordinates: [2.3522, 48.8566],
-          },
+          description: "Test description with valid length for expired token test",
+          date: "2024-10-15",
+          location: "Paris, France",
+          country: "France"
         })
         .expect(401);
 
@@ -763,14 +720,10 @@ describe("Observation Endpoints", () => {
   describe("WebSocket Events", () => {
     it("should create observation successfully (WebSocket events tested implicitly)", async () => {
       const observationData = {
-        title: "Test Observation for WebSocket",
-        description:
-          "Testing WebSocket emission with sufficient length for validation",
-        date: new Date(),
-        location: {
-          type: "Point",
-          coordinates: [2.3522, 48.8566],
-        },
+        description: "Testing WebSocket emission with sufficient length for validation",
+        date: "2024-10-15",
+        location: "Paris, France",
+        country: "France"
       };
 
       const response = await request(app)
@@ -781,25 +734,21 @@ describe("Observation Endpoints", () => {
 
       // Vérifier que l'observation est créée (WebSocket publishToChannel sera appelé)
       expect(response.body.success).toBe(true);
-      expect(response.body.data).toHaveProperty("title", observationData.title);
+      expect(response.body.data.location).toBe(observationData.location);
     });
 
     it("should update observation successfully (WebSocket events tested implicitly)", async () => {
       // Créer une observation
       const observation = await Observation.create({
-        title: "Original Title",
-        description:
-          "Original description for testing updates with valid length for validation rules",
-        date: new Date(),
-        location: {
-          type: "Point",
-          coordinates: [2.3522, 48.8566],
-        },
+        description: "Original description for testing updates with valid length for validation rules",
+        date: "2024-10-15",
+        location: "Original Location",
+        country: "France",
         userId: userId,
       });
 
       const updateData = {
-        title: "Updated Title",
+        location: "Updated Location, France",
       };
 
       const response = await request(app)
@@ -810,20 +759,16 @@ describe("Observation Endpoints", () => {
 
       // Vérifier que l'observation est mise à jour (WebSocket publishToChannel sera appelé)
       expect(response.body.success).toBe(true);
-      expect(response.body.data.title).toBe("Updated Title");
+      expect(response.body.data.location).toBe("Updated Location, France");
     });
 
     it("should delete observation successfully (WebSocket events tested implicitly)", async () => {
       // Créer une observation
       const observation = await Observation.create({
-        title: "To Delete",
-        description:
-          "This observation will be deleted for testing with valid length for validation",
-        date: new Date(),
-        location: {
-          type: "Point",
-          coordinates: [2.3522, 48.8566],
-        },
+        description: "This observation will be deleted for testing with valid length for validation",
+        date: "2024-10-15",
+        location: "Delete Location",
+        country: "France",
         userId: userId,
       });
 
@@ -846,14 +791,10 @@ describe("Observation Endpoints", () => {
 
     beforeEach(async () => {
       const observation = await Observation.create({
-        title: "Observation with images",
-        description:
-          "Test observation for image operations with valid description length",
-        date: new Date(),
-        location: {
-          type: "Point",
-          coordinates: [2.3522, 48.8566],
-        },
+        description: "Test observation for image operations with valid description length",
+        date: "2024-10-15",
+        location: "Paris, France",
+        country: "France",
         userId: userId,
       });
       testObservationId = observation._id;

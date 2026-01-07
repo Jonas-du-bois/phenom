@@ -63,24 +63,20 @@ describe("User Endpoints", () => {
     });
 
     it("should include observations count in profile", async () => {
-      // Créer quelques observations pour l'utilisateur
+      // Créer quelques observations pour l'utilisateur (Phenom Search format)
       await Observation.create([
         {
-          title: "Observation 1",
-          description: "Description test 1",
-          location: {
-            type: "Point",
-            coordinates: [2.3522, 48.8566],
-          },
+          description: "Description test 1 with enough characters for validation",
+          date: "2024-10-15",
+          location: "Paris, France",
+          country: "France",
           userId: userId,
         },
         {
-          title: "Observation 2",
-          description: "Description test 2",
-          location: {
-            type: "Point",
-            coordinates: [2.3522, 48.8566],
-          },
+          description: "Description test 2 with enough characters for validation",
+          date: "2024-10-16",
+          location: "Lyon, France",
+          country: "France",
           userId: userId,
         },
       ]);
@@ -427,24 +423,20 @@ describe("User Endpoints", () => {
     });
 
     it("should delete user observations when account is deleted", async () => {
-      // Créer des observations pour l'utilisateur
+      // Créer des observations pour l'utilisateur (Phenom Search format)
       await Observation.create([
         {
-          title: "Observation 1",
-          description: "Description test 1",
-          location: {
-            type: "Point",
-            coordinates: [2.3522, 48.8566],
-          },
+          description: "Description test 1 with enough characters for validation",
+          date: "2024-10-15",
+          location: "Paris, France",
+          country: "France",
           userId: userId,
         },
         {
-          title: "Observation 2",
-          description: "Description test 2",
-          location: {
-            type: "Point",
-            coordinates: [2.3522, 48.8566],
-          },
+          description: "Description test 2 with enough characters for validation",
+          date: "2024-10-16",
+          location: "Lyon, France",
+          country: "France",
           userId: userId,
         },
       ]);
@@ -497,35 +489,29 @@ describe("User Endpoints", () => {
   // ==============================================================
   describe("GET /api/v1/users/me/observations", () => {
     beforeEach(async () => {
-      // Créer plusieurs observations pour les tests
+      // Créer plusieurs observations pour les tests (Phenom Search format)
       await Observation.create([
         {
-          title: "Observation 1",
-          description: "Description de l'observation 1",
-          location: {
-            type: "Point",
-            coordinates: [2.3522, 48.8566],
-          },
+          description: "Description de l'observation 1 avec assez de caractères",
+          date: "2024-01-01",
+          location: "Paris, France",
+          country: "France",
           userId: userId,
           createdAt: new Date("2024-01-01"),
         },
         {
-          title: "Observation 2",
-          description: "Description de l'observation 2",
-          location: {
-            type: "Point",
-            coordinates: [2.3522, 48.8566],
-          },
+          description: "Description de l'observation 2 avec assez de caractères",
+          date: "2024-02-01",
+          location: "Lyon, France",
+          country: "France",
           userId: userId,
           createdAt: new Date("2024-02-01"),
         },
         {
-          title: "Observation 3",
-          description: "Description de l'observation 3",
-          location: {
-            type: "Point",
-            coordinates: [2.3522, 48.8566],
-          },
+          description: "Description de l'observation 3 avec assez de caractères",
+          date: "2024-03-01",
+          location: "Marseille, France",
+          country: "France",
           userId: userId,
           createdAt: new Date("2024-03-01"),
         },
@@ -541,9 +527,9 @@ describe("User Endpoints", () => {
       expect(response.body.success).toBe(true);
       expect(response.body.data).toBeInstanceOf(Array);
       expect(response.body.data.length).toBe(3);
-      expect(response.body.data[0]).toHaveProperty("title");
       expect(response.body.data[0]).toHaveProperty("description");
       expect(response.body.data[0]).toHaveProperty("location");
+      expect(response.body.data[0]).toHaveProperty("date");
     });
 
     it("should support pagination", async () => {
@@ -567,8 +553,8 @@ describe("User Endpoints", () => {
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data[0].title).toBe("Observation 3"); // Plus récente
-      expect(response.body.data[2].title).toBe("Observation 1"); // Plus ancienne
+      expect(response.body.data[0].location).toBe("Marseille, France"); // Plus récente
+      expect(response.body.data[2].location).toBe("Paris, France"); // Plus ancienne
     });
 
     it("should support custom sorting", async () => {
@@ -578,24 +564,24 @@ describe("User Endpoints", () => {
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data[0].title).toBe("Observation 1"); // Plus ancienne en premier
-      expect(response.body.data[2].title).toBe("Observation 3"); // Plus récente en dernier
+      expect(response.body.data[0].location).toBe("Paris, France"); // Plus ancienne en premier
+      expect(response.body.data[2].location).toBe("Marseille, France"); // Plus récente en dernier
     });
 
-    it("should support sorting by title", async () => {
+    it("should support sorting by location", async () => {
       const response = await request(app)
-        .get("/api/v1/users/me/observations?sortBy=title&order=asc")
+        .get("/api/v1/users/me/observations?sortBy=location&order=asc")
         .set("Authorization", `Bearer ${authToken}`)
         .expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.data.length).toBe(3);
 
-      // Vérifier que le tri par titre est correct
-      const titles = response.body.data.map((obs) => obs.title);
-      expect(titles[0]).toBe("Observation 1");
-      expect(titles[1]).toBe("Observation 2");
-      expect(titles[2]).toBe("Observation 3");
+      // Vérifier que le tri par location est correct (alphabétique)
+      const locations = response.body.data.map((obs) => obs.location);
+      expect(locations[0]).toBe("Lyon, France");
+      expect(locations[1]).toBe("Marseille, France");
+      expect(locations[2]).toBe("Paris, France");
     });
 
     it("should return empty array when user has no observations", async () => {
@@ -619,12 +605,10 @@ describe("User Endpoints", () => {
       });
 
       await Observation.create({
-        title: "Other User Observation",
-        description: "Description autre utilisateur",
-        location: {
-          type: "Point",
-          coordinates: [2.3522, 48.8566],
-        },
+        description: "Description autre utilisateur avec assez de caractères pour la validation",
+        date: "2024-04-01",
+        location: "Berlin, Germany",
+        country: "Germany",
         userId: otherAuth.user._id,
       });
 
@@ -636,9 +620,9 @@ describe("User Endpoints", () => {
       expect(response.body.success).toBe(true);
       expect(response.body.data.length).toBe(3); // Seulement les 3 observations du testUser
 
-      // Vérifier qu'aucune observation ne vient d'un autre utilisateur
+      // Vérifier qu'aucune observation ne vient d'un autre utilisateur (par location)
       const hasOtherUserObservation = response.body.data.some(
-        (obs) => obs.title === "Other User Observation"
+        (obs) => obs.location === "Berlin, Germany"
       );
       expect(hasOtherUserObservation).toBe(false);
     });

@@ -48,15 +48,12 @@ describe("Comment Endpoints", () => {
     otherUserToken = otherAuth.token;
     otherUserId = otherAuth.user._id;
 
-    // Create a test observation
+    // Create a test observation (Phenom Search format)
     const observation = await Observation.create({
-      title: "Test Observation",
-      description: "Test description for comments",
-      date: new Date(),
-      location: {
-        type: "Point",
-        coordinates: [2.3522, 48.8566],
-      },
+      description: "Test description for comments testing with enough characters",
+      date: "2024-10-15",
+      location: "Paris, France",
+      country: "France",
       userId,
     });
     observationId = observation._id;
@@ -199,15 +196,12 @@ describe("Comment Endpoints", () => {
     });
 
     it("should return empty array for observation with no comments", async () => {
-      // Créer une nouvelle observation sans commentaires
+      // Créer une nouvelle observation sans commentaires (Phenom Search format)
       const newObs = await Observation.create({
-        title: "No comments",
-        description: "Observation without comments",
-        date: new Date(),
-        location: {
-          type: "Point",
-          coordinates: [2.3522, 48.8566],
-        },
+        description: "Observation without comments for testing empty array",
+        date: "2024-10-15",
+        location: "Paris, France",
+        country: "France",
         userId,
       });
 
