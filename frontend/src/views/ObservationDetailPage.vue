@@ -667,8 +667,8 @@ const submitComment = async (text) => {
   submittingComment.value = true;
 
   try {
-    const newComment = await commentStore.addComment(route.params.id, text);
-    comments.value.unshift(newComment);
+    // L'ajout local est géré par le WebSocket (comment:created)
+    await commentStore.addComment(route.params.id, text);
     toast.success("Commentaire ajouté");
   } catch {
     toast.error("Erreur lors de l'ajout du commentaire");
@@ -679,12 +679,10 @@ const submitComment = async (text) => {
 
 const deleteComment = async (comment) => {
   try {
+    // La suppression locale est gérée par le WebSocket (comment:deleted)
     await commentStore.removeComment(
       route.params.id,
       comment._id || comment.id
-    );
-    comments.value = comments.value.filter(
-      (c) => (c._id || c.id) !== (comment._id || comment.id)
     );
     toast.success("Commentaire supprimé");
   } catch {
