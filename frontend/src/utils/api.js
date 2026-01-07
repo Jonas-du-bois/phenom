@@ -8,6 +8,7 @@
  * - Automatic Authorization header injection
  * - Token refresh with request queueing
  * - Automatic logout on refresh failure
+ * - Global error toast notifications
  */
 import axios from "axios";
 import {
@@ -16,6 +17,16 @@ import {
   removeAuthToken,
   removeUserData,
 } from "./storage.js";
+
+// Lazy import toast to avoid circular dependencies
+let toastInstance = null;
+const getToast = async () => {
+  if (!toastInstance) {
+    const { useToast } = await import("../composables/useToast.js");
+    toastInstance = useToast();
+  }
+  return toastInstance;
+};
 
 // ============================================================================
 // API CONFIGURATION
@@ -93,6 +104,10 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       // Don't try to refresh for auth routes
       if (PUBLIC_ROUTES.some((r) => originalRequest.url?.includes(r))) {
+        // Show error toast for failed login/signup
+        const toast = await getToast();
+        const errorMsg = error.response?.data?.message || "Erreur d'authentification";
+        toast.error(errorMsg);
         return Promise.reject(error);
       }
 
@@ -126,6 +141,10 @@ apiClient.interceptors.response.use(
         removeAuthToken();
         removeUserData();
 
+        // Show session expired toast
+        const toast = await getToast();
+        toast.error("Session expirée. Veuillez vous reconnecter.");
+
         // Redirect to login (unless already on auth page)
         if (!["/auth", "/login", "/tests"].includes(window.location.pathname)) {
           window.location.href = "/login";
@@ -134,6 +153,43 @@ apiClient.interceptors.response.use(
       } finally {
         isRefreshing = false;
       }
+    }
+
+    // Handle all other errors with toast notifications
+    if (error.response) {
+      // Server responded with error status
+      const toast = await getToast();
+      const status = error.response.status;
+      const errorData = error.response.data;
+      
+      // Extract error message from various formats
+      let errorMessage = "Une erreur est survenue";
+      
+      if (errorData?.message) {
+        errorMessage = errorData.message;
+      } else if (errorData?.error) {
+        errorMessage = errorData.error;
+      } else if (typeof errorData === "string") {
+        errorMessage = errorData;
+      } else if (status === 403) {
+        errorMessage = "Accès refusé";
+      } else if (status === 404) {
+        errorMessage = "Ressource introuvable";
+      } else if (status === 500) {
+        errorMessage = "Erreur serveur";
+      } else if (status >= 400 && status < 500) {
+        errorMessage = "Requête invalide";
+      }
+
+      toast.error(errorMessage);
+    } else if (error.request) {
+      // Request made but no response received (network error)
+      const toast = await getToast();
+      toast.error("Erreur de connexion. Vérifiez votre réseau.");
+    } else {
+      // Something else happened
+      const toast = await getToast();
+      toast.error("Une erreur inattendue est survenue");
     }
 
     return Promise.reject(error);

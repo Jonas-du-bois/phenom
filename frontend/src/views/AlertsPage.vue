@@ -238,12 +238,10 @@ import {
   LoadingSpinner,
   EmptyState,
 } from "@/components/atoms";
-import { useToast } from "@/composables/useToast";
 
 defineOptions({ name: "AlertsPage" });
 
 const router = useRouter();
-const toast = useToast();
 
 // WebSocket (WsMini PubSub)
 import { useWebSocket } from "@/composables/useWebSocket";
@@ -267,6 +265,71 @@ const LOCATION_CHECK_INTERVAL_MS = 30 * 60 * 1000; // 30 minutes
 
 // Settings sync (from SettingsPage localStorage key)
 const nearbyAlertsEnabled = ref(true);
+
+/**
+ * Show native browser/phone notification
+ * Uses the Notification API for PWA push-like notifications
+ */
+const showNativeNotification = async (alert) => {
+  // Check if notifications are supported and permission is granted
+  if (!("Notification" in window)) {
+    console.warn("Notifications not supported");
+    return;
+  }
+
+  // Request permission if not already granted
+  if (Notification.permission === "default") {
+    await Notification.requestPermission();
+  }
+
+  if (Notification.permission !== "granted") {
+    console.warn("Notification permission denied");
+    return;
+  }
+
+  try {
+    // Use service worker registration for persistent notifications on mobile
+    const registration = await navigator.serviceWorker?.ready;
+    
+    const notificationOptions = {
+      body: alert.message,
+      icon: "/icons/icon-192x192.png",
+      badge: "/icons/icon-72x72.png",
+      tag: `observation-${alert.id}`, // Group similar notifications
+      renotify: true,
+      vibrate: [200, 100, 200], // Vibration pattern for mobile
+      data: {
+        url: `/observation/${alert.observation?._id || alert.id}`,
+        observationId: alert.observation?._id || alert.id,
+      },
+      actions: [
+        { action: "view", title: "Voir" },
+        { action: "dismiss", title: "Ignorer" },
+      ],
+    };
+
+    // Add image if available
+    if (alert.observation?.imageUrl) {
+      notificationOptions.image = alert.observation.imageUrl;
+    }
+
+    if (registration) {
+      // Use service worker for better mobile support
+      await registration.showNotification(
+        `Observation à ${alert.distance ? alert.distance + " km" : "proximité"}`,
+        notificationOptions
+      );
+    } else {
+      // Fallback to regular Notification API
+      new Notification(
+        `Observation à ${alert.distance ? alert.distance + " km" : "proximité"}`,
+        notificationOptions
+      );
+    }
+  } catch (error) {
+    console.error("Failed to show notification:", error);
+  }
+};
 
 const loadSettingsFromStorage = () => {
   try {
@@ -557,6 +620,7 @@ watch(
           id: alertId,
           observation: {
             ...obs,
+            _id: obsId,
             title: obs.title || obs.phenomenonType || "Observation",
             imageUrl: obs.images?.[0]?.url || obs.images?.[0] || null,
           },
@@ -570,13 +634,8 @@ watch(
         // Add to alerts list (create new array for reactivity)
         alerts.value = [newAlert, ...alerts.value];
         
-        // Show toast notification
-        toast.show({
-          type: "info",
-          title: "Nouvelle observation à proximité",
-          message: newAlert.observation.title,
-          duration: 5000,
-        });
+        // Show native browser/phone notification
+        showNativeNotification(newAlert);
       }
     }
   }

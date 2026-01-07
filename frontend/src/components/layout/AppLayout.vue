@@ -43,17 +43,10 @@
   - alertCount: Badge count for alerts tab
   - hasContentPadding: Whether to add padding-top for fixed header (default: true)
 
-  PROVIDES (inject in children):
-  - toast: { show(options), remove(id) } - Toast notification methods
-  - loading: { set(isLoading, message?) } - Global loading control
-
-  TOAST OPTIONS:
-  toast.show({
-    type: 'success' | 'error' | 'warning' | 'info',
-    title: 'Optional Title',
-    message: 'Required message',
-    duration: 4000  // ms, 0 for persistent
-  })
+  GLOBAL FEATURES:
+  - Toast notifications via useToast() composable
+  - Global loading overlay (internal use)
+  - iOS safe area insets handling
   ============================================================================
 -->
 
@@ -85,34 +78,24 @@
       <slot />
     </main>
 
-    <!-- Bottom Tab Bar Navigation (conditional) -->
     <BottomTabBar v-if="showTabBar" :alert-count="alertCount" />
 
-    <!-- 
-      =====================================================================
-      TOAST NOTIFICATIONS
-      =====================================================================
-      Teleported to body to ensure proper stacking above all content.
-      Uses TransitionGroup for animated list transitions.
-    -->
+    <!-- Toast Notifications -->
     <Teleport to="body">
       <TransitionGroup
         name="toast"
         tag="div"
-        class="fixed top-4 left-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none"
+        class="fixed top-6 right-4 z-[9999] flex flex-col gap-2 pointer-events-none max-w-md"
         :style="{ top: 'calc(1rem + env(safe-area-inset-top, 0px))' }"
       >
-        <!-- Individual Toast Items -->
         <div
-          v-for="toast in toasts"
+          v-for="toast in globalToasts"
           :key="toast.id"
-          class="toast-item p-4 rounded-xl shadow-xl pointer-events-auto"
+          class="toast-item liquid-glass-toast p-4 rounded-2xl shadow-2xl pointer-events-auto backdrop-blur-xl border border-white/10"
           :class="toastClasses[toast.type]"
         >
           <div class="flex items-start gap-3">
-            <!-- Toast Icon (varies by type) -->
             <div class="shrink-0 mt-0.5">
-              <!-- Success: Checkmark -->
               <svg
                 v-if="toast.type === 'success'"
                 class="w-5 h-5"
@@ -127,7 +110,6 @@
                   d="M5 13l4 4L19 7"
                 />
               </svg>
-              <!-- Error: X mark -->
               <svg
                 v-else-if="toast.type === 'error'"
                 class="w-5 h-5"
@@ -142,7 +124,6 @@
                   d="M6 18L18 6M6 6l12 12"
                 />
               </svg>
-              <!-- Warning: Triangle exclamation -->
               <svg
                 v-else-if="toast.type === 'warning'"
                 class="w-5 h-5"
@@ -157,7 +138,6 @@
                   d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                 />
               </svg>
-              <!-- Info: Circle info (default) -->
               <svg
                 v-else
                 class="w-5 h-5"
@@ -174,13 +154,10 @@
               </svg>
             </div>
 
-            <!-- Toast Content (title + message) -->
             <div class="flex-1 min-w-0">
-              <p v-if="toast.title" class="font-medium">{{ toast.title }}</p>
               <p class="text-sm opacity-90">{{ toast.message }}</p>
             </div>
 
-            <!-- Close/Dismiss Button -->
             <button
               @click="removeToast(toast.id)"
               class="shrink-0 p-1 rounded hover:bg-white/10 transition-colors"
@@ -203,162 +180,31 @@
         </div>
       </TransitionGroup>
     </Teleport>
-
-    <!-- 
-      =====================================================================
-      GLOBAL LOADING OVERLAY
-      =====================================================================
-      Full-screen loading indicator for blocking operations.
-      Teleported to body with high z-index.
-    -->
-    <Teleport to="body">
-      <Transition name="fade">
-        <div
-          v-if="globalLoading"
-          class="fixed inset-0 z-[9998] bg-black/80 backdrop-blur-sm flex items-center justify-center"
-        >
-          <div class="text-center">
-            <LoadingSpinner size="lg" />
-            <!-- Optional loading message -->
-            <p v-if="loadingMessage" class="mt-4 text-white/60">
-              {{ loadingMessage }}
-            </p>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
   </div>
 </template>
 
 <script setup>
-import { ref, provide, onMounted } from "vue";
+import { onMounted } from "vue";
 import { BottomTabBar } from "@/components/organisms";
-import { LoadingSpinner } from "@/components/atoms";
-
-/**
- * AppLayout - Main Application Layout Component
- * Design System: Phenom Search
- *
- * Provides the overall page structure, navigation,
- * and global UI features (toasts, loading overlay).
- */
+import { useToast } from "@/composables/useToast";
 
 defineOptions({ name: "AppLayout" });
 
-// =============================================================================
-// PROPS DEFINITION
-// =============================================================================
-// eslint-disable-next-line no-unused-vars
-const props = defineProps({
-  // Whether to display the bottom tab bar navigation
-  showTabBar: {
-    type: Boolean,
-    default: true,
-  },
-  // Badge count for the alerts/notifications tab
-  alertCount: {
-    type: Number,
-    default: 0,
-  },
-  // Whether to add padding-top for fixed header (disable for full-screen pages)
-  hasContentPadding: {
-    type: Boolean,
-    default: true,
-  },
+const { toasts: globalToasts, dismiss: removeToast } = useToast();
+
+const toastClasses = {
+  success: "bg-green-500/20 text-white border-green-500/30",
+  error: "bg-red-500/20 text-white border-red-500/30",
+  warning: "bg-yellow-500/20 text-white border-yellow-500/30",
+  info: "bg-[#00F0FF]/20 text-white border-[#00F0FF]/30",
+};
+
+defineProps({
+  showTabBar: { type: Boolean, default: true },
+  alertCount: { type: Number, default: 0 },
+  hasContentPadding: { type: Boolean, default: true },
 });
 
-// =============================================================================
-// TOAST NOTIFICATION SYSTEM
-// =============================================================================
-
-// Array of active toast notifications
-const toasts = ref([]);
-
-// Auto-incrementing ID for unique toast identification
-let toastId = 0;
-
-/**
- * Tailwind classes for each toast type
- * - success: Green background
- * - error: Red background
- * - warning: Yellow background with dark text
- * - info: Cyan (brand color) background with dark text
- */
-const toastClasses = {
-  success: "bg-green-500/90 text-white",
-  error: "bg-red-500/90 text-white",
-  warning: "bg-yellow-500/90 text-black",
-  info: "bg-[#00F0FF]/90 text-black",
-};
-
-/**
- * Show a toast notification
- * @param {Object} options - Toast configuration
- * @param {string} options.type - 'success' | 'error' | 'warning' | 'info'
- * @param {string} options.title - Optional title text
- * @param {string} options.message - Required message text
- * @param {number} options.duration - Auto-dismiss time in ms (0 = persistent)
- * @returns {number} Toast ID for manual removal
- */
-const showToast = ({ type = "info", title = "", message, duration = 4000 }) => {
-  const id = ++toastId;
-  toasts.value.push({ id, type, title, message });
-
-  // Auto-remove after duration (unless duration is 0)
-  if (duration > 0) {
-    setTimeout(() => removeToast(id), duration);
-  }
-
-  return id;
-};
-
-/**
- * Remove a toast notification by ID
- * @param {number} id - Toast ID to remove
- */
-const removeToast = (id) => {
-  const index = toasts.value.findIndex((t) => t.id === id);
-  if (index !== -1) {
-    toasts.value.splice(index, 1);
-  }
-};
-
-// =============================================================================
-// GLOBAL LOADING OVERLAY
-// =============================================================================
-
-// Whether the loading overlay is visible
-const globalLoading = ref(false);
-
-// Optional message to display during loading
-const loadingMessage = ref("");
-
-/**
- * Show or hide the global loading overlay
- * @param {boolean} loading - Whether to show the overlay
- * @param {string} message - Optional message to display
- */
-const setGlobalLoading = (loading, message = "") => {
-  globalLoading.value = loading;
-  loadingMessage.value = message;
-};
-
-// =============================================================================
-// PROVIDE TO CHILDREN
-// =============================================================================
-
-// Make toast and loading APIs available to all descendant components
-provide("toast", { show: showToast, remove: removeToast });
-provide("loading", { set: setGlobalLoading });
-
-// =============================================================================
-// iOS SAFE AREA HANDLING
-// =============================================================================
-
-/**
- * Set CSS custom properties for safe area insets
- * Used to handle iPhone notch, home indicator, etc.
- */
 onMounted(() => {
   document.documentElement.style.setProperty(
     "--sat",
@@ -381,12 +227,44 @@ onMounted(() => {
 
 <style scoped>
 /* =============================================================================
+   LIQUID GLASS TOAST EFFECT
+   ============================================================================= */
+
+.liquid-glass-toast {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    0 8px 32px 0 rgba(0, 0, 0, 0.37),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.liquid-glass-toast::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.liquid-glass-toast:hover::before {
+  left: 100%;
+}
+
+/* =============================================================================
    TOAST ANIMATIONS
    ============================================================================= */
 
 /* Enter animation: slide down and fade in */
 .toast-enter-active {
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* Leave animation: faster, slide right */
@@ -397,30 +275,17 @@ onMounted(() => {
 /* Initial state when entering */
 .toast-enter-from {
   opacity: 0;
-  transform: translateY(-20px) scale(0.95);
+  transform: translateY(-20px) scale(0.9);
 }
 
 /* Final state when leaving */
 .toast-leave-to {
   opacity: 0;
-  transform: translateX(100%);
+  transform: translateX(100%) scale(0.9);
 }
 
 /* Smooth repositioning when list changes */
 .toast-move {
   transition: transform 0.3s ease;
-}
-
-/* =============================================================================
-   FADE TRANSITION (for loading overlay)
-   ============================================================================= */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
 }
 </style>
