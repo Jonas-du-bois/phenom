@@ -51,7 +51,7 @@
     <div class="feed-page">
       <!-- Search Bar avec animation -->
       <Transition name="search">
-        <div v-if="showSearch" class="px-4 pt-8 pb-2 border-b border-white/5">
+        <div v-if="showSearch" class="px-4 pt-2 pb-2 border-b border-white/5">
           <SearchBar
             ref="searchBarRef"
             v-model="searchQuery"
@@ -74,7 +74,7 @@
       <!-- Active filters display -->
       <div
         v-if="hasActiveFilters"
-        class="px-4 py-2 pt-8 flex items-center gap-2 overflow-x-auto scrollbar-hide border-b border-white/5"
+        class="px-4 py-2 flex items-center gap-2 overflow-x-auto scrollbar-hide border-b border-white/5"
       >
         <div class="flex items-center gap-2 flex-nowrap">
           <button
@@ -373,7 +373,7 @@ onMounted(() => {
 
 <style scoped>
 .feed-page {
-  margin-top: 3.5rem;
+  margin-top: 0.5rem;
 }
 
 .scrollbar-hide {

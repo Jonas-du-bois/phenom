@@ -14,7 +14,7 @@
   <!-- ================================================================== -->
 
   <!-- AppLayout provides the app shell with optional bottom tab bar -->
-  <AppLayout :show-tab-bar="showTabBar">
+  <AppLayout :show-tab-bar="showTabBar" :has-content-padding="hasContentPadding">
     <!-- Router view with scoped slot for transition control -->
     <router-view v-slot="{ Component }">
       <!-- Page transition: directional based on navigation -->
@@ -31,6 +31,7 @@
  *
  * Handles:
  * - Tab bar visibility logic (hidden on auth/camera pages)
+ * - Content padding visibility (disabled for full-screen pages)
  * - Auth store initialization on mount
  * - Intelligent page transition direction (via usePageTransition)
  */
@@ -66,6 +67,23 @@ const showTabBar = computed(() => {
   const hiddenRoutes = ["/login", "/signup", "/auth", "/camera", "/old-home"];
 
   return !hiddenRoutes.includes(routePath);
+});
+
+// ============================================================================
+// CONTENT PADDING VISIBILITY
+// ============================================================================
+
+/**
+ * Computed property to determine if content padding should be applied
+ * Disabled on: login, signup, auth, camera (full-screen pages)
+ */
+const hasContentPadding = computed(() => {
+  const routePath = router.currentRoute.value.path;
+
+  // Routes where content padding should be disabled
+  const noPaddingRoutes = ["/login", "/signup", "/auth", "/camera", "/map"];
+
+  return !noPaddingRoutes.includes(routePath);
 });
 
 // ============================================================================

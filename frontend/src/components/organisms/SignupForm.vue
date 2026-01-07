@@ -17,21 +17,75 @@
   <form @submit.prevent="handleSubmit" class="signup-form space-y-6">
     <!-- Logo and branding section -->
     <div class="text-center mb-8">
-      <div
-        class="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-[#00F0FF] to-[#0066CC] flex items-center justify-center mb-4"
-      >
+      <div class="flex items-center gap-2 justify-center mb-4">
         <svg
-          class="w-12 h-12 text-white"
-          viewBox="0 0 24 24"
-          fill="currentColor"
+          xmlns="http://www.w3.org/2000/svg"
+          width="80"
+          height="80"
+          viewBox="0 0 174 174"
+          fill="none"
+          class="flex-shrink-0"
         >
           <path
-            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"
+            d="M115.576 86.6817H173.363"
+            stroke="#00F0FF"
+            stroke-width="1.4447"
+          />
+          <path
+            d="M111.704 101.129L161.749 130.022"
+            stroke="#00F0FF"
+            stroke-width="1.4447"
+          />
+          <path
+            d="M101.128 111.705L130.021 161.75"
+            stroke="#00F0FF"
+            stroke-width="1.4447"
+          />
+          <path
+            d="M86.6816 115.576V173.362"
+            stroke="#00F0FF"
+            stroke-width="1.4447"
+          />
+          <path
+            d="M72.2343 111.705L43.3408 161.75"
+            stroke="#00F0FF"
+            stroke-width="1.4447"
+          />
+          <path
+            d="M61.6582 101.129L11.6133 130.022"
+            stroke="#00F0FF"
+            stroke-width="1.4447"
+          />
+          <path d="M57.7869 86.6817H0" stroke="#00F0FF" stroke-width="1.4447" />
+          <path
+            d="M61.6582 72.2343L11.6133 43.3408"
+            stroke="#00F0FF"
+            stroke-width="1.4447"
+          />
+          <path
+            d="M72.2343 61.6582L43.3408 11.6132"
+            stroke="#00F0FF"
+            stroke-width="1.4447"
+          />
+          <path
+            d="M86.6816 57.7869L86.6816 0"
+            stroke="#00F0FF"
+            stroke-width="1.4447"
+          />
+          <path
+            d="M101.128 61.6583L130.021 11.6133"
+            stroke="#00F0FF"
+            stroke-width="1.4447"
+          />
+          <path
+            d="M111.704 72.2344L161.749 43.3409"
+            stroke="#00F0FF"
+            stroke-width="1.4447"
           />
         </svg>
       </div>
-      <h1 class="text-2xl font-bold text-white">Créer un compte</h1>
-      <p class="text-white/60 mt-2">Rejoignez la communauté Phenom</p>
+      <h1 class="text-2xl font-bold text-white">Phenom Sight</h1>
+      <p class="text-white/60 mt-2">Créer un compte</p>
     </div>
 
     <!-- Error message -->

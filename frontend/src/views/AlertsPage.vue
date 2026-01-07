@@ -49,7 +49,7 @@
       </PageHeader>
     </template>
 
-    <div class="alerts-page mt-20">
+    <div class="alerts-page">
       <!-- Location permission banner -->
       <div
         v-if="!locationEnabled"

@@ -41,6 +41,7 @@
   PROPS:
   - showTabBar: Whether to display bottom navigation (default: true)
   - alertCount: Badge count for alerts tab
+  - hasContentPadding: Whether to add padding-top for fixed header (default: true)
 
   PROVIDES (inject in children):
   - toast: { show(options), remove(id) } - Toast notification methods
@@ -66,14 +67,17 @@
       - flex-1: Takes all available vertical space
       - overflow-y-auto: Enables scrolling for long content
       - overscroll-contain: Prevents scroll chaining to parent
+      - Padding top accounts for fixed header + iOS safe area (if hasContentPadding)
       - Padding bottom accounts for tab bar + iOS safe area
     -->
     <main
       class="flex-1 overflow-y-auto overscroll-contain"
-      :class="{ 'pb-20': showTabBar }"
       :style="{
+        paddingTop: hasContentPadding
+          ? 'calc(3.5rem + env(safe-area-inset-top, 0px))'
+          : undefined,
         paddingBottom: showTabBar
-          ? 'calc(4rem + env(safe-area-inset-bottom, 0px))'
+          ? 'calc(5.5rem + env(safe-area-inset-bottom, 0px))'
           : undefined,
       }"
     >
@@ -255,6 +259,11 @@ const props = defineProps({
   alertCount: {
     type: Number,
     default: 0,
+  },
+  // Whether to add padding-top for fixed header (disable for full-screen pages)
+  hasContentPadding: {
+    type: Boolean,
+    default: true,
   },
 });
 

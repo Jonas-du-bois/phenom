@@ -33,7 +33,10 @@
     </div>
 
     <!-- Map controls overlay -->
-    <div class="absolute top-22 right-4 z-[1000] flex flex-col gap-2">
+    <div 
+      class="absolute right-4 z-[1000] flex flex-col gap-2"
+      :style="{ top: 'calc(5.5rem + env(safe-area-inset-top, 0px))', right: 'calc(1rem + env(safe-area-inset-right, 0px))' }"
+    >
       <!-- Zoom controls -->
       <div
         class="bg-[#12151C] rounded-xl overflow-hidden shadow-lg border border-white/10"
@@ -130,7 +133,8 @@
     <!-- Observation count badge -->
     <div
       v-if="observations.length > 0"
-      class="absolute top-22 left-4 z-[1000] backdrop-blur-2xl bg-white/5 px-4 py-2.5 rounded-2xl border border-white/10 shadow-2xl hover:bg-white/10 transition-all duration-300"
+      class="absolute z-[1000] backdrop-blur-2xl bg-white/5 px-4 py-2.5 rounded-2xl border border-white/10 shadow-2xl hover:bg-white/10 transition-all duration-300"
+      :style="{ top: 'calc(6rem + env(safe-area-inset-top, 0px))', left: 'calc(1rem + env(safe-area-inset-left, 0px))' }"
     >
       <div class="flex items-center gap-2.5">
         <div class="relative">
@@ -152,7 +156,12 @@
     <Transition name="slide-up">
       <div
         v-if="selectedObservation"
-        class="absolute bottom-24 left-4 right-4 z-[1000]"
+        class="absolute z-[1000]"
+        :style="{ 
+          bottom: 'calc(6rem + env(safe-area-inset-bottom, 0px))', 
+          left: 'calc(1rem + env(safe-area-inset-left, 0px))', 
+          right: 'calc(1rem + env(safe-area-inset-right, 0px))' 
+        }"
       >
         <MapPopup
           :observation="selectedObservation"

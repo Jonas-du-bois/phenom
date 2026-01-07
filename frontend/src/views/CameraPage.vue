@@ -26,7 +26,7 @@
 -->
 
 <template>
-  <AppLayout :show-tab-bar="false">
+  <AppLayout :show-tab-bar="false" :has-content-padding="false">
     <div class="camera-page min-h-screen bg-[#000000] flex flex-col">
       <!-- Camera Mode -->
       <template v-if="mode === 'camera'">

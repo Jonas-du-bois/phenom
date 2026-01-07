@@ -20,9 +20,9 @@
 -->
 
 <template>
-  <AppLayout :show-tab-bar="true">
-    <div class="map-page h-screen flex flex-col">
-      <!-- Header -->
+  <AppLayout :show-tab-bar="true" :has-content-padding="false">
+    <!-- Header slot (floating above map) -->
+    <template #header>
       <PageHeader title="Carte" show-back>
         <template #right>
           <IconButton
@@ -47,9 +47,14 @@
           </IconButton>
         </template>
       </PageHeader>
+    </template>
 
-      <!-- Map -->
-      <div class="flex-1 relative overflow-hidden z-0">
+    <div class="map-page h-screen relative">
+      <!-- Map (full screen but leaves space for bottom navbar) -->
+      <div 
+        class="absolute top-0 left-0 right-0 overflow-hidden z-0"
+        :style="{ bottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))' }"
+      >
         <ObservationMap
           ref="mapRef"
           :observations="mapObservations"
