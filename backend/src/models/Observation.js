@@ -234,12 +234,12 @@ observationSchema.index({ locationPoint: '2dsphere' }, { sparse: true });
  * Only populates locationPoint when valid coordinates are provided.
  * This prevents MongoDB 2dsphere index errors when coordinates are missing.
  */
-observationSchema.pre('save', function(next) {
+observationSchema.pre('save', function (next) {
   // Check if we have valid coordinates
-  if (this.coordinates && 
-      typeof this.coordinates.lat === 'number' && 
+  if (this.coordinates &&
+      typeof this.coordinates.lat === 'number' &&
       typeof this.coordinates.lng === 'number' &&
-      !isNaN(this.coordinates.lat) && 
+      !isNaN(this.coordinates.lat) &&
       !isNaN(this.coordinates.lng)) {
     // Set locationPoint for geospatial queries
     this.locationPoint = {
@@ -256,17 +256,17 @@ observationSchema.pre('save', function(next) {
 /**
  * Pre-findOneAndUpdate middleware to handle locationPoint on updates.
  */
-observationSchema.pre('findOneAndUpdate', function(next) {
+observationSchema.pre('findOneAndUpdate', function (next) {
   const update = this.getUpdate();
-  
+
   // Handle $set operations
   const setData = update.$set || update;
-  
+
   if (setData.coordinates) {
     const coords = setData.coordinates;
-    if (typeof coords.lat === 'number' && 
+    if (typeof coords.lat === 'number' &&
         typeof coords.lng === 'number' &&
-        !isNaN(coords.lat) && 
+        !isNaN(coords.lat) &&
         !isNaN(coords.lng)) {
       // Set locationPoint
       if (update.$set) {
@@ -282,7 +282,7 @@ observationSchema.pre('findOneAndUpdate', function(next) {
       }
     }
   }
-  
+
   next();
 });
 

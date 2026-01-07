@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+import jwt from 'jsonwebtoken';
 
 /**
  * Validates that JWT secrets are configured
@@ -7,22 +7,22 @@ import jwt from "jsonwebtoken";
  */
 export const validateJwtConfig = () => {
   if (!process.env.JWT_SECRET) {
-    throw new Error("JWT_SECRET non défini dans .env");
+    throw new Error('JWT_SECRET non défini dans .env');
   }
   if (!process.env.JWT_REFRESH_SECRET) {
-    throw new Error("JWT_REFRESH_SECRET non défini dans .env");
+    throw new Error('JWT_REFRESH_SECRET non défini dans .env');
   }
 
   // Warning if secrets are too short in production
-  if (process.env.NODE_ENV === "production") {
+  if (process.env.NODE_ENV === 'production') {
     if (process.env.JWT_SECRET.length < 32) {
       console.warn(
-        "⚠️  JWT_SECRET devrait avoir au moins 32 caractères en production"
+        '⚠️  JWT_SECRET devrait avoir au moins 32 caractères en production'
       );
     }
     if (process.env.JWT_REFRESH_SECRET.length < 32) {
       console.warn(
-        "⚠️  JWT_REFRESH_SECRET devrait avoir au moins 32 caractères en production"
+        '⚠️  JWT_REFRESH_SECRET devrait avoir au moins 32 caractères en production'
       );
     }
   }
@@ -35,7 +35,7 @@ export const validateJwtConfig = () => {
  */
 export const generateAccessToken = (payload) => {
   return jwt.sign(payload, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRE || "1h",
+    expiresIn: process.env.JWT_EXPIRE || '1h'
   });
 };
 
@@ -46,7 +46,7 @@ export const generateAccessToken = (payload) => {
  */
 export const generateRefreshToken = (payload) => {
   return jwt.sign(payload, process.env.JWT_REFRESH_SECRET, {
-    expiresIn: process.env.JWT_REFRESH_EXPIRE || "7d",
+    expiresIn: process.env.JWT_REFRESH_EXPIRE || '7d'
   });
 };
 
@@ -72,6 +72,6 @@ export const createTokenPayload = (user) => {
   return {
     userId: user._id.toString(),
     email: user.email,
-    role: user.role,
+    role: user.role
   };
 };

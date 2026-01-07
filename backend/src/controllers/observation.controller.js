@@ -1,12 +1,12 @@
-import observationService from "../services/observation.service.js";
-import imageService from "../services/image.service.js";
+import observationService from '../services/observation.service.js';
+import imageService from '../services/image.service.js';
 import {
   successResponse,
   createdResponse,
-  errorResponse,
-} from "../utils/response.js";
-import { paginatedResponse } from "../utils/pagination.js";
-import { asyncHandler } from "../utils/asyncHandler.js";
+  errorResponse
+} from '../utils/response.js';
+import { paginatedResponse } from '../utils/pagination.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 
 /**
  * Observation controller
@@ -79,7 +79,7 @@ class ObservationController {
         observation = await observationService.updateObservation(
           observation._id,
           {
-            images: [aiImage],
+            images: [aiImage]
           }
         );
 
@@ -87,13 +87,13 @@ class ObservationController {
       } catch (aiError) {
         // Log the error but don't block observation creation
         console.error(
-          "⚠️ Échec génération image IA (observation créée sans image):",
+          '⚠️ Échec génération image IA (observation créée sans image):',
           aiError.message
         );
       }
     }
 
-    return createdResponse(res, observation, "Observation créée avec succès");
+    return createdResponse(res, observation, 'Observation créée avec succès');
   });
 
   /**
@@ -111,7 +111,7 @@ class ObservationController {
     );
 
     if (!observation) {
-      return errorResponse(res, "Observation non trouvée", 404);
+      return errorResponse(res, 'Observation non trouvée', 404);
     }
 
     console.log(
@@ -126,7 +126,7 @@ class ObservationController {
           description: observation.description,
           phenomena: observation.phenomena,
           ufoShapes: observation.ufoShapes,
-          tags: observation.tags,
+          tags: observation.tags
         },
         observationId
       );
@@ -137,7 +137,7 @@ class ObservationController {
       const updatedObservation = await observationService.updateObservation(
         observationId,
         {
-          images: updatedImages,
+          images: updatedImages
         }
       );
 
@@ -148,10 +148,10 @@ class ObservationController {
       return successResponse(
         res,
         updatedObservation,
-        "Image IA générée avec succès"
+        'Image IA générée avec succès'
       );
     } catch (error) {
-      console.error("❌ Échec génération image IA:", error.message);
+      console.error('❌ Échec génération image IA:', error.message);
       return errorResponse(
         res,
         `Échec de la génération d'image IA: ${error.message}`,
@@ -167,22 +167,22 @@ class ObservationController {
   updateObservation = asyncHandler(async (req, res) => {
     // Whitelist of editable fields (userId must not be editable)
     const allowedFields = [
-      "date",
-      "time",
-      "location",
-      "country",
-      "state",
-      "description",
-      "credibility",
-      "strangeness",
-      "duration",
-      "locale",
-      "coordinates",
-      "observerTypes",
-      "ufoShapes",
-      "phenomena",
-      "tags",
-      "images",
+      'date',
+      'time',
+      'location',
+      'country',
+      'state',
+      'description',
+      'credibility',
+      'strangeness',
+      'duration',
+      'locale',
+      'coordinates',
+      'observerTypes',
+      'ufoShapes',
+      'phenomena',
+      'tags',
+      'images'
     ];
     const updateData = {};
     allowedFields.forEach((field) => {
@@ -198,7 +198,7 @@ class ObservationController {
     return successResponse(
       res,
       observation,
-      "Observation mise à jour avec succès"
+      'Observation mise à jour avec succès'
     );
   });
 
@@ -209,7 +209,7 @@ class ObservationController {
   deleteObservation = asyncHandler(async (req, res) => {
     const observationId = req.params.id;
     await observationService.deleteObservation(observationId);
-    return successResponse(res, {}, "Observation supprimée avec succès");
+    return successResponse(res, {}, 'Observation supprimée avec succès');
   });
 
   /**
@@ -229,7 +229,7 @@ class ObservationController {
     return res.json({
       success: true,
       data: result.data,
-      pagination: result.pagination,
+      pagination: result.pagination
     });
   });
 

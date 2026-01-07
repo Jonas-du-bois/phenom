@@ -1,5 +1,5 @@
-import sharp from "sharp";
-import imageConfig from "../config/image.config.js";
+import sharp from 'sharp';
+import imageConfig from '../config/image.config.js';
 
 /**
  * Image compression utility
@@ -62,9 +62,9 @@ class ImageCompressor {
           processingTime: compressionStats.processingTime,
           originalDimensions: {
             width: metadata.width,
-            height: metadata.height,
-          },
-        },
+            height: metadata.height
+          }
+        }
       };
     } catch (error) {
       throw new Error(
@@ -93,33 +93,33 @@ class ImageCompressor {
     let outputMimetype;
 
     switch (mimetype.toLowerCase()) {
-      case "image/jpeg":
-      case "image/jpg":
-        compressedBuffer = await sharpInstance
-          .jpeg(imageConfig.jpeg)
-          .toBuffer();
-        outputMimetype = "image/jpeg";
-        break;
+    case 'image/jpeg':
+    case 'image/jpg':
+      compressedBuffer = await sharpInstance
+        .jpeg(imageConfig.jpeg)
+        .toBuffer();
+      outputMimetype = 'image/jpeg';
+      break;
 
-      case "image/png":
-        compressedBuffer = await sharpInstance.png(imageConfig.png).toBuffer();
-        outputMimetype = "image/png";
-        break;
+    case 'image/png':
+      compressedBuffer = await sharpInstance.png(imageConfig.png).toBuffer();
+      outputMimetype = 'image/png';
+      break;
 
-      case "image/webp":
-        compressedBuffer = await sharpInstance
-          .webp(imageConfig.webp)
-          .toBuffer();
-        outputMimetype = "image/webp";
-        break;
+    case 'image/webp':
+      compressedBuffer = await sharpInstance
+        .webp(imageConfig.webp)
+        .toBuffer();
+      outputMimetype = 'image/webp';
+      break;
 
-      default:
-        // If unknown format, convert to JPEG by default
-        console.warn(`Format ${mimetype} non supporté, conversion en JPEG`);
-        compressedBuffer = await sharpInstance
-          .jpeg(imageConfig.jpeg)
-          .toBuffer();
-        outputMimetype = "image/jpeg";
+    default:
+      // If unknown format, convert to JPEG by default
+      console.warn(`Format ${mimetype} non supporté, conversion en JPEG`);
+      compressedBuffer = await sharpInstance
+        .jpeg(imageConfig.jpeg)
+        .toBuffer();
+      outputMimetype = 'image/jpeg';
     }
 
     return { buffer: compressedBuffer, mimetype: outputMimetype };
@@ -139,7 +139,7 @@ class ImageCompressor {
       compressedSize,
       savedBytes,
       compressionRatio: `${compressionRatio}%`,
-      processingTime: `${processingTime}ms`,
+      processingTime: `${processingTime}ms`
     };
   }
 
@@ -148,7 +148,7 @@ class ImageCompressor {
    * @private
    */
   _logCompression(stats) {
-    console.log("\n🗜️  Compression d'image:");
+    console.log('\n🗜️  Compression d\'image:');
     console.log(
       `   📸 Taille originale:  ${this._formatBytes(stats.originalSize)}`
     );

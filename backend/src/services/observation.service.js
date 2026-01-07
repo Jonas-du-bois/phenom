@@ -1,15 +1,15 @@
-import { NotFoundError } from "../utils/errors.js";
+import { NotFoundError } from '../utils/errors.js';
 import Observation, {
   OBSERVER_TYPES,
   UFO_SHAPES,
   PHENOMENA,
-  LOCALE_TYPES,
-} from "../models/Observation.js";
+  LOCALE_TYPES
+} from '../models/Observation.js';
 import {
   getPaginationParams,
-  createPaginationMeta,
-} from "../utils/pagination.js";
-import { publishObservationEvent } from "../config/websocket.js";
+  createPaginationMeta
+} from '../utils/pagination.js';
+import { publishObservationEvent } from '../config/websocket.js';
 
 /**
  * @file observation.service.js
@@ -36,13 +36,13 @@ class ObservationService {
 
     const [sightings, total] = await Promise.all([
       Observation.find()
-        .populate("userId", "name email avatar")
-        .populate("commentsCount")
+        .populate('userId', 'name email avatar')
+        .populate('commentsCount')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean({ virtuals: true }),
-      Observation.countDocuments(),
+      Observation.countDocuments()
     ]);
 
     const totalPages = Math.ceil(total / limit);
@@ -55,8 +55,8 @@ class ObservationService {
         total,
         totalPages,
         hasNextPage: pageNum < totalPages,
-        hasPrevPage: pageNum > 1,
-      },
+        hasPrevPage: pageNum > 1
+      }
     };
   }
 
@@ -82,7 +82,7 @@ class ObservationService {
 
     // Country filter (partial match)
     if (filters.country) {
-      query.country = { $regex: filters.country, $options: "i" };
+      query.country = { $regex: filters.country, $options: 'i' };
     }
 
     // Locale filter
@@ -101,14 +101,14 @@ class ObservationService {
               {
                 $year: {
                   $dateFromString: {
-                    dateString: "$date",
-                    onError: new Date(0),
-                  },
-                },
+                    dateString: '$date',
+                    onError: new Date(0)
+                  }
+                }
               },
-              parseInt(filters.startYear),
-            ],
-          },
+              parseInt(filters.startYear)
+            ]
+          }
         });
       }
       if (filters.endYear) {
@@ -117,12 +117,12 @@ class ObservationService {
             $lte: [
               {
                 $year: {
-                  $dateFromString: { dateString: "$date", onError: new Date() },
-                },
+                  $dateFromString: { dateString: '$date', onError: new Date() }
+                }
               },
-              parseInt(filters.endYear),
-            ],
-          },
+              parseInt(filters.endYear)
+            ]
+          }
         });
       }
       if (dateConditions.length > 0) {
@@ -163,19 +163,19 @@ class ObservationService {
 
     // Observer types filter (comma-separated)
     if (filters.observerType) {
-      const types = filters.observerType.split(",").map((t) => t.trim());
+      const types = filters.observerType.split(',').map((t) => t.trim());
       query.observerTypes = { $in: types };
     }
 
     // UFO shapes filter (comma-separated)
     if (filters.ufoShape) {
-      const shapes = filters.ufoShape.split(",").map((s) => s.trim());
+      const shapes = filters.ufoShape.split(',').map((s) => s.trim());
       query.ufoShapes = { $in: shapes };
     }
 
     // Phenomena filter (comma-separated)
     if (filters.phenomenon) {
-      const phenom = filters.phenomenon.split(",").map((p) => p.trim());
+      const phenom = filters.phenomenon.split(',').map((p) => p.trim());
       query.phenomena = { $in: phenom };
     }
 
@@ -185,39 +185,39 @@ class ObservationService {
 
       // If the term contains spaces, use text search
       // Otherwise use regex for partial search
-      if (searchTerm.includes(" ")) {
+      if (searchTerm.includes(' ')) {
         query.$text = { $search: searchTerm };
       } else {
         // Partial search on multiple fields
         query.$or = [
-          { description: { $regex: searchTerm, $options: "i" } },
-          { location: { $regex: searchTerm, $options: "i" } },
-          { country: { $regex: searchTerm, $options: "i" } },
-          { tags: { $regex: searchTerm, $options: "i" } },
+          { description: { $regex: searchTerm, $options: 'i' } },
+          { location: { $regex: searchTerm, $options: 'i' } },
+          { country: { $regex: searchTerm, $options: 'i' } },
+          { tags: { $regex: searchTerm, $options: 'i' } }
         ];
       }
     }
 
     // Has coordinates filter
-    if (filters.hasCoordinates === "true" || filters.hasCoordinates === true) {
-      query["coordinates.lat"] = { $exists: true, $ne: null };
-      query["coordinates.lng"] = { $exists: true, $ne: null };
+    if (filters.hasCoordinates === 'true' || filters.hasCoordinates === true) {
+      query['coordinates.lat'] = { $exists: true, $ne: null };
+      query['coordinates.lng'] = { $exists: true, $ne: null };
     }
 
     // Has images filter (Phenom App specific)
-    if (filters.hasImages === "true" || filters.hasImages === true) {
+    if (filters.hasImages === 'true' || filters.hasImages === true) {
       query.images = { $exists: true, $not: { $size: 0 } };
     }
 
     const [sightings, total] = await Promise.all([
       Observation.find(query)
-        .populate("userId", "name email avatar")
-        .populate("commentsCount")
+        .populate('userId', 'name email avatar')
+        .populate('commentsCount')
         .sort({ createdAt: -1 })
         .skip(offset)
         .limit(limit)
         .lean({ virtuals: true }),
-      Observation.countDocuments(query),
+      Observation.countDocuments(query)
     ]);
 
     // Calculate page info
@@ -234,8 +234,8 @@ class ObservationService {
         totalPages,
         hasMore: offset + sightings.length < total,
         hasNextPage: currentPage < totalPages,
-        hasPrevPage: currentPage > 1,
-      },
+        hasPrevPage: currentPage > 1
+      }
     };
   }
 
@@ -247,18 +247,18 @@ class ObservationService {
    */
   async getSightingById(sightingId) {
     const sighting = await Observation.findById(sightingId)
-      .populate("userId", "name email avatar")
+      .populate('userId', 'name email avatar')
       .populate({
-        path: "comments",
+        path: 'comments',
         populate: {
-          path: "userId",
-          select: "name email avatar",
+          path: 'userId',
+          select: 'name email avatar'
         },
-        options: { sort: { createdAt: -1 } },
+        options: { sort: { createdAt: -1 } }
       });
 
     if (!sighting) {
-      throw new NotFoundError("Sighting not found");
+      throw new NotFoundError('Sighting not found');
     }
 
     return sighting;
@@ -280,67 +280,67 @@ class ObservationService {
       ufoShapeDistribution,
       phenomenaDistribution,
       sightingsWithCoordinates,
-      sightingsWithImages,
+      sightingsWithImages
     ] = await Promise.all([
       Observation.countDocuments(),
       Observation.aggregate([
         {
           $group: {
             _id: null,
-            min: { $min: "$credibility" },
-            max: { $max: "$credibility" },
-            avg: { $avg: "$credibility" },
-          },
-        },
+            min: { $min: '$credibility' },
+            max: { $max: '$credibility' },
+            avg: { $avg: '$credibility' }
+          }
+        }
       ]),
       Observation.aggregate([
         {
           $group: {
             _id: null,
-            min: { $min: "$strangeness" },
-            max: { $max: "$strangeness" },
-            avg: { $avg: "$strangeness" },
-          },
-        },
+            min: { $min: '$strangeness' },
+            max: { $max: '$strangeness' },
+            avg: { $avg: '$strangeness' }
+          }
+        }
       ]),
       Observation.aggregate([
         { $match: { duration: { $gt: 0 } } },
         {
           $group: {
             _id: null,
-            min: { $min: "$duration" },
-            max: { $max: "$duration" },
-            avg: { $avg: "$duration" },
-          },
-        },
+            min: { $min: '$duration' },
+            max: { $max: '$duration' },
+            avg: { $avg: '$duration' }
+          }
+        }
       ]),
       Observation.aggregate([
-        { $group: { _id: "$country", count: { $sum: 1 } } },
+        { $group: { _id: '$country', count: { $sum: 1 } } },
         { $sort: { count: -1 } },
         { $limit: 10 },
-        { $project: { country: "$_id", count: 1, _id: 0 } },
+        { $project: { country: '$_id', count: 1, _id: 0 } }
       ]),
       Observation.aggregate([
-        { $unwind: "$observerTypes" },
-        { $group: { _id: "$observerTypes", count: { $sum: 1 } } },
-        { $project: { type: "$_id", count: 1, _id: 0 } },
+        { $unwind: '$observerTypes' },
+        { $group: { _id: '$observerTypes', count: { $sum: 1 } } },
+        { $project: { type: '$_id', count: 1, _id: 0 } }
       ]),
       Observation.aggregate([
-        { $unwind: "$ufoShapes" },
-        { $group: { _id: "$ufoShapes", count: { $sum: 1 } } },
-        { $project: { shape: "$_id", count: 1, _id: 0 } },
+        { $unwind: '$ufoShapes' },
+        { $group: { _id: '$ufoShapes', count: { $sum: 1 } } },
+        { $project: { shape: '$_id', count: 1, _id: 0 } }
       ]),
       Observation.aggregate([
-        { $unwind: "$phenomena" },
-        { $group: { _id: "$phenomena", count: { $sum: 1 } } },
-        { $project: { phenomenon: "$_id", count: 1, _id: 0 } },
+        { $unwind: '$phenomena' },
+        { $group: { _id: '$phenomena', count: { $sum: 1 } } },
+        { $project: { phenomenon: '$_id', count: 1, _id: 0 } }
       ]),
       Observation.countDocuments({
-        "coordinates.lat": { $exists: true, $ne: null },
+        'coordinates.lat': { $exists: true, $ne: null }
       }),
       Observation.countDocuments({
-        images: { $exists: true, $not: { $size: 0 } },
-      }),
+        images: { $exists: true, $not: { $size: 0 } }
+      })
     ]);
 
     const credStats = credibilityStats[0] || { min: 0, max: 15, avg: 0 };
@@ -368,24 +368,24 @@ class ObservationService {
       credibilityStats: {
         min: credStats.min,
         max: credStats.max,
-        avg: credStats.avg?.toFixed(2) || "0.00",
+        avg: credStats.avg?.toFixed(2) || '0.00'
       },
       strangenessStats: {
         min: strangeStats.min,
         max: strangeStats.max,
-        avg: strangeStats.avg?.toFixed(2) || "0.00",
+        avg: strangeStats.avg?.toFixed(2) || '0.00'
       },
       durationStats: {
         min: durStats.min,
         max: durStats.max,
-        avg: durStats.avg?.toFixed(2) || "0.00",
+        avg: durStats.avg?.toFixed(2) || '0.00'
       },
       topCountries,
       observerTypeDistribution: observerTypeDist,
       ufoShapeDistribution: ufoShapeDist,
       phenomenaDistribution: phenomenaDist,
       sightingsWithCoordinates,
-      sightingsWithImages,
+      sightingsWithImages
     };
   }
 
@@ -394,85 +394,85 @@ class ObservationService {
    */
   async getFilterValues(filterType) {
     switch (filterType) {
-      case "countries":
-        const countries = await Observation.distinct("country");
-        return countries.filter((c) => c).sort();
-      case "locales":
-        return LOCALE_TYPES;
-      case "observer-types":
-        return OBSERVER_TYPES.map((code) => ({
-          code,
-          description: this.getObserverTypeDescription(code),
-        }));
-      case "ufo-shapes":
-        return UFO_SHAPES.map((code) => ({
-          code,
-          description: this.getUfoShapeDescription(code),
-        }));
-      case "phenomena":
-        return PHENOMENA.map((code) => ({
-          code,
-          description: this.getPhenomenonDescription(code),
-        }));
-      default:
-        return [];
+    case 'countries':
+      const countries = await Observation.distinct('country');
+      return countries.filter((c) => c).sort();
+    case 'locales':
+      return LOCALE_TYPES;
+    case 'observer-types':
+      return OBSERVER_TYPES.map((code) => ({
+        code,
+        description: this.getObserverTypeDescription(code)
+      }));
+    case 'ufo-shapes':
+      return UFO_SHAPES.map((code) => ({
+        code,
+        description: this.getUfoShapeDescription(code)
+      }));
+    case 'phenomena':
+      return PHENOMENA.map((code) => ({
+        code,
+        description: this.getPhenomenonDescription(code)
+      }));
+    default:
+      return [];
     }
   }
 
   // Helper methods for descriptions
   getObserverTypeDescription(code) {
     const descriptions = {
-      GND: "Ground Observers - Observateur(s) au sol",
-      MIL: "Military Observers - Observateur(s) militaires",
-      CIV: "Civilian Observers - Observateur(s) civils",
-      HQO: "High-Quality Observers - Observateur(s) de haute qualité",
-      SCI: "Scientist Involvement - Implication de scientifiques",
-      CST: "Coastal Observers - Observateur(s) en zone côtière",
-      SEA: "Sea Observers - Observateur(s) en mer",
-      NWS: "News Media Report - Rapport médias/presse",
+      GND: 'Ground Observers - Observateur(s) au sol',
+      MIL: 'Military Observers - Observateur(s) militaires',
+      CIV: 'Civilian Observers - Observateur(s) civils',
+      HQO: 'High-Quality Observers - Observateur(s) de haute qualité',
+      SCI: 'Scientist Involvement - Implication de scientifiques',
+      CST: 'Coastal Observers - Observateur(s) en zone côtière',
+      SEA: 'Sea Observers - Observateur(s) en mer',
+      NWS: 'News Media Report - Rapport médias/presse'
     };
     return descriptions[code] || code;
   }
 
   getUfoShapeDescription(code) {
     const descriptions = {
-      SCR: "Saucer/Classic - Soucoupe classique, disque ou sphère",
-      CIG: "Cigar/Torpedo - Torpille, cigare ou cylindre",
-      DLT: "Delta/Boomerang - Delta, V, boomerang ou forme rectangulaire",
-      NLT: "Nightlights - Points lumineux ou lueurs nocturnes",
-      FBL: "Fireball - Boule de feu, forme brillante indistincte",
-      FIG: "Figure/Entity - Figure ou entité mal définie",
-      PRB: "Probe - Sonde (probablement télécommandée)",
-      NFO: "No Craft - Aucun engin vu (entités seules)",
+      SCR: 'Saucer/Classic - Soucoupe classique, disque ou sphère',
+      CIG: 'Cigar/Torpedo - Torpille, cigare ou cylindre',
+      DLT: 'Delta/Boomerang - Delta, V, boomerang ou forme rectangulaire',
+      NLT: 'Nightlights - Points lumineux ou lueurs nocturnes',
+      FBL: 'Fireball - Boule de feu, forme brillante indistincte',
+      FIG: 'Figure/Entity - Figure ou entité mal définie',
+      PRB: 'Probe - Sonde (probablement télécommandée)',
+      NFO: 'No Craft - Aucun engin vu (entités seules)'
     };
     return descriptions[code] || code;
   }
 
   getPhenomenonDescription(code) {
     const descriptions = {
-      WAV: "Wave/Cluster/Flap - Vague, cluster ou flap",
-      TCH: "Technical Details - Nouveaux détails techniques",
-      HST: "Historical Account - Compte rendu historique",
-      SND: "Sounds - Sons d'OVNI entendus ou enregistrés",
-      ODD: "Atypical/Paranormal - Atypique, Forteana ou paranormal",
-      MID: "Misidentification - Probable mésidentification",
-      RAY: "Light/Beam - Lumière bizarre, projecteur, faisceau",
-      SIG: "Signals - Signaux, réponses ou communications",
-      LND: "Landing - Atterrissage d'OVNI",
-      SUB: "Submersible - Émerge de l'eau ou s'y immerge",
-      OBS: "Observation/Chase - Véhicules d'observation ou de poursuite",
-      VEH: "Vehicle Affected - Véhicule affecté",
-      TRC: "Physical Traces - Traces physiques directes",
-      DRT: "Dirt/Soil Marks - Traces de terre, sol, marques",
-      VEG: "Vegetation - Plantes affectées",
-      PHT: "Photos/Video - Photos, films ou vidéos prises",
-      RDA: "Radiation - Radiation détectée",
-      BLD: "Buildings/Structures - Bâtiment affecté",
-      OID: "Humanoid/Grey - Humanoïde, petit extraterrestre",
-      NOC: "No Entity - Aucune entité vue",
-      ANI: "Animals Affected - Animaux affectés",
-      HUM: "Humans Affected - Humains affectés",
-      INJ: "Injuries - Blessures, maladie, mort",
+      WAV: 'Wave/Cluster/Flap - Vague, cluster ou flap',
+      TCH: 'Technical Details - Nouveaux détails techniques',
+      HST: 'Historical Account - Compte rendu historique',
+      SND: 'Sounds - Sons d\'OVNI entendus ou enregistrés',
+      ODD: 'Atypical/Paranormal - Atypique, Forteana ou paranormal',
+      MID: 'Misidentification - Probable mésidentification',
+      RAY: 'Light/Beam - Lumière bizarre, projecteur, faisceau',
+      SIG: 'Signals - Signaux, réponses ou communications',
+      LND: 'Landing - Atterrissage d\'OVNI',
+      SUB: 'Submersible - Émerge de l\'eau ou s\'y immerge',
+      OBS: 'Observation/Chase - Véhicules d\'observation ou de poursuite',
+      VEH: 'Vehicle Affected - Véhicule affecté',
+      TRC: 'Physical Traces - Traces physiques directes',
+      DRT: 'Dirt/Soil Marks - Traces de terre, sol, marques',
+      VEG: 'Vegetation - Plantes affectées',
+      PHT: 'Photos/Video - Photos, films ou vidéos prises',
+      RDA: 'Radiation - Radiation détectée',
+      BLD: 'Buildings/Structures - Bâtiment affecté',
+      OID: 'Humanoid/Grey - Humanoïde, petit extraterrestre',
+      NOC: 'No Entity - Aucune entité vue',
+      ANI: 'Animals Affected - Animaux affectés',
+      HUM: 'Humans Affected - Humains affectés',
+      INJ: 'Injuries - Blessures, maladie, mort'
     };
     return descriptions[code] || code;
   }
@@ -510,17 +510,17 @@ class ObservationService {
     const observation = await Observation.create({
       ...observationData,
       userId,
-      source: "phenom-app",
+      source: 'phenom-app'
     });
 
     const populatedObservation = await observation.populate(
-      "userId",
-      "name email avatar"
+      'userId',
+      'name email avatar'
     );
 
     // Publish event via WebSocket
     publishObservationEvent(
-      "observation:created",
+      'observation:created',
       populatedObservation.toObject()
     );
 
@@ -538,14 +538,14 @@ class ObservationService {
       observationId,
       { $set: updateData },
       { new: true, runValidators: true }
-    ).populate("userId", "name email avatar");
+    ).populate('userId', 'name email avatar');
 
     if (!observation) {
-      throw new NotFoundError("Observation not found");
+      throw new NotFoundError('Observation not found');
     }
 
     // Publish event via WebSocket
-    publishObservationEvent("observation:updated", observation.toObject());
+    publishObservationEvent('observation:updated', observation.toObject());
 
     return observation;
   }
@@ -565,17 +565,17 @@ class ObservationService {
 
       // Delete observation within transaction
       observation = await Observation.findByIdAndDelete(observationId, {
-        session,
+        session
       });
 
       if (!observation) {
         // Abort transaction if observation doesn't exist
         await session.abortTransaction();
-        throw new NotFoundError("Observation not found");
+        throw new NotFoundError('Observation not found');
       }
 
       // Delete associated comments within transaction
-      const Comment = (await import("../models/Comment.js")).default;
+      const Comment = (await import('../models/Comment.js')).default;
       const deleteResult = await Comment.deleteMany(
         { observationId },
         { session }
@@ -599,7 +599,7 @@ class ObservationService {
 
     // Delete images from Cloudinary after transaction (external to MongoDB)
     try {
-      const imageService = (await import("./image.service.js")).default;
+      const imageService = (await import('./image.service.js')).default;
       const deletedImages = await imageService.deleteAllImagesForObservation(
         observationId
       );
@@ -616,7 +616,7 @@ class ObservationService {
     }
 
     // Publish event via WebSocket
-    publishObservationEvent("observation:deleted", { observationId });
+    publishObservationEvent('observation:deleted', { observationId });
 
     return observation;
   }
@@ -628,10 +628,10 @@ class ObservationService {
    */
   async getObservationOwnerId(observationId) {
     const observation = await Observation.findById(observationId).select(
-      "userId"
+      'userId'
     );
     if (!observation) {
-      throw new NotFoundError("Observation not found for ownership check");
+      throw new NotFoundError('Observation not found for ownership check');
     }
     return observation.userId;
   }
@@ -656,11 +656,11 @@ class ObservationService {
     const lngDelta = radiusKm / (111 * Math.cos((lat * Math.PI) / 180));
 
     const observations = await Observation.find({
-      "coordinates.lat": { $gte: lat - latDelta, $lte: lat + latDelta },
-      "coordinates.lng": { $gte: lng - lngDelta, $lte: lng + lngDelta },
+      'coordinates.lat': { $gte: lat - latDelta, $lte: lat + latDelta },
+      'coordinates.lng': { $gte: lng - lngDelta, $lte: lng + lngDelta }
     })
-      .populate("userId", "name email avatar")
-      .populate("commentsCount")
+      .populate('userId', 'name email avatar')
+      .populate('commentsCount')
       .limit(maxResults)
       .lean({ virtuals: true });
 
@@ -687,7 +687,7 @@ class ObservationService {
           lng,
           obs.coordinates.lat,
           obs.coordinates.lng
-        ),
+        )
       }))
       .filter((obs) => obs.distance <= radiusKm)
       .sort((a, b) => a.distance - b.distance);
@@ -708,11 +708,11 @@ class ObservationService {
    */
   async getPopularObservationTypes(limit = 6) {
     const popularPhenomena = await Observation.aggregate([
-      { $unwind: "$phenomena" },
-      { $group: { _id: "$phenomena", count: { $sum: 1 } } },
+      { $unwind: '$phenomena' },
+      { $group: { _id: '$phenomena', count: { $sum: 1 } } },
       { $sort: { count: -1 } },
       { $limit: limit },
-      { $project: { type: "$_id", count: 1, _id: 0 } },
+      { $project: { type: '$_id', count: 1, _id: 0 } }
     ]);
 
     return popularPhenomena;

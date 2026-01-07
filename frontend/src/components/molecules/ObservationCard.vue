@@ -67,7 +67,7 @@ const comments = ref([]); // List of comments for this observation
 const wsCommentDelta = ref(0); // Tracks comment count changes from WebSocket
 
 // ============================================================================
-// WEBSOCKET - Real-time comment updates (only when comments section is visible)
+// WEBSOCKET - Real-time comment updates
 // ============================================================================
 watch(
   wsMessages,
@@ -75,15 +75,19 @@ watch(
     if (!msgs || msgs.length === 0) return;
     const lastMsg = msgs[msgs.length - 1];
     
-    // Only process comment events for this observation
-    if (!lastMsg.type?.startsWith("comment:")) return;
-    const eventObservationId = lastMsg.data?.observationId;
+    // WebSocket messages are wrapped: { channel, data: { type, data: { comment, observationId } } }
+    if (lastMsg.channel !== "comments") return;
+    
+    const payload = lastMsg.data;
+    if (!payload?.type?.startsWith("comment:")) return;
+    
+    const eventObservationId = payload.data?.observationId;
     if (eventObservationId !== props.observation._id) return;
 
-    const comment = lastMsg.data?.comment;
+    const comment = payload.data?.comment;
     if (!comment) return;
 
-    if (lastMsg.type === "comment:created") {
+    if (payload.type === "comment:created") {
       // Always update the count delta
       wsCommentDelta.value++;
       // Only update the list if comments section is visible
@@ -93,18 +97,20 @@ watch(
           comments.value.unshift(comment);
         }
       }
-    } else if (lastMsg.type === "comment:updated") {
+    } else if (payload.type === "comment:updated") {
       if (showComments.value) {
         const idx = comments.value.findIndex((c) => c._id === comment._id);
         if (idx !== -1) {
           comments.value[idx] = comment;
         }
       }
-    } else if (lastMsg.type === "comment:deleted") {
+    } else if (payload.type === "comment:deleted") {
       // Always update the count delta
       wsCommentDelta.value--;
-      if (showComments.value) {
-        comments.value = comments.value.filter((c) => c._id !== comment._id);
+      // For deleted, the backend sends { _id, observationId } not { comment }
+      const deletedId = payload.data?._id || comment?._id;
+      if (showComments.value && deletedId) {
+        comments.value = comments.value.filter((c) => c._id !== deletedId);
       }
     }
   },

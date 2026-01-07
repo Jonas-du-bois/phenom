@@ -1,6 +1,6 @@
-import adminService from "../services/admin.service.js";
-import { successResponse, notFoundResponse } from "../utils/response.js";
-import { paginatedResponse } from "../utils/pagination.js";
+import adminService from '../services/admin.service.js';
+import { successResponse, notFoundResponse } from '../utils/response.js';
+import { paginatedResponse } from '../utils/pagination.js';
 
 /**
  * Administration controller
@@ -44,11 +44,11 @@ class AdminController {
       return successResponse(
         res,
         user,
-        "Rôle utilisateur mis à jour avec succès"
+        'Rôle utilisateur mis à jour avec succès'
       );
     } catch (error) {
-      if (error.message === "USER_NOT_FOUND") {
-        return notFoundResponse(res, "Utilisateur non trouvé");
+      if (error.message === 'USER_NOT_FOUND') {
+        return notFoundResponse(res, 'Utilisateur non trouvé');
       }
       next(error);
     }
@@ -76,10 +76,10 @@ class AdminController {
     try {
       await adminService.deleteObservation(req.params.id);
 
-      return successResponse(res, {}, "Observation supprimée avec succès");
+      return successResponse(res, {}, 'Observation supprimée avec succès');
     } catch (error) {
-      if (error.message === "OBSERVATION_NOT_FOUND") {
-        return notFoundResponse(res, "Observation non trouvée");
+      if (error.message === 'OBSERVATION_NOT_FOUND') {
+        return notFoundResponse(res, 'Observation non trouvée');
       }
       next(error);
     }
@@ -93,10 +93,10 @@ class AdminController {
     try {
       await adminService.deleteComment(req.params.id);
 
-      return successResponse(res, {}, "Commentaire supprimé avec succès");
+      return successResponse(res, {}, 'Commentaire supprimé avec succès');
     } catch (error) {
-      if (error.message === "COMMENT_NOT_FOUND") {
-        return notFoundResponse(res, "Commentaire non trouvé");
+      if (error.message === 'COMMENT_NOT_FOUND') {
+        return notFoundResponse(res, 'Commentaire non trouvé');
       }
       next(error);
     }
@@ -113,7 +113,7 @@ class AdminController {
       return res.json({
         success: true,
         data: result.data,
-        pagination: result.pagination,
+        pagination: result.pagination
       });
     } catch (error) {
       next(error);
@@ -144,11 +144,11 @@ class AdminController {
       return successResponse(
         res,
         observation,
-        "Observation rejetée avec succès"
+        'Observation rejetée avec succès'
       );
     } catch (error) {
-      if (error.message === "OBSERVATION_NOT_FOUND") {
-        return notFoundResponse(res, "Observation non trouvée");
+      if (error.message === 'OBSERVATION_NOT_FOUND') {
+        return notFoundResponse(res, 'Observation non trouvée');
       }
       next(error);
     }
@@ -163,10 +163,10 @@ class AdminController {
       const userId = req.params.id;
       const user = await adminService.suspendUser(userId, req.body);
 
-      return successResponse(res, user, "Utilisateur suspendu avec succès");
+      return successResponse(res, user, 'Utilisateur suspendu avec succès');
     } catch (error) {
-      if (error.message === "USER_NOT_FOUND") {
-        return notFoundResponse(res, "Utilisateur non trouvé");
+      if (error.message === 'USER_NOT_FOUND') {
+        return notFoundResponse(res, 'Utilisateur non trouvé');
       }
       next(error);
     }
@@ -181,10 +181,10 @@ class AdminController {
       const userId = req.params.id;
       const user = await adminService.activateUser(userId);
 
-      return successResponse(res, user, "Utilisateur réactivé avec succès");
+      return successResponse(res, user, 'Utilisateur réactivé avec succès');
     } catch (error) {
-      if (error.message === "USER_NOT_FOUND") {
-        return notFoundResponse(res, "Utilisateur non trouvé");
+      if (error.message === 'USER_NOT_FOUND') {
+        return notFoundResponse(res, 'Utilisateur non trouvé');
       }
       next(error);
     }
@@ -201,7 +201,7 @@ class AdminController {
       return res.json({
         success: true,
         data: result.data,
-        pagination: result.pagination,
+        pagination: result.pagination
       });
     } catch (error) {
       next(error);
@@ -218,8 +218,8 @@ class AdminController {
 
       return successResponse(res, user);
     } catch (error) {
-      if (error.message === "USER_NOT_FOUND") {
-        return notFoundResponse(res, "Utilisateur non trouvé");
+      if (error.message === 'USER_NOT_FOUND') {
+        return notFoundResponse(res, 'Utilisateur non trouvé');
       }
       next(error);
     }

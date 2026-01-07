@@ -58,7 +58,7 @@
 -->
 
 <template>
-  <div class="app-layout min-h-screen bg-[#000000] flex flex-col">
+  <div class="app-layout h-full w-full bg-[#000000] flex flex-col overflow-hidden relative">
     <!-- Page Header slot - for page-specific headers -->
     <slot name="header" />
 

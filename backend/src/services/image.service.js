@@ -2,10 +2,10 @@ import {
   uploadImage,
   deleteImage,
   deleteImages,
-  getImageUrl,
-} from "../config/cloudinary.js";
-import imageCompressor from "../utils/compress-image.js";
-import OBSERVATION_TYPES from "../constants/observationTypes.js";
+  getImageUrl
+} from '../config/cloudinary.js';
+import imageCompressor from '../utils/compress-image.js';
+import OBSERVATION_TYPES from '../constants/observationTypes.js';
 
 /**
  * Image management service with Cloudinary
@@ -22,11 +22,11 @@ class ImageService {
       const compressed = await imageCompressor.compress(buffer, mimetype);
 
       const result = await uploadImage(compressed.buffer, {
-        folder: "phenom/observations",
+        folder: 'phenom/observations',
         public_id: `${observationId}_${Date.now()}`,
         maxWidth: 1920,
         maxHeight: 1920,
-        quality: 85,
+        quality: 85
       });
 
       return {
@@ -41,8 +41,8 @@ class ImageService {
           originalSize: compressed.metadata.originalSize,
           compressedSize: compressed.metadata.compressedSize,
           ratio: compressed.metadata.compressionRatio,
-          savedBytes: compressed.metadata.savedBytes,
-        },
+          savedBytes: compressed.metadata.savedBytes
+        }
       };
     } catch (error) {
       throw new Error(`Erreur lors de l'upload: ${error.message}`);
@@ -87,12 +87,12 @@ Style: Cinematic, dramatic lighting, slightly mysterious and eerie mood, night o
 
     // Add tags as additional visual elements
     if (tags && tags.length > 0) {
-      prompt += `Additional visual elements: ${tags.join(", ")}\n`;
+      prompt += `Additional visual elements: ${tags.join(', ')}\n`;
     }
 
     // Add generic geographic context if available
     if (location && location.coordinates) {
-      prompt += "Setting: Outdoor landscape scene\n";
+      prompt += 'Setting: Outdoor landscape scene\n';
     }
 
     // Final instructions for quality
@@ -117,64 +117,64 @@ Important:
     const apiKey = process.env.GEMINI_API_KEY;
 
     console.log(
-      "🔑 GEMINI_API_KEY configurée:",
-      apiKey ? `Oui (${apiKey.substring(0, 10)}...)` : "NON!"
+      '🔑 GEMINI_API_KEY configurée:',
+      apiKey ? `Oui (${apiKey.substring(0, 10)}...)` : 'NON!'
     );
 
     if (!apiKey) {
       throw new Error(
-        "GEMINI_API_KEY non configurée dans les variables d'environnement"
+        'GEMINI_API_KEY non configurée dans les variables d\'environnement'
       );
     }
 
     const endpoint =
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent";
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent';
 
-    console.log("🤖 Appel API Gemini pour génération d'image...");
-    console.log("📝 Prompt:", prompt.substring(0, 200) + "...");
-    console.log("🌐 Endpoint:", endpoint);
+    console.log('🤖 Appel API Gemini pour génération d\'image...');
+    console.log('📝 Prompt:', prompt.substring(0, 200) + '...');
+    console.log('🌐 Endpoint:', endpoint);
 
     try {
       const response = await fetch(endpoint, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": apiKey,
+          'Content-Type': 'application/json',
+          'x-goog-api-key': apiKey
         },
         body: JSON.stringify({
           contents: [
             {
               parts: [
                 {
-                  text: prompt,
-                },
-              ],
-            },
+                  text: prompt
+                }
+              ]
+            }
           ],
           generationConfig: {
-            responseModalities: ["TEXT", "IMAGE"],
-          },
-        }),
+            responseModalities: ['TEXT', 'IMAGE']
+          }
+        })
       });
 
       if (!response.ok) {
         const errorBody = await response.text();
-        console.error("❌ Erreur API Gemini:", response.status, errorBody);
+        console.error('❌ Erreur API Gemini:', response.status, errorBody);
 
         // Specific error handling
         if (response.status === 429) {
           throw new Error(
-            "Limite de requêtes Gemini atteinte. Le modèle expérimental a des quotas très limités. Réessayez dans quelques minutes."
+            'Limite de requêtes Gemini atteinte. Le modèle expérimental a des quotas très limités. Réessayez dans quelques minutes.'
           );
         }
         if (response.status === 403) {
           throw new Error(
-            "Accès refusé à l'API Gemini. Vérifiez que la clé API est valide et que le modèle est accessible."
+            'Accès refusé à l\'API Gemini. Vérifiez que la clé API est valide et que le modèle est accessible.'
           );
         }
         if (response.status === 400) {
           throw new Error(
-            "Requête invalide vers Gemini. Le prompt ou la configuration peut être incorrecte."
+            'Requête invalide vers Gemini. Le prompt ou la configuration peut être incorrecte.'
           );
         }
 
@@ -186,31 +186,31 @@ Important:
       // Extract base64 image from response
       const candidates = data.candidates;
       if (!candidates || candidates.length === 0) {
-        throw new Error("Aucun candidat dans la réponse Gemini");
+        throw new Error('Aucun candidat dans la réponse Gemini');
       }
 
       const parts = candidates[0].content?.parts;
       if (!parts || parts.length === 0) {
-        throw new Error("Aucune partie dans la réponse Gemini");
+        throw new Error('Aucune partie dans la réponse Gemini');
       }
 
       // Find the part containing the image
       const imagePart = parts.find((part) => part.inlineData?.data);
       if (!imagePart) {
-        throw new Error("Aucune image dans la réponse Gemini");
+        throw new Error('Aucune image dans la réponse Gemini');
       }
 
       const base64Data = imagePart.inlineData.data;
-      const mimeType = imagePart.inlineData.mimeType || "image/png";
+      const mimeType = imagePart.inlineData.mimeType || 'image/png';
 
-      console.log("✅ Image générée avec succès, mime:", mimeType);
+      console.log('✅ Image générée avec succès, mime:', mimeType);
 
       // Convert base64 to Buffer
-      const buffer = Buffer.from(base64Data, "base64");
+      const buffer = Buffer.from(base64Data, 'base64');
 
       return { buffer, mimeType };
     } catch (error) {
-      console.error("❌ Erreur lors de l'appel API Gemini:", error.message);
+      console.error('❌ Erreur lors de l\'appel API Gemini:', error.message);
       throw error;
     }
   }
@@ -239,11 +239,11 @@ Important:
       const compressed = await imageCompressor.compress(buffer, mimeType);
 
       const result = await uploadImage(compressed.buffer, {
-        folder: "phenom/observations/ai-generated",
+        folder: 'phenom/observations/ai-generated',
         public_id: `ai_${observationId}_${Date.now()}`,
         maxWidth: 1920,
         maxHeight: 1920,
-        quality: 85,
+        quality: 85
       });
 
       console.log(`✅ Image IA uploadée sur Cloudinary: ${result.secure_url}`);
@@ -257,7 +257,7 @@ Important:
         width: result.width,
         height: result.height,
         uploadedAt: new Date(),
-        source: "ai",
+        source: 'ai'
       };
     } catch (error) {
       console.error(
@@ -275,11 +275,11 @@ Important:
     try {
       const result = await deleteImage(publicId);
 
-      if (result.result !== "ok" && result.result !== "not found") {
-        throw new Error("IMAGE_DELETE_FAILED");
+      if (result.result !== 'ok' && result.result !== 'not found') {
+        throw new Error('IMAGE_DELETE_FAILED');
       }
     } catch (error) {
-      if (error.message === "IMAGE_DELETE_FAILED") {
+      if (error.message === 'IMAGE_DELETE_FAILED') {
         throw error;
       }
       throw new Error(`Erreur lors de la suppression: ${error.message}`);
@@ -309,7 +309,7 @@ Important:
    */
   async deleteAllImagesForObservation(observationId) {
     try {
-      const Observation = (await import("../models/Observation.js")).default;
+      const Observation = (await import('../models/Observation.js')).default;
       const observation = await Observation.findById(observationId);
 
       if (

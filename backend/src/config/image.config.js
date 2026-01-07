@@ -17,34 +17,34 @@ export const imageConfig = {
   maxFileSize: parseInt(process.env.IMAGE_MAX_SIZE) || 10 * 1024 * 1024, // 10MB
 
   // Accepted MIME formats
-  allowedFormats: ["image/jpeg", "image/jpg", "image/png", "image/webp"],
+  allowedFormats: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
 
   // Compression options per format
   jpeg: {
     quality: parseInt(process.env.JPEG_QUALITY) || 85,
     progressive: true, // Progressive loading
-    mozjpeg: true, // Better compression algorithm
+    mozjpeg: true // Better compression algorithm
   },
 
   png: {
     quality: parseInt(process.env.PNG_QUALITY) || 85,
     compressionLevel: 9, // Maximum compression (0-9)
-    adaptiveFiltering: true,
+    adaptiveFiltering: true
   },
 
   webp: {
     quality: parseInt(process.env.WEBP_QUALITY) || 85,
-    effort: 6, // Quality/speed balance (0-6)
+    effort: 6 // Quality/speed balance (0-6)
   },
 
   // Resizing options
   resize: {
-    fit: "inside", // Preserves aspect ratio
-    withoutEnlargement: true, // Does not upscale small images
+    fit: 'inside', // Preserves aspect ratio
+    withoutEnlargement: true // Does not upscale small images
   },
 
   // Verbose logging (useful for debugging)
-  verbose: process.env.IMAGE_VERBOSE === "true" || false,
+  verbose: process.env.IMAGE_VERBOSE === 'true' || false
 };
 
 export default imageConfig;

@@ -1,4 +1,4 @@
-import { CustomError } from "../utils/errors.js";
+import { CustomError } from '../utils/errors.js';
 
 /**
  * Centralized error handling middleware
@@ -9,29 +9,29 @@ export const errorHandler = (err, req, res, _next) => {
   error.message = err.message;
 
   // Log error for debugging
-  console.error("Error:", {
+  console.error('Error:', {
     message: err.message,
-    stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
     path: req.path,
-    method: req.method,
+    method: req.method
   });
 
   // Handle custom errors
   if (err instanceof CustomError) {
     return res.status(err.statusCode).json({
       success: false,
-      error: err.message,
+      error: err.message
     });
   }
 
   // Mongoose validation error
-  if (err.name === "ValidationError") {
+  if (err.name === 'ValidationError') {
     const messages = Object.values(err.errors).map((e) => e.message);
-    error.message = "Erreur de validation";
+    error.message = 'Erreur de validation';
     return res.status(400).json({
       success: false,
       error: error.message,
-      details: messages,
+      details: messages
     });
   }
 
@@ -41,46 +41,46 @@ export const errorHandler = (err, req, res, _next) => {
     error.message = `${field} existe déjà`;
     return res.status(400).json({
       success: false,
-      error: error.message,
+      error: error.message
     });
   }
 
   // Mongoose cast error (invalid ID)
-  if (err.name === "CastError") {
-    error.message = "Ressource non trouvée";
+  if (err.name === 'CastError') {
+    error.message = 'Ressource non trouvée';
     return res.status(404).json({
       success: false,
-      error: error.message,
+      error: error.message
     });
   }
 
   // JWT error
-  if (err.name === "JsonWebTokenError") {
-    error.message = "Token invalide";
+  if (err.name === 'JsonWebTokenError') {
+    error.message = 'Token invalide';
     return res.status(401).json({
       success: false,
-      error: error.message,
+      error: error.message
     });
   }
 
-  if (err.name === "TokenExpiredError") {
-    error.message = "Token expiré";
+  if (err.name === 'TokenExpiredError') {
+    error.message = 'Token expiré';
     return res.status(401).json({
       success: false,
-      error: error.message,
+      error: error.message
     });
   }
 
   // Multer error (file upload)
-  if (err.name === "MulterError") {
-    if (err.code === "LIMIT_FILE_SIZE") {
-      error.message = "Fichier trop volumineux";
+  if (err.name === 'MulterError') {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      error.message = 'Fichier trop volumineux';
     } else {
-      error.message = "Erreur lors de l'upload du fichier";
+      error.message = 'Erreur lors de l\'upload du fichier';
     }
     return res.status(400).json({
       success: false,
-      error: error.message,
+      error: error.message
     });
   }
 
@@ -88,8 +88,8 @@ export const errorHandler = (err, req, res, _next) => {
   const statusCode = err.statusCode || 500;
   res.status(statusCode).json({
     success: false,
-    error: error.message || "Erreur serveur",
-    ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
+    error: error.message || 'Erreur serveur',
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
   });
 };
 
@@ -100,6 +100,6 @@ export const errorHandler = (err, req, res, _next) => {
 export const notFound = (req, res) => {
   res.status(404).json({
     success: false,
-    error: `Route non trouvée: ${req.originalUrl}`,
+    error: `Route non trouvée: ${req.originalUrl}`
   });
 };

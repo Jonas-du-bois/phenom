@@ -4,9 +4,9 @@
  * Provides lists of countries, locales, observer types, UFO shapes, and phenomena.
  * Compatible with Phenom Search API format.
  */
-import express from "express";
-import observationService from "../services/observation.service.js";
-import { asyncHandler } from "../utils/asyncHandler.js";
+import express from 'express';
+import observationService from '../services/observation.service.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 
 const router = express.Router();
 
@@ -39,12 +39,12 @@ const router = express.Router();
  *                     type: string
  */
 router.get(
-  "/countries",
+  '/countries',
   asyncHandler(async (req, res) => {
-    const countries = await observationService.getFilterValues("countries");
+    const countries = await observationService.getFilterValues('countries');
     return res.status(200).json({
       success: true,
-      data: countries,
+      data: countries
     });
   })
 );
@@ -60,12 +60,12 @@ router.get(
  *         description: Liste des types de localités
  */
 router.get(
-  "/locales",
+  '/locales',
   asyncHandler(async (req, res) => {
-    const locales = await observationService.getFilterValues("locales");
+    const locales = await observationService.getFilterValues('locales');
     return res.status(200).json({
       success: true,
-      data: locales,
+      data: locales
     });
   })
 );
@@ -99,12 +99,12 @@ router.get(
  *                         example: Ground Observers - Observateur(s) au sol
  */
 router.get(
-  "/observer-types",
+  '/observer-types',
   asyncHandler(async (req, res) => {
-    const types = await observationService.getFilterValues("observer-types");
+    const types = await observationService.getFilterValues('observer-types');
     return res.status(200).json({
       success: true,
-      data: types,
+      data: types
     });
   })
 );
@@ -120,12 +120,12 @@ router.get(
  *         description: Liste des formes avec descriptions
  */
 router.get(
-  "/ufo-shapes",
+  '/ufo-shapes',
   asyncHandler(async (req, res) => {
-    const shapes = await observationService.getFilterValues("ufo-shapes");
+    const shapes = await observationService.getFilterValues('ufo-shapes');
     return res.status(200).json({
       success: true,
-      data: shapes,
+      data: shapes
     });
   })
 );
@@ -141,12 +141,12 @@ router.get(
  *         description: Liste des phénomènes avec descriptions
  */
 router.get(
-  "/phenomena",
+  '/phenomena',
   asyncHandler(async (req, res) => {
-    const phenomena = await observationService.getFilterValues("phenomena");
+    const phenomena = await observationService.getFilterValues('phenomena');
     return res.status(200).json({
       success: true,
-      data: phenomena,
+      data: phenomena
     });
   })
 );

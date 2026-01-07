@@ -1,6 +1,6 @@
-import { WSServerPubSub } from "wsmini";
-import { verifyToken } from "../config/jwt.js";
-import User from "../models/User.js";
+import { WSServerPubSub } from 'wsmini';
+import { verifyToken } from '../config/jwt.js';
+import User from '../models/User.js';
 
 /**
  * WebSocket server instance
@@ -13,47 +13,47 @@ let wss = null;
  * @returns {WSServerPubSub}
  */
 export const createWebSocketServer = (server) => {
-  console.log("🔌 Configuration du serveur WebSocket avec WsMini...");
+  console.log('🔌 Configuration du serveur WebSocket avec WsMini...');
 
   // Validate CORS configuration for production
-  if (process.env.NODE_ENV === "production" && !process.env.CORS_ORIGIN) {
+  if (process.env.NODE_ENV === 'production' && !process.env.CORS_ORIGIN) {
     console.error(
-      "❌ Erreur critique : La variable d'environnement CORS_ORIGIN n'est pas définie pour le serveur WebSocket en production."
+      '❌ Erreur critique : La variable d\'environnement CORS_ORIGIN n\'est pas définie pour le serveur WebSocket en production.'
     );
-    console.error("Veuillez définir CORS_ORIGIN.");
+    console.error('Veuillez définir CORS_ORIGIN.');
     process.exit(1);
   }
 
-  const corsOrigin = process.env.CORS_ORIGIN || "";
+  const corsOrigin = process.env.CORS_ORIGIN || '';
   const allowedOrigins = corsOrigin
-    .split(",")
+    .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean);
 
   console.log(
-    `🔐 CORS Origins configuré pour WebSocket: ${allowedOrigins.join(", ")}`
+    `🔐 CORS Origins configuré pour WebSocket: ${allowedOrigins.join(', ')}`
   );
 
   wss = new WSServerPubSub({
-    origins: allowedOrigins.includes("*") ? ["*"] : allowedOrigins,
+    origins: allowedOrigins.includes('*') ? ['*'] : allowedOrigins,
     maxNbOfClients: 1000,
     maxInputSize: 100000,
     pingTimeout: 30000,
-    logLevel: process.env.NODE_ENV === "production" ? "warn" : "info",
+    logLevel: process.env.NODE_ENV === 'production' ? 'warn' : 'info',
     // Authentication callback - called when a client connects with a token
     authCallback: async (token, request, wsServer) => {
       // Allow anonymous connections for public data
       if (!token) {
-        console.log("ℹ️ Connexion WebSocket anonyme acceptée");
+        console.log('ℹ️ Connexion WebSocket anonyme acceptée');
         return { anonymous: true };
       }
 
       try {
         const decoded = verifyToken(token);
-        const user = await User.findById(decoded.userId).select("-password");
+        const user = await User.findById(decoded.userId).select('-password');
 
         if (!user) {
-          console.log("❌ Authentification WebSocket échouée: utilisateur non trouvé.");
+          console.log('❌ Authentification WebSocket échouée: utilisateur non trouvé.');
           return false;
         }
 
@@ -62,33 +62,33 @@ export const createWebSocketServer = (server) => {
           userId: user._id.toString(),
           email: user.email,
           name: user.name,
-          role: user.role,
+          role: user.role
         };
       } catch (error) {
-        console.log("❌ Authentification WebSocket échouée: token invalide.", error.message);
+        console.log('❌ Authentification WebSocket échouée: token invalide.', error.message);
         // Return metadata for anonymous access instead of rejecting
         return { anonymous: true, authError: error.message };
       }
-    },
+    }
   });
 
   // Add channels BEFORE start()
-  wss.addChannel("observations", {
+  wss.addChannel('observations', {
     usersCanPub: false,
-    usersCanSub: true,
+    usersCanSub: true
   });
 
-  wss.addChannel("comments", {
+  wss.addChannel('comments', {
     usersCanPub: false,
-    usersCanSub: true,
+    usersCanSub: true
   });
 
   // Start with the existing HTTP server
   wss.start({ server });
 
-  console.log("✅ Serveur WebSocket configuré et démarré (PubSub)");
-  console.log("📡 WebSocket disponible sur le même port que le serveur HTTP");
-  console.log("🔐 Canaux: observations, comments (serveur uniquement)");
+  console.log('✅ Serveur WebSocket configuré et démarré (PubSub)');
+  console.log('📡 WebSocket disponible sur le même port que le serveur HTTP');
+  console.log('🔐 Canaux: observations, comments (serveur uniquement)');
 
   return wss;
 };
@@ -101,14 +101,14 @@ export const createWebSocketServer = (server) => {
  */
 export const publishToChannel = (channel, type, data) => {
   if (!wss) {
-    console.warn("⚠️ WebSocket non disponible pour publier");
+    console.warn('⚠️ WebSocket non disponible pour publier');
     return;
   }
 
   const message = {
     type,
     data,
-    timestamp: new Date().toISOString(),
+    timestamp: new Date().toISOString()
   };
 
   try {
@@ -127,7 +127,7 @@ export const publishToChannel = (channel, type, data) => {
  * @param {Object} data - Observation data
  */
 export const publishObservationEvent = (type, data) => {
-  publishToChannel("observations", type, data);
+  publishToChannel('observations', type, data);
 };
 
 /**
@@ -136,7 +136,7 @@ export const publishObservationEvent = (type, data) => {
  * @param {Object} data - Comment data
  */
 export const publishCommentEvent = (type, data) => {
-  publishToChannel("comments", type, data);
+  publishToChannel('comments', type, data);
 };
 
 export default createWebSocketServer;

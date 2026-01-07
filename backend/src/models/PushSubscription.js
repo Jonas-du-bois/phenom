@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 /**
  * @file PushSubscription.js
@@ -16,29 +16,29 @@ const pushSubscriptionSchema = new mongoose.Schema({
   // Reference to the user who owns this subscription
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: 'User',
     required: true,
-    index: true,
+    index: true
   },
   // Web Push subscription object containing endpoint and encryption keys
   subscription: {
     type: Object,
-    required: true,
+    required: true
   },
   // Last known location for proximity-based push notifications
   lastLocation: {
     lat: { type: Number },
     lng: { type: Number },
-    updatedAt: { type: Date },
+    updatedAt: { type: Date }
   },
-  createdAt: { type: Date, default: Date.now },
+  createdAt: { type: Date, default: Date.now }
 });
 
 // Geospatial index for proximity queries on user locations
-pushSubscriptionSchema.index({ "lastLocation.lat": 1, "lastLocation.lng": 1 });
+pushSubscriptionSchema.index({ 'lastLocation.lat': 1, 'lastLocation.lng': 1 });
 
 const PushSubscription = mongoose.model(
-  "PushSubscription",
+  'PushSubscription',
   pushSubscriptionSchema
 );
 export default PushSubscription;

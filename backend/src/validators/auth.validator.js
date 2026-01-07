@@ -1,68 +1,68 @@
-import { body } from "express-validator";
+import { body } from 'express-validator';
 
 /**
  * Validation for registration
  */
 export const signupValidation = [
-  body("name")
+  body('name')
     .trim()
     .notEmpty()
-    .withMessage("Le nom est requis")
+    .withMessage('Le nom est requis')
     .isLength({ min: 2, max: 50 })
-    .withMessage("Le nom doit contenir entre 2 et 50 caractères"),
+    .withMessage('Le nom doit contenir entre 2 et 50 caractères'),
 
-  body("email")
+  body('email')
     .trim()
     .notEmpty()
-    .withMessage("L'email est requis")
+    .withMessage('L\'email est requis')
     .isEmail()
-    .withMessage("Email invalide")
+    .withMessage('Email invalide')
     .normalizeEmail(),
 
-  body("password")
+  body('password')
     .notEmpty()
-    .withMessage("Le mot de passe est requis")
+    .withMessage('Le mot de passe est requis')
     .isLength({ min: 6 })
-    .withMessage("Le mot de passe doit contenir au moins 6 caractères"),
+    .withMessage('Le mot de passe doit contenir au moins 6 caractères')
 ];
 
 /**
  * Validation for login
  */
 export const loginValidation = [
-  body("email")
+  body('email')
     .trim()
     .notEmpty()
-    .withMessage("L'email est requis")
+    .withMessage('L\'email est requis')
     .isEmail()
-    .withMessage("Email invalide")
+    .withMessage('Email invalide')
     .normalizeEmail(),
 
-  body("password").notEmpty().withMessage("Le mot de passe est requis"),
+  body('password').notEmpty().withMessage('Le mot de passe est requis')
 ];
 
 /**
  * Validation for forgot-password
  */
 export const forgotPasswordValidation = [
-  body("email")
+  body('email')
     .trim()
     .notEmpty()
-    .withMessage("L'email est requis")
+    .withMessage('L\'email est requis')
     .isEmail()
-    .withMessage("Email invalide")
-    .normalizeEmail(),
+    .withMessage('Email invalide')
+    .normalizeEmail()
 ];
 
 /**
  * Validation for reset-password
  */
 export const resetPasswordValidation = [
-  body("token").trim().notEmpty().withMessage("Le token est requis"),
+  body('token').trim().notEmpty().withMessage('Le token est requis'),
 
-  body("newPassword")
+  body('newPassword')
     .notEmpty()
-    .withMessage("Le nouveau mot de passe est requis")
+    .withMessage('Le nouveau mot de passe est requis')
     .isLength({ min: 6 })
-    .withMessage("Le mot de passe doit contenir au moins 6 caractères"),
+    .withMessage('Le mot de passe doit contenir au moins 6 caractères')
 ];

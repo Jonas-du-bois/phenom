@@ -87,26 +87,36 @@
   padding: 0;
 }
 
+html,
+body,
+#app {
+  /* Force la hauteur exacte de l'écran */
+  height: 100%;
+  height: 100dvh; /* 'dvh' gère mieux les barres d'adresse dynamiques sur mobile */
+  
+  /* Empêche le scroll global et le rebond élastique iOS */
+  overflow: hidden;
+  overscroll-behavior: none;
+  
+  /* Conserve les couleurs de fond */
+  background-color: var(--phenom-black);
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  position: fixed; /* Nécessaire sur iOS pour vraiment bloquer le body */
+  inset: 0;
+}
+
 html {
   font-size: 16px;
-  scroll-behavior: smooth;
   -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  min-height: 100vh;
-  min-height: 100dvh; /* Dynamic viewport height for mobile */
   font-family: var(--font-sans);
-  background-color: var(--phenom-black);
   color: white;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
-}
-
-#app {
-  min-height: 100vh;
-  min-height: 100dvh;
 }
 
 a {

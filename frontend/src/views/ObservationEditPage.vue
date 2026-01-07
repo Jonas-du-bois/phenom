@@ -150,8 +150,11 @@ const onSubmit = async (data) => {
     }
 
     toast.success("Observation mise à jour");
-    router.push(`/observation/${id}`);
+    
+    // Redirect to observation detail page
+    await router.push({ name: "observation-detail", params: { id } });
   } catch (err) {
+    console.error("Erreur lors de la mise à jour:", err);
     toast.error(err?.message || "Erreur lors de la mise à jour");
   } finally {
     submitting.value = false;

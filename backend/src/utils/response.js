@@ -17,7 +17,7 @@ export const successResponse = (
 ) => {
   const response = {
     success: true,
-    data,
+    data
   };
 
   if (message) {
@@ -36,7 +36,7 @@ export const successResponse = (
 export const createdResponse = (
   res,
   data,
-  message = "Ressource créée avec succès"
+  message = 'Ressource créée avec succès'
 ) => {
   return successResponse(res, data, message, 201);
 };
@@ -51,7 +51,7 @@ export const createdResponse = (
 export const errorResponse = (res, error, statusCode = 400, details = null) => {
   const response = {
     success: false,
-    error,
+    error
   };
 
   if (details) {
@@ -66,7 +66,7 @@ export const errorResponse = (res, error, statusCode = 400, details = null) => {
  * @param {Object} res - Express response object
  * @param {string} message - Error message
  */
-export const unauthorizedResponse = (res, message = "Non autorisé") => {
+export const unauthorizedResponse = (res, message = 'Non autorisé') => {
   return errorResponse(res, message, 401);
 };
 
@@ -75,6 +75,6 @@ export const unauthorizedResponse = (res, message = "Non autorisé") => {
  * @param {Object} res - Express response object
  * @param {string} message - Error message
  */
-export const notFoundResponse = (res, message = "Ressource non trouvée") => {
+export const notFoundResponse = (res, message = 'Ressource non trouvée') => {
   return errorResponse(res, message, 404);
 };

@@ -3,22 +3,22 @@
  * @description Administration routes for user, observation, and comment management.
  * All routes require authentication and admin role.
  */
-import express from "express";
-import adminController from "../controllers/admin.controller.js";
-import { authenticate } from "../middleware/auth.js";
-import { authorize } from "../middleware/authorize.js";
-import { validate } from "../middleware/validate.js";
+import express from 'express';
+import adminController from '../controllers/admin.controller.js';
+import { authenticate } from '../middleware/auth.js';
+import { authorize } from '../middleware/authorize.js';
+import { validate } from '../middleware/validate.js';
 import {
   getUsersValidation,
   updateUserRoleValidation,
-  idParamValidation,
-} from "../validators/admin.validator.js";
+  idParamValidation
+} from '../validators/admin.validator.js';
 
 const router = express.Router();
 
 // All admin routes require authentication and admin role
 router.use(authenticate);
-router.use(authorize("admin"));
+router.use(authorize('admin'));
 
 /**
  * @swagger
@@ -101,7 +101,7 @@ router.use(authorize("admin"));
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get("/users", getUsersValidation, validate, adminController.getUsers);
+router.get('/users', getUsersValidation, validate, adminController.getUsers);
 
 /**
  * @swagger
@@ -174,7 +174,7 @@ router.get("/users", getUsersValidation, validate, adminController.getUsers);
  *               $ref: '#/components/schemas/Error'
  */
 router.put(
-  "/users/:id/role",
+  '/users/:id/role',
   updateUserRoleValidation,
   validate,
   adminController.updateUserRole
@@ -248,7 +248,7 @@ router.put(
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get("/stats", adminController.getStats);
+router.get('/stats', adminController.getStats);
 
 /**
  * @swagger
@@ -306,7 +306,7 @@ router.get("/stats", adminController.getStats);
  *               $ref: '#/components/schemas/Error'
  */
 router.delete(
-  "/observations/:id",
+  '/observations/:id',
   idParamValidation,
   validate,
   adminController.deleteObservation
@@ -368,7 +368,7 @@ router.delete(
  *               $ref: '#/components/schemas/Error'
  */
 router.delete(
-  "/comments/:id",
+  '/comments/:id',
   idParamValidation,
   validate,
   adminController.deleteComment
@@ -454,7 +454,7 @@ router.delete(
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get("/observations", validate, adminController.getAllObservations);
+router.get('/observations', validate, adminController.getAllObservations);
 
 /**
  * @swagger
@@ -522,7 +522,7 @@ router.get("/observations", validate, adminController.getAllObservations);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get("/comments", validate, adminController.getAllComments);
+router.get('/comments', validate, adminController.getAllComments);
 
 /**
  * @swagger
@@ -588,7 +588,7 @@ router.get("/comments", validate, adminController.getAllComments);
  *               $ref: '#/components/schemas/Error'
  */
 router.get(
-  "/users/:id",
+  '/users/:id',
   idParamValidation,
   validate,
   adminController.getUserDetails

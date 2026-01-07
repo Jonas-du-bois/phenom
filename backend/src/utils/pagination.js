@@ -30,7 +30,7 @@ export const createPaginationMeta = (total, page, limit) => {
     total,
     totalPages,
     hasNext: page < totalPages,
-    hasPrev: page > 1,
+    hasPrev: page > 1
   };
 };
 
@@ -46,6 +46,6 @@ export const paginatedResponse = (data, total, page, limit) => {
   return {
     success: true,
     data,
-    pagination: createPaginationMeta(total, page, limit),
+    pagination: createPaginationMeta(total, page, limit)
   };
 };

@@ -34,10 +34,9 @@ const checkConnection = async () => {
   const isLocal = uri.includes("localhost") || uri.includes("127.0.0.1");
 
   console.log(
-    `📦 Type: ${
-      isAtlas
-        ? "MongoDB Atlas (Cloud)"
-        : isLocal
+    `📦 Type: ${isAtlas
+      ? "MongoDB Atlas (Cloud)"
+      : isLocal
         ? "MongoDB Local"
         : "MongoDB Distant"
     }`
@@ -65,8 +64,7 @@ const checkConnection = async () => {
     console.log(`   Port: ${mongoose.connection.port || "N/A (SRV)"}`);
     console.log(`   Database: ${mongoose.connection.name}`);
     console.log(
-      `   État: ${
-        mongoose.connection.readyState === 1 ? "Connecté" : "Déconnecté"
+      `   État: ${mongoose.connection.readyState === 1 ? "Connecté" : "Déconnecté"
       }`
     );
     console.log("");

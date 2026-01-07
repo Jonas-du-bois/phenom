@@ -3,17 +3,17 @@
  * @description Authentication routes for user signup, login, logout, and token management.
  * Includes rate limiting for security.
  */
-import express from "express";
-import authController from "../controllers/auth.controller.js";
-import { authenticate } from "../middleware/auth.js";
-import { validate } from "../middleware/validate.js";
+import express from 'express';
+import authController from '../controllers/auth.controller.js';
+import { authenticate } from '../middleware/auth.js';
+import { validate } from '../middleware/validate.js';
 import {
   signupValidation,
   loginValidation,
   forgotPasswordValidation,
-  resetPasswordValidation,
-} from "../validators/auth.validator.js";
-import { authLimiter } from "../middleware/rateLimiter.js";
+  resetPasswordValidation
+} from '../validators/auth.validator.js';
+import { authLimiter } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
 
@@ -86,7 +86,7 @@ const router = express.Router();
  *               $ref: '#/components/schemas/Error'
  */
 router.post(
-  "/signup",
+  '/signup',
   authLimiter,
   signupValidation,
   validate,
@@ -161,7 +161,7 @@ router.post(
  *               $ref: '#/components/schemas/Error'
  */
 router.post(
-  "/login",
+  '/login',
   authLimiter,
   loginValidation,
   validate,
@@ -197,7 +197,7 @@ router.post(
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post("/logout", authenticate, authController.logout);
+router.post('/logout', authenticate, authController.logout);
 
 /**
  * @swagger
@@ -227,7 +227,7 @@ router.post("/logout", authenticate, authController.logout);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get("/me", authenticate, authController.getProfile);
+router.get('/me', authenticate, authController.getProfile);
 
 /**
  * @swagger
@@ -274,7 +274,7 @@ router.get("/me", authenticate, authController.getProfile);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post("/refresh-token", authController.refreshToken);
+router.post('/refresh-token', authController.refreshToken);
 
 /**
  * @swagger
@@ -317,7 +317,7 @@ router.post("/refresh-token", authController.refreshToken);
  *               $ref: '#/components/schemas/Error'
  */
 router.post(
-  "/forgot-password",
+  '/forgot-password',
   authLimiter,
   forgotPasswordValidation,
   validate,
@@ -377,7 +377,7 @@ router.post(
  *               $ref: '#/components/schemas/Error'
  */
 router.post(
-  "/reset-password",
+  '/reset-password',
   authLimiter,
   resetPasswordValidation,
   validate,

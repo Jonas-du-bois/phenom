@@ -1,10 +1,10 @@
-import User from "../models/User.js";
-import Observation from "../models/Observation.js";
-import Comment from "../models/Comment.js";
+import User from '../models/User.js';
+import Observation from '../models/Observation.js';
+import Comment from '../models/Comment.js';
 import {
   getPaginationParams,
-  createPaginationMeta,
-} from "../utils/pagination.js";
+  createPaginationMeta
+} from '../utils/pagination.js';
 
 /**
  * @file admin.service.js
@@ -29,24 +29,24 @@ class AdminService {
     // Search filter
     if (filters.search) {
       query.$or = [
-        { name: { $regex: filters.search, $options: "i" } },
-        { email: { $regex: filters.search, $options: "i" } },
+        { name: { $regex: filters.search, $options: 'i' } },
+        { email: { $regex: filters.search, $options: 'i' } }
       ];
     }
 
     const [users, total] = await Promise.all([
       User.find(query)
-        .select("-password")
+        .select('-password')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean(),
-      User.countDocuments(query),
+      User.countDocuments(query)
     ]);
 
     return {
       users,
-      pagination: createPaginationMeta(total, page, limit),
+      pagination: createPaginationMeta(total, page, limit)
     };
   }
 
@@ -61,10 +61,10 @@ class AdminService {
       userId,
       { role },
       { new: true }
-    ).select("-password");
+    ).select('-password');
 
     if (!user) {
-      throw new Error("USER_NOT_FOUND");
+      throw new Error('USER_NOT_FOUND');
     }
 
     return user;
@@ -80,7 +80,7 @@ class AdminService {
       totalObservations,
       totalComments,
       recentObservations,
-      topContributors,
+      topContributors
     ] = await Promise.all([
       User.countDocuments(),
       Observation.countDocuments(),
@@ -88,9 +88,9 @@ class AdminService {
       Observation.find()
         .sort({ createdAt: -1 })
         .limit(5)
-        .populate("userId", "name email avatar")
+        .populate('userId', 'name email avatar')
         .lean(),
-      this._getTopContributors(),
+      this._getTopContributors()
     ]);
 
     return {
@@ -98,7 +98,7 @@ class AdminService {
       totalObservations,
       totalComments,
       recentObservations,
-      topContributors,
+      topContributors
     };
   }
 
@@ -111,35 +111,35 @@ class AdminService {
     return await Observation.aggregate([
       {
         $group: {
-          _id: "$userId",
-          count: { $sum: 1 },
-        },
+          _id: '$userId',
+          count: { $sum: 1 }
+        }
       },
       {
-        $sort: { count: -1 },
+        $sort: { count: -1 }
       },
       {
-        $limit: 5,
+        $limit: 5
       },
       {
         $lookup: {
-          from: "users",
-          localField: "_id",
-          foreignField: "_id",
-          as: "user",
-        },
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'user'
+        }
       },
       {
-        $unwind: "$user",
+        $unwind: '$user'
       },
       {
         $project: {
           _id: 1,
           count: 1,
-          name: "$user.name",
-          email: "$user.email",
-        },
-      },
+          name: '$user.name',
+          email: '$user.email'
+        }
+      }
     ]);
   }
 
@@ -152,12 +152,12 @@ class AdminService {
     const observation = await Observation.findByIdAndDelete(observationId);
 
     if (!observation) {
-      throw new Error("OBSERVATION_NOT_FOUND");
+      throw new Error('OBSERVATION_NOT_FOUND');
     }
 
     // Delete all associated images on Cloudinary
     try {
-      const imageService = (await import("./image.service.js")).default;
+      const imageService = (await import('./image.service.js')).default;
       const deletedImages = await imageService.deleteAllImagesForObservation(
         observationId
       );
@@ -185,7 +185,7 @@ class AdminService {
     const comment = await Comment.findByIdAndDelete(commentId);
 
     if (!comment) {
-      throw new Error("COMMENT_NOT_FOUND");
+      throw new Error('COMMENT_NOT_FOUND');
     }
 
     return comment;
@@ -206,7 +206,7 @@ class AdminService {
     }
 
     // Filter by flagged
-    if (filters.flagged === "true") {
+    if (filters.flagged === 'true') {
       query.flagged = true;
     }
 
@@ -216,23 +216,23 @@ class AdminService {
     }
 
     // Handle sorting
-    const sortBy = filters.sortBy || "createdAt";
-    const order = filters.order === "asc" ? 1 : -1;
+    const sortBy = filters.sortBy || 'createdAt';
+    const order = filters.order === 'asc' ? 1 : -1;
     const sortOptions = { [sortBy]: order };
 
     const [observations, total] = await Promise.all([
       Observation.find(query)
-        .populate("userId", "name email avatar")
+        .populate('userId', 'name email avatar')
         .sort(sortOptions)
         .skip(skip)
         .limit(limit)
         .lean(),
-      Observation.countDocuments(query),
+      Observation.countDocuments(query)
     ]);
 
     return {
       data: observations,
-      pagination: createPaginationMeta(total, page, limit),
+      pagination: createPaginationMeta(total, page, limit)
     };
   }
 
@@ -246,7 +246,7 @@ class AdminService {
     const query = {};
 
     // Filter by flagged
-    if (filters.flagged === "true") {
+    if (filters.flagged === 'true') {
       query.flagged = true;
     }
 
@@ -262,18 +262,18 @@ class AdminService {
 
     const [comments, total] = await Promise.all([
       Comment.find(query)
-        .populate("userId", "name email avatar")
-        .populate("observationId", "title")
+        .populate('userId', 'name email avatar')
+        .populate('observationId', 'title')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean(),
-      Comment.countDocuments(query),
+      Comment.countDocuments(query)
     ]);
 
     return {
       data: comments,
-      pagination: createPaginationMeta(total, page, limit),
+      pagination: createPaginationMeta(total, page, limit)
     };
   }
 
@@ -283,9 +283,9 @@ class AdminService {
    * @returns {Object} Complete user details
    */
   async getUserDetails(userId) {
-    const user = await User.findById(userId).select("-password");
+    const user = await User.findById(userId).select('-password');
     if (!user) {
-      throw new Error("USER_NOT_FOUND");
+      throw new Error('USER_NOT_FOUND');
     }
 
     // Retrieve detailed statistics
@@ -297,8 +297,8 @@ class AdminService {
         Comment.find({ userId })
           .sort({ createdAt: -1 })
           .limit(10)
-          .populate("observationId", "title")
-          .lean(),
+          .populate('observationId', 'title')
+          .lean()
       ]);
 
     return {
@@ -306,7 +306,7 @@ class AdminService {
       observationsCount,
       commentsCount,
       recentObservations: observations,
-      recentComments: comments,
+      recentComments: comments
     };
   }
 }

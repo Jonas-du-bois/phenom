@@ -1,4 +1,4 @@
-import { validationResult } from "express-validator";
+import { validationResult } from 'express-validator';
 
 /**
  * Data validation middleware
@@ -10,13 +10,13 @@ export const validate = (req, res, next) => {
   if (!errors.isEmpty()) {
     const formattedErrors = errors.array().map((error) => ({
       field: error.path || error.param,
-      message: error.msg,
+      message: error.msg
     }));
 
     return res.status(400).json({
       success: false,
-      error: "Validation échouée",
-      details: formattedErrors,
+      error: 'Validation échouée',
+      details: formattedErrors
     });
   }
 

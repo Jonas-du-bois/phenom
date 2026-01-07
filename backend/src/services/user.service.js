@@ -1,12 +1,12 @@
-import User from "../models/User.js";
-import Observation from "../models/Observation.js";
-import Comment from "../models/Comment.js";
+import User from '../models/User.js';
+import Observation from '../models/Observation.js';
+import Comment from '../models/Comment.js';
 import {
   getPaginationParams,
-  createPaginationMeta,
-} from "../utils/pagination.js";
-import { uploadImage, deleteImage } from "../config/cloudinary.js";
-import sharp from "sharp";
+  createPaginationMeta
+} from '../utils/pagination.js';
+import { uploadImage, deleteImage } from '../config/cloudinary.js';
+import sharp from 'sharp';
 
 /**
  * @file user.service.js
@@ -22,13 +22,13 @@ class UserService {
   async getProfile(userId) {
     const user = await User.findById(userId);
     if (!user) {
-      throw new Error("USER_NOT_FOUND");
+      throw new Error('USER_NOT_FOUND');
     }
 
     // Retrieve statistics
     const [observationsCount, commentsCount] = await Promise.all([
       Observation.countDocuments({ userId }),
-      Comment.countDocuments({ userId }),
+      Comment.countDocuments({ userId })
     ]);
 
     const profile = user.toSafeObject();
@@ -46,17 +46,17 @@ class UserService {
   async getUserStats(userId) {
     const user = await User.findById(userId);
     if (!user) {
-      throw new Error("USER_NOT_FOUND");
+      throw new Error('USER_NOT_FOUND');
     }
 
     const [observationsCount, commentsCount] = await Promise.all([
       Observation.countDocuments({ userId }),
-      Comment.countDocuments({ userId }),
+      Comment.countDocuments({ userId })
     ]);
 
     return {
       observationsCount,
-      commentsCount,
+      commentsCount
     };
   }
 
@@ -73,10 +73,10 @@ class UserService {
     if (email) {
       const existingUser = await User.findOne({
         email,
-        _id: { $ne: userId },
+        _id: { $ne: userId }
       });
       if (existingUser) {
-        throw new Error("EMAIL_ALREADY_EXISTS");
+        throw new Error('EMAIL_ALREADY_EXISTS');
       }
     }
 
@@ -86,13 +86,13 @@ class UserService {
       {
         ...(name && { name }),
         ...(email && { email }),
-        ...(bio !== undefined && { bio }),
+        ...(bio !== undefined && { bio })
       },
       { new: true, runValidators: true }
     );
 
     if (!user) {
-      throw new Error("USER_NOT_FOUND");
+      throw new Error('USER_NOT_FOUND');
     }
 
     return user.toSafeObject();
@@ -106,21 +106,21 @@ class UserService {
    * @returns {boolean} true if change was successful
    */
   async changePassword(userId, currentPassword, newPassword) {
-    const user = await User.findById(userId).select("+password");
+    const user = await User.findById(userId).select('+password');
     if (!user) {
-      throw new Error("USER_NOT_FOUND");
+      throw new Error('USER_NOT_FOUND');
     }
 
     // Verify current password
     const isPasswordValid = await user.comparePassword(currentPassword);
     if (!isPasswordValid) {
-      throw new Error("INVALID_CURRENT_PASSWORD");
+      throw new Error('INVALID_CURRENT_PASSWORD');
     }
 
     // Verify that new password is different from old one
     const isSamePassword = await user.comparePassword(newPassword);
     if (isSamePassword) {
-      throw new Error("NEW_PASSWORD_SAME_AS_CURRENT");
+      throw new Error('NEW_PASSWORD_SAME_AS_CURRENT');
     }
 
     // Update password
@@ -138,7 +138,7 @@ class UserService {
   async deleteAccount(userId) {
     const user = await User.findById(userId);
     if (!user) {
-      throw new Error("USER_NOT_FOUND");
+      throw new Error('USER_NOT_FOUND');
     }
 
     // Delete user's avatar if exists
@@ -156,12 +156,12 @@ class UserService {
     }
 
     // Retrieve all user's observations
-    const observations = await Observation.find({ userId }).select("_id");
+    const observations = await Observation.find({ userId }).select('_id');
 
     // Delete Cloudinary images for each observation
     if (observations.length > 0) {
       try {
-        const imageService = (await import("./image.service.js")).default;
+        const imageService = (await import('./image.service.js')).default;
         let totalDeletedImages = 0;
 
         for (const observation of observations) {
@@ -202,22 +202,22 @@ class UserService {
    */
   async getUserObservations(userId, query) {
     const { page, limit, skip } = getPaginationParams(query);
-    const sortBy = query.sortBy || "createdAt";
-    const order = query.order === "asc" ? 1 : -1;
+    const sortBy = query.sortBy || 'createdAt';
+    const order = query.order === 'asc' ? 1 : -1;
 
     const [observations, total] = await Promise.all([
       Observation.find({ userId })
         .sort({ [sortBy]: order })
         .skip(skip)
         .limit(limit)
-        .populate("userId", "name email avatar")
+        .populate('userId', 'name email avatar')
         .lean(),
-      Observation.countDocuments({ userId }),
+      Observation.countDocuments({ userId })
     ]);
 
     return {
       data: observations,
-      pagination: createPaginationMeta(total, page, limit),
+      pagination: createPaginationMeta(total, page, limit)
     };
   }
 
@@ -231,7 +231,7 @@ class UserService {
   async uploadAvatar(userId, buffer, mimetype) {
     const user = await User.findById(userId);
     if (!user) {
-      throw new Error("USER_NOT_FOUND");
+      throw new Error('USER_NOT_FOUND');
     }
 
     // Delete old avatar if exists
@@ -247,8 +247,8 @@ class UserService {
     // Compress and resize the image
     const compressed = await sharp(buffer)
       .resize(256, 256, {
-        fit: "cover",
-        position: "center",
+        fit: 'cover',
+        position: 'center'
       })
       .jpeg({ quality: 85 })
       .toBuffer();
@@ -256,17 +256,17 @@ class UserService {
     // Upload to Cloudinary
     const publicId = `phenom/avatars/${userId}_${Date.now()}`;
     const result = await uploadImage(compressed, {
-      folder: "phenom/avatars",
+      folder: 'phenom/avatars',
       public_id: publicId,
       maxWidth: 256,
       maxHeight: 256,
-      quality: 85,
+      quality: 85
     });
 
     // Update the user
     user.avatar = {
       url: result.secure_url,
-      publicId: result.public_id,
+      publicId: result.public_id
     };
     await user.save();
 
@@ -276,7 +276,7 @@ class UserService {
 
     return {
       url: result.secure_url,
-      publicId: result.public_id,
+      publicId: result.public_id
     };
   }
 
@@ -288,11 +288,11 @@ class UserService {
   async deleteAvatar(userId) {
     const user = await User.findById(userId);
     if (!user) {
-      throw new Error("USER_NOT_FOUND");
+      throw new Error('USER_NOT_FOUND');
     }
 
     if (!user.avatar?.publicId) {
-      throw new Error("NO_AVATAR");
+      throw new Error('NO_AVATAR');
     }
 
     // Delete from Cloudinary
@@ -306,7 +306,7 @@ class UserService {
     // Update the user
     user.avatar = {
       url: null,
-      publicId: null,
+      publicId: null
     };
     await user.save();
 

@@ -1,10 +1,10 @@
-import Comment from "../models/Comment.js";
-import Observation from "../models/Observation.js";
+import Comment from '../models/Comment.js';
+import Observation from '../models/Observation.js';
 import {
   getPaginationParams,
-  createPaginationMeta,
-} from "../utils/pagination.js";
-import { NotFoundError } from "../utils/errors.js";
+  createPaginationMeta
+} from '../utils/pagination.js';
+import { NotFoundError } from '../utils/errors.js';
 
 /**
  * @file comment.service.js
@@ -21,7 +21,7 @@ class CommentService {
   async _validateObservationExists(observationId) {
     const observation = await Observation.findById(observationId);
     if (!observation) {
-      throw new NotFoundError("Observation non trouvée");
+      throw new NotFoundError('Observation non trouvée');
     }
     return observation;
   }
@@ -40,17 +40,17 @@ class CommentService {
 
     const [comments, total] = await Promise.all([
       Comment.find({ observationId })
-        .populate("userId", "name email avatar")
+        .populate('userId', 'name email avatar')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean(),
-      Comment.countDocuments({ observationId }),
+      Comment.countDocuments({ observationId })
     ]);
 
     return {
       comments,
-      pagination: createPaginationMeta(total, page, limit),
+      pagination: createPaginationMeta(total, page, limit)
     };
   }
 
@@ -68,12 +68,12 @@ class CommentService {
     const comment = await Comment.create({
       ...commentData,
       observationId,
-      userId,
+      userId
     });
 
     const populatedComment = await comment.populate(
-      "userId",
-      "name email avatar"
+      'userId',
+      'name email avatar'
     );
 
     // WebSocket event will be published in the controller
@@ -88,7 +88,7 @@ class CommentService {
    */
   async updateComment(commentId, updateData) {
     // Whitelist of editable fields
-    const allowedFields = ["text"];
+    const allowedFields = ['text'];
     const filteredData = Object.keys(updateData)
       .filter((key) => allowedFields.includes(key))
       .reduce((obj, key) => {
@@ -100,10 +100,10 @@ class CommentService {
       commentId,
       { $set: filteredData },
       { new: true, runValidators: true }
-    ).populate("userId", "name email avatar");
+    ).populate('userId', 'name email avatar');
 
     if (!comment) {
-      throw new NotFoundError("Commentaire non trouvé");
+      throw new NotFoundError('Commentaire non trouvé');
     }
 
     // WebSocket event will be published in the controller
@@ -119,7 +119,7 @@ class CommentService {
     const comment = await Comment.findByIdAndDelete(commentId);
 
     if (!comment) {
-      throw new NotFoundError("Commentaire non trouvé");
+      throw new NotFoundError('Commentaire non trouvé');
     }
 
     // WebSocket event will be published in the controller
@@ -132,10 +132,10 @@ class CommentService {
    * @returns {string} Owner ID
    */
   async getCommentOwnerId(commentId) {
-    const comment = await Comment.findById(commentId).select("userId");
+    const comment = await Comment.findById(commentId).select('userId');
     if (!comment) {
       throw new NotFoundError(
-        "Commentaire non trouvé pour vérification de propriété"
+        'Commentaire non trouvé pour vérification de propriété'
       );
     }
     return comment?.userId;

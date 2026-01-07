@@ -3,18 +3,18 @@
  * @description Image routes for uploading, updating, and deleting observation images.
  * Uses Cloudinary for image storage with automatic compression.
  */
-import express from "express";
-import multer from "multer";
-import imageController from "../controllers/image.controller.js";
-import { authenticate } from "../middleware/auth.js";
-import { param } from "express-validator";
-import { validate } from "../middleware/validate.js";
+import express from 'express';
+import multer from 'multer';
+import imageController from '../controllers/image.controller.js';
+import { authenticate } from '../middleware/auth.js';
+import { param } from 'express-validator';
+import { validate } from '../middleware/validate.js';
 
 const router = express.Router();
 
 // Validation for observation ID parameter
 const observationIdValidation = [
-  param("observationId").isMongoId().withMessage("ID d'observation invalide"),
+  param('observationId').isMongoId().withMessage('ID d\'observation invalide')
 ];
 
 // Multer configuration for image uploads
@@ -22,21 +22,21 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB per file
-    files: 10, // Maximum 10 files per upload
+    files: 10 // Maximum 10 files per upload
   },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
       cb(
         new Error(
-          "Type de fichier non autorisé. Types acceptés: JPEG, PNG, WebP"
+          'Type de fichier non autorisé. Types acceptés: JPEG, PNG, WebP'
         ),
         false
       );
     }
-  },
+  }
 });
 
 /**
@@ -125,9 +125,9 @@ const upload = multer({
  *         description: Observation non trouvée
  */
 router.post(
-  "/observations/:observationId/images",
+  '/observations/:observationId/images',
   authenticate,
-  upload.array("images", 10),
+  upload.array('images', 10),
   imageController.uploadImage
 );
 
@@ -188,7 +188,7 @@ router.post(
  *         description: Observation non trouvée
  */
 router.get(
-  "/observations/:observationId/images",
+  '/observations/:observationId/images',
   authenticate,
   observationIdValidation,
   validate,
@@ -274,9 +274,9 @@ router.get(
  *         description: Observation ou image non trouvée
  */
 router.put(
-  "/observations/:observationId/images/:publicId",
+  '/observations/:observationId/images/:publicId',
   authenticate,
-  upload.single("image"),
+  upload.single('image'),
   imageController.updateImage
 );
 
@@ -323,7 +323,7 @@ router.put(
  *         description: Image ou observation non trouvée
  */
 router.delete(
-  "/observations/:observationId/images/:publicId",
+  '/observations/:observationId/images/:publicId',
   authenticate,
   observationIdValidation,
   validate,

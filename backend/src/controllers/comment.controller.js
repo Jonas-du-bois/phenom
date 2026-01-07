@@ -1,8 +1,8 @@
-import commentService from "../services/comment.service.js";
-import { successResponse, createdResponse } from "../utils/response.js";
-import { paginatedResponse } from "../utils/pagination.js";
-import { publishCommentEvent } from "../config/websocket.js";
-import { asyncHandler } from "../utils/asyncHandler.js";
+import commentService from '../services/comment.service.js';
+import { successResponse, createdResponse } from '../utils/response.js';
+import { paginatedResponse } from '../utils/pagination.js';
+import { publishCommentEvent } from '../config/websocket.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 
 /**
  * Comment controller
@@ -41,12 +41,12 @@ class CommentController {
     );
 
     // Publish WebSocket event with observationId for filtering
-    publishCommentEvent("comment:created", {
+    publishCommentEvent('comment:created', {
       comment,
-      observationId,
+      observationId
     });
 
-    return createdResponse(res, comment, "Commentaire ajouté avec succès");
+    return createdResponse(res, comment, 'Commentaire ajouté avec succès');
   });
 
   /**
@@ -57,12 +57,12 @@ class CommentController {
     const comment = await commentService.updateComment(req.params.id, req.body);
 
     // Publish WebSocket event with observationId for filtering
-    publishCommentEvent("comment:updated", {
+    publishCommentEvent('comment:updated', {
       comment,
-      observationId: comment.observationId?.toString() || comment.observationId,
+      observationId: comment.observationId?.toString() || comment.observationId
     });
 
-    return successResponse(res, comment, "Commentaire mis à jour avec succès");
+    return successResponse(res, comment, 'Commentaire mis à jour avec succès');
   });
 
   /**
@@ -76,12 +76,12 @@ class CommentController {
     const observationId = deletedComment?.observationId?.toString() || deletedComment?.observationId;
 
     // Publish WebSocket event with observationId for filtering
-    publishCommentEvent("comment:deleted", {
+    publishCommentEvent('comment:deleted', {
       _id: commentId,
-      observationId,
+      observationId
     });
 
-    return successResponse(res, {}, "Commentaire supprimé avec succès");
+    return successResponse(res, {}, 'Commentaire supprimé avec succès');
   });
 }
 
