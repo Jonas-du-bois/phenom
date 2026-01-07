@@ -33,14 +33,18 @@ class CommentController {
    * POST /observations/:id/comments
    */
   createComment = asyncHandler(async (req, res) => {
+    const observationId = req.params.id;
     const comment = await commentService.createComment(
-      req.params.id,
+      observationId,
       req.body,
       req.user._id
     );
 
-    // Publish WebSocket event
-    publishCommentEvent("comment:created", comment);
+    // Publish WebSocket event with observationId for filtering
+    publishCommentEvent("comment:created", {
+      comment,
+      observationId,
+    });
 
     return createdResponse(res, comment, "Commentaire ajouté avec succès");
   });
@@ -52,8 +56,11 @@ class CommentController {
   updateComment = asyncHandler(async (req, res) => {
     const comment = await commentService.updateComment(req.params.id, req.body);
 
-    // Publish WebSocket event
-    publishCommentEvent("comment:updated", comment);
+    // Publish WebSocket event with observationId for filtering
+    publishCommentEvent("comment:updated", {
+      comment,
+      observationId: comment.observationId?.toString() || comment.observationId,
+    });
 
     return successResponse(res, comment, "Commentaire mis à jour avec succès");
   });
@@ -64,10 +71,15 @@ class CommentController {
    */
   deleteComment = asyncHandler(async (req, res) => {
     const commentId = req.params.id;
-    await commentService.deleteComment(commentId);
+    // deleteComment returns the deleted comment with observationId
+    const deletedComment = await commentService.deleteComment(commentId);
+    const observationId = deletedComment?.observationId?.toString() || deletedComment?.observationId;
 
-    // Publish WebSocket event
-    publishCommentEvent("comment:deleted", { _id: commentId });
+    // Publish WebSocket event with observationId for filtering
+    publishCommentEvent("comment:deleted", {
+      _id: commentId,
+      observationId,
+    });
 
     return successResponse(res, {}, "Commentaire supprimé avec succès");
   });

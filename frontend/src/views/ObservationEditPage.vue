@@ -57,7 +57,8 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { AppLayout, PageHeader, ObservationForm } from "@/components/organisms";
+import { AppLayout } from "@/components/layout";
+import { PageHeader, ObservationForm } from "@/components/organisms";
 import { LoadingSpinner, ErrorState } from "@/components/atoms";
 import { useObservationStore } from "@/stores/observation";
 import { useToast } from "@/composables/useToast";

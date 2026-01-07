@@ -1,7 +1,6 @@
 import { WSServerPubSub } from "wsmini";
 import { verifyToken } from "../config/jwt.js";
 import User from "../models/User.js";
-import url from "url";
 
 /**
  * WebSocket server instance
@@ -41,36 +40,12 @@ export const createWebSocketServer = (server) => {
     maxInputSize: 100000,
     pingTimeout: 30000,
     logLevel: process.env.NODE_ENV === "production" ? "warn" : "info",
-  });
-
-  // Add channels BEFORE start()
-  wss.addChannel("observations", {
-    usersCanPub: false,
-    usersCanSub: true,
-    // TODO: Add authorization logic if needed
-  });
-
-  wss.addChannel("comments", {
-    usersCanPub: false,
-    usersCanSub: true,
-    // TODO: Add authorization logic if needed
-  });
-
-  // Start with the existing HTTP server
-  wss.start({ server });
-
-  // Hook for authentication during connection
-  // Based on the assumption that wss.httpServer is the underlying 'ws' server
-  if (wss.httpServer) {
-    wss.httpServer.on("upgrade", async (request, socket, head) => {
-      console.log("Tentative de mise à niveau WebSocket...");
-      const { query } = url.parse(request.url, true);
-      const token = query.token;
-
+    // Authentication callback - called when a client connects with a token
+    authCallback: async (token, request, wsServer) => {
+      // Allow anonymous connections for public data
       if (!token) {
-        console.log("❌ Authentification WebSocket échouée: token manquant.");
-        socket.destroy();
-        return;
+        console.log("ℹ️ Connexion WebSocket anonyme acceptée");
+        return { anonymous: true };
       }
 
       try {
@@ -78,32 +53,38 @@ export const createWebSocketServer = (server) => {
         const user = await User.findById(decoded.userId).select("-password");
 
         if (!user) {
-          console.log(
-            "❌ Authentification WebSocket échouée: utilisateur non trouvé."
-          );
-          socket.destroy();
-          return;
+          console.log("❌ Authentification WebSocket échouée: utilisateur non trouvé.");
+          return false;
         }
 
-        // Store the user on the request to pass it to the client
-        request.user = user;
-        console.log(
-          `✅ Utilisateur ${user.username} authentifié pour WebSocket.`
-        );
-
-        // Let wsmini handle the final upgrade
-        wss.handleUpgrade(request, socket, head, (ws) => {
-          wss.emit("connection", ws, request);
-        });
+        console.log(`✅ Utilisateur ${user.name || user.email} authentifié pour WebSocket.`);
+        return {
+          userId: user._id.toString(),
+          email: user.email,
+          name: user.name,
+          role: user.role,
+        };
       } catch (error) {
-        console.log(
-          "❌ Authentification WebSocket échouée: token invalide ou expiré.",
-          error.message
-        );
-        socket.destroy();
+        console.log("❌ Authentification WebSocket échouée: token invalide.", error.message);
+        // Return metadata for anonymous access instead of rejecting
+        return { anonymous: true, authError: error.message };
       }
-    });
-  }
+    },
+  });
+
+  // Add channels BEFORE start()
+  wss.addChannel("observations", {
+    usersCanPub: false,
+    usersCanSub: true,
+  });
+
+  wss.addChannel("comments", {
+    usersCanPub: false,
+    usersCanSub: true,
+  });
+
+  // Start with the existing HTTP server
+  wss.start({ server });
 
   console.log("✅ Serveur WebSocket configuré et démarré (PubSub)");
   console.log("📡 WebSocket disponible sur le même port que le serveur HTTP");

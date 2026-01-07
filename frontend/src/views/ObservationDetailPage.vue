@@ -417,6 +417,7 @@ import { useObservationStore } from "@/stores/observation";
 import { useCommentStore } from "@/stores/comment";
 import { useAuthStore } from "@/stores/auth";
 import { useToast } from "@/composables/useToast";
+import { useWebSocket } from "@/composables/useWebSocket";
 import { storeToRefs } from "pinia";
 
 defineOptions({ name: "ObservationDetailPage" });
@@ -427,6 +428,7 @@ const toast = useToast();
 const authStore = useAuthStore();
 const observationStore = useObservationStore();
 const commentStore = useCommentStore();
+const { messages: wsMessages } = useWebSocket();
 
 const {
   currentObservation: observation,
@@ -451,6 +453,62 @@ watch(
     }
   },
   { immediate: true }
+);
+
+// Écouter les messages WebSocket pour les commentaires en temps réel
+watch(
+  wsMessages,
+  (messages) => {
+    if (!messages.length) return;
+    
+    // Traiter le dernier message reçu
+    const lastMsg = messages[messages.length - 1];
+    if (lastMsg.channel !== "comments") return;
+    
+    const { type, data } = lastMsg.data || {};
+    const observationId = route.params.id;
+    
+    // Vérifier que le commentaire concerne cette observation
+    const commentObsId = data?.observationId || data?.observation;
+    if (commentObsId && commentObsId !== observationId) return;
+    
+    switch (type) {
+      case "comment:created": {
+        const newComment = data?.comment || data;
+        // Éviter les doublons (si on a déjà ajouté le commentaire localement)
+        const exists = comments.value.some(
+          (c) => (c._id || c.id) === (newComment._id || newComment.id)
+        );
+        if (!exists && newComment._id) {
+          comments.value.unshift(newComment);
+          console.log("📨 Nouveau commentaire reçu via WebSocket");
+        }
+        break;
+      }
+      case "comment:updated": {
+        const updatedComment = data?.comment || data;
+        const index = comments.value.findIndex(
+          (c) => (c._id || c.id) === (updatedComment._id || updatedComment.id)
+        );
+        if (index !== -1) {
+          comments.value[index] = updatedComment;
+          console.log("📨 Commentaire mis à jour via WebSocket");
+        }
+        break;
+      }
+      case "comment:deleted": {
+        const deletedId = data?._id || data?.id;
+        if (deletedId) {
+          comments.value = comments.value.filter(
+            (c) => (c._id || c.id) !== deletedId
+          );
+          console.log("📨 Commentaire supprimé via WebSocket");
+        }
+        break;
+      }
+    }
+  },
+  { deep: true }
 );
 
 const currentUserId = computed(() => authUser.value?._id || authUser.value?.id);

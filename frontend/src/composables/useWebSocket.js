@@ -81,13 +81,13 @@ export function useWebSocket() {
       // Create WsMini client
       ws.value = new WSClient(WS_URL);
 
-      // Connect
-      await ws.value.connect();
+      // Connect with token for authentication (WsMini handles it via subprotocol)
+      await ws.value.connect(token || undefined);
 
       connected.value = true;
       error.value = null;
       reconnectAttempts.value = 0;
-      console.log("✅ WebSocket connected with WSClient");
+      console.log("✅ WebSocket connected with WSClient", token ? "(authenticated)" : "(anonymous)");
 
       // Subscribe to channels with callbacks
       await ws.value.sub("observations", (data) => {
