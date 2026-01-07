@@ -445,8 +445,7 @@ const isValid = computed(() => {
     form.description.trim().length >= 10 &&
     form.date &&
     form.country &&
-    form.country.trim().length > 0 &&
-    (form.media || form.generateAiImage)
+    form.country.trim().length > 0
   );
 });
 

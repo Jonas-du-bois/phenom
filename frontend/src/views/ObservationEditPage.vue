@@ -19,10 +19,14 @@
 -->
 
 <template>
-  <div class="min-h-screen pt-20 pb-8 bg-[#000000]">
-    <PageHeader title="Modifier l'observation" :showBack="true" />
+  <AppLayout :show-tab-bar="false" :has-content-padding="false">
+    <div class="camera-page min-h-screen bg-[#000000] flex flex-col">
+      <PageHeader
+        title="Modifier l'observation"
+        show-back
+        @back="$router.back()"
+      />
 
-    <main class="max-w-3xl mx-auto px-4 mt-6">
       <template v-if="loading">
         <div class="flex items-center justify-center h-60">
           <LoadingSpinner size="lg" />
@@ -30,13 +34,13 @@
       </template>
 
       <template v-else-if="error">
-        <div class="mt-6">
+        <div class="flex-1 flex items-center justify-center p-4">
           <ErrorState title="Erreur" :description="error" />
         </div>
       </template>
 
       <template v-else>
-        <div class="bg-[#0B0D10] rounded-2xl p-6">
+        <div class="flex-1 overflow-y-auto p-4 mt-18">
           <ObservationForm
             :initialData="initialData"
             :submitting="submitting"
@@ -46,14 +50,14 @@
           />
         </div>
       </template>
-    </main>
-  </div>
+    </div>
+  </AppLayout>
 </template>
 
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { PageHeader, ObservationForm } from "@/components/organisms";
+import { AppLayout, PageHeader, ObservationForm } from "@/components/organisms";
 import { LoadingSpinner, ErrorState } from "@/components/atoms";
 import { useObservationStore } from "@/stores/observation";
 import { useToast } from "@/composables/useToast";
