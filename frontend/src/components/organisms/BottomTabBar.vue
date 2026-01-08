@@ -5,7 +5,7 @@
        ======================================================================== -->
   <nav
     class="liquid-glass-nav fixed left-0 right-0 z-50 max-w-screen mx-5"
-    :style="{ bottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }"
+    :style="{ bottom: '1rem' }"
   >
     <div class="flex items-center justify-around h-14">
       <!-- Navigation tabs loop -->
