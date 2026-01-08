@@ -53,11 +53,11 @@
       <!-- Location permission banner -->
       <div
         v-if="!locationEnabled"
-        class="mx-4 mt-4 p-4 bg-[#12151C] border border-white/10 rounded-xl"
+        class="mx-4 mt-4 p-4 bg-[var(--phenom-black)] border border-white/10 rounded-xl"
       >
         <div class="flex items-start gap-3">
           <svg
-            class="w-6 h-6 text-[#00F0FF] shrink-0"
+            class="w-6 h-6 text-[var(--phenom-cyan)] shrink-0"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -247,9 +247,7 @@ const router = useRouter();
 import { useWebSocket } from "@/composables/useWebSocket";
 
 const {
-  connected: wsConnected,
   messages: wsMessages,
-  error: wsError,
   connect,
   disconnect,
 } = useWebSocket();
@@ -677,6 +675,12 @@ const formatTime = (date) => {
 </script>
 
 <style scoped>
+
+.alerts-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;

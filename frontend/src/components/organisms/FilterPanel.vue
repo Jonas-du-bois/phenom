@@ -310,7 +310,6 @@ const {
   phenomenaOptions, // Available phenomena options from API
   observerTypeOptions, // Available observer type options from API
   countryOptions, // Available country options from API
-  loading, // POTENTIALLY UNUSED: Loading state is extracted but not used in template
 } = storeToRefs(filterStore);
 
 // Load filter options from API on component mount

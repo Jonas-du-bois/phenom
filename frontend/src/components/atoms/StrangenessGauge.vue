@@ -63,6 +63,11 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  // Whether to show the maximum value (e.g., /10)
+  showMaxValue: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 // =============================================================================
@@ -91,9 +96,9 @@ const gaugeColor = computed(() => {
 
 // Dimension settings for each size variant
 const dimensions = {
-  sm: { outer: 40, inner: 32, stroke: 4, text: "0.7rem" },
-  md: { outer: 60, inner: 48, stroke: 6, text: "1rem" },
-  lg: { outer: 80, inner: 64, stroke: 8, text: "1.25rem" },
+  sm: { outer: 40, inner: 32, stroke: 4, text: "0.7rem", smallText: "0.5rem" },
+  md: { outer: 60, inner: 48, stroke: 6, text: "1rem", smallText: "0.65rem" },
+  lg: { outer: 80, inner: 64, stroke: 8, text: "1.25rem", smallText: "0.8rem" },
 };
 
 const dim = computed(() => dimensions[props.size]);
@@ -112,21 +117,25 @@ const offset = computed(
 </script>
 
 <template>
-  <div class="flex flex-col items-center gap-1">
-    <!-- Gauge Circle Container -->
+  <div class="flex flex-col items-center gap-2">
+    <!-- Gauge Circle Container with Glassmorphic Background -->
     <div
-      class="relative"
-      :style="{ width: `${dim.outer}px`, height: `${dim.outer}px` }"
+      class="relative rounded-full glassmorphic-gauge"
+      :style="{ width: `${dim.outer + 8}px`, height: `${dim.outer + 8}px` }"
     >
       <!-- SVG Gauge (rotated -90deg so arc starts from top) -->
-      <svg :width="dim.outer" :height="dim.outer" class="-rotate-90">
+      <svg 
+        :width="dim.outer" 
+        :height="dim.outer" 
+        class="-rotate-90 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+      >
         <!-- Background Circle (track) -->
         <circle
           :cx="dim.outer / 2"
           :cy="dim.outer / 2"
           :r="dim.inner / 2"
           fill="none"
-          stroke="rgba(255, 255, 255, 0.1)"
+          stroke="rgba(255, 255, 255, 0.08)"
           :stroke-width="dim.stroke"
         />
 
@@ -141,25 +150,43 @@ const offset = computed(
           :stroke-dasharray="circumference"
           :stroke-dashoffset="offset"
           stroke-linecap="round"
-          class="transition-all duration-500"
+          class="transition-all duration-500 drop-shadow-glow"
         />
       </svg>
 
-      <!-- Centered Value Display -->
+      <!-- Centered Value Display with /10 -->
       <div
-        class="absolute inset-0 flex items-center justify-center font-light"
-        :style="{ fontSize: dim.text, color: gaugeColor }"
+        class="absolute inset-0 flex flex-col items-center justify-center font-light leading-none"
       >
-        {{ value }}
+        <div class="flex items-baseline gap-0.5">
+          <span :style="{ fontSize: dim.text, color: gaugeColor }" class="font-semibold">{{ value }}</span>
+          <span v-if="showMaxValue" :style="{ fontSize: dim.smallText }" class="text-white/40">/10</span>
+        </div>
       </div>
     </div>
 
     <!-- Label (optional) -->
     <span
       v-if="showLabel"
-      class="text-[0.65rem] uppercase tracking-wider text-white/40"
+      class="text-[0.65rem] uppercase tracking-wider text-white/50 font-medium"
     >
       Strangeness
     </span>
   </div>
 </template>
+
+<style scoped>
+.glassmorphic-gauge {
+  background: rgba(255, 255, 255, 0.01);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.1),
+    inset 0 0.5px 0 rgba(255, 255, 255, 0.03);
+}
+
+.drop-shadow-glow {
+  filter: drop-shadow(0 0 2px currentColor);
+  opacity: 0.9;
+}
+</style>

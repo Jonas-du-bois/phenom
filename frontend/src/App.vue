@@ -10,19 +10,17 @@
 
 <template>
   <!-- ================================================================== -->
-  <!-- MAIN APP LAYOUT                                                    -->
+  <!-- MAIN APP ROUTER VIEW                                               -->
   <!-- ================================================================== -->
 
-  <!-- AppLayout provides the app shell with optional bottom tab bar -->
-  <AppLayout :show-tab-bar="showTabBar" :has-content-padding="hasContentPadding">
-    <!-- Router view with scoped slot for transition control -->
-    <router-view v-slot="{ Component }">
-      <!-- Page transition: directional based on navigation -->
-      <transition :name="transitionName" mode="out-in">
-        <component :is="Component" :key="$route.path" />
-      </transition>
-    </router-view>
-  </AppLayout>
+  <!-- Router view with scoped slot for transition control -->
+  <!-- Each page manages its own AppLayout to control header slot -->
+  <router-view v-slot="{ Component }">
+    <!-- Page transition: directional based on navigation -->
+    <transition :name="transitionName" mode="out-in">
+      <component :is="Component" :key="$route.path" />
+    </transition>
+  </router-view>
 </template>
 
 <script setup>
@@ -36,9 +34,7 @@
  * - Intelligent page transition direction (via usePageTransition)
  */
 
-import { computed, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import { AppLayout } from "./components/layout";
+import { onMounted } from "vue";
 import { useAuthStore } from "./stores/auth";
 import { usePageTransition } from "./composables";
 
@@ -46,45 +42,10 @@ import { usePageTransition } from "./composables";
 // COMPOSABLES & STORES
 // ============================================================================
 
-const router = useRouter();
 const authStore = useAuthStore();
 
 // Page transition with intelligent direction detection
 const { transitionName } = usePageTransition();
-
-// ============================================================================
-// TAB BAR VISIBILITY
-// ============================================================================
-
-/**
- * Computed property to determine if bottom tab bar should be shown
- * Hidden on: login, signup, auth, camera, and old-home (test) pages
- */
-const showTabBar = computed(() => {
-  const routePath = router.currentRoute.value.path;
-
-  // Routes where the tab bar should be hidden
-  const hiddenRoutes = ["/login", "/signup", "/auth", "/camera", "/old-home"];
-
-  return !hiddenRoutes.includes(routePath);
-});
-
-// ============================================================================
-// CONTENT PADDING VISIBILITY
-// ============================================================================
-
-/**
- * Computed property to determine if content padding should be applied
- * Disabled on: login, signup, auth, camera (full-screen pages)
- */
-const hasContentPadding = computed(() => {
-  const routePath = router.currentRoute.value.path;
-
-  // Routes where content padding should be disabled
-  const noPaddingRoutes = ["/login", "/signup", "/auth", "/camera", "/map"];
-
-  return !noPaddingRoutes.includes(routePath);
-});
 
 // ============================================================================
 // LIFECYCLE HOOKS

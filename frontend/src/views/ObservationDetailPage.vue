@@ -23,13 +23,14 @@
 -->
 
 <template>
-  <div class="observation-detail-page min-h-screen bg-[#000000] mb-8 mt-16">
-    <!-- Loading state -->
-    <template v-if="loading">
-      <div class="flex items-center justify-center h-screen">
-        <LoadingSpinner size="lg" />
-      </div>
-    </template>
+  <AppLayout :show-tab-bar="false" :has-content-padding="false">
+    <div class="observation-detail-page bg-[#000000]">
+      <!-- Loading state -->
+      <template v-if="loading">
+        <div class="flex items-center justify-center h-screen">
+          <LoadingSpinner size="lg" />
+        </div>
+      </template>
 
     <!-- Error state -->
     <template v-else-if="error">
@@ -316,7 +317,7 @@
           >
             <!-- Close button with glass effect -->
             <button
-              class="gallery-nav-button absolute top-4 right-4 z-10 flex items-center justify-center w-11 h-11 rounded-full"
+              class="gallery-nav-button absolute top-10 right-4 z-10 flex items-center justify-center w-11 h-11 rounded-full"
               @click="closeFullscreen"
             >
               <svg
@@ -335,7 +336,7 @@
             </button>
 
             <!-- Image counter with glass pill -->
-            <div class="gallery-counter absolute top-4 left-4 px-4 py-2 rounded-full text-sm text-white/90">
+            <div class="gallery-counter absolute top-10 left-4 px-4 py-2 rounded-full text-sm text-white/90">
               {{ fullscreenIndex + 1 }} / {{ images.length }}
             </div>
 
@@ -391,12 +392,14 @@
         </Transition>
       </Teleport>
     </template>
-  </div>
+    </div>
+  </AppLayout>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, watch, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { AppLayout } from "@/components/layout";
 import {
   LoadingSpinner,
   ErrorState,
@@ -673,6 +676,17 @@ const submitComment = async (text) => {
     // L'ajout local est géré par le WebSocket (comment:created)
     await commentStore.addComment(route.params.id, text);
     toast.success("Commentaire ajouté");
+    
+    // Scroll vers le bas après l'ajout du commentaire
+    await nextTick();
+    // Trouve le conteneur scrollable (le <main> dans AppLayout)
+    const scrollContainer = document.querySelector('main.overflow-y-auto');
+    if (scrollContainer) {
+      scrollContainer.scrollTo({
+        top: scrollContainer.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
   } catch {
     toast.error("Erreur lors de l'ajout du commentaire");
   } finally {

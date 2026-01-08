@@ -95,7 +95,7 @@
       </div>
 
       <!-- Observation list -->
-      <div class="px-4 py-4">
+      <div class="px-4 pb-4">
         <ObservationList
           ref="observationListRef"
           :observations="observations"
@@ -373,7 +373,7 @@ onMounted(() => {
 
 <style scoped>
 .feed-page {
-  margin-top: 4rem;
+  margin-top: 1rem;
 }
 
 .scrollbar-hide {

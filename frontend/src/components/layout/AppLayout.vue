@@ -60,17 +60,17 @@
       - flex-1: Takes all available vertical space
       - overflow-y-auto: Enables scrolling for long content
       - overscroll-contain: Prevents scroll chaining to parent
-      - Padding top accounts for fixed header + iOS safe area (if hasContentPadding)
+      - Padding top accounts for fixed header (1rem offset + 3.5rem header height) + iOS safe area (if hasContentPadding)
       - Padding bottom accounts for tab bar + iOS safe area
     -->
     <main
       class="flex-1 overflow-y-auto overscroll-contain"
       :style="{
         paddingTop: hasContentPadding
-          ? 'calc(env(safe-area-inset-top, 0px))'
+          ? 'calc(5.5rem + env(safe-area-inset-top, 0px))'
           : undefined,
         paddingBottom: showTabBar
-          ? 'calc(4.5rem + env(safe-area-inset-bottom, 0px))'
+          ? 'calc(5.5rem + env(safe-area-inset-bottom, 0px))'
           : undefined,
       }"
     >

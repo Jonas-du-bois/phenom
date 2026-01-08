@@ -18,6 +18,7 @@ import { useRouter } from "vue-router";
 import BaseAvatar from "../atoms/BaseAvatar.vue";
 import BaseBadge from "../atoms/BaseBadge.vue";
 import CredibilityGauge from "../atoms/CredibilityGauge.vue";
+import StrangenessGauge from "../atoms/StrangenessGauge.vue";
 import TextArea from "../atoms/TextArea.vue";
 import BaseButton from "../atoms/BaseButton.vue";
 
@@ -418,12 +419,22 @@ const goToComments = () => {
         class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"
       />
 
-      <!-- Credibility gauge positioned at bottom-right of image -->
-      <div class="absolute bottom-3 right-3">
+      <!-- Gauges positioned side by side at bottom right -->
+      <div class="absolute bottom-3 right-3 flex items-center gap-2">
+        <!-- Strangeness gauge -->
+        <StrangenessGauge
+          :value="observation.strangeness || 0"
+          size="sm"
+          :showLabel="false"
+          :showMaxValue="false"
+        />
+
+        <!-- Credibility gauge -->
         <CredibilityGauge
           :value="observation.credibility || 0"
           size="sm"
           :showLabel="false"
+          :showMaxValue="false"
         />
       </div>
     </div>
@@ -546,24 +557,24 @@ const goToComments = () => {
           <!-- Comments list (scrollable, max height) -->
           <div
             v-else-if="comments.length > 0"
-            class="space-y-3 max-h-60 overflow-y-auto"
+            class="max-h-60 overflow-y-auto"
           >
             <!-- Individual comment item -->
             <div
               v-for="comment in comments"
               :key="comment._id"
-              class="flex gap-2 p-2 bg-white/5 rounded-lg"
+              class="flex gap-3 py-4 border-b border-white/5 last:border-0"
             >
               <!-- Comment author avatar -->
               <BaseAvatar
                 :src="getUserAvatar(comment.userId)"
                 :name="comment.userId?.name || 'Anonyme'"
-                size="xs"
+                size="sm"
               />
               <div class="flex-1 min-w-0">
                 <!-- Author name and timestamp -->
-                <div class="flex items-center gap-2">
-                  <span class="text-xs font-medium text-white truncate">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-sm font-medium text-white">
                     {{ comment.userId?.name || "Anonyme" }}
                   </span>
                   <span class="text-xs text-white/40">{{
@@ -571,7 +582,7 @@ const goToComments = () => {
                   }}</span>
                 </div>
                 <!-- Comment text content -->
-                <p class="text-sm text-white/70 mt-1">{{ comment.text }}</p>
+                <p class="text-sm text-white/70 break-words">{{ comment.text }}</p>
               </div>
             </div>
           </div>
@@ -584,7 +595,7 @@ const goToComments = () => {
           <!-- ================================================================
                NEW COMMENT FORM
                ================================================================ -->
-          <div class="pt-2 border-t border-white/10 space-y-2">
+          <div class="mt-4 pt-4 border-t border-white/[0.06] space-y-2">
             <!-- Comment input textarea -->
             <TextArea
               v-model="commentText"

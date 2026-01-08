@@ -437,6 +437,12 @@ const formatDate = (date) => {
 </script>
 
 <style scoped>
+.profile-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 .profile-map-container {
   /* Height that fills remaining viewport space nicely */
   height: calc(100vh - 28rem);

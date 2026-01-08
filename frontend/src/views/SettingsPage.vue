@@ -895,3 +895,12 @@ const confirmDeleteAccount = () => {
   }
 };
 </script>
+
+
+<style scoped>
+.settings-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+</style>

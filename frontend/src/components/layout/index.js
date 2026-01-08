@@ -17,4 +17,7 @@
 // LAYOUT COMPONENTS
 // ============================================================================
 
-export { default as AppLayout } from "./AppLayout.vue";
+import AppLayout from "./AppLayout.vue";
+
+export { AppLayout };
+
