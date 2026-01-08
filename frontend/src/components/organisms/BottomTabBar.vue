@@ -7,7 +7,7 @@
     class="liquid-glass-nav fixed left-0 right-0 z-50 max-w-screen mx-5"
     :style="{ bottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }"
   >
-    <div class="flex items-center justify-around h-16">
+    <div class="flex items-center justify-around h-14">
       <!-- Navigation tabs loop -->
       <router-link
         v-for="tab in tabs"
