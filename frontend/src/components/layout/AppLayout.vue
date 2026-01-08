@@ -70,7 +70,7 @@
           ? 'calc(4.5rem + env(safe-area-inset-top, 0px))'
           : undefined,
         paddingBottom: showTabBar
-          ? 'calc(0.5rem + env(safe-area-inset-bottom, 0px))'
+          ? '4.5rem'
           : undefined,
       }"
     >
