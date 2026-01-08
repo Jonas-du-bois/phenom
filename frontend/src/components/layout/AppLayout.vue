@@ -51,7 +51,7 @@
 -->
 
 <template>
-  <div class="app-layout min-h-screen bg-[#000000] flex flex-col">
+  <div class="app-layout min-h-screen bg-[var(--phenom-black)] flex flex-col">
     <!-- Page Header slot - for page-specific headers -->
     <slot name="header" />
 
@@ -67,7 +67,7 @@
       class="flex-1 overflow-y-auto overscroll-contain"
       :style="{
         paddingTop: hasContentPadding
-          ? 'calc(2rem + env(safe-area-inset-top, 0px))'
+          ? 'calc(env(safe-area-inset-top, 0px))'
           : undefined,
         paddingBottom: showTabBar
           ? 'calc(4.5rem + env(safe-area-inset-bottom, 0px))'

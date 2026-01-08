@@ -373,7 +373,7 @@ onMounted(() => {
 
 <style scoped>
 .feed-page {
-  margin-top: 0.5rem;
+  margin-top: 4rem;
 }
 
 .scrollbar-hide {

@@ -430,7 +430,20 @@ const selectCountry = (code) => {
  * Emits reset event and applies if in instant mode
  */
 const handleReset = () => {
-  Object.assign(filters, defaultFilters);
+  // Create fresh arrays to avoid reference issues
+  Object.assign(filters, {
+    ufoShapes: [],
+    phenomena: [],
+    observerTypes: [],
+    countries: [],
+    dateFrom: "",
+    dateTo: "",
+    minCredibility: 0,
+    minStrangeness: 0,
+    radius: 50,
+    hasMedia: false,
+    verifiedOnly: false,
+  });
   emit("reset");
   if (props.instant) {
     emit("apply", { ...filters });
