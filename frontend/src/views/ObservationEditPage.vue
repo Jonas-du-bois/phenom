@@ -139,38 +139,13 @@ const onMediaChange = (fileOrNull) => {
 const onSubmit = async (data) => {
   submitting.value = true;
   try {
-    // Filter to only include fields accepted by the backend
-    const allowedFields = [
-      'date',
-      'time',
-      'location',
-      'country',
-      'state',
-      'description',
-      'credibility',
-      'strangeness',
-      'duration',
-      'locale',
-      'coordinates',
-      'observerTypes',
-      'ufoShapes',
-      'phenomena',
-      'tags',
-    ];
-    
-    const payload = {};
-    allowedFields.forEach((field) => {
-      if (data[field] !== undefined) {
-        payload[field] = data[field];
-      }
-    });
-    
-    const imageFile = data.imageFile;
+    const payload = { ...data };
+    const imageFile = payload.imageFile;
+    if (imageFile) delete payload.imageFile;
 
     await observationStore.updateObservation(id, payload);
 
-    // Only upload if imageFile is actually a File instance (not a URL string from existing image)
-    if (imageFile && imageFile instanceof File) {
+    if (imageFile) {
       await observationStore.uploadObservationImages(id, imageFile);
     }
 
@@ -180,7 +155,7 @@ const onSubmit = async (data) => {
     await router.push({ name: "observation-detail", params: { id } });
   } catch (err) {
     console.error("Erreur lors de la mise à jour:", err);
-    toast.error(err?.response?.data?.message || err?.response?.data?.error || err?.message || "Erreur lors de la mise à jour");
+    toast.error(err?.message || "Erreur lors de la mise à jour");
   } finally {
     submitting.value = false;
   }

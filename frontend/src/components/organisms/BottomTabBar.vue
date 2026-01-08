@@ -4,7 +4,7 @@
        Fixed at bottom with liquid glass effect and safe-area padding
        ======================================================================== -->
   <nav
-    class="liquid-glass-nav fixed left-0 right-0 z-50 max-w-screen "
+    class="liquid-glass-nav fixed left-0 right-0 z-50 max-w-screen mx-5"
     :style="{ bottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }"
   >
     <div class="flex items-center justify-around h-16">
@@ -13,7 +13,7 @@
         v-for="tab in tabs"
         :key="tab.name"
         :to="tab.to"
-        class="tab-item flex flex-col items-center justify-center gap-1 min-w-[64px] h-full px-3"
+        class="tab-item flex flex-col items-center justify-center gap-1 min-w-[64px] h-full px-3 transition-all duration-200"
         :class="{ active: isActive(tab) }"
       >
         <!-- ================================================================
@@ -22,7 +22,7 @@
         <template v-if="tab.name === 'camera'">
           <div class="camera-button-v3-wrapper w-14 h-14 -mt-2">
             <div
-              class="camera-button-v3 w-full h-full rounded-full flex items-center justify-center"
+              class="camera-button-v3 w-full h-full rounded-full flex items-center justify-center transition-all duration-300 active:scale-95"
             >
               <!-- Plus icon for adding new observation -->
               <svg
@@ -248,9 +248,6 @@ const isActive = (tab) => {
   border-radius: 9999px;
   padding: 2px;
   background: linear-gradient(135deg, #00f0ff, #a855f7, #00f0ff);
-  mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
   -webkit-mask:
     linear-gradient(#fff 0 0) content-box,
     linear-gradient(#fff 0 0);

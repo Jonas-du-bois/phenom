@@ -70,7 +70,7 @@
           ? 'calc(2rem + env(safe-area-inset-top, 0px))'
           : undefined,
         paddingBottom: showTabBar
-          ? 'calc(5.5rem + env(safe-area-inset-bottom, 0px))'
+          ? 'calc(4.5rem + env(safe-area-inset-bottom, 0px))'
           : undefined,
       }"
     >
@@ -231,16 +231,16 @@ onMounted(() => {
    APP LAYOUT STYLES
    ============================================================================= */
 .app-layout {
-  /* min-height: 100dvh;
-  height: 100dvh; */
+  min-height: 100dvh;
+  height: 100dvh;
   overscroll-behavior: none;
-} 
-/* @supports (-webkit-tuch-callout: none) {
+}
+@supports (-webkit-touch-callout: none) {
   .app-layout {
     min-height: -webkit-fill-available;
     height: -webkit-fill-available;
   }
-} */
+}
 
 /* =============================================================================
    LIQUID GLASS TOAST EFFECT

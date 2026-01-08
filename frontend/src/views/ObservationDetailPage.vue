@@ -846,14 +846,14 @@ const goBack = () => {
 
 .liquid-glass-sheet {
   background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.03),
-    rgba(255, 255, 255, 0.01)
+    180deg,
+    rgba(30, 30, 40, 0.95),
+    rgba(20, 20, 28, 0.98)
   );
-  backdrop-filter: blur(18px) saturate(140%);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 0 -10px 30px rgba(2, 6, 23, 0.6);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 -10px 50px rgba(0, 0, 0, 0.5);
 }
 
 .liquid-glass-sheet::before {
@@ -864,7 +864,11 @@ const goBack = () => {
   right: 0;
   height: 60px;
   pointer-events: none;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.04),
+    transparent
+  );
   border-radius: inherit;
 }
 
