@@ -116,7 +116,7 @@
             class="w-full h-full flex items-center justify-center relative"
           >
             <!-- Subtle grid pattern background -->
-            <div class="absolute inset-0 opacity-20 bg-grid-pattern"></div>
+            <div class="absolute inset-0 opacity-1 bg-grid-pattern"></div>
             
             <div class="text-center relative z-10">
               <!-- Map pin icon with glow -->
@@ -208,7 +208,7 @@
           <div v-if="showMenu" class="fixed inset-0 z-50">
             <!-- Backdrop with blur -->
             <div
-              class="absolute inset-0 bg-black/70 backdrop-blur-sm"
+              class="absolute inset-0 bg-black/15 backdrop-blur-sm"
               @click="showMenu = false"
             />
 
@@ -464,57 +464,59 @@ watch(
   (messages) => {
     if (!messages.length) return;
     
-    // Traiter le dernier message reçu
-    const lastMsg = messages[messages.length - 1];
-    if (lastMsg.channel !== "comments") return;
-    
-    const { type, data } = lastMsg.data || {};
-    const observationId = route.params.id;
-    
-    // Vérifier que le commentaire concerne cette observation
-    const commentObsId = data?.observationId || data?.observation;
-    if (commentObsId && commentObsId !== observationId) return;
-    
-    switch (type) {
-      case "comment:created": {
-        const newComment = data?.comment || data;
-        // Éviter les doublons (si on a déjà ajouté le commentaire localement)
-        const exists = comments.value.some(
-          (c) => (c._id || c.id) === (newComment._id || newComment.id)
-        );
-        if (!exists && newComment._id) {
-          // Create new array for reactivity
-          comments.value = [newComment, ...comments.value];
-          console.log("📨 Nouveau commentaire reçu via WebSocket");
-        }
-        break;
-      }
-      case "comment:updated": {
-        const updatedComment = data?.comment || data;
-        const index = comments.value.findIndex(
-          (c) => (c._id || c.id) === (updatedComment._id || updatedComment.id)
-        );
-        if (index !== -1) {
-          // Create new array for reactivity
-          comments.value = comments.value.map((c, i) => 
-            i === index ? updatedComment : c
+    // Traiter TOUS les messages, pas seulement le dernier
+    messages.forEach((message) => {
+      if (message.channel !== "comments") return;
+      
+      const { type, data } = message.data || {};
+      const observationId = route.params.id;
+      
+      // Vérifier que le commentaire concerne cette observation
+      const commentObsId = data?.observationId || data?.observation;
+      if (commentObsId && commentObsId !== observationId) return;
+      
+      switch (type) {
+        case "comment:created": {
+          const newComment = data?.comment || data;
+          // Éviter les doublons (si on a déjà ajouté le commentaire localement)
+          const exists = comments.value.some(
+            (c) => (c._id || c.id) === (newComment._id || newComment.id)
           );
-          console.log("📨 Commentaire mis à jour via WebSocket");
+          if (!exists && newComment._id) {
+            // Create new array for reactivity
+            comments.value = [newComment, ...comments.value];
+            console.log("📨 Nouveau commentaire reçu via WebSocket");
+          }
+          break;
         }
-        break;
-      }
-      case "comment:deleted": {
-        const deletedId = data?._id || data?.id;
-        if (deletedId) {
-          comments.value = comments.value.filter(
-            (c) => (c._id || c.id) !== deletedId
+        case "comment:updated": {
+          const updatedComment = data?.comment || data;
+          const index = comments.value.findIndex(
+            (c) => (c._id || c.id) === (updatedComment._id || updatedComment.id)
           );
-          console.log("📨 Commentaire supprimé via WebSocket");
+          if (index !== -1) {
+            // Create new array for reactivity
+            comments.value = comments.value.map((c, i) => 
+              i === index ? updatedComment : c
+            );
+            console.log("📨 Commentaire mis à jour via WebSocket");
+          }
+          break;
         }
-        break;
+        case "comment:deleted": {
+          const deletedId = data?._id || data?.id;
+          if (deletedId) {
+            comments.value = comments.value.filter(
+              (c) => (c._id || c.id) !== deletedId
+            );
+            console.log("📨 Commentaire supprimé via WebSocket");
+          }
+          break;
+        }
       }
-    }
-  }
+    });
+  },
+  { deep: true }
 );
 
 const currentUserId = computed(() => authUser.value?._id || authUser.value?.id);
@@ -861,8 +863,8 @@ const goBack = () => {
 .liquid-glass-sheet {
   background: linear-gradient(
     180deg,
-    rgba(30, 30, 40, 0.95),
-    rgba(20, 20, 28, 0.98)
+    rgba(30, 30, 40, 0.2),
+    rgba(20, 20, 28, 0.1)
   );
   backdrop-filter: blur(24px) saturate(150%);
   -webkit-backdrop-filter: blur(24px) saturate(150%);
@@ -880,7 +882,7 @@ const goBack = () => {
   pointer-events: none;
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.04),
+    rgba(255, 255, 255, 0.01),
     transparent
   );
   border-radius: inherit;

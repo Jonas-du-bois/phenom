@@ -63,11 +63,14 @@
               </svg>
             </button>
           </div>
-          <div>
+          <div class="flex-1">
             <h2 class="text-lg font-semibold text-white">
               {{ user?.username }}
             </h2>
             <p class="text-white/60 text-sm">{{ user?.email }}</p>
+            <p v-if="user?.bio" class="text-white/50 text-xs mt-1 line-clamp-2">
+              {{ user?.bio }}
+            </p>
           </div>
         </div>
 
@@ -87,6 +90,7 @@
         <EditProfileModal
           v-if="showEditProfileModal"
           :name="user?.username"
+          :email="user?.email"
           :bio="user?.bio"
           @confirm="onEditProfileConfirm"
           @cancel="onEditProfileCancel"
@@ -198,6 +202,29 @@
             <div class="flex items-center gap-2 text-white/40">
               <span class="flex text">{{ user?.email }}</span>
             </div>
+
+            <button
+              @click="editUsername"
+              class="w-full flex items-center justify-between py-3 text-white"
+            >
+              <span>Bio</span>
+              <div class="flex items-center gap-2 text-white/40">
+                <span class="truncate max-w-[150px]">{{ user?.bio || 'Non définie' }}</span>
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </div>
+            </button>
 
             <button
               @click="changePassword"
@@ -333,29 +360,6 @@
                 </svg>
               </div>
             </button>
-
-            <button
-              @click="setLanguage"
-              class="w-full flex items-center justify-between py-3 text-white"
-            >
-              <span>Langue</span>
-              <div class="flex items-center gap-2 text-white/40">
-                <span>Français</span>
-                <svg
-                  class="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </div>
-            </button>
           </div>
         </div>
 
@@ -370,7 +374,7 @@
               class="w-full flex items-center justify-between py-3 text-white"
             >
               <span>Version</span>
-              <span class="text-white/40">1.0.0</span>
+              <span class="text-white/40">1.2.5</span>
             </button>
 
             <a
@@ -413,33 +417,6 @@
               </svg>
             </a>
           </div>
-        </div>
-
-        <!-- Admin link -->
-        <div v-if="isAdmin" class="px-4 py-3">
-          <h3 class="text-xs text-white/40 uppercase tracking-wider mb-3">
-            Administration
-          </h3>
-
-          <router-link
-            to="/admin"
-            class="w-full flex items-center justify-between py-3 text-[#00F0FF]"
-          >
-            <span>Panneau d'administration</span>
-            <svg
-              class="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </router-link>
         </div>
 
         <!-- Logout -->
@@ -822,11 +799,23 @@ const changePassword = () => {
 
 const onEditProfileConfirm = async (payload) => {
   try {
-    await userStore.updateProfile(payload);
+    // L'API accepte name, email et bio comme champs optionnels
+    const dataToUpdate = {};
+    if (payload.name && payload.name.trim() !== '') {
+      dataToUpdate.name = payload.name.trim();
+    }
+    if (payload.bio !== undefined && payload.bio !== null) {
+      dataToUpdate.bio = payload.bio.trim();
+    }
+    
+    console.log('Données envoyées à l\'API:', dataToUpdate);
+    
+    await userStore.updateProfile(dataToUpdate);
     await authStore.fetchUser();
     showEditProfileModal.value = false;
     alert("Profil mis à jour");
   } catch (err) {
+    console.error('Erreur mise à jour profil:', err);
     alert(err?.response?.data?.message || err?.message || "Erreur mise à jour");
   }
 };

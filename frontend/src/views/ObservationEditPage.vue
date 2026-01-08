@@ -40,7 +40,7 @@
       </template>
 
       <template v-else>
-        <div class="flex-1 overflow-y-auto p-4 mt-18">
+        <div class="flex-1 overflow-y-auto p-4 pt-20">
           <ObservationForm
             :initialData="initialData"
             :submitting="submitting"
@@ -109,10 +109,36 @@ const mapObservationToForm = (obs) => {
     longitude: coords?.lng ?? obs.longitude ?? null,
     weather: obs.weather || "",
     witnesses: obs.witnesses ?? 1,
-    media:
-      obs.imageUrl || (obs.images && obs.images.length ? obs.images[0] : null),
+    media: extractImageUrls(obs),
+    existingImages: extractImageUrls(obs),
     generateAiImage: obs.imageSource === "ai" || !!obs.generateAiImage || false,
   };
+};
+
+const extractImageUrls = (obs) => {
+  // Gérer différents formats d'images
+  const images = [];
+  
+  // Si images est un tableau d'objets ou de strings
+  if (obs.images && Array.isArray(obs.images)) {
+    obs.images.forEach(img => {
+      if (typeof img === 'string') {
+        images.push(img);
+      } else if (img && img.url) {
+        images.push(img.url);
+      } else if (img && img.src) {
+        images.push(img.src);
+      }
+    });
+  }
+  
+  // Si imageUrl existe (ancienne structure)
+  if (obs.imageUrl && !images.includes(obs.imageUrl)) {
+    images.push(obs.imageUrl);
+  }
+  
+  console.log("Images extraites:", images);
+  return images;
 };
 
 const load = async () => {
@@ -121,9 +147,12 @@ const load = async () => {
   try {
     await observationStore.fetchObservationById(id);
     const obs = observationStore.currentObservation;
+    console.log("Observation chargée:", obs);
     if (!obs) throw new Error("Observation introuvable");
     initialData.value = mapObservationToForm(obs);
+    console.log("InitialData mappé:", initialData.value);
   } catch (err) {
+    console.error("Erreur load:", err);
     error.value = err?.message || "Erreur lors du chargement";
   } finally {
     loading.value = false;
@@ -140,13 +169,17 @@ const onSubmit = async (data) => {
   submitting.value = true;
   try {
     const payload = { ...data };
-    const imageFile = payload.imageFile;
-    if (imageFile) delete payload.imageFile;
-
+    const newFiles = payload.imageFile?.filter(item => item instanceof File) || [];
+    const existingUrls = payload.imageFile?.filter(item => typeof item === 'string') || [];
+    delete payload.imageFile;
+    
+    // Mettre à jour avec les URLs existantes conservées
+    payload.images = existingUrls;
     await observationStore.updateObservation(id, payload);
 
-    if (imageFile) {
-      await observationStore.uploadObservationImages(id, imageFile);
+    // Ajouter les nouvelles images
+    if (newFiles.length > 0) {
+      await observationStore.uploadObservationImages(id, newFiles);
     }
 
     toast.success("Observation mise à jour");

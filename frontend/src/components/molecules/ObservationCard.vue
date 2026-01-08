@@ -74,50 +74,53 @@ watch(
   wsMessages,
   (msgs) => {
     if (!msgs || msgs.length === 0) return;
-    const lastMsg = msgs[msgs.length - 1];
     
-    // WebSocket messages are wrapped: { channel, data: { type, data: { comment, observationId } } }
-    if (lastMsg.channel !== "comments") return;
-    
-    const payload = lastMsg.data;
-    if (!payload?.type?.startsWith("comment:")) return;
-    
-    const eventObservationId = payload.data?.observationId;
-    if (eventObservationId !== props.observation._id) return;
+    // Process all messages, not just the last one
+    msgs.forEach((message) => {
+      // WebSocket messages are wrapped: { channel, data: { type, data: { comment, observationId } } }
+      if (message.channel !== "comments") return;
+      
+      const payload = message.data;
+      if (!payload?.type?.startsWith("comment:")) return;
+      
+      const eventObservationId = payload.data?.observationId;
+      if (eventObservationId !== props.observation._id) return;
 
-    const comment = payload.data?.comment;
+      const comment = payload.data?.comment;
 
-    if (payload.type === "comment:created") {
-      // Always update the count delta
-      wsCommentDelta.value++;
-      // Only update the list if comments section is visible
-      if (showComments.value && comment) {
-        const exists = comments.value.some((c) => c._id === comment._id);
-        if (!exists) {
-          // Create new array for reactivity
-          comments.value = [comment, ...comments.value];
+      if (payload.type === "comment:created") {
+        // Always update the count delta
+        wsCommentDelta.value++;
+        // Only update the list if comments section is visible
+        if (showComments.value && comment) {
+          const exists = comments.value.some((c) => c._id === comment._id);
+          if (!exists) {
+            // Create new array for reactivity
+            comments.value = [comment, ...comments.value];
+          }
+        }
+      } else if (payload.type === "comment:updated") {
+        if (showComments.value && comment) {
+          const idx = comments.value.findIndex((c) => c._id === comment._id);
+          if (idx !== -1) {
+            // Create new array for reactivity
+            comments.value = comments.value.map((c, i) =>
+              i === idx ? comment : c
+            );
+          }
+        }
+      } else if (payload.type === "comment:deleted") {
+        // Always update the count delta
+        wsCommentDelta.value--;
+        // For deleted, the backend sends { _id, observationId } not { comment }
+        const deletedId = payload.data?._id || comment?._id;
+        if (showComments.value && deletedId) {
+          comments.value = comments.value.filter((c) => c._id !== deletedId);
         }
       }
-    } else if (payload.type === "comment:updated") {
-      if (showComments.value && comment) {
-        const idx = comments.value.findIndex((c) => c._id === comment._id);
-        if (idx !== -1) {
-          // Create new array for reactivity
-          comments.value = comments.value.map((c, i) =>
-            i === idx ? comment : c
-          );
-        }
-      }
-    } else if (payload.type === "comment:deleted") {
-      // Always update the count delta
-      wsCommentDelta.value--;
-      // For deleted, the backend sends { _id, observationId } not { comment }
-      const deletedId = payload.data?._id || comment?._id;
-      if (showComments.value && deletedId) {
-        comments.value = comments.value.filter((c) => c._id !== deletedId);
-      }
-    }
-  }
+    });
+  },
+  { deep: true }
 );
 
 // ============================================================================

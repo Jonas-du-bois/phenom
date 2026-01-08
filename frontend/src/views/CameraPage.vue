@@ -250,7 +250,7 @@ const cameraError = ref("");
 const lastPhoto = ref("");
 
 const formData = ref({
-  media: null,
+  media: [],
   title: "",
   description: "",
   type: "",
@@ -346,7 +346,7 @@ const capturePhoto = () => {
       const file = new File([blob], `capture-${Date.now()}.jpg`, {
         type: "image/jpeg",
       });
-      formData.value.media = file;
+      formData.value.media = [file];
       lastPhoto.value = URL.createObjectURL(blob);
 
       stopCamera();
@@ -365,15 +365,15 @@ const openGallery = () => {
 const handleGallerySelect = (e) => {
   const file = e.target.files?.[0];
   if (file) {
-    formData.value.media = file;
+    formData.value.media = [file];
     lastPhoto.value = URL.createObjectURL(file);
     stopCamera();
     mode.value = "form";
   }
 };
 
-const handleMediaChange = (file) => {
-  formData.value.media = file;
+const handleMediaChange = (files) => {
+  formData.value.media = files;
 };
 
 const handleSubmit = async (data) => {

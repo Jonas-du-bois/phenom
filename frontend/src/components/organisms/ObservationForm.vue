@@ -72,12 +72,41 @@
           </button>
         </div>
 
-        <div
-          v-if="!form.generateAiImage"
-          class="media-zone"
-          @click="openMediaPicker"
-        >
-          <template v-if="!form.media">
+        <div v-if="!form.generateAiImage" class="space-y-3">
+          <!-- Grid d'images existantes -->
+          <div v-if="mediaPreviews.length > 0" class="grid grid-cols-2 gap-3">
+            <div
+              v-for="(preview, index) in mediaPreviews"
+              :key="index"
+              class="relative aspect-square rounded-lg overflow-hidden bg-white/5"
+            >
+              <img :src="preview" alt="Photo" class="w-full h-full object-cover" />
+              <button
+                type="button"
+                class="absolute top-2 right-2 w-8 h-8 bg-red-500/90 hover:bg-red-500 rounded-full flex items-center justify-center transition-colors"
+                @click.stop="removeMediaAtIndex(index)"
+              >
+                <svg
+                  class="w-4 h-4 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <!-- Bouton d'ajout de photos -->
+          <div
+            class="media-zone"
+            @click="openMediaPicker"
+          >
             <div class="upload-placeholder">
               <svg
                 class="upload-icon"
@@ -90,29 +119,10 @@
                   d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"
                 />
               </svg>
-              <p>Cliquez pour ajouter une photo</p>
+              <p>{{ mediaPreviews.length > 0 ? 'Ajouter plus de photos' : 'Cliquez pour ajouter une photo' }}</p>
               <span class="upload-hint">JPEG, PNG, WebP • Max 10MB</span>
             </div>
-          </template>
-          <template v-else>
-            <div class="media-preview-container">
-              <img :src="mediaPreview" alt="Aperçu" class="media-img" />
-              <button
-                type="button"
-                class="remove-media-btn"
-                @click.stop="removeMedia"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M18 6L6 18M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </template>
+          </div>
         </div>
 
         <div v-else class="ai-badge">
@@ -407,7 +417,7 @@ const form = reactive({
   longitude: null,
   weather: "",
   witnesses: 1,
-  media: null,
+  media: [],
   generateAiImage: false,
 });
 
@@ -420,13 +430,28 @@ const errors = reactive({
 });
 
 const mediaInput = ref(null);
-const mediaPreview = ref("");
+const mediaPreviews = ref([]);
+const objectUrls = [];
 const gettingLocation = ref(false);
-let currentObjectUrl = null;
 
 onMounted(() => {
   if (props.initialData) {
     Object.assign(form, props.initialData);
+    // Charger les images existantes ou créer des previews pour les File objects
+    if (props.initialData.media && Array.isArray(props.initialData.media)) {
+      mediaPreviews.value = [];
+      props.initialData.media.forEach(item => {
+        if (typeof item === 'string') {
+          // URL existante (image du serveur)
+          mediaPreviews.value.push(item);
+        } else if (item instanceof File) {
+          // Nouveau fichier - créer un object URL
+          const url = URL.createObjectURL(item);
+          mediaPreviews.value.push(url);
+          objectUrls.push(url);
+        }
+      });
+    }
   }
 });
 
@@ -435,6 +460,31 @@ watch(
   (data) => {
     if (data) {
       Object.assign(form, data);
+      // Mettre à jour les previews avec les images existantes ou créer des object URLs
+      if (data.media && Array.isArray(data.media)) {
+        // Nettoyer les anciennes URLs créées localement
+        objectUrls.forEach(url => {
+          try {
+            URL.revokeObjectURL(url);
+          } catch (e) {
+            /* ignore */
+          }
+        });
+        objectUrls.length = 0;
+        
+        mediaPreviews.value = [];
+        data.media.forEach(item => {
+          if (typeof item === 'string') {
+            // URL existante (image du serveur)
+            mediaPreviews.value.push(item);
+          } else if (item instanceof File) {
+            // Nouveau fichier - créer un object URL
+            const url = URL.createObjectURL(item);
+            mediaPreviews.value.push(url);
+            objectUrls.push(url);
+          }
+        });
+      }
     }
   },
   { deep: true }
@@ -463,85 +513,82 @@ const openMediaPicker = () => {
 };
 
 const handleMediaSelect = (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+  const files = Array.from(e.target.files || []);
+  if (files.length === 0) return;
 
   const validTypes = ["image/jpeg", "image/png", "image/webp"];
   const maxSize = 10 * 1024 * 1024;
 
-  if (!validTypes.includes(file.type)) {
-    errors.media = "Format non valide. Utilisez JPEG, PNG ou WebP.";
-    e.target.value = "";
-    return;
+  for (const file of files) {
+    if (!validTypes.includes(file.type)) {
+      errors.media = "Format non valide. Utilisez JPEG, PNG ou WebP.";
+      continue;
+    }
+
+    if (file.size > maxSize) {
+      errors.media = "Fichier trop volumineux. Max: 10 MB.";
+      continue;
+    }
+
+    form.media.push(file);
+    const url = URL.createObjectURL(file);
+    mediaPreviews.value.push(url);
+    objectUrls.push(url);
   }
 
-  if (file.size > maxSize) {
-    errors.media = "Fichier trop volumineux. Max: 10 MB.";
-    e.target.value = "";
-    return;
-  }
-
-  form.media = file;
-  emit("media-change", file);
+  emit("media-change", form.media);
+  e.target.value = "";
 };
 
-const removeMedia = () => {
-  form.media = null;
-  if (currentObjectUrl) {
+const removeMediaAtIndex = (index) => {
+  const item = mediaPreviews.value[index];
+  
+  // Ne révoquer que les URLs créées localement (blob:), pas les URLs du serveur
+  if (item && typeof item === 'string' && item.startsWith('blob:')) {
     try {
-      URL.revokeObjectURL(currentObjectUrl);
+      URL.revokeObjectURL(item);
+      const urlIndex = objectUrls.indexOf(item);
+      if (urlIndex > -1) {
+        objectUrls.splice(urlIndex, 1);
+      }
     } catch (e) {
       /* ignore */
     }
-    currentObjectUrl = null;
   }
-  mediaPreview.value = "";
+  
+  form.media.splice(index, 1);
+  mediaPreviews.value.splice(index, 1);
+  
+  emit("media-change", form.media);
+};
+
+const removeMedia = () => {
+  // Nettoyer toutes les URLs
+  objectUrls.forEach(url => {
+    try {
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      /* ignore */
+    }
+  });
+  
+  form.media = [];
+  mediaPreviews.value = [];
+  objectUrls.length = 0;
   if (mediaInput.value) {
     mediaInput.value.value = "";
   }
   emit("media-change", null);
 };
 
-watch(
-  () => form.media,
-  (val) => {
-    if (currentObjectUrl) {
-      try {
-        URL.revokeObjectURL(currentObjectUrl);
-      } catch (e) {
-        /* ignore */
-      }
-      currentObjectUrl = null;
-    }
-
-    if (!val) {
-      mediaPreview.value = "";
-      return;
-    }
-
-    if (val instanceof File) {
-      currentObjectUrl = URL.createObjectURL(val);
-      mediaPreview.value = currentObjectUrl;
-    } else if (typeof val === "string") {
-      mediaPreview.value = val;
-    } else if (val && val.url) {
-      mediaPreview.value = val.url;
-    } else {
-      mediaPreview.value = "";
-    }
-  },
-  { immediate: true }
-);
-
 onUnmounted(() => {
-  if (currentObjectUrl) {
+  objectUrls.forEach(url => {
     try {
-      URL.revokeObjectURL(currentObjectUrl);
+      URL.revokeObjectURL(url);
     } catch (e) {
       /* ignore */
     }
-    currentObjectUrl = null;
-  }
+  });
 });
 
 const getCurrentLocation = async () => {

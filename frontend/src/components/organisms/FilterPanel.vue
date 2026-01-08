@@ -10,7 +10,7 @@
              BACKDROP - Blurred overlay that closes panel on click
              ================================================================ -->
         <div
-          class="absolute inset-0 bg-[rgba(255,255,255,0.02)] backdrop-blur-2xl"
+          class="absolute inset-0 bg-[rgba(255,255,255,0.01)] backdrop-blur-2xl"
           @click="$emit('close')"
         />
 
