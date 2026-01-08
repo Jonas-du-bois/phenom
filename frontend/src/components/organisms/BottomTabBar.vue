@@ -286,6 +286,7 @@ const isActive = (tab) => {
   border: 1px solid rgba(255, 255, 255, 0.06);
   box-shadow: 0 10px 30px rgba(2, 6, 23, 0.6);
   overflow: visible;
+  pointer-events: auto;
 }
 
 /* Light reflection overlay for glass depth */

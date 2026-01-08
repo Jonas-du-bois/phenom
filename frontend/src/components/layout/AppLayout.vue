@@ -67,10 +67,10 @@
       class="flex-1 overflow-y-auto overscroll-contain"
       :style="{
         paddingTop: hasContentPadding
-          ? 'calc(2.5rem + env(safe-area-inset-top, 0px))'
+          ? 'calc(2rem + env(safe-area-inset-top, 0px))'
           : undefined,
         paddingBottom: showTabBar
-          ? 'calc(5.5rem + env(safe-area-inset-bottom, 0px))'
+          ? 'calc(4.5rem + env(safe-area-inset-bottom, 0px))'
           : undefined,
       }"
     >
@@ -86,7 +86,7 @@
         name="toast"
         tag="div"
         class="fixed top-6 right-4 z-[9999] flex flex-col gap-2 pointer-events-none max-w-md"
-        :style="{ top: 'calc(1rem + env(safe-area-inset-top, 0px))' }"
+        :style="{ top: 'calc(2rem + env(safe-area-inset-top, 0px))' }"
       >
         <div
           v-for="toast in globalToasts"
@@ -226,6 +226,22 @@ onMounted(() => {
 </script>
 
 <style scoped>
+
+/* =============================================================================
+   APP LAYOUT STYLES
+   ============================================================================= */
+.app-layout {
+  min-height: 100dvh;
+  height: 100dvh;
+  overscroll-behavior: none;
+}
+@supports (-webkit-touch-callout: none) {
+  .app-layout {
+    min-height: -webkit-fill-available;
+    height: -webkit-fill-available;
+  }
+}
+
 /* =============================================================================
    LIQUID GLASS TOAST EFFECT
    ============================================================================= */

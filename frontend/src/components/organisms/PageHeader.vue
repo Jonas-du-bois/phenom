@@ -25,8 +25,11 @@
      ======================================================================== -->
 <template>
   <header
-    class="fixed top-4 left-0 right-0 z-40 mx-5"
-    :style="{ paddingTop: 'env(safe-area-inset-top, 0px)' }"
+    class="fixed left-0 right-0 z-40 mx-5"
+    :style="{
+      top: 'calc(1rem + env(safe-area-inset-top, 0px))',
+      paddingTop: 'env(safe-area-inset-top, 0px)'
+    }"
   >
     <div class="liquid-glass-header rounded-2xl">
       <div class="flex items-center justify-between h-14 px-4">

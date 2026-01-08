@@ -91,22 +91,30 @@ html {
   font-size: 16px;
   scroll-behavior: smooth;
   -webkit-tap-highlight-color: transparent;
+  min-height: 100vh;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
 }
 
 body {
   min-height: 100vh;
   min-height: 100dvh; /* Dynamic viewport height for mobile */
+  min-height: -webkit-fill-available;
+  height: -webkit-fill-available;
   font-family: var(--font-sans);
   background-color: var(--phenom-black);
   color: white;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  overscroll-behavior-y: none;
 }
 
 #app {
   min-height: 100vh;
   min-height: 100dvh;
+  min-height: -webkit-fill-available;
+  height: -webkit-fill-available;
 }
 
 a {

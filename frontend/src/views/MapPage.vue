@@ -181,9 +181,6 @@ const handleBoundsChange = (bounds) => {
   }, 250);
 };
 
-const handleMarkerClick = (observation) => {
-  // Popup handled by ObservationMap
-};
 
 const applyFilters = (newFilters) => {
   filters.value = { ...newFilters };

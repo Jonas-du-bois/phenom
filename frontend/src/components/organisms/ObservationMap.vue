@@ -34,11 +34,13 @@
 
     <!-- Map controls overlay -->
     <div 
+      v-if="showControls"
       class="absolute right-4 z-[1000] flex flex-col gap-2"
-      :style="{ top: 'calc(5.5rem + env(safe-area-inset-top, 0px))', right: 'calc(1rem + env(safe-area-inset-right, 0px))' }"
+      :style="{ top: controlsTopOffset, right: 'calc(1rem + env(safe-area-inset-right, 0px))' }"
     >
       <!-- Zoom controls -->
       <div
+        v-if="showZoomControls"
         class="bg-[#12151C] rounded-xl overflow-hidden shadow-lg border border-white/10"
       >
         <button
@@ -132,9 +134,9 @@
 
     <!-- Observation count badge -->
     <div
-      v-if="observations.length > 0"
+      v-if="observations.length > 0 && showBadge"
       class="absolute z-[1000] backdrop-blur-2xl bg-white/5 px-4 py-2.5 rounded-2xl border border-white/10 shadow-2xl hover:bg-white/10 transition-all duration-300"
-      :style="{ top: 'calc(6rem + env(safe-area-inset-top, 0px))', left: 'calc(1rem + env(safe-area-inset-left, 0px))' }"
+      :style="{ top: badgeTopOffset, left: 'calc(1rem + env(safe-area-inset-left, 0px))' }"
     >
       <div class="flex items-center gap-2.5">
         <div class="relative">
@@ -155,7 +157,7 @@
     <!-- Selected observation popup -->
     <Transition name="slide-up">
       <div
-        v-if="selectedObservation"
+        v-if="selectedObservation && showPopup"
         class="absolute z-[1000]"
         :style="{ 
           bottom: 'calc(6rem + env(safe-area-inset-bottom, 0px))', 
@@ -174,7 +176,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch, nextTick } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
 import { useRouter } from "vue-router";
 import L from "leaflet";
 import "leaflet.markercluster";
@@ -201,7 +203,38 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  // UI customization props
+  showControls: {
+    type: Boolean,
+    default: true,
+  },
+  showZoomControls: {
+    type: Boolean,
+    default: true,
+  },
+  showPopup: {
+    type: Boolean,
+    default: true,
+  },
+  showBadge: {
+    type: Boolean,
+    default: true,
+  },
+  // Compact mode for embedded maps (smaller controls, different positioning)
+  compact: {
+    type: Boolean,
+    default: false,
+  },
 });
+
+// Computed offsets based on compact mode
+const controlsTopOffset = computed(() => 
+  props.compact ? 'calc(1rem + env(safe-area-inset-top, 0px))' : 'calc(5.5rem + env(safe-area-inset-top, 0px))'
+);
+
+const badgeTopOffset = computed(() => 
+  props.compact ? 'calc(1rem + env(safe-area-inset-top, 0px))' : 'calc(6rem + env(safe-area-inset-top, 0px))'
+);
 
 const emit = defineEmits(["bounds-change", "marker-click"]);
 

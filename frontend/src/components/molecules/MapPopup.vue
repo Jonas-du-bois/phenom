@@ -91,7 +91,7 @@ const formattedDate = computed(() => {
 
 <template>
   <div
-    class="relative w-72 backdrop-blur-md bg-gradient-to-br from-[#12151C]/80 to-[#0A0C0F]/80 border border-white/10 rounded-2xl shadow-2xl overflow-hidden group"
+    class="liquid-glass-card relative w-72 rounded-2xl overflow-hidden group"
   >
     <!-- Close Button -->
     <button
@@ -125,7 +125,7 @@ const formattedDate = computed(() => {
         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
       />
       <div
-        class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"
+        class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"
       ></div>
     </div>
 
@@ -157,7 +157,7 @@ const formattedDate = computed(() => {
 
         <!-- View Button -->
         <button
-          class="px-3 py-1.5 bg-gradient-to-r from-[#00F0FF] to-[#0099FF] text-black text-xs font-bold uppercase tracking-wider rounded-lg hover:from-[#00D0DF] hover:to-[#0077CC] transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
+          class="px-3 py-1.5 bg-gradient-to-r from-[#00F0FF]/50 to-[#0099FF]/50 text-white text-xs font-bold uppercase tracking-wider rounded-lg hover:from-[#00D0DF] hover:to-[#0077CC] transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
           @click="emit('view', observation)"
         >
           Voir
@@ -166,3 +166,43 @@ const formattedDate = computed(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.liquid-glass-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.liquid-glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  border-color: rgba(0, 240, 255, 0.2);
+}
+
+.liquid-glass-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(0, 240, 255, 0.12), transparent 35%),
+    radial-gradient(circle at 80% 0%, rgba(168, 85, 247, 0.12), transparent 32%);
+  mix-blend-mode: screen;
+}
+
+.liquid-glass-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0));
+}
+</style>
