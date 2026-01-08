@@ -31,7 +31,7 @@
       paddingTop: 'env(safe-area-inset-top, 0px)'
     }"
   >
-    <div class="liquid-glass-header rounded-2xl">
+    <div class="liquid-glass-header rounded-2xl w-full">
       <div class="flex items-center justify-between h-14 px-4">
         <!-- Left section - Back button, search button, custom slot -->
         <div class="flex items-center gap-3 min-w-[60px]">
@@ -40,7 +40,7 @@
             type="button"
             aria-label="Retour"
             @click="handleBack"
-            class="touch-target flex items-center justify-center w-10 h-10 -ml-2 rounded-full text-white/70 hover:text-white hover:bg-white/10 active:bg-white/20 transition-colors"
+            class="touch-target flex items-center justify-center w-10 h-10 -ml-2 rounded-full text-white/70 hover:text-white hover:bg-white/10 active:bg-white/20"
           >
             <svg
               class="w-6 h-6"
@@ -62,7 +62,7 @@
             type="button"
             aria-label="Rechercher"
             @click="$emit('search')"
-            class="touch-target flex items-center justify-center w-10 h-10 -ml-2 rounded-full text-white/70 hover:text-white hover:bg-white/10 active:bg-white/20 transition-colors"
+            class="touch-target flex items-center justify-center w-10 h-10 -ml-2 rounded-full text-white/70 hover:text-white hover:bg-white/10 active:bg-white/20"
           >
             <svg
               class="w-6 h-6"
@@ -178,7 +178,7 @@
           <button
             v-if="showMenu"
             @click="$emit('menu')"
-            class="touch-target flex items-center justify-center w-10 h-10 -mr-2 rounded-full text-white/70 hover:text-white active:bg-white/10 transition-colors"
+            class="touch-target flex items-center justify-center w-10 h-10 -mr-2 rounded-full text-white/70 hover:text-white active:bg-white/10"
           >
             <svg
               class="w-6 h-6"
