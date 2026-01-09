@@ -59,23 +59,23 @@
       <div
         v-for="n in 3"
         :key="n"
-        class="observation-skeleton mb-4 animate-pulse"
+        class="observation-skeleton mb-4"
       >
         <div class="surface-card rounded-2xl overflow-hidden">
           <!-- Header skeleton -->
           <div class="flex items-center gap-3 p-4">
-            <div class="w-10 h-10 rounded-full bg-white/10" />
+            <div class="skeleton-shimmer w-10 h-10 rounded-full" />
             <div class="flex-1 space-y-2">
-              <div class="w-24 h-4 rounded bg-white/10" />
-              <div class="w-32 h-3 rounded bg-white/5" />
+              <div class="skeleton-shimmer w-24 h-4 rounded" />
+              <div class="skeleton-shimmer w-32 h-3 rounded" />
             </div>
           </div>
           <!-- Image skeleton -->
-          <div class="aspect-video bg-white/5" />
+          <div class="skeleton-shimmer aspect-video" />
           <!-- Content skeleton -->
           <div class="p-4 space-y-3">
-            <div class="w-3/4 h-4 rounded bg-white/10" />
-            <div class="w-1/2 h-3 rounded bg-white/5" />
+            <div class="skeleton-shimmer w-3/4 h-4 rounded" />
+            <div class="skeleton-shimmer w-1/2 h-3 rounded" />
           </div>
         </div>
       </div>
@@ -307,6 +307,44 @@ defineExpose({ handleRefresh });
 </script>
 
 <style scoped>
+/* ============================================================================
+   SKELETON SHIMMER EFFECT - Modern loading animation
+   ============================================================================ */
+
+.skeleton-shimmer {
+  position: relative;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 0%,
+    rgba(255, 255, 255, 0.08) 20%,
+    rgba(255, 255, 255, 0.03) 40%,
+    rgba(255, 255, 255, 0.03) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+  overflow: hidden;
+}
+
+/* Shimmer animation - smooth sliding shine effect */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Add subtle variation to multiple skeletons */
+.observation-skeleton:nth-child(2) .skeleton-shimmer {
+  animation-delay: 0.2s;
+}
+
+.observation-skeleton:nth-child(3) .skeleton-shimmer {
+  animation-delay: 0.4s;
+}
+
+/* Transition animations for list items */
 .list-enter-active,
 .list-leave-active {
   transition: all 0.3s ease;

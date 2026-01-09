@@ -23,7 +23,7 @@
 -->
 
 <template>
-  <AppLayout :show-tab-bar="false" :has-content-padding="false">
+  <AppLayout :show-tab-bar="false" :has-content-padding="true">
     <div class="observation-detail-page bg-[#000000]">
       <!-- Loading state -->
       <template v-if="loading">
@@ -69,7 +69,7 @@
       />
 
       <!-- Observation info - Liquid glass card -->
-      <div class="px-5 py-6 space-y-5">
+      <div class="px-5 pt-6 space-y-5">
         <!-- Main content card -->
         <div class="liquid-glass-card rounded-2xl p-5 space-y-4">
           <!-- Type badge with tooltip -->
@@ -78,8 +78,8 @@
               :content="getTypeTooltipContent(observation.type)"
               :icon="getTypeIcon(observation.type)"
             >
-              <BaseBadge :variant="typeBadgeVariant" class="badge-glow badge-interactive">
-                {{ observation.type?.toUpperCase() || "OBSERVATION" }}
+              <BaseBadge :variant="typeBadgeVariant" class="badge-glow">
+                {{ "OBSERVATION" }}
               </BaseBadge>
             </GlassTooltip>
             <GlassTooltip 
