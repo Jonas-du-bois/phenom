@@ -41,7 +41,7 @@ export const createWebSocketServer = (server) => {
     pingTimeout: 30000,
     logLevel: process.env.NODE_ENV === 'production' ? 'warn' : 'info',
     // Authentication callback - called when a client connects with a token
-    authCallback: async (token, request, wsServer) => {
+    authCallback: async (token, _request, _wsServer) => {
       // Allow anonymous connections for public data
       if (!token) {
         console.log('ℹ️ Connexion WebSocket anonyme acceptée');

@@ -1,6 +1,5 @@
 import PushSubscription from '../models/PushSubscription.js';
 import { successResponse, errorResponse } from '../utils/response.js';
-import webpushService from '../services/webpush.service.js';
 
 /**
  * Push notification controller

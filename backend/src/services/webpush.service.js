@@ -1,6 +1,5 @@
 import webpush from 'web-push';
 import PushSubscription from '../models/PushSubscription.js';
-import { publishObservationEvent } from '../config/websocket.js';
 
 // Configure VAPID keys from env
 const VAPID_PUBLIC = process.env.VAPID_PUBLIC_KEY || '';

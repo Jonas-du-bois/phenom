@@ -228,7 +228,7 @@ class UserService {
    * @param {string} mimetype - Image MIME type
    * @returns {Object} Avatar information
    */
-  async uploadAvatar(userId, buffer, mimetype) {
+  async uploadAvatar(userId, buffer, _mimetype) {
     const user = await User.findById(userId);
     if (!user) {
       throw new Error('USER_NOT_FOUND');

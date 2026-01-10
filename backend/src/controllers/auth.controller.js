@@ -32,7 +32,7 @@ class AuthController {
       res.cookie('refreshToken', result.refreshToken, REFRESH_TOKEN_COOKIE_OPTIONS);
 
       // Do not include refreshToken in JSON response
-      const { refreshToken, ...responseData } = result;
+      const { refreshToken: _refreshToken, ...responseData } = result;
 
       return createdResponse(res, responseData, 'Registration successful');
     } catch (error) {
@@ -58,7 +58,7 @@ class AuthController {
       res.cookie('refreshToken', result.refreshToken, REFRESH_TOKEN_COOKIE_OPTIONS);
 
       // Do not include refreshToken in JSON response
-      const { refreshToken, ...responseData } = result;
+      const { refreshToken: _refreshToken, ...responseData } = result;
 
       return successResponse(res, responseData, 'Login successful');
     } catch (error) {

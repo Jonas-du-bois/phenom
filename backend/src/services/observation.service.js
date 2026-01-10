@@ -5,10 +5,7 @@ import Observation, {
   PHENOMENA,
   LOCALE_TYPES
 } from '../models/Observation.js';
-import {
-  getPaginationParams,
-  createPaginationMeta
-} from '../utils/pagination.js';
+
 import { publishObservationEvent } from '../config/websocket.js';
 
 /**
@@ -394,9 +391,9 @@ class ObservationService {
    */
   async getFilterValues(filterType) {
     switch (filterType) {
-    case 'countries':
+    case 'countries':{
       const countries = await Observation.distinct('country');
-      return countries.filter((c) => c).sort();
+      return countries.filter((c) => c).sort();}
     case 'locales':
       return LOCALE_TYPES;
     case 'observer-types':
