@@ -93,6 +93,9 @@ export const useAuthStore = defineStore("auth", () => {
       saveAuthToken(accessToken);
       saveUserData(userData);
 
+      // Send auth data to service worker for background tasks
+      sendToServiceWorker("STORE_AUTH", { token: accessToken, userId: userData._id });
+
       return { success: true };
     } catch (err) {
       error.value = err.response?.data?.message || "Login error";
@@ -119,6 +122,9 @@ export const useAuthStore = defineStore("auth", () => {
       user.value = newUser;
       saveAuthToken(accessToken);
       saveUserData(newUser);
+
+      // Send auth data to service worker for background tasks
+      sendToServiceWorker("STORE_AUTH", { token: accessToken, userId: newUser._id });
 
       return { success: true };
     } catch (err) {
@@ -156,6 +162,10 @@ export const useAuthStore = defineStore("auth", () => {
       const response = await authService.getProfile();
       user.value = response.data;
       saveUserData(response.data);
+
+      // Update service worker with current auth
+      sendToServiceWorker("STORE_AUTH", { token: token.value, userId: response.data._id });
+
       return user.value;
     } catch (err) {
       if (err.response?.status === 401) {
@@ -176,6 +186,19 @@ export const useAuthStore = defineStore("auth", () => {
     error.value = null;
     removeAuthToken();
     removeUserData();
+
+    // Clear auth from service worker
+    sendToServiceWorker("CLEAR_AUTH", {});
+  };
+
+  /**
+   * Send message to service worker
+   * Used to share auth data for background sync tasks
+   */
+  const sendToServiceWorker = (type, payload) => {
+    if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({ type, payload });
+    }
   };
 
   return {
@@ -199,5 +222,6 @@ export const useAuthStore = defineStore("auth", () => {
     logout,
     fetchUser,
     clearAuth,
+    sendToServiceWorker,
   };
 });

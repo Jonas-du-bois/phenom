@@ -134,6 +134,10 @@ class UserController {
   /**
    * Updates the user's current position
    * POST /users/me/location
+   *
+   * Creates persistent notifications for nearby observations.
+   * Notifications are only created once per user+observation (no duplicates).
+   * Push notifications are only sent if the notification is new.
    */
   async updateLocation(req, res, next) {
     try {
@@ -148,7 +152,7 @@ class UserController {
         );
       }
 
-      // Store/update last location on PushSubscription documents if present
+      // Store/update last location and radius on PushSubscription documents
       const PushSubscription = (await import('../models/PushSubscription.js'))
         .default;
       await PushSubscription.updateMany(
@@ -157,15 +161,19 @@ class UserController {
           $set: {
             'lastLocation.lat': lat,
             'lastLocation.lng': lng,
-            'lastLocation.updatedAt': new Date()
+            'lastLocation.updatedAt': new Date(),
+            alertRadiusKm: radiusKm
           }
         }
       );
 
-      // Find nearby observations and notify user via WS + WebPush
+      // Import Notification model
+      const Notification = (await import('../models/Notification.js')).default;
+      const { NOTIFICATION_TYPES } = await import('../models/Notification.js');
+
+      // Find nearby observations
       const Observation = (await import('../models/Observation.js')).default;
 
-      // Try a geoNear aggregation using GeoJSON `locationPoint` if available (more efficient)
       let toNotify = [];
       try {
         const meters = Math.round(radiusKm * 1000);
@@ -181,14 +189,13 @@ class UserController {
           { $limit: 200 }
         ]).allowDiskUse(true);
 
-        // Normalize results
         toNotify = agg.map((doc) => ({
           obs: doc,
           distance: Math.round((doc.dist?.calculated || 0) / 100) / 10
         }));
       } catch (geoErr) {
-        // Fallback to bounding box + haversine if $geoNear not available or no locationPoint
-        const deg = radiusKm / 111; // ~111 km per degree latitude
+        // Fallback to bounding box + haversine
+        const deg = radiusKm / 111;
         const minLat = lat - deg;
         const maxLat = lat + deg;
         const minLng = lng - deg;
@@ -223,28 +230,79 @@ class UserController {
         }
       }
 
-      // Notify via WebSocket and WebPush
+      // Import services for notifications
       const webpushService = (await import('../services/webpush.service.js'))
         .default;
       const { publishObservationEvent } = await import(
         '../config/websocket.js'
       );
 
-      for (const item of toNotify) {
-        // Publish WebSocket event
-        publishObservationEvent('observation:nearby', item.obs);
+      let newNotificationsCount = 0;
 
-        // Send WebPush to user's subscriptions
-        await webpushService
-          .notifyUserPush(userId, {
-            title: 'Alerte : observation proche',
-            body: item.obs.location || 'Nouvelle observation proche',
-            data: { url: `/observation/${item.obs._id}` }
-          })
-          .catch(() => {});
+      // Process each nearby observation
+      for (const item of toNotify) {
+        const obs = item.obs;
+        const obsId = obs._id;
+
+        // Create notification only if it doesn't already exist (deduplication)
+        const { notification, isNew } = await Notification.createIfNotExists({
+          userId,
+          observationId: obsId,
+          type: NOTIFICATION_TYPES.OBSERVATION_NEARBY,
+          title: obs.title || obs.phenomenonType || 'Observation proche',
+          message: `Observation à ${item.distance} km de votre position`,
+          distance: item.distance,
+          userLocation: { lat, lng },
+          observationLocation: {
+            lat: obs.coordinates?.lat || obs.locationPoint?.coordinates?.[1],
+            lng: obs.coordinates?.lng || obs.locationPoint?.coordinates?.[0]
+          },
+          observationSnapshot: {
+            title: obs.title,
+            phenomenonType: obs.phenomenonType,
+            imageUrl: obs.images?.[0]?.url || obs.images?.[0],
+            location: obs.location
+          }
+        });
+
+        // Only send push notification if this is a NEW notification
+        if (isNew) {
+          newNotificationsCount++;
+
+          // Publish WebSocket event for real-time UI update
+          publishObservationEvent('observation:nearby', {
+            ...obs,
+            notificationId: notification._id,
+            distance: item.distance
+          });
+
+          // Send WebPush (one notification per observation, never duplicated)
+          try {
+            await webpushService.notifyUserPush(userId, {
+              title: `Observation à ${item.distance} km`,
+              body: obs.title || obs.location || 'Nouvelle observation proche',
+              tag: `observation-${obsId}`, // Same tag = replaces previous
+              data: {
+                url: `/observation/${obsId}`,
+                observationId: obsId.toString(),
+                notificationId: notification._id.toString()
+              }
+            });
+
+            // Mark push as sent
+            await Notification.findByIdAndUpdate(notification._id, {
+              $set: { pushSentAt: new Date() }
+            });
+          } catch (pushErr) {
+            console.warn('Failed to send push for observation:', obsId, pushErr.message);
+          }
+        }
       }
 
-      return successResponse(res, { checked: toNotify.length });
+      return successResponse(res, {
+        checked: toNotify.length,
+        newNotifications: newNotificationsCount
+      });
     } catch (error) {
       next(error);
     }

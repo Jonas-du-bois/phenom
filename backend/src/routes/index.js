@@ -12,6 +12,7 @@ import pushRoutes from './push.routes.js';
 import adminRoutes from './admin.routes.js';
 import imageRoutes from './image.routes.js';
 import filterRoutes from './filter.routes.js';
+import notificationRoutes from './notification.routes.js';
 
 const router = express.Router();
 
@@ -31,6 +32,9 @@ router.use('/users', userRoutes);
 
 // Push notification subscriptions
 router.use('/push', pushRoutes);
+
+// Notification routes (user alerts)
+router.use('/notifications', notificationRoutes);
 
 // Image routes
 router.use('/', imageRoutes);

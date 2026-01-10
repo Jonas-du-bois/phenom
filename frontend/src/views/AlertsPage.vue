@@ -14,6 +14,8 @@
   - Nearby observation alerts (location-based)
   - Push notification settings
   - Empty state when no alerts
+  - Persistent notifications via backend API
+  - Background location updates
 
   ROUTE: /alerts (main tab, requires auth)
   ============================================================================
@@ -25,7 +27,7 @@
       <PageHeader title="Alertes">
         <template #right>
           <IconButton
-            v-if="alerts.length"
+            v-if="notificationStore.notifications.length"
             variant="ghost"
             size="sm"
             aria-label="Marquer tout comme lu"
@@ -92,26 +94,74 @@
         </BaseButton>
       </div>
 
-      <!-- Radius selector -->
+      <!-- Radius selector dropdown -->
       <div v-if="locationEnabled" class="px-4 py-4">
-        <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center justify-between">
           <span class="text-sm text-white/60">Rayon d'alerte</span>
-          <span class="text-sm text-[#00F0FF] font-medium"
-            >{{ alertRadius }} km</span
-          >
+          <div class="relative">
+            <button
+              @click="showRadiusDropdown = !showRadiusDropdown"
+              class="flex items-center gap-2 bg-[#12151C] border border-white/10 rounded-lg px-4 py-2 text-sm text-[#00F0FF] font-medium focus:outline-none focus:border-[#00F0FF]/50 cursor-pointer"
+            >
+              <span>{{ alertRadius }} km</span>
+              <svg
+                class="w-4 h-4 text-white/40 transition-transform"
+                :class="{ 'rotate-180': showRadiusDropdown }"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </button>
+            <!-- Dropdown panel -->
+            <div
+              v-if="showRadiusDropdown"
+              class="absolute right-0 top-full mt-2 w-64 bg-[#12151C] border border-white/10 rounded-xl p-4 shadow-xl z-50"
+            >
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-xs text-white/40">{{ radiusOptions[0] }} km</span>
+                <span class="text-lg text-[#00F0FF] font-bold">{{ alertRadius }} km</span>
+                <span class="text-xs text-white/40">{{ radiusOptions[radiusOptions.length - 1] }} km</span>
+              </div>
+              <RangeInput 
+                v-model="alertRadius" 
+                :min="radiusOptions[0]" 
+                :max="radiusOptions[radiusOptions.length - 1]" 
+                :step="5" 
+              />
+              <button
+                @click="showRadiusDropdown = false"
+                class="w-full mt-3 py-2 text-sm text-white/60 hover:text-white transition-colors"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
         </div>
-        <RangeInput v-model="alertRadius" :min="5" :max="100" :step="5" />
       </div>
+      
+      <!-- Backdrop to close dropdown -->
+      <div
+        v-if="showRadiusDropdown"
+        class="fixed inset-0 z-40"
+        @click="showRadiusDropdown = false"
+      />
 
       <!-- Loading -->
-      <template v-if="loading">
+      <template v-if="notificationStore.loading">
         <div class="flex items-center justify-center py-12">
           <LoadingSpinner size="lg" />
         </div>
       </template>
 
       <!-- Empty state -->
-      <template v-else-if="!alerts.length">
+      <template v-else-if="!notificationStore.notifications.length">
         <div class="flex items-center justify-center py-12 px-4">
           <EmptyState
             icon="alerts"
@@ -125,7 +175,7 @@
       <template v-else>
         <div class="divide-y divide-white/5">
           <div
-            v-for="alert in alerts"
+            v-for="alert in notificationStore.sortedNotifications"
             :key="alert.id"
             class="alert-item px-4 py-4 flex gap-3 transition-colors"
             :class="{ 'bg-[#00F0FF]/5': !alert.read }"
@@ -175,7 +225,7 @@
                   class="w-2 h-2 rounded-full bg-[#00F0FF] shrink-0"
                 />
                 <h3 class="text-white font-medium truncate">
-                  {{ alert.observation?.title || "Nouvelle observation" }}
+                  {{ alert.observation?.title || alert.title || "Nouvelle observation" }}
                 </h3>
               </div>
 
@@ -184,7 +234,7 @@
               </p>
 
               <div class="flex items-center gap-3 mt-2 text-xs text-white/40">
-                <span class="flex items-center gap-1">
+                <span v-if="alert.distance" class="flex items-center gap-1">
                   <svg
                     class="w-3 h-3"
                     fill="none"
@@ -228,6 +278,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch } from "vue";
 import { useAuthStore } from "@/stores/auth";
+import { useNotificationStore } from "@/stores/notification";
 import { useRouter } from "vue-router";
 import { AppLayout } from "@/components/layout";
 import { PageHeader } from "@/components/organisms";
@@ -242,93 +293,31 @@ import {
 defineOptions({ name: "AlertsPage" });
 
 const router = useRouter();
+const authStore = useAuthStore();
+const notificationStore = useNotificationStore();
 
-// WebSocket (WsMini PubSub)
+// WebSocket for real-time updates
 import { useWebSocket } from "@/composables/useWebSocket";
 
-const {
-  messages: wsMessages,
-  connect,
-  disconnect,
-} = useWebSocket();
+const { messages: wsMessages, connect } = useWebSocket();
 
-const alerts = ref([]);
-const loading = ref(true);
+// Local state
 const locationEnabled = ref(false);
 const alertRadius = ref(50);
 const userLocation = ref(null);
-const authStore = useAuthStore();
 const locationCheckIntervalId = ref(null);
+const showRadiusDropdown = ref(false);
 const LOCATION_CHECK_INTERVAL_MS = 30 * 60 * 1000; // 30 minutes
 
 // Settings sync (from SettingsPage localStorage key)
 const nearbyAlertsEnabled = ref(true);
 
+// Predefined radius options (in km)
+const radiusOptions = [5, 10, 25, 50, 100, 150, 200, 300, 500];
+
 /**
- * Show native browser/phone notification
- * Uses the Notification API for PWA push-like notifications
+ * Load settings from localStorage
  */
-const showNativeNotification = async (alert) => {
-  // Check if notifications are supported and permission is granted
-  if (!("Notification" in window)) {
-    console.warn("Notifications not supported");
-    return;
-  }
-
-  // Request permission if not already granted
-  if (Notification.permission === "default") {
-    await Notification.requestPermission();
-  }
-
-  if (Notification.permission !== "granted") {
-    console.warn("Notification permission denied");
-    return;
-  }
-
-  try {
-    // Use service worker registration for persistent notifications on mobile
-    const registration = await navigator.serviceWorker?.ready;
-    
-    const notificationOptions = {
-      body: alert.message,
-      icon: "/icons/icon-192x192.png",
-      badge: "/icons/icon-72x72.png",
-      tag: `observation-${alert.id}`, // Group similar notifications
-      renotify: true,
-      vibrate: [200, 100, 200], // Vibration pattern for mobile
-      data: {
-        url: `/observation/${alert.observation?._id || alert.id}`,
-        observationId: alert.observation?._id || alert.id,
-      },
-      actions: [
-        { action: "view", title: "Voir" },
-        { action: "dismiss", title: "Ignorer" },
-      ],
-    };
-
-    // Add image if available
-    if (alert.observation?.imageUrl) {
-      notificationOptions.image = alert.observation.imageUrl;
-    }
-
-    if (registration) {
-      // Use service worker for better mobile support
-      await registration.showNotification(
-        `Observation à ${alert.distance ? alert.distance + " km" : "proximité"}`,
-        notificationOptions
-      );
-    } else {
-      // Fallback to regular Notification API
-      new Notification(
-        `Observation à ${alert.distance ? alert.distance + " km" : "proximité"}`,
-        notificationOptions
-      );
-    }
-  } catch (error) {
-    console.error("Failed to show notification:", error);
-  }
-};
-
 const loadSettingsFromStorage = () => {
   try {
     const raw = localStorage.getItem("phenom_settings");
@@ -342,108 +331,81 @@ const loadSettingsFromStorage = () => {
   }
 };
 
-onMounted(async () => {
-  // Check if location is already enabled
-  if (navigator.geolocation) {
-    navigator.permissions?.query({ name: "geolocation" }).then((result) => {
-      locationEnabled.value = result.state === "granted";
-      if (locationEnabled.value) {
-        getCurrentLocation();
-      }
-    });
-  }
-
-  await fetchAlerts();
-
-  // Load settings and decide whether to connect
-  loadSettingsFromStorage();
-  if (nearbyAlertsEnabled.value) {
-    connect();
-  }
-
-  // Start periodic background location checks if allowed
-  const startLocationBackgroundLoop = () => {
-    // stop any existing loop
-    if (locationCheckIntervalId.value)
-      clearInterval(locationCheckIntervalId.value);
-    if (!navigator.geolocation || !locationEnabled.value) return;
-    // run immediately then set interval
-    getCurrentLocation();
-    locationCheckIntervalId.value = setInterval(() => {
-      // Check permission then fetch
-      try {
-        navigator.permissions
-          ?.query({ name: "geolocation" })
-          .then((res) => {
-            if (res.state === "granted") getCurrentLocation();
-          })
-          .catch(() => getCurrentLocation());
-      } catch (e) {
-        getCurrentLocation();
-      }
-    }, LOCATION_CHECK_INTERVAL_MS);
-  };
-
-  const stopLocationBackgroundLoop = () => {
-    if (locationCheckIntervalId.value) {
-      clearInterval(locationCheckIntervalId.value);
-      locationCheckIntervalId.value = null;
-    }
-  };
-
-  // Start/stop based on current permission
-  if (locationEnabled.value) startLocationBackgroundLoop();
-
-  // Watch changes to locationEnabled to manage the loop
-  const onLocationEnabledChange = (val) => {
-    if (val) startLocationBackgroundLoop();
-    else stopLocationBackgroundLoop();
-  };
-
-  // expose for cleanup
-  window.__phenom_alerts_start_location_loop = startLocationBackgroundLoop;
-  window.__phenom_alerts_stop_location_loop = stopLocationBackgroundLoop;
-
-  // Listen to storage changes (SettingsPage updates localStorage)
-  const onStorage = (e) => {
-    if (e.key !== "phenom_settings") return;
-    const prev = nearbyAlertsEnabled.value;
-    loadSettingsFromStorage();
-    // connect/disconnect when toggle changed
-    if (!prev && nearbyAlertsEnabled.value) connect();
-    if (prev && !nearbyAlertsEnabled.value) {
-      disconnect();
-      alerts.value = [];
-    }
-  };
-
-  window.addEventListener("storage", onStorage);
-
-  // watch permission changes via Permissions API (if supported)
+/**
+ * Save alert radius to localStorage for persistence
+ */
+const saveAlertRadius = () => {
   try {
-    navigator.permissions?.query({ name: "geolocation" }).then((perm) => {
-      perm.onchange = () => {
-        locationEnabled.value = perm.state === "granted";
-        onLocationEnabledChange(locationEnabled.value);
-      };
-    });
-  } catch (e) {}
-
-  // store listener for cleanup
-  window.__phenom_alerts_storage_handler = onStorage;
-});
-
-onUnmounted(() => {
-  // remove storage listener
-  const handler = window.__phenom_alerts_storage_handler;
-  if (handler) window.removeEventListener("storage", handler);
-  // cleanup location loop
-  if (typeof window.__phenom_alerts_stop_location_loop === "function") {
-    window.__phenom_alerts_stop_location_loop();
+    const raw = localStorage.getItem("phenom_settings");
+    const s = raw ? JSON.parse(raw) : {};
+    s.alertRadius = alertRadius.value;
+    localStorage.setItem("phenom_settings", JSON.stringify(s));
+    // Dispatch custom event for same-tab listeners (SettingsPage)
+    window.dispatchEvent(new CustomEvent("phenom-settings-changed"));
+  } catch (e) {
+    // ignore
   }
-  // Ne pas déconnecter le WebSocket ici — la connexion est gérée globalement
-});
+};
 
+/**
+ * Send current location to backend
+ */
+const sendLocationToBackend = async () => {
+  if (!userLocation.value) return;
+
+  try {
+    const token = authStore.token;
+    if (!token) return;
+
+    const response = await fetch(
+      `${import.meta.env.VITE_API_BASE_URL || ""}/api/v1/users/me/location`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          lat: userLocation.value.lat,
+          lng: userLocation.value.lng,
+          radiusKm: alertRadius.value,
+        }),
+      }
+    );
+
+    if (response.ok) {
+      const result = await response.json();
+      // If new notifications were created, refresh the list
+      if (result.data?.newNotifications > 0) {
+        await notificationStore.refresh();
+      }
+    }
+
+    // Send position and settings to service worker for background sync
+    sendToServiceWorker("STORE_POSITION", userLocation.value);
+    sendToServiceWorker("STORE_SETTINGS", { alertRadius: alertRadius.value });
+  } catch (e) {
+    console.warn("Failed to send location to backend", e);
+  }
+
+  // Record last check time locally
+  try {
+    localStorage.setItem("phenom_last_location_check", new Date().toISOString());
+  } catch (e) {}
+};
+
+/**
+ * Send message to service worker
+ */
+const sendToServiceWorker = (type, payload) => {
+  if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({ type, payload });
+  }
+};
+
+/**
+ * Get current location and send to backend
+ */
 const getCurrentLocation = () => {
   navigator.geolocation.getCurrentPosition(
     (position) => {
@@ -451,38 +413,7 @@ const getCurrentLocation = () => {
         lat: position.coords.latitude,
         lng: position.coords.longitude,
       };
-      fetchAlerts();
-      // send location to backend for proximity checks (if authenticated)
-      (async () => {
-        try {
-          const token = authStore.token;
-          if (!token) return;
-          await fetch(
-            `${import.meta.env.VITE_API_BASE_URL || ""}/api/v1/users/me/location`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({
-                lat: userLocation.value.lat,
-                lng: userLocation.value.lng,
-                radiusKm: alertRadius.value,
-              }),
-            }
-          );
-        } catch (e) {
-          console.warn("Failed to send location to backend", e);
-        }
-      })();
-      // record last check time locally
-      try {
-        localStorage.setItem(
-          "phenom_last_location_check",
-          new Date().toISOString()
-        );
-      } catch (e) {}
+      sendLocationToBackend();
     },
     (error) => {
       console.error("Location error:", error);
@@ -490,6 +421,9 @@ const getCurrentLocation = () => {
   );
 };
 
+/**
+ * Request location permission
+ */
 const requestLocation = async () => {
   try {
     const position = await new Promise((resolve, reject) => {
@@ -505,159 +439,211 @@ const requestLocation = async () => {
     };
     locationEnabled.value = true;
 
-    await fetchAlerts();
+    // Send location and fetch notifications
+    await sendLocationToBackend();
+    await notificationStore.refresh();
+
+    // Register for background sync if supported
+    registerBackgroundSync();
   } catch (error) {
     console.error("Location permission denied:", error);
   }
 };
 
-const fetchAlerts = async () => {
-  loading.value = true;
+/**
+ * Register background sync for location updates
+ */
+const registerBackgroundSync = async () => {
+  if ("serviceWorker" in navigator && "periodicSync" in ServiceWorkerRegistration.prototype) {
+    try {
+      const registration = await navigator.serviceWorker.ready;
 
-  try {
-    // TODO: Replace with actual API call
-    // const response = await alertService.getAlerts({
-    //   lat: userLocation.value?.lat,
-    //   lng: userLocation.value?.lng,
-    //   radius: alertRadius.value
-    // })
+      // Check permission
+      const status = await navigator.permissions.query({
+        name: "periodic-background-sync",
+      });
 
-    // Mock data for now
-    alerts.value = [];
-  } catch (error) {
-    console.error("Fetch alerts error:", error);
-  } finally {
-    loading.value = false;
-  }
-};
-
-// Helper: distance (haversine) in km
-const computeDistanceKm = (lat1, lon1, lat2, lon2) => {
-  if ([lat1, lon1, lat2, lon2].some((v) => v === null || v === undefined))
-    return null;
-  const toRad = (v) => (v * Math.PI) / 180;
-  const R = 6371; // km
-  const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(lat1)) *
-      Math.cos(toRad(lat2)) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-};
-
-// Track processed message IDs to avoid duplicates
-const processedMessageIds = ref(new Set());
-
-// Watch WebSocket messages and create alerts when an observation event is received
-watch(
-  wsMessages,
-  (msgs) => {
-    if (!msgs || !msgs.length) return;
-    const latest = msgs[msgs.length - 1];
-
-    // Create unique message ID to avoid processing same message twice
-    const msgId = latest.receivedAt || JSON.stringify(latest);
-    if (processedMessageIds.value.has(msgId)) return;
-    processedMessageIds.value.add(msgId);
-
-    // Support different shapes depending on source: either wrapper { channel, data, receivedAt }
-    // or raw message { type, data, timestamp }
-    const channel = latest.channel;
-    const payload = latest.data || latest;
-
-    // Only handle observations channel / observation events
-    if (channel === "observations" || payload?.type?.includes("observation")) {
-      const event = payload;
-      const eventType = event.type || "";
-      
-      // Process new observations and nearby alerts
-      // Backend sends "observation:created" for new obs and "observation:nearby" for proximity alerts
-      if (!eventType.includes("created") && !eventType.includes("nearby")) return;
-      
-      const obs = event.data || event;
-      const obsId = obs?._id || obs?.id;
-
-      // Check if we already have this observation in alerts
-      if (obsId && alerts.value.some((a) => a.id === obsId)) return;
-
-      // If observation has coordinates, compute distance
-      let distance = null;
-      const obsCoords =
-        obs?.coordinates || obs?.location?.coordinates || obs?.locationPoint?.coordinates || obs?.coords;
-      if (userLocation.value && obsCoords) {
-        // MongoDB stores as [lng, lat], so we need to handle both formats
-        let lat, lng;
-        if (Array.isArray(obsCoords)) {
-          // GeoJSON format: [lng, lat]
-          lng = obsCoords[0];
-          lat = obsCoords[1];
-        } else {
-          lat = obsCoords.lat ?? obsCoords.latitude;
-          lng = obsCoords.lng ?? obsCoords.longitude;
-        }
-        
-        if (lat !== undefined && lng !== undefined) {
-          distance = computeDistanceKm(
-            userLocation.value.lat,
-            userLocation.value.lng,
-            lat,
-            lng
-          );
-          if (distance !== null) distance = Math.round(distance * 10) / 10; // 1 decimal
-        }
+      if (status.state === "granted") {
+        await registration.periodicSync.register("location-sync", {
+          minInterval: 30 * 60 * 1000, // 30 minutes minimum
+        });
+        console.log("Periodic background sync registered for location");
       }
-
-      // Only add alert if within radius (or no location available)
-      if (distance === null || distance <= alertRadius.value) {
-        const alertId = obsId || `alert_${Date.now()}`;
-        const newAlert = {
-          id: alertId,
-          observation: {
-            ...obs,
-            _id: obsId,
-            title: obs.title || obs.phenomenonType || "Observation",
-            imageUrl: obs.images?.[0]?.url || obs.images?.[0] || null,
-          },
-          message: `Nouvelle observation à ${distance !== null ? distance + " km" : "proximité"}`,
-          distance: distance !== null ? distance : undefined,
-          createdAt:
-            event.timestamp || latest.receivedAt || new Date().toISOString(),
-          read: false,
-        };
-        
-        // Add to alerts list (create new array for reactivity)
-        alerts.value = [newAlert, ...alerts.value];
-        
-        // Show native browser/phone notification
-        showNativeNotification(newAlert);
-      }
+    } catch (err) {
+      console.warn("Periodic sync not available:", err);
     }
   }
-);
+};
 
-const viewAlert = (alert) => {
-  // Mark as read
-  alert.read = true;
+/**
+ * Start periodic location checks
+ */
+const startLocationBackgroundLoop = () => {
+  if (locationCheckIntervalId.value) clearInterval(locationCheckIntervalId.value);
+  if (!navigator.geolocation || !locationEnabled.value) return;
 
-  // Navigate to observation
-  if (alert.observation?._id || alert.observationId) {
-    router.push(
-      `/observation/${alert.observation?._id || alert.observationId}`
-    );
+  // Run immediately
+  getCurrentLocation();
+
+  // Set interval
+  locationCheckIntervalId.value = setInterval(() => {
+    try {
+      navigator.permissions
+        ?.query({ name: "geolocation" })
+        .then((res) => {
+          if (res.state === "granted") getCurrentLocation();
+        })
+        .catch(() => getCurrentLocation());
+    } catch (e) {
+      getCurrentLocation();
+    }
+  }, LOCATION_CHECK_INTERVAL_MS);
+};
+
+/**
+ * Stop periodic location checks
+ */
+const stopLocationBackgroundLoop = () => {
+  if (locationCheckIntervalId.value) {
+    clearInterval(locationCheckIntervalId.value);
+    locationCheckIntervalId.value = null;
   }
 };
 
-const markAllRead = () => {
-  alerts.value.forEach((alert) => {
-    alert.read = true;
-  });
-  // TODO: API call to mark all read
+// Watch alert radius changes and persist + send to backend
+watch(alertRadius, (newRadius, oldRadius) => {
+  if (newRadius !== oldRadius) {
+    saveAlertRadius();
+    // Debounce sending to backend
+    if (userLocation.value) {
+      sendLocationToBackend();
+    }
+  }
+});
+
+// Watch WebSocket messages for real-time notification updates
+watch(wsMessages, (msgs) => {
+  if (!msgs || !msgs.length) return;
+  const latest = msgs[msgs.length - 1];
+
+  const channel = latest.channel;
+  const payload = latest.data || latest;
+
+  // Handle nearby observation events from WebSocket
+  if (channel === "observations" || payload?.type?.includes("observation")) {
+    const eventType = payload.type || "";
+
+    if (eventType.includes("nearby")) {
+      // New notification from backend - refresh the list to get persisted version
+      notificationStore.refresh();
+    }
+  }
+});
+
+onMounted(async () => {
+  // Check if location is already enabled
+  if (navigator.geolocation) {
+    navigator.permissions?.query({ name: "geolocation" }).then((result) => {
+      locationEnabled.value = result.state === "granted";
+      if (locationEnabled.value) {
+        getCurrentLocation();
+      }
+    });
+  }
+
+  // Load settings
+  loadSettingsFromStorage();
+
+  // Fetch notifications from API
+  await notificationStore.fetchNotifications();
+
+  // Connect WebSocket for real-time updates
+  if (nearbyAlertsEnabled.value) {
+    connect();
+  }
+
+  // Start periodic location checks if allowed
+  if (locationEnabled.value) {
+    startLocationBackgroundLoop();
+  }
+
+  // Watch permission changes
+  try {
+    navigator.permissions?.query({ name: "geolocation" }).then((perm) => {
+      perm.onchange = () => {
+        locationEnabled.value = perm.state === "granted";
+        if (locationEnabled.value) {
+          startLocationBackgroundLoop();
+        } else {
+          stopLocationBackgroundLoop();
+        }
+      };
+    });
+  } catch (e) {}
+
+  // Listen to storage changes (SettingsPage updates localStorage)
+  const onStorage = (e) => {
+    if (e.key !== "phenom_settings") return;
+    loadSettingsFromStorage();
+  };
+  window.addEventListener("storage", onStorage);
+  
+  // Also listen to custom event for same-tab updates
+  const onSettingsChange = () => {
+    loadSettingsFromStorage();
+  };
+  window.addEventListener("phenom-settings-changed", onSettingsChange);
+  window.__phenom_alerts_storage_handler = onStorage;
+  window.__phenom_alerts_settings_handler = onSettingsChange;
+});
+
+onUnmounted(() => {
+  // Remove storage listener
+  const handler = window.__phenom_alerts_storage_handler;
+  if (handler) window.removeEventListener("storage", handler);
+  
+  // Remove custom event listener
+  const settingsHandler = window.__phenom_alerts_settings_handler;
+  if (settingsHandler) window.removeEventListener("phenom-settings-changed", settingsHandler);
+
+  // Stop location loop
+  stopLocationBackgroundLoop();
+});
+
+/**
+ * View an alert and mark as read
+ */
+const viewAlert = async (alert) => {
+  // Mark as read via API
+  if (!alert.read) {
+    try {
+      await notificationStore.markAsRead(alert.id);
+    } catch (e) {
+      console.error("Failed to mark as read:", e);
+    }
+  }
+
+  // Navigate to observation
+  const observationId = alert.observation?._id || alert.observationId;
+  if (observationId) {
+    router.push(`/observation/${observationId}`);
+  }
 };
 
+/**
+ * Mark all alerts as read
+ */
+const markAllRead = async () => {
+  try {
+    await notificationStore.markAllAsRead();
+  } catch (e) {
+    console.error("Failed to mark all as read:", e);
+  }
+};
+
+/**
+ * Format relative time
+ */
 const formatTime = (date) => {
   if (!date) return "";
 
@@ -675,7 +661,6 @@ const formatTime = (date) => {
 </script>
 
 <style scoped>
-
 .alerts-page {
   display: flex;
   flex-direction: column;

@@ -31,6 +31,13 @@ const pushSubscriptionSchema = new mongoose.Schema({
     lng: { type: Number },
     updatedAt: { type: Date }
   },
+  // Alert radius in km for proximity notifications
+  alertRadiusKm: {
+    type: Number,
+    default: 50,
+    min: 1,
+    max: 500
+  },
   createdAt: { type: Date, default: Date.now }
 });
 

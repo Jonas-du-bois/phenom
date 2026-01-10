@@ -105,7 +105,7 @@
           v-if="showAlertRadiusModal"
           :value="settings.alertRadius"
           :min="1"
-          :max="200"
+          :max="500"
           @update:value="(v) => (settings.alertRadius = v)"
           @confirm="onAlertRadiusConfirm"
           @cancel="onAlertRadiusCancel"
@@ -499,11 +499,15 @@ const handleAppInstalled = () => {
 onMounted(() => {
   window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
   window.addEventListener("appinstalled", handleAppInstalled);
+  
+  // Listen for settings changes from AlertsPage
+  window.addEventListener("phenom-settings-changed", handleSettingsChanged);
 });
 
 onUnmounted(() => {
   window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
   window.removeEventListener("appinstalled", handleAppInstalled);
+  window.removeEventListener("phenom-settings-changed", handleSettingsChanged);
   deferredPrompt.value = null;
   showInstallButton.value = false;
 });
@@ -522,17 +526,49 @@ async function promptInstall() {
   }
 }
 
-const loadSettings = () => {
+const loadSettings = (syncToSW = true) => {
   const saved = localStorage.getItem("phenom_settings");
   if (saved) {
     try {
       Object.assign(settings, JSON.parse(saved));
     } catch {}
   }
+  // Sync settings to service worker on load (only if requested)
+  if (syncToSW) {
+    sendSettingsToServiceWorker();
+  }
+};
+
+// Wrapper for event listener to avoid triggering SW sync loop
+const handleSettingsChanged = () => {
+  loadSettings(false);
 };
 
 const saveSettings = () => {
   localStorage.setItem("phenom_settings", JSON.stringify(settings));
+  // Sync settings to service worker for background location updates
+  sendSettingsToServiceWorker();
+  // Dispatch custom event for same-tab listeners (AlertsPage)
+  window.dispatchEvent(new CustomEvent("phenom-settings-changed"));
+};
+
+// Send settings to service worker for background sync
+const sendSettingsToServiceWorker = async () => {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    const swReg = await navigator.serviceWorker.ready;
+    if (swReg.active) {
+      swReg.active.postMessage({
+        type: 'STORE_SETTINGS',
+        settings: {
+          nearbyAlerts: settings.nearbyAlerts,
+          alertRadius: settings.alertRadius
+        }
+      });
+    }
+  } catch (e) {
+    console.warn('Failed to sync settings to service worker', e);
+  }
 };
 
 // Web Push subscription
