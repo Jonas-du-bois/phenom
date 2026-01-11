@@ -468,7 +468,7 @@ watch(
     messages.forEach((message) => {
       if (message.channel !== "comments") return;
       
-      const { type, data } = message.data || {};
+      const { type, data } = message.data || { /* empty object for destructuring */ };
       const observationId = route.params.id;
       
       // Vérifier que le commentaire concerne cette observation

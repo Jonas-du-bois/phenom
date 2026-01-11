@@ -209,7 +209,9 @@
             >
               <span>Bio</span>
               <div class="flex items-center gap-2 text-white/40">
-                <span class="truncate max-w-[150px]">{{ user?.bio || 'Non définie' }}</span>
+                <span class="truncate max-w-[150px]">{{
+                  user?.bio || "Non définie"
+                }}</span>
                 <svg
                   class="w-5 h-5"
                   fill="none"
@@ -459,7 +461,6 @@ const authStore = useAuthStore();
 const userStore = useUserStore();
 
 const { user } = storeToRefs(authStore);
-const isAdmin = computed(() => user.value?.role === "admin");
 
 const avatarInput = ref(null);
 const selectedAvatarFile = ref(null);
@@ -499,7 +500,7 @@ const handleAppInstalled = () => {
 onMounted(() => {
   window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
   window.addEventListener("appinstalled", handleAppInstalled);
-  
+
   // Listen for settings changes from AlertsPage
   window.addEventListener("phenom-settings-changed", handleSettingsChanged);
 });
@@ -516,7 +517,6 @@ async function promptInstall() {
   if (!deferredPrompt.value) return;
   try {
     deferredPrompt.value.prompt();
-    const choiceResult = await deferredPrompt.value.userChoice;
     // Masquer le bouton après réponse
     showInstallButton.value = false;
     deferredPrompt.value = null;
@@ -531,7 +531,9 @@ const loadSettings = (syncToSW = true) => {
   if (saved) {
     try {
       Object.assign(settings, JSON.parse(saved));
-    } catch {}
+    } catch {
+      // empty catch block: ignore error
+    }
   }
   // Sync settings to service worker on load (only if requested)
   if (syncToSW) {
@@ -554,20 +556,20 @@ const saveSettings = () => {
 
 // Send settings to service worker for background sync
 const sendSettingsToServiceWorker = async () => {
-  if (!('serviceWorker' in navigator)) return;
+  if (!("serviceWorker" in navigator)) return;
   try {
     const swReg = await navigator.serviceWorker.ready;
     if (swReg.active) {
       swReg.active.postMessage({
-        type: 'STORE_SETTINGS',
+        type: "STORE_SETTINGS",
         settings: {
           nearbyAlerts: settings.nearbyAlerts,
-          alertRadius: settings.alertRadius
-        }
+          alertRadius: settings.alertRadius,
+        },
       });
     }
   } catch (e) {
-    console.warn('Failed to sync settings to service worker', e);
+    console.warn("Failed to sync settings to service worker", e);
   }
 };
 
@@ -686,7 +688,7 @@ async function unsubscribeFromPush(subscription) {
 // Auto-subscribe when any notification toggle is set to true
 watch(
   () => [settings.commentNotifications, settings.newObservations],
-  async (vals, oldVals) => {
+  async (vals) => {
     const [comments, newObs] = vals;
     const any = comments || newObs;
     if (any) {
@@ -695,7 +697,9 @@ watch(
         const swReg = await navigator.serviceWorker.ready;
         const existing = await swReg.pushManager.getSubscription();
         if (!existing) await subscribeToPush();
-      } catch (e) {}
+      } catch (e) {
+        // empty catch block: ignore error
+      }
     }
   }
 );
@@ -800,7 +804,9 @@ const cancelPendingAvatar = async () => {
   try {
     if (pendingCropped.value.cacheKey)
       await deleteCroppedImage(pendingCropped.value.cacheKey);
-  } catch {}
+  } catch {
+    // empty catch block: ignore error
+  }
   URL.revokeObjectURL(pendingCropped.value.previewUrl);
   pendingCropped.value = null;
 };
@@ -813,7 +819,9 @@ const uploadPendingAvatar = async () => {
     if (pendingCropped.value.cacheKey) {
       try {
         await deleteCroppedImage(pendingCropped.value.cacheKey);
-      } catch {}
+      } catch {
+        // empty catch block: ignore error
+      }
     }
   } catch (err) {
     // keep cached file for retry
@@ -828,7 +836,6 @@ const editUsername = () => {
   showEditProfileModal.value = true;
 };
 
-
 const changePassword = () => {
   showChangePasswordModal.value = true;
 };
@@ -837,21 +844,21 @@ const onEditProfileConfirm = async (payload) => {
   try {
     // L'API accepte name, email et bio comme champs optionnels
     const dataToUpdate = {};
-    if (payload.name && payload.name.trim() !== '') {
+    if (payload.name && payload.name.trim() !== "") {
       dataToUpdate.name = payload.name.trim();
     }
     if (payload.bio !== undefined && payload.bio !== null) {
       dataToUpdate.bio = payload.bio.trim();
     }
-    
-    console.log('Données envoyées à l\'API:', dataToUpdate);
-    
+
+    console.log("Données envoyées à l'API:", dataToUpdate);
+
     await userStore.updateProfile(dataToUpdate);
     await authStore.fetchUser();
     showEditProfileModal.value = false;
     alert("Profil mis à jour");
   } catch (err) {
-    console.error('Erreur mise à jour profil:', err);
+    console.error("Erreur mise à jour profil:", err);
     alert(err?.response?.data?.message || err?.message || "Erreur mise à jour");
   }
 };
@@ -900,11 +907,11 @@ const onAlertRadiusConfirm = (value) => {
 const onAlertRadiusCancel = () => {
   showAlertRadiusModal.value = false;
 };
-
+/*
 const setLanguage = () => {
   // TODO: Show language picker
 };
-
+*/
 const handleLogout = async () => {
   await authStore.logout();
   router.push("/login");
@@ -920,7 +927,6 @@ const confirmDeleteAccount = () => {
   }
 };
 </script>
-
 
 <style scoped>
 .settings-page {

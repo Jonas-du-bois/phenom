@@ -135,7 +135,9 @@ onMounted(async () => {
         mapCenter.value = [coords.lat, coords.lng];
         mapZoom.value = 14;
       }
-    } catch {}
+    } catch {
+      // empty catch block: ignore error
+    }
   }
 
   // Try to get user location
@@ -145,7 +147,9 @@ onMounted(async () => {
         mapCenter.value = [position.coords.latitude, position.coords.longitude];
         mapZoom.value = 10;
       },
-      () => {},
+      () => {
+        // empty error callback: ignore geolocation error
+      },
       { timeout: 5000 }
     );
   }
@@ -153,6 +157,7 @@ onMounted(async () => {
   await fetchMapObservations();
 });
 const fetchMapObservations = async (opts = {}) => {
+  // empty default opts
   const { limit = 150 } = opts;
   const params = {
     ...filters.value,

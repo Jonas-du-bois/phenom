@@ -1,5 +1,6 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <!-- ========================================================================
-     TESTS PAGE - API Testing Center for development and debugging
+  TEST PAGE - API Testing Center for development and debugging
      
      This is a comprehensive testing interface for all backend API endpoints.
      It allows developers to manually test each endpoint with custom inputs
@@ -1521,10 +1522,8 @@ import { useWebSocket } from "../composables/useWebSocket";
 import {
   getAuthToken,
   saveAuthToken,
-  removeAuthToken,
   getUserData,
   saveUserData,
-  removeUserData,
   clearAuthData,
   validateEmail,
   validatePassword,
@@ -1534,8 +1533,6 @@ import {
   formatUserForDisplay,
   isAdmin,
   canAccessAdminPanel,
-  formatDate,
-  formatRelativeTime,
 } from "../utils";
 
 import OBSERVER_TYPES from "../constants/observerTypes";

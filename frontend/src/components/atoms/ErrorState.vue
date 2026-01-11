@@ -40,6 +40,7 @@ defineOptions({ name: "ErrorState" });
 // =============================================================================
 // PROPS DEFINITION
 // =============================================================================
+// eslint-disable-next-line no-unused-vars
 const props = defineProps({
   // Error title/heading
   title: {

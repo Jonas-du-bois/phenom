@@ -41,6 +41,7 @@ defineOptions({ name: "TimePicker" });
 // =============================================================================
 // PROPS DEFINITION
 // =============================================================================
+// eslint-disable-next-line no-unused-vars
 const props = defineProps({
   // Time value in HH:MM format (v-model binding)
   modelValue: {

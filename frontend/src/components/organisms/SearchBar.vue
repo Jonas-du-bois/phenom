@@ -141,6 +141,7 @@ import { ref, computed, watch } from "vue";
 
 defineOptions({ name: "SearchBar" });
 
+// eslint-disable-next-line no-unused-vars
 const props = defineProps({
   modelValue: {
     type: String,
@@ -174,7 +175,6 @@ const emit = defineEmits([
 const inputRef = ref(null);
 const query = ref(props.modelValue);
 const isFocused = ref(false);
-let debounceTimer = null;
 
 const showSuggestions = computed(
   () => isFocused.value && query.value.length >= 2

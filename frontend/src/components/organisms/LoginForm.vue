@@ -250,6 +250,7 @@ import { TextInput, BaseButton } from "@/components/atoms";
 
 defineOptions({ name: "LoginForm" });
 
+// eslint-disable-next-line no-unused-vars
 const props = defineProps({
   loading: {
     type: Boolean,

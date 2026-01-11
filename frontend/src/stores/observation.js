@@ -191,7 +191,9 @@ export const useObservationStore = defineStore("observation", () => {
   const saveCacheToStorage = () => {
     try {
       localStorage.setItem(CACHE_KEY, JSON.stringify(mapCache.value));
-    } catch {}
+    } catch {
+      // empty catch block: ignore error
+    }
   };
 
   /** Load cache from localStorage */
@@ -202,7 +204,9 @@ export const useObservationStore = defineStore("observation", () => {
         const parsed = JSON.parse(raw);
         mapCache.value = { ...mapCache.value, ...parsed };
       }
-    } catch {}
+    } catch {
+      // empty catch block: ignore error
+    }
   };
 
   /** Create stable JSON string for object comparison (sorted keys) */
@@ -233,7 +237,9 @@ export const useObservationStore = defineStore("observation", () => {
   // Initialize cache from localStorage on module load
   try {
     loadCacheFromStorage();
-  } catch {}
+  } catch {
+    // empty catch block: ignore error
+  }
 
   const fetchObservationsInBounds = async (filters = {}, opts = {}) => {
     const { limit = 150, page = 1, force = false } = opts;
@@ -292,7 +298,9 @@ export const useObservationStore = defineStore("observation", () => {
       };
       try {
         saveCacheToStorage();
-      } catch {}
+      } catch {
+        // empty catch block: ignore error
+      }
 
       return list;
     } catch (err) {

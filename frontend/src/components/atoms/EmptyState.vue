@@ -54,6 +54,7 @@ defineOptions({ name: "EmptyState" });
 // =============================================================================
 // PROPS DEFINITION
 // =============================================================================
+// eslint-disable-next-line no-unused-vars
 const props = defineProps({
   // Main title/heading
   title: {

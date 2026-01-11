@@ -40,6 +40,7 @@ defineOptions({ name: "BaseToggle" });
 // =============================================================================
 // PROPS DEFINITION
 // =============================================================================
+// eslint-disable-next-line no-unused-vars
 const props = defineProps({
   // Current toggle state (v-model binding)
   modelValue: {

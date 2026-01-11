@@ -16,7 +16,7 @@
  * const { connect, disconnect, connected, messages } = useWebSocket();
  * await connect(authToken);
  */
-import { ref, onUnmounted, getCurrentInstance } from "vue";
+import { ref } from "vue";
 import { WSClient } from "wsmini";
 
 // Singleton instance so multiple calls to `useWebSocket()` share the same client/state

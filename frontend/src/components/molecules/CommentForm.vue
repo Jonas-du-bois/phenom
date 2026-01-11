@@ -44,6 +44,7 @@ defineOptions({ name: "CommentForm" });
 // ============================================================================
 // PROPS DEFINITION
 // ============================================================================
+// eslint-disable-next-line no-unused-vars
 const props = defineProps({
   // Shows loading spinner on submit button when true
   loading: {

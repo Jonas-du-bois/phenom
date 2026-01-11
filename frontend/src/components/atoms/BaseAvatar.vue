@@ -42,6 +42,7 @@ defineOptions({ name: "BaseAvatar" });
 // =============================================================================
 // PROPS DEFINITION
 // =============================================================================
+// eslint-disable-next-line no-unused-vars
 const props = defineProps({
   // URL of the user's profile image
   src: {
@@ -74,12 +75,12 @@ const props = defineProps({
 const initials = computed(() => {
   if (!props.name) return "?";
   return props.name
-    .split(" ")              // Split name into words
-    .filter((word) => word)  // Remove empty strings (handles double spaces)
-    .map((word) => word[0])  // Take first letter of each word
-    .join("")                // Join letters together
-    .toUpperCase()           // Convert to uppercase
-    .slice(0, 2);            // Limit to 2 characters max
+    .split(" ") // Split name into words
+    .filter((word) => word) // Remove empty strings (handles double spaces)
+    .map((word) => word[0]) // Take first letter of each word
+    .join("") // Join letters together
+    .toUpperCase() // Convert to uppercase
+    .slice(0, 2); // Limit to 2 characters max
 });
 
 // =============================================================================
@@ -99,11 +100,11 @@ const imageError = ref(false);
  * - text-X: Controls font size for initials
  */
 const sizeClasses = {
-  xs: "w-6 h-6 text-[0.5rem]",   // 24px - Extra small
-  sm: "w-8 h-8 text-xs",         // 32px - Small
-  md: "w-10 h-10 text-sm",       // 40px - Medium (default)
-  lg: "w-14 h-14 text-base",     // 56px - Large
-  xl: "w-20 h-20 text-xl",       // 80px - Extra large
+  xs: "w-6 h-6 text-[0.5rem]", // 24px - Extra small
+  sm: "w-8 h-8 text-xs", // 32px - Small
+  md: "w-10 h-10 text-sm", // 40px - Medium (default)
+  lg: "w-14 h-14 text-base", // 56px - Large
+  xl: "w-20 h-20 text-xl", // 80px - Extra large
 };
 </script>
 

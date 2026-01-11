@@ -45,6 +45,7 @@ defineOptions({ name: "BaseButton" });
 // =============================================================================
 // PROPS DEFINITION
 // =============================================================================
+// eslint-disable-next-line no-unused-vars
 const props = defineProps({
   // Visual style variant
   variant: {
@@ -114,9 +115,9 @@ const variantClasses = {
  * Tailwind classes for each size
  */
 const sizeClasses = {
-  sm: "px-3 py-2 text-xs",       // Small - compact buttons
-  md: "px-4 py-3 text-sm",       // Medium - default
-  lg: "px-6 py-4 text-base",     // Large - prominent buttons
+  sm: "px-3 py-2 text-xs", // Small - compact buttons
+  md: "px-4 py-3 text-sm", // Medium - default
+  lg: "px-6 py-4 text-base", // Large - prominent buttons
   full: "w-full px-4 py-4 text-sm", // Full width - form submissions
 };
 </script>

@@ -6,7 +6,7 @@
  *
  * @module composables/useMap
  */
-import { ref, computed } from "vue";
+import { ref } from "vue";
 
 export function useMap() {
   const map = ref(null);

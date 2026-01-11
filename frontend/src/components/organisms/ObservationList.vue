@@ -56,11 +56,7 @@
 
     <!-- Loading skeleton -->
     <template v-if="loading && !observations.length">
-      <div
-        v-for="n in 3"
-        :key="n"
-        class="observation-skeleton mb-4"
-      >
+      <div v-for="n in 3" :key="n" class="observation-skeleton mb-4">
         <div class="surface-card rounded-2xl overflow-hidden">
           <!-- Header skeleton -->
           <div class="flex items-center gap-3 p-4">
@@ -140,6 +136,7 @@ import { LoadingSpinner, EmptyState } from "@/components/atoms";
 
 defineOptions({ name: "ObservationList" });
 
+// eslint-disable-next-line no-unused-vars
 const props = defineProps({
   observations: {
     type: Array,
@@ -236,7 +233,9 @@ const setupObserver = () => {
   if (observer) {
     try {
       observer.disconnect();
-    } catch (e) {}
+    } catch (e) {
+      // empty catch block: ignore error
+    }
     observer = null;
   }
 
@@ -258,7 +257,9 @@ const setupObserver = () => {
 
   try {
     observer.observe(loadMoreRef.value);
-  } catch (e) {}
+  } catch (e) {
+    // empty catch block: ignore error
+  }
 };
 
 onMounted(() => {
@@ -269,7 +270,9 @@ onUnmounted(() => {
   if (observer) {
     try {
       observer.disconnect();
-    } catch (e) {}
+    } catch (e) {
+      // empty catch block: ignore error
+    }
     observer = null;
   }
   if (intersectionDebounce) {

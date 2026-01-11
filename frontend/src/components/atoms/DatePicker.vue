@@ -45,6 +45,7 @@ defineOptions({ name: "DatePicker" });
 // =============================================================================
 // PROPS DEFINITION
 // =============================================================================
+// eslint-disable-next-line no-unused-vars
 const props = defineProps({
   // Date value in YYYY-MM-DD format (v-model binding)
   modelValue: {

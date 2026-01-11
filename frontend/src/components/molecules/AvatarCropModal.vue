@@ -182,6 +182,7 @@ import { saveCroppedImage } from "@/utils/avatarCache";
 // ============================================================================
 // file: The image File object to crop
 // src: Alternative direct URL source for the image
+// eslint-disable-next-line no-unused-vars
 const props = defineProps({
   file: [File, Object],
   src: String,

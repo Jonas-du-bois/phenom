@@ -27,7 +27,7 @@
   <header
     class="fixed left-0 right-0 z-40 mx-5"
     :style="{
-      top: 'calc(1rem + env(safe-area-inset-top, 0px))'
+      top: 'calc(1rem + env(safe-area-inset-top, 0px))',
     }"
   >
     <div class="liquid-glass-header rounded-2xl">
@@ -207,6 +207,7 @@ import { useRouter } from "vue-router";
 
 defineOptions({ name: "PageHeader" });
 
+// eslint-disable-next-line no-unused-vars
 const props = defineProps({
   title: {
     type: String,

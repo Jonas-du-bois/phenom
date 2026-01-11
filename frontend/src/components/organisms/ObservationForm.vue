@@ -80,7 +80,11 @@
               :key="index"
               class="relative aspect-square rounded-lg overflow-hidden bg-white/5"
             >
-              <img :src="preview" alt="Photo" class="w-full h-full object-cover" />
+              <img
+                :src="preview"
+                alt="Photo"
+                class="w-full h-full object-cover"
+              />
               <button
                 type="button"
                 class="absolute top-2 right-2 w-8 h-8 bg-red-500/90 hover:bg-red-500 rounded-full flex items-center justify-center transition-colors"
@@ -103,10 +107,7 @@
             </div>
           </div>
           <!-- Bouton d'ajout de photos -->
-          <div
-            class="media-zone"
-            @click="openMediaPicker"
-          >
+          <div class="media-zone" @click="openMediaPicker">
             <div class="upload-placeholder">
               <svg
                 class="upload-icon"
@@ -119,7 +120,13 @@
                   d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"
                 />
               </svg>
-              <p>{{ mediaPreviews.length > 0 ? 'Ajouter plus de photos' : 'Cliquez pour ajouter une photo' }}</p>
+              <p>
+                {{
+                  mediaPreviews.length > 0
+                    ? "Ajouter plus de photos"
+                    : "Cliquez pour ajouter une photo"
+                }}
+              </p>
               <span class="upload-hint">JPEG, PNG, WebP • Max 10MB</span>
             </div>
           </div>
@@ -381,10 +388,11 @@ import PHENOMENA from "@/constants/phenomena";
 
 defineOptions({ name: "ObservationForm" });
 
+// eslint-disable-next-line no-unused-vars
 const props = defineProps({
   initialData: {
     type: Object,
-    default: () => ({}),
+    default: () => ({ /* empty object for default */ }),
   },
   submitting: {
     type: Boolean,
@@ -440,8 +448,8 @@ onMounted(() => {
     // Charger les images existantes ou créer des previews pour les File objects
     if (props.initialData.media && Array.isArray(props.initialData.media)) {
       mediaPreviews.value = [];
-      props.initialData.media.forEach(item => {
-        if (typeof item === 'string') {
+      props.initialData.media.forEach((item) => {
+        if (typeof item === "string") {
           // URL existante (image du serveur)
           mediaPreviews.value.push(item);
         } else if (item instanceof File) {
@@ -463,7 +471,7 @@ watch(
       // Mettre à jour les previews avec les images existantes ou créer des object URLs
       if (data.media && Array.isArray(data.media)) {
         // Nettoyer les anciennes URLs créées localement
-        objectUrls.forEach(url => {
+        objectUrls.forEach((url) => {
           try {
             URL.revokeObjectURL(url);
           } catch (e) {
@@ -471,10 +479,10 @@ watch(
           }
         });
         objectUrls.length = 0;
-        
+
         mediaPreviews.value = [];
-        data.media.forEach(item => {
-          if (typeof item === 'string') {
+        data.media.forEach((item) => {
+          if (typeof item === "string") {
             // URL existante (image du serveur)
             mediaPreviews.value.push(item);
           } else if (item instanceof File) {
@@ -542,9 +550,9 @@ const handleMediaSelect = (e) => {
 
 const removeMediaAtIndex = (index) => {
   const item = mediaPreviews.value[index];
-  
+
   // Ne révoquer que les URLs créées localement (blob:), pas les URLs du serveur
-  if (item && typeof item === 'string' && item.startsWith('blob:')) {
+  if (item && typeof item === "string" && item.startsWith("blob:")) {
     try {
       URL.revokeObjectURL(item);
       const urlIndex = objectUrls.indexOf(item);
@@ -555,23 +563,23 @@ const removeMediaAtIndex = (index) => {
       /* ignore */
     }
   }
-  
+
   form.media.splice(index, 1);
   mediaPreviews.value.splice(index, 1);
-  
+
   emit("media-change", form.media);
 };
 
 const removeMedia = () => {
   // Nettoyer toutes les URLs
-  objectUrls.forEach(url => {
+  objectUrls.forEach((url) => {
     try {
       URL.revokeObjectURL(url);
     } catch (e) {
       /* ignore */
     }
   });
-  
+
   form.media = [];
   mediaPreviews.value = [];
   objectUrls.length = 0;
@@ -582,7 +590,7 @@ const removeMedia = () => {
 };
 
 onUnmounted(() => {
-  objectUrls.forEach(url => {
+  objectUrls.forEach((url) => {
     try {
       URL.revokeObjectURL(url);
     } catch (e) {

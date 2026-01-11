@@ -33,10 +33,13 @@
     </div>
 
     <!-- Map controls overlay -->
-    <div 
+    <div
       v-if="showControls"
       class="absolute right-4 z-[1000] flex flex-col gap-2"
-      :style="{ top: controlsTopOffset, right: 'calc(1rem + env(safe-area-inset-right, 0px))' }"
+      :style="{
+        top: controlsTopOffset,
+        right: 'calc(1rem + env(safe-area-inset-right, 0px))',
+      }"
     >
       <!-- Zoom controls -->
       <div
@@ -136,7 +139,10 @@
     <div
       v-if="observations.length > 0 && showBadge"
       class="absolute z-[1000] backdrop-blur-2xl bg-white/5 px-4 py-2.5 rounded-2xl border border-white/10 shadow-2xl hover:bg-white/10 transition-all duration-300"
-      :style="{ top: badgeTopOffset, left: 'calc(1rem + env(safe-area-inset-left, 0px))' }"
+      :style="{
+        top: badgeTopOffset,
+        left: 'calc(1rem + env(safe-area-inset-left, 0px))',
+      }"
     >
       <div class="flex items-center gap-2.5">
         <div class="relative">
@@ -159,10 +165,10 @@
       <div
         v-if="selectedObservation && showPopup"
         class="absolute z-[1000]"
-        :style="{ 
-          bottom: 'calc(6rem + env(safe-area-inset-bottom, 0px))', 
-          left: 'calc(1rem + env(safe-area-inset-left, 0px))', 
-          right: 'calc(1rem + env(safe-area-inset-right, 0px))' 
+        :style="{
+          bottom: 'calc(6rem + env(safe-area-inset-bottom, 0px))',
+          left: 'calc(1rem + env(safe-area-inset-left, 0px))',
+          right: 'calc(1rem + env(safe-area-inset-right, 0px))',
         }"
       >
         <MapPopup
@@ -186,6 +192,7 @@ import { getLeafletCoordinates } from "@/utils";
 
 defineOptions({ name: "ObservationMap" });
 
+// eslint-disable-next-line no-unused-vars
 const props = defineProps({
   observations: {
     type: Array,
@@ -228,12 +235,16 @@ const props = defineProps({
 });
 
 // Computed offsets based on compact mode
-const controlsTopOffset = computed(() => 
-  props.compact ? 'calc(1rem + env(safe-area-inset-top, 0px))' : 'calc(5.5rem + env(safe-area-inset-top, 0px))'
+const controlsTopOffset = computed(() =>
+  props.compact
+    ? "calc(1rem + env(safe-area-inset-top, 0px))"
+    : "calc(5.5rem + env(safe-area-inset-top, 0px))"
 );
 
-const badgeTopOffset = computed(() => 
-  props.compact ? 'calc(1rem + env(safe-area-inset-top, 0px))' : 'calc(6rem + env(safe-area-inset-top, 0px))'
+const badgeTopOffset = computed(() =>
+  props.compact
+    ? "calc(1rem + env(safe-area-inset-top, 0px))"
+    : "calc(6rem + env(safe-area-inset-top, 0px))"
 );
 
 const emit = defineEmits(["bounds-change", "marker-click"]);

@@ -50,6 +50,7 @@ defineOptions({ name: "FilterChip" });
 // ============================================================================
 // PROPS DEFINITION
 // ============================================================================
+// eslint-disable-next-line no-unused-vars
 const props = defineProps({
   // Text displayed on the chip
   label: {

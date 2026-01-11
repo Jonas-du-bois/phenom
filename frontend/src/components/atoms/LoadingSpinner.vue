@@ -35,6 +35,7 @@ defineOptions({ name: "LoadingSpinner" });
 // =============================================================================
 // PROPS DEFINITION
 // =============================================================================
+// eslint-disable-next-line no-unused-vars
 const props = defineProps({
   // Size variant
   size: {
@@ -56,16 +57,16 @@ const props = defineProps({
 
 // Size classes (Tailwind dimensions)
 const sizeClasses = {
-  sm: "w-4 h-4",   // 16px - inline/button loading
-  md: "w-6 h-6",   // 24px - default
+  sm: "w-4 h-4", // 16px - inline/button loading
+  md: "w-6 h-6", // 24px - default
   lg: "w-10 h-10", // 40px - section loading
   xl: "w-16 h-16", // 64px - full page loading
 };
 
 // Color classes
 const colorClasses = {
-  cyan: "text-[#00F0FF]",  // Brand color
-  white: "text-white",      // For dark backgrounds
+  cyan: "text-[#00F0FF]", // Brand color
+  white: "text-white", // For dark backgrounds
 };
 </script>
 

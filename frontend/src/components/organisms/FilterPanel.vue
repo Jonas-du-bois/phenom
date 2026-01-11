@@ -276,6 +276,7 @@ defineOptions({ name: "FilterPanel" });
 // ============================================================================
 // PROPS
 // ============================================================================
+// eslint-disable-next-line no-unused-vars
 const props = defineProps({
   /** Controls panel visibility */
   isOpen: {
@@ -290,7 +291,7 @@ const props = defineProps({
   /** Initial filter values to populate the form */
   initialFilters: {
     type: Object,
-    default: () => ({}),
+    default: () => ({ /* empty object for default */ }),
   },
 });
 

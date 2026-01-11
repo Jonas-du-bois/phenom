@@ -54,6 +54,7 @@ defineOptions({ name: "ImageGallery" });
 // ============================================================================
 // PROPS DEFINITION
 // ============================================================================
+// eslint-disable-next-line no-unused-vars
 const props = defineProps({
   // Array of images - can be URLs, objects with url, or File/Blob
   images: {
@@ -90,52 +91,6 @@ const createdObjectUrls = [];
  * @param {*} img - Image in any supported format
  * @returns {string|null} - Resolved URL or null
  */
-function resolveImageUrl(img) {
-  if (!img && img !== 0) return null;
-  if (typeof img === "string") return img;
-
-  // File or Blob (local preview) - create object URL
-  if (typeof File !== "undefined" && img instanceof File) {
-    const url = URL.createObjectURL(img);
-    createdObjectUrls.push(url);
-    return url;
-  }
-  if (typeof Blob !== "undefined" && img instanceof Blob) {
-    const url = URL.createObjectURL(img);
-    createdObjectUrls.push(url);
-    return url;
-  }
-
-  // Common API shapes
-  if (img.url && typeof img.url === "string") return img.url;
-  if (img.secure_url && typeof img.secure_url === "string")
-    return img.secure_url;
-  if (img.path && typeof img.path === "string") return img.path;
-  if (img.src && typeof img.src === "string") return img.src;
-  if (img.publicUrl && typeof img.publicUrl === "string") return img.publicUrl;
-  if (img.imageUrl && typeof img.imageUrl === "string") return img.imageUrl;
-  if (img.link && typeof img.link === "string") return img.link;
-
-  // Nested shapes (e.g., { url: { secure_url: '...' } })
-  if (img.url && typeof img.url === "object") {
-    if (typeof img.url.secure_url === "string") return img.url.secure_url;
-    if (typeof img.url.path === "string") return img.url.path;
-  }
-  if (
-    img.asset &&
-    typeof img.asset === "object" &&
-    typeof img.asset.url === "string"
-  )
-    return img.asset.url;
-
-  // Fallback: try to find any string property that looks like a URL
-  for (const key of Object.keys(img || {})) {
-    if (typeof img[key] === "string" && img[key].startsWith("http"))
-      return img[key];
-  }
-
-  return null;
-}
 
 // ============================================================================
 // COMPUTED PROPERTIES

@@ -84,7 +84,9 @@ const mapObservationToForm = (obs) => {
       const d = new Date(dateIso);
       date = d.toISOString().split("T")[0];
       time = d.toTimeString().split(" ")[0].slice(0, 5);
-    } catch {}
+    } catch {
+      // empty catch block: ignore error
+    }
   }
 
   const coords =
@@ -118,11 +120,11 @@ const mapObservationToForm = (obs) => {
 const extractImageUrls = (obs) => {
   // Gérer différents formats d'images
   const images = [];
-  
+
   // Si images est un tableau d'objets ou de strings
   if (obs.images && Array.isArray(obs.images)) {
-    obs.images.forEach(img => {
-      if (typeof img === 'string') {
+    obs.images.forEach((img) => {
+      if (typeof img === "string") {
         images.push(img);
       } else if (img && img.url) {
         images.push(img.url);
@@ -131,12 +133,12 @@ const extractImageUrls = (obs) => {
       }
     });
   }
-  
+
   // Si imageUrl existe (ancienne structure)
   if (obs.imageUrl && !images.includes(obs.imageUrl)) {
     images.push(obs.imageUrl);
   }
-  
+
   console.log("Images extraites:", images);
   return images;
 };
@@ -160,7 +162,7 @@ const load = async () => {
 };
 
 onMounted(() => load());
-
+// eslint-disable-next-line no-unused-vars
 const onMediaChange = (fileOrNull) => {
   // Hook kept for extensibility (ObservationForm manages preview)
 };
@@ -169,10 +171,12 @@ const onSubmit = async (data) => {
   submitting.value = true;
   try {
     const payload = { ...data };
-    const newFiles = payload.imageFile?.filter(item => item instanceof File) || [];
-    const existingUrls = payload.imageFile?.filter(item => typeof item === 'string') || [];
+    const newFiles =
+      payload.imageFile?.filter((item) => item instanceof File) || [];
+    const existingUrls =
+      payload.imageFile?.filter((item) => typeof item === "string") || [];
     delete payload.imageFile;
-    
+
     // Mettre à jour avec les URLs existantes conservées
     payload.images = existingUrls;
     await observationStore.updateObservation(id, payload);
@@ -183,7 +187,7 @@ const onSubmit = async (data) => {
     }
 
     toast.success("Observation mise à jour");
-    
+
     // Redirect to observation detail page
     await router.push({ name: "observation-detail", params: { id } });
   } catch (err) {

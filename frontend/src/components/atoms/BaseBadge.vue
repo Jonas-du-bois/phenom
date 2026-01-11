@@ -87,19 +87,19 @@ const emit = defineEmits(["remove"]);
  * - Solid text color
  */
 const variantClasses = {
-  default: "bg-white/5 border-white/20 text-white/70",      // Neutral/gray
+  default: "bg-white/5 border-white/20 text-white/70", // Neutral/gray
   cyan: "bg-[#00F0FF]/10 border-[#00F0FF]/30 text-[#00F0FF]", // Brand accent color
   success: "bg-green-500/10 border-green-500/30 text-green-500", // Positive/success
   warning: "bg-amber-500/10 border-amber-500/30 text-amber-500", // Warning/caution
-  error: "bg-red-500/10 border-red-500/30 text-red-500",     // Error/danger
+  error: "bg-red-500/10 border-red-500/30 text-red-500", // Error/danger
 };
 
 /**
  * Size classes for padding and font size
  */
 const sizeClasses = {
-  sm: "px-2 py-1 text-[0.65rem]",    // Small - compact badges
-  md: "px-3 py-1.5 text-xs",          // Medium - default size
+  sm: "px-2 py-1 text-[0.65rem]", // Small - compact badges
+  md: "px-3 py-1.5 text-xs", // Medium - default size
 };
 </script>
 

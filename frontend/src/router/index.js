@@ -16,8 +16,7 @@
  */
 
 import { createRouter, createWebHistory } from "vue-router";
-import { useAuthStore } from "@/stores/auth";
-import { getScrollPosition, saveScrollPosition, restoreScrollPosition } from "@/composables/usePageTransition";
+import { saveScrollPosition, restoreScrollPosition } from "@/composables/usePageTransition";
 
 // ============================================================================
 // AUTHENTICATION HELPERS

@@ -296,7 +296,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import { AppLayout } from "@/components/layout";
 import { PageHeader, SearchBar } from "@/components/organisms";
@@ -387,10 +387,11 @@ const fetchReports = async () => {
     loadingReports.value = false;
   }
 };
-
+/*
 const openUserMenu = (user) => {
   // TODO: Show user action menu
 };
+*/
 
 const viewObservation = (obs) => {
   router.push(`/observation/${obs._id || obs.id}`);
@@ -422,10 +423,11 @@ const dismissReport = async (report) => {
     // Error handled by store
   }
 };
-
+/*
 const takeAction = (report) => {
   // TODO: Show action menu for report
 };
+*/
 
 const formatDate = (date) => {
   if (!date) return "";

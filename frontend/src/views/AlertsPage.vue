@@ -125,15 +125,21 @@
               class="absolute right-0 top-full mt-2 w-64 bg-[#12151C] border border-white/10 rounded-xl p-4 shadow-xl z-50"
             >
               <div class="flex items-center justify-between mb-3">
-                <span class="text-xs text-white/40">{{ radiusOptions[0] }} km</span>
-                <span class="text-lg text-[#00F0FF] font-bold">{{ alertRadius }} km</span>
-                <span class="text-xs text-white/40">{{ radiusOptions[radiusOptions.length - 1] }} km</span>
+                <span class="text-xs text-white/40"
+                  >{{ radiusOptions[0] }} km</span
+                >
+                <span class="text-lg text-[#00F0FF] font-bold"
+                  >{{ alertRadius }} km</span
+                >
+                <span class="text-xs text-white/40"
+                  >{{ radiusOptions[radiusOptions.length - 1] }} km</span
+                >
               </div>
-              <RangeInput 
-                v-model="alertRadius" 
-                :min="radiusOptions[0]" 
-                :max="radiusOptions[radiusOptions.length - 1]" 
-                :step="5" 
+              <RangeInput
+                v-model="alertRadius"
+                :min="radiusOptions[0]"
+                :max="radiusOptions[radiusOptions.length - 1]"
+                :step="5"
               />
               <button
                 @click="showRadiusDropdown = false"
@@ -145,7 +151,7 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Backdrop to close dropdown -->
       <div
         v-if="showRadiusDropdown"
@@ -225,7 +231,11 @@
                   class="w-2 h-2 rounded-full bg-[#00F0FF] shrink-0"
                 />
                 <h3 class="text-white font-medium truncate">
-                  {{ alert.observation?.title || alert.title || "Nouvelle observation" }}
+                  {{
+                    alert.observation?.title ||
+                    alert.title ||
+                    "Nouvelle observation"
+                  }}
                 </h3>
               </div>
 
@@ -390,8 +400,13 @@ const sendLocationToBackend = async () => {
 
   // Record last check time locally
   try {
-    localStorage.setItem("phenom_last_location_check", new Date().toISOString());
-  } catch (e) {}
+    localStorage.setItem(
+      "phenom_last_location_check",
+      new Date().toISOString()
+    );
+  } catch (e) {
+    // empty catch block: ignore error
+  }
 };
 
 /**
@@ -454,7 +469,10 @@ const requestLocation = async () => {
  * Register background sync for location updates
  */
 const registerBackgroundSync = async () => {
-  if ("serviceWorker" in navigator && "periodicSync" in ServiceWorkerRegistration.prototype) {
+  if (
+    "serviceWorker" in navigator &&
+    "periodicSync" in ServiceWorkerRegistration.prototype
+  ) {
     try {
       const registration = await navigator.serviceWorker.ready;
 
@@ -479,7 +497,8 @@ const registerBackgroundSync = async () => {
  * Start periodic location checks
  */
 const startLocationBackgroundLoop = () => {
-  if (locationCheckIntervalId.value) clearInterval(locationCheckIntervalId.value);
+  if (locationCheckIntervalId.value)
+    clearInterval(locationCheckIntervalId.value);
   if (!navigator.geolocation || !locationEnabled.value) return;
 
   // Run immediately
@@ -579,7 +598,9 @@ onMounted(async () => {
         }
       };
     });
-  } catch (e) {}
+  } catch (e) {
+    // empty catch block: ignore error
+  }
 
   // Listen to storage changes (SettingsPage updates localStorage)
   const onStorage = (e) => {
@@ -587,7 +608,7 @@ onMounted(async () => {
     loadSettingsFromStorage();
   };
   window.addEventListener("storage", onStorage);
-  
+
   // Also listen to custom event for same-tab updates
   const onSettingsChange = () => {
     loadSettingsFromStorage();
@@ -601,10 +622,11 @@ onUnmounted(() => {
   // Remove storage listener
   const handler = window.__phenom_alerts_storage_handler;
   if (handler) window.removeEventListener("storage", handler);
-  
+
   // Remove custom event listener
   const settingsHandler = window.__phenom_alerts_settings_handler;
-  if (settingsHandler) window.removeEventListener("phenom-settings-changed", settingsHandler);
+  if (settingsHandler)
+    window.removeEventListener("phenom-settings-changed", settingsHandler);
 
   // Stop location loop
   stopLocationBackgroundLoop();

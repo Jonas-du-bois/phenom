@@ -79,6 +79,7 @@ import { TextInput, TextArea, BaseButton } from "@/components/atoms";
 // ============================================================================
 // PROPS DEFINITION
 // ============================================================================
+// eslint-disable-next-line no-unused-vars
 const props = defineProps({
   name: { type: String, default: "" }, // User's display name
   bio: { type: String, default: "" }, // User's bio/description

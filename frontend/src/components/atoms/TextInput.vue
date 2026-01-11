@@ -57,6 +57,7 @@ defineOptions({ name: "TextInput" });
 // =============================================================================
 // PROPS DEFINITION
 // =============================================================================
+// eslint-disable-next-line no-unused-vars
 const props = defineProps({
   // Input value (v-model binding)
   modelValue: {

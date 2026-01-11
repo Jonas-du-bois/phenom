@@ -46,6 +46,7 @@ defineOptions({ name: "CommentItem" });
 // ============================================================================
 // PROPS DEFINITION
 // ============================================================================
+// eslint-disable-next-line no-unused-vars
 const props = defineProps({
   // The comment object containing userId, text, createdAt, etc.
   comment: {

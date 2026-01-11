@@ -153,6 +153,7 @@ defineOptions({ name: "BottomTabBar" });
 // ============================================================================
 // PROPS
 // ============================================================================
+// eslint-disable-next-line no-unused-vars
 const props = defineProps({
   /** Number of unread alerts to display as badge */
   alertCount: {

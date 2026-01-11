@@ -84,6 +84,7 @@ import { RangeInput, BaseButton } from "@/components/atoms";
 // value: Current radius value in kilometers
 // min/max: Range boundaries for the slider
 // step: Increment step for the slider
+// eslint-disable-next-line no-unused-vars
 const props = defineProps({
   value: { type: Number, default: 50 },
   min: { type: Number, default: 1 },

@@ -45,6 +45,7 @@ defineOptions({ name: "BaseSelect" });
 // =============================================================================
 // PROPS DEFINITION
 // =============================================================================
+// eslint-disable-next-line no-unused-vars
 const props = defineProps({
   // Current selected value (v-model binding)
   modelValue: {
