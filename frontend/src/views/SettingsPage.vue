@@ -878,7 +878,7 @@ const onChangePasswordConfirm = async (payload) => {
     return;
   }
   try {
-    await userStore.changePassword({ currentPassword, newPassword });
+    await userStore.changePassword({ currentPassword, newPassword, confirmPassword });
     showChangePasswordModal.value = false;
     alert("Mot de passe changé");
   } catch (err) {
