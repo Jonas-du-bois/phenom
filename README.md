@@ -8,11 +8,15 @@ Application web moderne de signalement d'observations de phénomènes OVNI avec 
 - 📸 **Upload d'images** - Capture et traitement d'images avec compression automatique
 - 👥 **Authentification** - Système JWT avec refresh tokens sécurisé
 - 💬 **Commentaires** - Système de discussion sur les observations
-- � **Recherche avancée** - Filtres par date, localisation, type de phénomène
+- 🔍 **Recherche avancée** - Filtres par date, localisation, type de phénomène
 - 📊 **Statistiques** - Tableau de bord admin avec métriques
 - 📱 **PWA** - Application Progressive Web App installable
 - 🔒 **Sécurité** - Rate limiting, validation, sanitization, helmet
 - 🎨 **Design moderne** - Interface Tailwind CSS responsive
+- 🔔 **Notifications push** - Alertes pour observations à proximité (Web Push API)
+- 📍 **Alertes géolocalisées** - Rayon d'alerte personnalisable (1-500 km)
+- 🔕 **Déduplication** - Une seule notification par observation
+- ⚡ **Temps réel** - WebSocket pour les mises à jour instantanées
 
 ## 🏗️ Stack Technique
 
@@ -214,7 +218,7 @@ phenom/
 │   │   ├── config/       # Configuration (DB, JWT, Swagger, etc.)
 │   │   ├── controllers/  # Contrôleurs des routes
 │   │   ├── middleware/   # Middlewares (auth, validation, etc.)
-│   │   ├── models/       # Modèles MongoDB (User, Observation, Comment)
+│   │   ├── models/       # Modèles MongoDB (User, Observation, Comment, Notification, PushSubscription)
 │   │   ├── routes/       # Définition des routes API
 │   │   ├── services/     # Logique métier
 │   │   ├── utils/        # Utilitaires
@@ -391,6 +395,11 @@ IMAGE_MAX_HEIGHT=1920
 JPEG_QUALITY=85
 PNG_QUALITY=85
 WEBP_QUALITY=85
+
+# Push Notifications (VAPID)
+VAPID_PUBLIC_KEY=your-vapid-public-key
+VAPID_PRIVATE_KEY=your-vapid-private-key
+VAPID_CONTACT=mailto:admin@phenom.app
 ```
 
 #### Frontend (.env)
@@ -490,6 +499,18 @@ L'API REST est documentée avec **Swagger/OpenAPI 3.0** et accessible à :
 - `GET /api/v1/admin/users` - Liste des utilisateurs 👑
 - `PATCH /api/v1/admin/users/:id/role` - Modifier le rôle 👑
 - `DELETE /api/v1/admin/observations/:id` - Supprimer n'importe quelle observation 👑
+
+#### Push Notifications
+- `POST /api/v1/push/subscribe` - S'abonner aux notifications push 🔐
+- `PUT /api/v1/push/location` - Mettre à jour la position 🔐
+- `DELETE /api/v1/push/unsubscribe` - Se désabonner 🔐
+
+#### Notifications (Alertes)
+- `GET /api/v1/notifications` - Liste des notifications 🔐
+- `GET /api/v1/notifications/unread-count` - Nombre de non-lues 🔐
+- `PATCH /api/v1/notifications/:id/read` - Marquer comme lue 🔐
+- `POST /api/v1/notifications/mark-all-read` - Tout marquer comme lu 🔐
+- `DELETE /api/v1/notifications/:id` - Supprimer une notification 🔐
 
 🔐 = Authentification requise  
 👑 = Admin uniquement
@@ -872,9 +893,12 @@ Le projet dispose d'une documentation exhaustive organisée en wiki :
 - [x] PWA ready
 - [x] Docker multi-stage
 - [x] Rate limiting et sécurité
+- [x] Notifications push (Web Push API)
+- [x] Alertes géolocalisées avec rayon personnalisable
+- [x] Notifications persistantes avec déduplication
+- [x] WebSocket temps réel (WsMini)
 
 #### 🚧 En cours de développement
-- [ ] Notifications en temps réel (WebSocket)
 - [ ] Système de likes/votes sur les observations
 - [ ] Export PDF des observations
 - [ ] Statistiques avancées avec graphiques
@@ -896,8 +920,7 @@ Le projet dispose d'une documentation exhaustive organisée en wiki :
 
 **v2.0.0 - Mobile**
 - [ ] Application mobile React Native
-- [ ] Notifications push
-- [ ] Mode offline
+- [ ] Mode offline complet
 - [ ] Géolocalisation automatique
 
 ## 🔐 Sécurité
@@ -1054,6 +1077,12 @@ Nous accueillons toutes les contributions ! Voici comment participer :
 - Docker multi-stage pour dev et prod
 - Scripts utilitaires (seed, monitoring, déploiement)
 - Documentation complète en wiki
+- Notifications push Web Push API avec VAPID
+- Système d'alertes géolocalisées (rayon 1-500 km)
+- Notifications persistantes avec TTL 30 jours
+- Déduplication des notifications (une par observation)
+- Background sync pour mises à jour de position
+- WebSocket temps réel avec WsMini
 
 #### � Technique
 - Backend : Node.js 18 + Express 4.18 + MongoDB/Mongoose 8

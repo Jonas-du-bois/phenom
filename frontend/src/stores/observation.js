@@ -400,8 +400,10 @@ export const useObservationStore = defineStore("observation", () => {
    */
   const updateObservation = async (id, data) => {
     loading.value = true;
+    console.log("📝 Store updateObservation called with ID:", id, "Data:", data);
     try {
       const response = await observationService.update(id, data);
+      console.log("✅ Update response:", response);
       const updated = response.data || response;
 
       // Update in local list

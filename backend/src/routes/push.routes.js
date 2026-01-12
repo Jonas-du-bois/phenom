@@ -15,6 +15,9 @@ router.post('/subscribe', authenticate, pushController.subscribe);
 // Unsubscribe from push notifications (requires authentication)
 router.post('/unsubscribe', authenticate, pushController.unsubscribe);
 
+// Update user location for proximity-based notifications (requires authentication)
+router.put('/location', authenticate, pushController.updateLocation);
+
 // Get VAPID public key (public endpoint for client-side subscription)
 router.get('/public-key', pushController.publicKey);
 

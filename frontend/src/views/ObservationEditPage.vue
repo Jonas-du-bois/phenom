@@ -146,10 +146,11 @@ const extractImageUrls = (obs) => {
 const load = async () => {
   loading.value = true;
   error.value = null;
+  console.log("📖 Loading observation with ID:", id);
   try {
     await observationStore.fetchObservationById(id);
     const obs = observationStore.currentObservation;
-    console.log("Observation chargée:", obs);
+    console.log("Observation chargée:", obs, "ID reçu:", obs?._id || obs?.id);
     if (!obs) throw new Error("Observation introuvable");
     initialData.value = mapObservationToForm(obs);
     console.log("InitialData mappé:", initialData.value);
@@ -179,6 +180,7 @@ const onSubmit = async (data) => {
 
     // Mettre à jour avec les URLs existantes conservées
     payload.images = existingUrls;
+    console.log("🔄 Update observation ID:", id, "Payload:", payload);
     await observationStore.updateObservation(id, payload);
 
     // Ajouter les nouvelles images

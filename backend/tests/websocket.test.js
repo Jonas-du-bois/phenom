@@ -1,7 +1,8 @@
 import {
   createWebSocketServer,
-  startWebSocketServer,
   publishToChannel,
+  publishObservationEvent,
+  publishCommentEvent,
 } from "../src/config/websocket.js";
 import http from "http";
 
@@ -34,15 +35,6 @@ describe("WebSocket Configuration", () => {
       expect(wss).toBeDefined();
       // Verify the server is configured with PubSub
       expect(typeof wss.pub).toBe("function");
-    });
-  });
-
-  describe("startWebSocketServer", () => {
-    it("should start the WebSocket server", () => {
-      wss = createWebSocketServer(server);
-
-      // Just verify the function executes without error
-      expect(() => startWebSocketServer()).not.toThrow();
     });
   });
 

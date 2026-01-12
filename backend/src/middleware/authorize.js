@@ -69,6 +69,13 @@ export const isOwnerOrAdmin = (getResourceOwnerId) => {
 
       next();
     } catch (error) {
+      // Handle NotFoundError specifically
+      if (error.statusCode === 404 || error.name === 'NotFoundError') {
+        return res.status(404).json({
+          success: false,
+          error: error.message || 'Resource not found'
+        });
+      }
       return res.status(500).json({
         success: false,
         error: 'Error checking permissions'

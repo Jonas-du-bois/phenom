@@ -72,6 +72,51 @@ class PushController {
       next(error);
     }
   }
+
+  /**
+   * Updates user location for proximity-based notifications
+   * PUT /api/v1/push/location
+   */
+  async updateLocation(req, res, next) {
+    try {
+      const userId = req.user._id;
+      const { latitude, longitude, alertRadiusKm } = req.body;
+
+      if (latitude === undefined || longitude === undefined) {
+        return errorResponse(res, 'latitude and longitude are required', 400);
+      }
+
+      // Validate coordinates
+      const lat = parseFloat(latitude);
+      const lng = parseFloat(longitude);
+      if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+        return errorResponse(res, 'Invalid coordinates', 400);
+      }
+
+      // Update all subscriptions for this user with lastLocation format
+      const update = {
+        lastLocation: {
+          lat: lat,
+          lng: lng,
+          updatedAt: new Date()
+        }
+      };
+
+      if (alertRadiusKm !== undefined) {
+        const radius = parseInt(alertRadiusKm, 10);
+        if (isNaN(radius) || radius < 1 || radius > 500) {
+          return errorResponse(res, 'alertRadiusKm must be between 1 and 500', 400);
+        }
+        update.alertRadiusKm = radius;
+      }
+
+      await PushSubscription.updateMany({ userId }, { $set: update });
+
+      return successResponse(res, { message: 'Location updated' });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default new PushController();

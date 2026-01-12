@@ -624,9 +624,11 @@ class ObservationService {
    * @returns {string} Owner ID.
    */
   async getObservationOwnerId(observationId) {
+    console.log('🔍 getObservationOwnerId called with ID:', observationId);
     const observation = await Observation.findById(observationId).select(
       'userId'
     );
+    console.log('🔍 Observation found:', observation ? 'Yes' : 'No', observation?._id);
     if (!observation) {
       throw new NotFoundError('Observation not found for ownership check');
     }

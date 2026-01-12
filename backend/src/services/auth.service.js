@@ -127,8 +127,8 @@ class AuthService {
 
     return {
       message: 'If this email exists, a reset link has been sent',
-      // Development only
-      ...(process.env.NODE_ENV === 'development' && { resetToken })
+      // Development/test only
+      ...((process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') && { resetToken })
     };
   }
 

@@ -1029,6 +1029,157 @@ Utilisation dans HTML:
 
 ---
 
+## 🔔 **PUSH NOTIFICATIONS**
+
+### POST /api/v1/push/subscribe 🔒
+**S'abonner aux notifications push**
+```json
+// Request body
+{
+  "subscription": {
+    "endpoint": "https://fcm.googleapis.com/...",
+    "keys": {
+      "p256dh": "...",
+      "auth": "..."
+    }
+  },
+  "location": {
+    "latitude": 46.5197,
+    "longitude": 6.6323
+  },
+  "alertRadiusKm": 50
+}
+
+// Response 201
+{
+  "success": true,
+  "data": {
+    "_id": "...",
+    "userId": "...",
+    "endpoint": "https://fcm.googleapis.com/...",
+    "alertRadiusKm": 50,
+    "location": {
+      "type": "Point",
+      "coordinates": [6.6323, 46.5197]
+    }
+  }
+}
+```
+
+### PUT /api/v1/push/location 🔒
+**Mettre à jour la position (background sync)**
+```json
+// Request body
+{
+  "latitude": 46.5197,
+  "longitude": 6.6323,
+  "alertRadiusKm": 100
+}
+
+// Response 200
+{
+  "success": true,
+  "message": "Position mise à jour"
+}
+```
+
+### DELETE /api/v1/push/unsubscribe 🔒
+**Se désabonner des notifications**
+```json
+// Response 200
+{
+  "success": true,
+  "message": "Désabonnement réussi"
+}
+```
+
+---
+
+## 📬 **NOTIFICATIONS (Alertes persistantes)**
+
+### GET /api/v1/notifications 🔒
+**Lister les notifications de l'utilisateur**
+```json
+// Query params:
+// - page: Numéro de page (défaut: 1)
+// - limit: Par page (défaut: 20, max: 100)
+
+// Response 200
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "...",
+      "userId": "...",
+      "observationId": "...",
+      "title": "Nouvelle observation à proximité",
+      "body": "Un phénomène a été signalé à 15 km de vous",
+      "data": {
+        "observationId": "...",
+        "distance": 15.2
+      },
+      "isRead": false,
+      "createdAt": "2025-01-15T10:30:00.000Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 5,
+    "totalPages": 1
+  }
+}
+```
+
+### GET /api/v1/notifications/unread-count 🔒
+**Nombre de notifications non lues**
+```json
+// Response 200
+{
+  "success": true,
+  "data": {
+    "count": 3
+  }
+}
+```
+
+### PATCH /api/v1/notifications/:id/read 🔒
+**Marquer une notification comme lue**
+```json
+// Response 200
+{
+  "success": true,
+  "data": {
+    "_id": "...",
+    "isRead": true
+  }
+}
+```
+
+### POST /api/v1/notifications/mark-all-read 🔒
+**Marquer toutes comme lues**
+```json
+// Response 200
+{
+  "success": true,
+  "data": {
+    "modifiedCount": 3
+  }
+}
+```
+
+### DELETE /api/v1/notifications/:id 🔒
+**Supprimer une notification**
+```json
+// Response 200
+{
+  "success": true,
+  "message": "Notification supprimée"
+}
+```
+
+---
+
 ## 🎯 **Exemples d'utilisation (JavaScript)**
 
 ### Connexion et stockage du token

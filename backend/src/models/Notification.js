@@ -103,11 +103,10 @@ const notificationSchema = new mongoose.Schema({
     location: String
   },
 
-  // Creation timestamp (used for TTL)
+  // Creation timestamp (used for TTL - index is defined below with expireAfterSeconds)
   createdAt: {
     type: Date,
-    default: Date.now,
-    index: true
+    default: Date.now
   }
 });
 

@@ -53,16 +53,12 @@ describe("Admin Endpoints", () => {
     regularUserToken = regular.token;
     regularUserId = regular.userId;
 
-    // Create an observation
+    // Create an observation (Phenom Search format)
     const observation = await Observation.create({
-      title: "Test Observation",
-      description: "Description for testing",
-      date: new Date(),
-      location: {
-        type: "Point",
-        coordinates: [2.3522, 48.8566],
-      },
-      type: "Lumière",
+      description: "Description for testing with enough characters",
+      date: "2024-10-15",
+      location: "Paris, France",
+      country: "France",
       userId: regularUserId,
     });
     observationId = observation._id;
@@ -219,45 +215,40 @@ describe("Admin Endpoints", () => {
       expect(response.body.data.length).toBeGreaterThanOrEqual(1);
     });
 
-    it("should support sorting by title desc", async () => {
-      // Créer plusieurs observations pour tester le tri
+    it("should support sorting by createdAt desc", async () => {
+      // Créer plusieurs observations pour tester le tri (Phenom Search format)
       await Observation.create({
-        title: "Observation A",
-        description: "Description A",
-        date: new Date(),
-        location: {
-          type: "Point",
-          coordinates: [2.3522, 48.8566],
-        },
-        type: "Lumière",
+        description: "Description A with enough characters for validation",
+        date: "2024-10-15",
+        location: "Paris A, France",
+        country: "France",
         userId: regularUserId,
       });
 
       await Observation.create({
-        title: "Observation Z",
-        description: "Description Z",
-        date: new Date(),
-        location: {
-          type: "Point",
-          coordinates: [2.3522, 48.8566],
-        },
-        type: "Lumière",
+        description: "Description Z with enough characters for validation",
+        date: "2024-10-16",
+        location: "Paris Z, France",
+        country: "France",
         userId: regularUserId,
       });
 
       const response = await request(app)
-        .get("/api/v1/admin/observations?sortBy=title&order=desc")
+        .get("/api/v1/admin/observations?sortBy=createdAt&order=desc")
         .set("Authorization", `Bearer ${adminToken}`)
         .expect(200);
 
       expect(response.body.success).toBe(true);
       expect(Array.isArray(response.body.data)).toBe(true);
 
-      // Vérifier que le tri est correct (Z avant A en ordre desc)
+      // Vérifier que les dates sont en ordre décroissant
       if (response.body.data.length >= 2) {
-        const titles = response.body.data.map((obs) => obs.title);
-        const sortedTitles = [...titles].sort().reverse();
-        expect(titles).toEqual(sortedTitles);
+        const dates = response.body.data.map((obs) =>
+          new Date(obs.createdAt).getTime()
+        );
+        for (let i = 1; i < dates.length; i++) {
+          expect(dates[i]).toBeLessThanOrEqual(dates[i - 1]);
+        }
       }
     });
 
@@ -291,10 +282,12 @@ describe("Admin Endpoints", () => {
 
   describe("DELETE /api/v1/admin/observations/:id", () => {
     it("should delete observation as admin", async () => {
-      await request(app)
+      const response = await request(app)
         .delete(`/api/v1/admin/observations/${observationId}`)
         .set("Authorization", `Bearer ${adminToken}`)
-        .expect(204);
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
 
       // Vérifier que l'observation est supprimée
       const observation = await Observation.findById(observationId);
@@ -338,10 +331,12 @@ describe("Admin Endpoints", () => {
 
   describe("DELETE /api/v1/admin/comments/:id", () => {
     it("should delete comment as admin", async () => {
-      await request(app)
+      const response = await request(app)
         .delete(`/api/v1/admin/comments/${commentId}`)
         .set("Authorization", `Bearer ${adminToken}`)
-        .expect(204);
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
 
       // Vérifier que le commentaire est supprimé
       const comment = await Comment.findById(commentId);

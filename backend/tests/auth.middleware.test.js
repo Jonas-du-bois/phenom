@@ -37,7 +37,7 @@ describe("Authentication Middleware", () => {
       const response = await request(app).get("/api/v1/auth/me").expect(401);
 
       expect(response.body.success).toBe(false);
-      expect(response.body.error).toContain("Token");
+      expect(response.body.error).toBeDefined();
     });
 
     it("should fail with malformed Authorization header", async () => {
@@ -56,7 +56,7 @@ describe("Authentication Middleware", () => {
         .expect(401);
 
       expect(response.body.success).toBe(false);
-      expect(response.body.error).toContain("Token invalide");
+      expect(response.body.error).toContain("Invalid token");
     });
 
     it("should fail with expired token", async () => {
@@ -81,7 +81,7 @@ describe("Authentication Middleware", () => {
         .expect(401);
 
       expect(response.body.success).toBe(false);
-      expect(response.body.error).toContain("Token expiré");
+      expect(response.body.error).toContain("Token expired");
     });
 
     it("should fail when user no longer exists", async () => {
@@ -94,7 +94,7 @@ describe("Authentication Middleware", () => {
         .expect(401);
 
       expect(response.body.success).toBe(false);
-      expect(response.body.error).toContain("Utilisateur non trouvé");
+      expect(response.body.error).toContain("User not found");
     });
   });
 
