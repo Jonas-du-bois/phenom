@@ -1,4 +1,5 @@
 import { NotFoundError } from '../utils/errors.js';
+import { escapeRegex } from '../utils/sanitize.js';
 import Observation, {
   OBSERVER_TYPES,
   UFO_SHAPES,
@@ -79,7 +80,7 @@ class ObservationService {
 
     // Country filter (partial match)
     if (filters.country) {
-      query.country = { $regex: filters.country, $options: 'i' };
+      query.country = { $regex: escapeRegex(filters.country), $options: 'i' };
     }
 
     // Locale filter
@@ -186,11 +187,12 @@ class ObservationService {
         query.$text = { $search: searchTerm };
       } else {
         // Partial search on multiple fields
+        const sanitizedSearch = escapeRegex(searchTerm);
         query.$or = [
-          { description: { $regex: searchTerm, $options: 'i' } },
-          { location: { $regex: searchTerm, $options: 'i' } },
-          { country: { $regex: searchTerm, $options: 'i' } },
-          { tags: { $regex: searchTerm, $options: 'i' } }
+          { description: { $regex: sanitizedSearch, $options: 'i' } },
+          { location: { $regex: sanitizedSearch, $options: 'i' } },
+          { country: { $regex: sanitizedSearch, $options: 'i' } },
+          { tags: { $regex: sanitizedSearch, $options: 'i' } }
         ];
       }
     }
