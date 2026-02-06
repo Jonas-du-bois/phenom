@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { connectDB, disconnectDB } from "../src/config/database.js";
 
 // Cleanup before all tests in a file
 beforeAll(async () => {
@@ -13,7 +12,7 @@ beforeAll(async () => {
 
   // Set test environment
   process.env.NODE_ENV = "test";
-  // Use MONGODB_TEST_URI for tests (priority if defined, otherwise fallback to MONGODB_URI)
+
   if (!process.env.MONGODB_TEST_URI && process.env.MONGODB_URI) {
     process.env.MONGODB_TEST_URI = process.env.MONGODB_URI;
     console.log("✓ MONGODB_TEST_URI défini depuis MONGODB_URI");
@@ -27,29 +26,42 @@ beforeAll(async () => {
     process.env.JWT_REFRESH_SECRET || "test-refresh-secret-key";
 
   console.log("🔌 Connexion à MongoDB pour les tests...");
-  // Connect to test database
-  await connectDB();
-  console.log(
-    `✅ Tests connectés à MongoDB (state: ${mongoose.connection.readyState})`
-  );
 
-  // Initial cleanup
-  const collections = mongoose.connection.collections;
-  for (const key in collections) {
-    await collections[key].deleteMany({});
+  try {
+      await mongoose.connect(process.env.MONGODB_TEST_URI, {
+          serverSelectionTimeoutMS: 100 // Fail fast
+      });
+      console.log(
+        `✅ Tests connectés à MongoDB (state: ${mongoose.connection.readyState})`
+      );
+
+      // Initial cleanup
+      const collections = mongoose.connection.collections;
+      for (const key in collections) {
+        await collections[key].deleteMany({});
+      }
+  } catch (err) {
+      console.warn("⚠️ Failed to connect to MongoDB. DB-dependent tests will fail, but unit tests will pass. Error:", err.message);
   }
-}, 30000); // 30s timeout for MongoDB Atlas connection
+}, 30000);
 
 // Cleanup before each test (safer than afterEach)
 beforeEach(async () => {
-  const collections = mongoose.connection.collections;
-
-  for (const key in collections) {
-    await collections[key].deleteMany({});
+  if (mongoose.connection.readyState === 1) {
+    const collections = mongoose.connection.collections;
+    for (const key in collections) {
+        try {
+            await collections[key].deleteMany({});
+        } catch (e) {
+            // Ignore
+        }
+    }
   }
 });
 
 // Cleanup after all tests
 afterAll(async () => {
-  await disconnectDB();
-}, 30000); // 30s timeout for disconnection
+  if (mongoose.connection.readyState !== 0) {
+      await mongoose.disconnect();
+  }
+}, 30000);

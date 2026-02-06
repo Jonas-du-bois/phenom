@@ -649,21 +649,28 @@ class ObservationService {
     const radiusKm = parseFloat(radius);
     const maxResults = Math.min(500, Math.max(1, parseInt(limit)));
 
-    // Find observations with coordinates within radius
-    // Using a simple bounding box approximation
-    const latDelta = radiusKm / 111; // ~111km per degree of latitude
-    const lngDelta = radiusKm / (111 * Math.cos((lat * Math.PI) / 180));
-
+    // OPTIMIZATION: Use MongoDB 2dsphere index with $near
+    // This allows the database to perform the spatial query and sort by distance efficiently.
+    // The previous implementation used a manual bounding box and in-memory sort/filter.
     const observations = await Observation.find({
-      'coordinates.lat': { $gte: lat - latDelta, $lte: lat + latDelta },
-      'coordinates.lng': { $gte: lng - lngDelta, $lte: lng + lngDelta }
+      locationPoint: {
+        $near: {
+          $geometry: {
+            type: 'Point',
+            coordinates: [lng, lat]
+          },
+          $maxDistance: radiusKm * 1000 // Convert km to meters
+        }
+      }
     })
       .populate('userId', 'name email avatar')
       .populate('commentsCount')
       .limit(maxResults)
       .lean({ virtuals: true });
 
-    // Calculate actual distances and filter
+    // Calculate actual distances for the frontend
+    // $near sorts by distance, but we need to compute the scalar distance value
+    // for the response payload.
     const haversineDistance = (lat1, lon1, lat2, lon2) => {
       const R = 6371;
       const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -678,18 +685,15 @@ class ObservationService {
       return R * c;
     };
 
-    return observations
-      .map((obs) => ({
-        ...obs,
-        distance: haversineDistance(
-          lat,
-          lng,
-          obs.coordinates.lat,
-          obs.coordinates.lng
-        )
-      }))
-      .filter((obs) => obs.distance <= radiusKm)
-      .sort((a, b) => a.distance - b.distance);
+    return observations.map((obs) => ({
+      ...obs,
+      distance: haversineDistance(
+        lat,
+        lng,
+        obs.coordinates.lat,
+        obs.coordinates.lng
+      )
+    }));
   }
 
   /**
