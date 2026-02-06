@@ -47,6 +47,8 @@
 -->
 
 <script setup>
+import { computed, useId } from "vue";
+
 /**
  * TextInput - Single-line Text Input Component
  * Design System: Phenom Search
@@ -99,12 +101,21 @@ const props = defineProps({
     type: String,
     default: "off",
   },
+  // Input ID (optional, will be generated if missing)
+  id: {
+    type: String,
+    default: "",
+  },
 });
 
 // =============================================================================
 // EVENTS
 // =============================================================================
 const emit = defineEmits(["update:modelValue", "blur", "focus"]);
+
+// Generate a unique ID if not provided
+const uniqueId = useId();
+const inputId = computed(() => props.id || uniqueId);
 
 /**
  * Handle input and emit new value
@@ -119,6 +130,7 @@ const handleInput = (e) => {
     <!-- Label (optional) -->
     <label
       v-if="label"
+      :for="inputId"
       class="block mb-2 text-xs uppercase tracking-wider text-white/60"
     >
       {{ label }}
@@ -137,6 +149,7 @@ const handleInput = (e) => {
 
       <!-- Input Element -->
       <input
+        :id="inputId"
         :type="type"
         :value="modelValue"
         :placeholder="placeholder"
