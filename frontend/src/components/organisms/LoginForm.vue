@@ -153,6 +153,9 @@
           type="button"
           @click="showPassword = !showPassword"
           class="text-white/40 hover:text-white/60"
+          :aria-label="
+            showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'
+          "
         >
           <svg
             v-if="showPassword"
