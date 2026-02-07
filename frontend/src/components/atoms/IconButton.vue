@@ -12,6 +12,7 @@
   - Multiple sizes: sm, md, lg
   - Required aria-label for accessibility
   - Disabled state
+  - Loading state
   - Slot for icon content
 
   USAGE EXAMPLES:
@@ -23,6 +24,7 @@
   - variant: 'primary' | 'secondary' | 'ghost' (default: 'ghost')
   - size: 'sm' | 'md' | 'lg' (default: 'md')
   - disabled: Whether button is disabled
+  - loading: Whether to show loading spinner
   - ariaLabel: Required accessibility label (screen readers)
 
   EVENTS:
@@ -59,6 +61,11 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  // Loading state
+  loading: {
+    type: Boolean,
+    default: false,
+  },
   // Required: Accessibility label for screen readers
   ariaLabel: {
     type: String,
@@ -72,10 +79,10 @@ const props = defineProps({
 const emit = defineEmits(["click"]);
 
 /**
- * Handle click events (only if not disabled)
+ * Handle click events (only if not disabled and not loading)
  */
 const handleClick = (e) => {
-  if (!props.disabled) {
+  if (!props.disabled && !props.loading) {
     emit("click", e);
   }
 };
@@ -112,7 +119,7 @@ const sizeClasses = {
   -->
   <button
     type="button"
-    :disabled="disabled"
+    :disabled="disabled || loading"
     :aria-label="ariaLabel"
     :class="[
       'inline-flex items-center justify-center',
@@ -120,11 +127,36 @@ const sizeClasses = {
       'touch-target',
       variantClasses[variant],
       sizeClasses[size],
-      { 'opacity-50 cursor-not-allowed': disabled },
+      {
+        'opacity-50 cursor-not-allowed': disabled,
+        'pointer-events-none': loading
+      },
     ]"
     @click="handleClick"
   >
+    <!-- Loading Spinner -->
+    <svg
+      v-if="loading"
+      class="w-5 h-5 animate-spin"
+      viewBox="0 0 24 24"
+      fill="none"
+    >
+      <circle
+        class="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        stroke-width="4"
+      />
+      <path
+        class="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      />
+    </svg>
+
     <!-- Slot for icon content -->
-    <slot />
+    <slot v-else />
   </button>
 </template>

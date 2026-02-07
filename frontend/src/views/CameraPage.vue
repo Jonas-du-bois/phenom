@@ -148,6 +148,7 @@
               aria-label="Changer de caméra"
               @click="switchCamera"
               class="w-12 h-12"
+              :loading="switchingCamera"
             >
               <svg
                 class="w-6 h-6 text-white"
@@ -245,6 +246,7 @@ const formRef = ref(null);
 const flashEnabled = ref(false);
 const facingMode = ref("environment");
 const capturing = ref(false);
+const switchingCamera = ref(false);
 const submitting = ref(false);
 const cameraError = ref("");
 const lastPhoto = ref("");
@@ -308,10 +310,16 @@ const stopCamera = () => {
 };
 
 const switchCamera = async () => {
-  facingMode.value =
-    facingMode.value === "environment" ? "user" : "environment";
-  stopCamera();
-  await initCamera();
+  if (switchingCamera.value) return;
+  switchingCamera.value = true;
+  try {
+    facingMode.value =
+      facingMode.value === "environment" ? "user" : "environment";
+    stopCamera();
+    await initCamera();
+  } finally {
+    switchingCamera.value = false;
+  }
 };
 
 const toggleFlash = () => {
