@@ -649,53 +649,35 @@ class ObservationService {
     const lat = parseFloat(latitude);
     const lng = parseFloat(longitude);
     const radiusKm = parseFloat(radius);
-    const maxResults = Math.min(500, Math.max(1, parseInt(limit)));
+    const maxResults = Math.min(500, Math.max(1, parseInt(limit) || 50));
 
-    // OPTIMIZATION: Use MongoDB 2dsphere index with $near
-    // This allows the database to perform the spatial query and sort by distance efficiently.
-    // The previous implementation used a manual bounding box and in-memory sort/filter.
-    const observations = await Observation.find({
-      locationPoint: {
-        $near: {
-          $geometry: {
+    // OPTIMIZATION: Use MongoDB aggregation with $geoNear
+    // This calculates distance in the database and avoids manual Haversine calculation in JS loop.
+    const pipeline = [
+      {
+        $geoNear: {
+          near: {
             type: 'Point',
             coordinates: [lng, lat]
           },
-          $maxDistance: radiusKm * 1000 // Convert km to meters
+          distanceField: 'distance',
+          maxDistance: radiusKm * 1000, // meters
+          spherical: true,
+          distanceMultiplier: 0.001 // Convert meters to km
         }
-      }
-    })
-      .populate('userId', 'name email avatar')
-      .populate('commentsCount')
-      .limit(maxResults)
-      .lean({ virtuals: true });
+      },
+      { $limit: maxResults }
+    ];
 
-    // Calculate actual distances for the frontend
-    // $near sorts by distance, but we need to compute the scalar distance value
-    // for the response payload.
-    const haversineDistance = (lat1, lon1, lat2, lon2) => {
-      const R = 6371;
-      const dLat = ((lat2 - lat1) * Math.PI) / 180;
-      const dLon = ((lon2 - lon1) * Math.PI) / 180;
-      const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos((lat1 * Math.PI) / 180) *
-          Math.cos((lat2 * Math.PI) / 180) *
-          Math.sin(dLon / 2) *
-          Math.sin(dLon / 2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      return R * c;
-    };
+    const observations = await Observation.aggregate(pipeline);
 
-    return observations.map((obs) => ({
-      ...obs,
-      distance: haversineDistance(
-        lat,
-        lng,
-        obs.coordinates.lat,
-        obs.coordinates.lng
-      )
-    }));
+    // Populate fields manually since aggregate returns plain objects
+    await Observation.populate(observations, [
+      { path: 'userId', select: 'name email avatar' },
+      { path: 'commentsCount' }
+    ]);
+
+    return observations;
   }
 
   /**

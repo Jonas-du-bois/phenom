@@ -217,13 +217,13 @@ class ObservationController {
    * GET /observations/nearby
    */
   getNearbyObservations = asyncHandler(async (req, res) => {
-    const { latitude, longitude, radius = 10 } = req.query;
+    const { latitude, longitude, radius = 10, limit } = req.query;
 
     const nearbyObservations = await observationService.getNearbyObservations(
       latitude,
       longitude,
       radius,
-      req.query
+      limit
     );
 
     return res.json({
