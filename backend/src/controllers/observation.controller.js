@@ -181,8 +181,7 @@ class ObservationController {
       'observerTypes',
       'ufoShapes',
       'phenomena',
-      'tags',
-      'images'
+      'tags'
     ];
     const updateData = {};
     allowedFields.forEach((field) => {
