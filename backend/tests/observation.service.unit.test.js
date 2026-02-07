@@ -4,44 +4,52 @@ import observationService from '../src/services/observation.service.js';
 
 describe('ObservationService Unit Tests', () => {
   describe('getNearbyObservations', () => {
-    it('should use $near query for geospatial search', async () => {
-      // Mock the chain: find -> populate -> populate -> limit -> lean
-      const mockLean = jest.fn().mockResolvedValue([
+    it('should use aggregate pipeline with $geoNear for geospatial search', async () => {
+      // Mock aggregate to return mock observations with distance
+      const mockObservations = [
         {
           _id: '1',
           coordinates: { lat: 48.8566, lng: 2.3522 }, // Paris
-          locationPoint: { type: 'Point', coordinates: [2.3522, 48.8566] }
+          locationPoint: { type: 'Point', coordinates: [2.3522, 48.8566] },
+          distance: 5 // km (as returned by aggregation with multiplier)
         }
-      ]);
-      const mockLimit = jest.fn().mockReturnValue({ lean: mockLean });
-      const mockPopulate2 = jest.fn().mockReturnValue({ limit: mockLimit });
-      const mockPopulate1 = jest.fn().mockReturnValue({ populate: mockPopulate2 });
+      ];
 
-      const findSpy = jest.spyOn(Observation, 'find').mockReturnValue({
-        populate: mockPopulate1
-      });
+      const aggregateSpy = jest.spyOn(Observation, 'aggregate').mockResolvedValue(mockObservations);
+      const populateSpy = jest.spyOn(Observation, 'populate').mockResolvedValue(mockObservations);
 
       const lat = 48.8566;
       const lng = 2.3522;
       const radius = 10;
+      const limit = 20;
 
-      const result = await observationService.getNearbyObservations(lat, lng, radius);
+      const result = await observationService.getNearbyObservations(lat, lng, radius, limit);
 
-      expect(findSpy).toHaveBeenCalledWith(expect.objectContaining({
-        locationPoint: {
-          $near: {
-            $geometry: {
+      // Verify aggregate called with correct pipeline
+      expect(aggregateSpy).toHaveBeenCalledWith(expect.arrayContaining([
+        expect.objectContaining({
+          $geoNear: expect.objectContaining({
+            near: {
               type: 'Point',
               coordinates: [lng, lat]
             },
-            $maxDistance: radius * 1000
-          }
-        }
-      }));
+            distanceField: 'distance',
+            maxDistance: radius * 1000,
+            spherical: true,
+            distanceMultiplier: 0.001
+          })
+        }),
+        expect.objectContaining({
+            $limit: 20
+        })
+      ]));
 
-      // Verify distance is added
-      expect(result[0]).toHaveProperty('distance');
-      expect(result[0].distance).toBeCloseTo(0, 1); // Distance to itself is 0
+      // Verify populate is called
+      expect(populateSpy).toHaveBeenCalledWith(mockObservations, expect.any(Array));
+
+      // Verify result
+      expect(result).toBe(mockObservations);
+      expect(result[0].distance).toBe(5);
     });
   });
 });
