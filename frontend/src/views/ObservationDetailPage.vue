@@ -32,97 +32,149 @@
         </div>
       </template>
 
-    <!-- Error state -->
-    <template v-else-if="error">
-      <div class="flex items-center justify-center h-screen px-4">
-        <ErrorState
-          :title="error"
-          description="L'observation n'a pas pu être chargée."
-        >
-          <template #action>
-            <BaseButton variant="secondary" @click="goBack">
-              Retour
-            </BaseButton>
-          </template>
-        </ErrorState>
-      </div>
-    </template>
+      <!-- Error state -->
+      <template v-else-if="error">
+        <div class="flex items-center justify-center h-screen px-4">
+          <ErrorState
+            :title="error"
+            description="L'observation n'a pas pu être chargée."
+          >
+            <template #action>
+              <BaseButton variant="secondary" @click="goBack">
+                Retour
+              </BaseButton>
+            </template>
+          </ErrorState>
+        </div>
+      </template>
 
-    <!-- Content -->
-    <template v-else-if="observation">
-      <!-- Header -->
-      <ObservationHeader
-        :user="observation.userId || observation.user || observation.author"
-        :date="observation.createdAt"
-        :verified="observation.verified"
-        show-back
-        show-menu
-        @back="goBack"
-        @menu="showMenu = true"
-      />
+      <!-- Content -->
+      <template v-else-if="observation">
+        <!-- Header -->
+        <ObservationHeader
+          :user="observation.userId || observation.user || observation.author"
+          :date="observation.createdAt"
+          :verified="observation.verified"
+          show-back
+          show-menu
+          @back="goBack"
+          @menu="showMenu = true"
+        />
 
-      <!-- Image gallery -->
-      <ImageGallery
-        v-if="images.length"
-        :images="images"
-        @image-click="openFullscreen"
-      />
+        <!-- Image gallery -->
+        <ImageGallery
+          v-if="images.length"
+          :images="images"
+          @image-click="openFullscreen"
+        />
 
-      <!-- Observation info - Liquid glass card -->
-      <div class="px-5 pt-6 space-y-5">
-        <!-- Main content card -->
-        <div class="liquid-glass-card rounded-2xl p-5 space-y-4">
-          <!-- Type badge with tooltip -->
-          <div class="flex items-center gap-2 flex-wrap">
-            <GlassTooltip 
-              :content="getTypeTooltipContent(observation.type)"
-              :icon="getTypeIcon(observation.type)"
+        <!-- Observation info - Liquid glass card -->
+        <div class="px-5 pt-6 space-y-5">
+          <!-- Main content card -->
+          <div class="liquid-glass-card rounded-2xl p-5 space-y-4">
+            <!-- Type badge with tooltip -->
+            <div class="flex items-center gap-2 flex-wrap">
+              <GlassTooltip
+                :content="getTypeTooltipContent(observation.type)"
+                :icon="getTypeIcon(observation.type)"
+              >
+                <BaseBadge :variant="typeBadgeVariant" class="badge-glow">
+                  {{ "OBSERVATION" }}
+                </BaseBadge>
+              </GlassTooltip>
+              <GlassTooltip
+                v-if="observation.verified"
+                content="Cette observation a été vérifiée par notre équipe de modération"
+                icon="✓"
+              >
+                <BaseBadge
+                  variant="success"
+                  class="badge-glow badge-interactive"
+                >
+                  ✓ Vérifié
+                </BaseBadge>
+              </GlassTooltip>
+            </div>
+
+            <!-- Description with enhanced typography -->
+            <p
+              class="text-white/85 text-base leading-relaxed whitespace-pre-wrap"
             >
-              <BaseBadge :variant="typeBadgeVariant" class="badge-glow">
-                {{ "OBSERVATION" }}
-              </BaseBadge>
-            </GlassTooltip>
-            <GlassTooltip 
-              v-if="observation.verified" 
-              content="Cette observation a été vérifiée par notre équipe de modération"
-              icon="✓"
-            >
-              <BaseBadge variant="success" class="badge-glow badge-interactive">
-                ✓ Vérifié
-              </BaseBadge>
-            </GlassTooltip>
+              {{ observation.description }}
+            </p>
           </div>
 
-          <!-- Description with enhanced typography -->
-          <p class="text-white/85 text-base leading-relaxed whitespace-pre-wrap">
-            {{ observation.description }}
-          </p>
-        </div>
+          <!-- Metadata card -->
+          <div class="liquid-glass-card rounded-2xl overflow-hidden">
+            <ObservationMeta :observation="observation" />
+          </div>
 
-        <!-- Metadata card -->
-        <div class="liquid-glass-card rounded-2xl overflow-hidden">
-          <ObservationMeta :observation="observation" />
-        </div>
-
-        <!-- Map preview - Liquid glass style -->
-        <div
-          v-if="observation.location?.coordinates"
-          class="liquid-glass-card rounded-2xl h-44 overflow-hidden cursor-pointer group"
-          @click="
-            $router.push({ path: '/map', query: { focus: observation._id } })
-          "
-        >
+          <!-- Map preview - Liquid glass style -->
           <div
-            class="w-full h-full flex items-center justify-center relative"
+            v-if="observation.location?.coordinates"
+            class="liquid-glass-card rounded-2xl h-44 overflow-hidden cursor-pointer group"
+            @click="
+              $router.push({ path: '/map', query: { focus: observation._id } })
+            "
           >
-            <!-- Subtle grid pattern background -->
-            <div class="absolute inset-0 opacity-1 bg-grid-pattern"></div>
-            
-            <div class="text-center relative z-10">
-              <!-- Map pin icon with glow -->
-              <div class="map-icon-wrapper inline-flex items-center justify-center w-14 h-14 rounded-full mb-3">
+            <div
+              class="w-full h-full flex items-center justify-center relative"
+            >
+              <!-- Subtle grid pattern background -->
+              <div class="absolute inset-0 opacity-1 bg-grid-pattern"></div>
+
+              <div class="text-center relative z-10">
+                <!-- Map pin icon with glow -->
+                <div
+                  class="map-icon-wrapper inline-flex items-center justify-center w-14 h-14 rounded-full mb-3"
+                >
+                  <svg
+                    class="w-7 h-7 text-[#00F0FF]"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="1.5"
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                    />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="1.5"
+                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                </div>
+                <p
+                  class="text-sm text-white/70 group-hover:text-[#00F0FF] transition-colors"
+                >
+                  Voir sur la carte
+                </p>
+                <p class="text-xs text-white/40 mt-1">
+                  {{
+                    observation.location?.name ||
+                    observation.country ||
+                    "Localisation"
+                  }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Comments section - Liquid glass card -->
+        <div class="px-5 py-4" id="comments">
+          <div class="liquid-glass-card rounded-2xl p-5">
+            <!-- Section header -->
+            <div class="flex items-center gap-3 mb-5">
+              <div
+                class="comment-icon-wrapper flex items-center justify-center w-9 h-9 rounded-xl"
+              >
                 <svg
-                  class="w-7 h-7 text-[#00F0FF]"
+                  class="w-5 h-5 text-[#00F0FF]"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -131,129 +183,75 @@
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="1.5"
-                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                  />
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="1.5"
-                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
                   />
                 </svg>
               </div>
-              <p class="text-sm text-white/70 group-hover:text-[#00F0FF] transition-colors">
-                Voir sur la carte
-              </p>
-              <p class="text-xs text-white/40 mt-1">
-                {{ observation.location?.name || observation.country || 'Localisation' }}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Comments section - Liquid glass card -->
-      <div class="px-5 py-4" id="comments">
-        <div class="liquid-glass-card rounded-2xl p-5">
-          <!-- Section header -->
-          <div class="flex items-center gap-3 mb-5">
-            <div class="comment-icon-wrapper flex items-center justify-center w-9 h-9 rounded-xl">
-              <svg
-                class="w-5 h-5 text-[#00F0FF]"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="1.5"
-                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                />
-              </svg>
-            </div>
-            <div>
-              <h2 class="text-base font-semibold text-white">
-                Commentaires
-              </h2>
-              <span v-if="comments.length" class="text-xs text-white/40">
-                {{ comments.length }} commentaire{{ comments.length > 1 ? 's' : '' }}
-              </span>
-            </div>
-          </div>
-
-          <CommentList
-            :comments="comments"
-            :loading="false"
-            :loading-more="false"
-            :has-more="false"
-            :current-user-id="currentUserId"
-            @delete="deleteComment"
-            @user-click="goToProfile"
-          />
-
-          <!-- Comment form -->
-          <div v-if="isAuthenticated" class="mt-4 pt-4 border-t border-white/[0.06]">
-            <CommentForm
-              :loading="submittingComment"
-              @submit="submitComment"
-            />
-          </div>
-        </div>
-      </div>
-
-      <!-- Options menu - Liquid glass bottom sheet -->
-      <Teleport to="body">
-        <Transition name="slide-up">
-          <div v-if="showMenu" class="fixed inset-0 z-50">
-            <!-- Backdrop with blur -->
-            <div
-              class="absolute inset-0 bg-black/15 backdrop-blur-sm"
-              @click="showMenu = false"
-            />
-
-            <!-- Bottom sheet -->
-            <div
-              class="liquid-glass-sheet absolute bottom-0 left-0 right-0 rounded-t-3xl overflow-hidden"
-              :style="{
-                paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
-              }"
-            >
-              <!-- Handle indicator -->
-              <div class="flex justify-center pt-3 pb-2">
-                <div class="w-10 h-1 rounded-full bg-white/20"></div>
+              <div>
+                <h2 class="text-base font-semibold text-white">Commentaires</h2>
+                <span v-if="comments.length" class="text-xs text-white/40">
+                  {{ comments.length }} commentaire{{
+                    comments.length > 1 ? "s" : ""
+                  }}
+                </span>
               </div>
+            </div>
 
-              <!-- Menu items -->
-              <div class="px-4 py-2 space-y-1">
-                <button
-                  @click="shareObservation"
-                  class="menu-item w-full px-4 py-3.5 flex items-center gap-4 text-white rounded-xl"
-                >
-                  <div class="menu-icon-wrapper flex items-center justify-center w-10 h-10 rounded-xl">
-                    <svg
-                      class="w-5 h-5 text-[#00F0FF]"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="1.5"
-                        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                      />
-                    </svg>
-                  </div>
-                  <span class="font-medium">Partager</span>
-                </button>
+            <CommentList
+              :comments="comments"
+              :loading="false"
+              :loading-more="false"
+              :has-more="false"
+              :current-user-id="currentUserId"
+              @delete="deleteComment"
+              @user-click="goToProfile"
+            />
 
-                <template v-if="isOwner">
+            <!-- Comment form -->
+            <div
+              v-if="isAuthenticated"
+              class="mt-4 pt-4 border-t border-white/[0.06]"
+            >
+              <CommentForm
+                :loading="submittingComment"
+                @submit="submitComment"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Options menu - Liquid glass bottom sheet -->
+        <Teleport to="body">
+          <Transition name="slide-up">
+            <div v-if="showMenu" class="fixed inset-0 z-50">
+              <!-- Backdrop with blur -->
+              <div
+                class="absolute inset-0 bg-black/15 backdrop-blur-sm"
+                @click="showMenu = false"
+              />
+
+              <!-- Bottom sheet -->
+              <div
+                class="liquid-glass-sheet absolute bottom-0 left-0 right-0 rounded-t-3xl overflow-hidden"
+                :style="{
+                  paddingBottom:
+                    'calc(16px + env(safe-area-inset-bottom, 0px))',
+                }"
+              >
+                <!-- Handle indicator -->
+                <div class="flex justify-center pt-3 pb-2">
+                  <div class="w-10 h-1 rounded-full bg-white/20"></div>
+                </div>
+
+                <!-- Menu items -->
+                <div class="px-4 py-2 space-y-1">
                   <button
-                    @click="editObservation"
+                    @click="shareObservation"
                     class="menu-item w-full px-4 py-3.5 flex items-center gap-4 text-white rounded-xl"
                   >
-                    <div class="menu-icon-wrapper flex items-center justify-center w-10 h-10 rounded-xl">
+                    <div
+                      class="menu-icon-wrapper flex items-center justify-center w-10 h-10 rounded-xl"
+                    >
                       <svg
                         class="w-5 h-5 text-[#00F0FF]"
                         fill="none"
@@ -264,140 +262,172 @@
                           stroke-linecap="round"
                           stroke-linejoin="round"
                           stroke-width="1.5"
-                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                          d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
                         />
                       </svg>
                     </div>
-                    <span class="font-medium">Modifier</span>
+                    <span class="font-medium">Partager</span>
                   </button>
 
-                  <button
-                    @click="confirmDelete"
-                    class="menu-item menu-item-danger w-full px-4 py-3.5 flex items-center gap-4 rounded-xl"
-                  >
-                    <div class="menu-icon-wrapper menu-icon-danger flex items-center justify-center w-10 h-10 rounded-xl">
-                      <svg
-                        class="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                  <template v-if="isOwner">
+                    <button
+                      @click="editObservation"
+                      class="menu-item w-full px-4 py-3.5 flex items-center gap-4 text-white rounded-xl"
+                    >
+                      <div
+                        class="menu-icon-wrapper flex items-center justify-center w-10 h-10 rounded-xl"
                       >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="1.5"
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        />
-                      </svg>
-                    </div>
-                    <span class="font-medium">Supprimer</span>
-                  </button>
-                </template>
-              </div>
+                        <svg
+                          class="w-5 h-5 text-[#00F0FF]"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.5"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                          />
+                        </svg>
+                      </div>
+                      <span class="font-medium">Modifier</span>
+                    </button>
 
-              <!-- Cancel button -->
-              <div class="px-4 pt-3">
-                <button
-                  @click="showMenu = false"
-                  class="cancel-button w-full px-4 py-4 text-center text-white font-medium rounded-2xl transition-all"
-                >
-                  Annuler
-                </button>
+                    <button
+                      @click="confirmDelete"
+                      class="menu-item menu-item-danger w-full px-4 py-3.5 flex items-center gap-4 rounded-xl"
+                    >
+                      <div
+                        class="menu-icon-wrapper menu-icon-danger flex items-center justify-center w-10 h-10 rounded-xl"
+                      >
+                        <svg
+                          class="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.5"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
+                      </div>
+                      <span class="font-medium">Supprimer</span>
+                    </button>
+                  </template>
+                </div>
+
+                <!-- Cancel button -->
+                <div class="px-4 pt-3">
+                  <button
+                    @click="showMenu = false"
+                    class="cancel-button w-full px-4 py-4 text-center text-white font-medium rounded-2xl transition-all"
+                  >
+                    Annuler
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        </Transition>
+          </Transition>
 
-        <!-- Fullscreen Gallery Modal - Enhanced with glass UI -->
-        <Transition name="fade">
-          <div
-            v-if="showFullscreenGallery && images.length"
-            class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center"
-            @click="closeFullscreen"
-          >
-            <!-- Close button with glass effect -->
-            <button
-              class="gallery-nav-button absolute top-10 right-4 z-10 flex items-center justify-center w-11 h-11 rounded-full"
+          <!-- Fullscreen Gallery Modal - Enhanced with glass UI -->
+          <Transition name="fade">
+            <div
+              v-if="showFullscreenGallery && images.length"
+              class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center"
               @click="closeFullscreen"
             >
-              <svg
-                class="w-6 h-6 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+              <!-- Close button with glass effect -->
+              <button
+                class="gallery-nav-button absolute top-10 right-4 z-10 flex items-center justify-center w-11 h-11 rounded-full"
+                aria-label="Fermer la galerie"
+                @click="closeFullscreen"
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
+                <svg
+                  class="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
 
-            <!-- Image counter with glass pill -->
-            <div class="gallery-counter absolute top-10 left-4 px-4 py-2 rounded-full text-sm text-white/90">
-              {{ fullscreenIndex + 1 }} / {{ images.length }}
+              <!-- Image counter with glass pill -->
+              <div
+                class="gallery-counter absolute top-10 left-4 px-4 py-2 rounded-full text-sm text-white/90"
+              >
+                {{ fullscreenIndex + 1 }} / {{ images.length }}
+              </div>
+
+              <!-- Image -->
+              <img
+                :src="images[fullscreenIndex]"
+                :alt="`Image ${fullscreenIndex + 1}`"
+                class="max-w-full max-h-full object-contain"
+                @click.stop
+              />
+
+              <!-- Navigation arrows with glass effect -->
+              <button
+                v-if="fullscreenIndex > 0"
+                class="gallery-nav-button absolute left-4 flex items-center justify-center w-12 h-12 rounded-full"
+                aria-label="Image précédente"
+                @click.stop="fullscreenIndex--"
+              >
+                <svg
+                  class="w-7 h-7 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+              </button>
+
+              <button
+                v-if="fullscreenIndex < images.length - 1"
+                class="gallery-nav-button absolute right-4 flex items-center justify-center w-12 h-12 rounded-full"
+                aria-label="Image suivante"
+                @click.stop="fullscreenIndex++"
+              >
+                <svg
+                  class="w-7 h-7 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </button>
             </div>
-
-            <!-- Image -->
-            <img
-              :src="images[fullscreenIndex]"
-              :alt="`Image ${fullscreenIndex + 1}`"
-              class="max-w-full max-h-full object-contain"
-              @click.stop
-            />
-
-            <!-- Navigation arrows with glass effect -->
-            <button
-              v-if="fullscreenIndex > 0"
-              class="gallery-nav-button absolute left-4 flex items-center justify-center w-12 h-12 rounded-full"
-              @click.stop="fullscreenIndex--"
-            >
-              <svg
-                class="w-7 h-7 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
-            </button>
-
-            <button
-              v-if="fullscreenIndex < images.length - 1"
-              class="gallery-nav-button absolute right-4 flex items-center justify-center w-12 h-12 rounded-full"
-              @click.stop="fullscreenIndex++"
-            >
-              <svg
-                class="w-7 h-7 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </button>
-          </div>
-        </Transition>
-      </Teleport>
-    </template>
+          </Transition>
+        </Teleport>
+      </template>
     </div>
   </AppLayout>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, nextTick } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { AppLayout } from "@/components/layout";
 import {
@@ -455,7 +485,7 @@ watch(
       comments.value = newObs.comments;
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 // Écouter les messages WebSocket pour les commentaires en temps réel
@@ -463,24 +493,28 @@ watch(
   wsMessages,
   (messages) => {
     if (!messages.length) return;
-    
+
     // Traiter TOUS les messages, pas seulement le dernier
     messages.forEach((message) => {
       if (message.channel !== "comments") return;
-      
-      const { type, data } = message.data || { /* empty object for destructuring */ };
+
+      const { type, data } =
+        message.data ||
+        {
+          /* empty object for destructuring */
+        };
       const observationId = route.params.id;
-      
+
       // Vérifier que le commentaire concerne cette observation
       const commentObsId = data?.observationId || data?.observation;
       if (commentObsId && commentObsId !== observationId) return;
-      
+
       switch (type) {
         case "comment:created": {
           const newComment = data?.comment || data;
           // Éviter les doublons (si on a déjà ajouté le commentaire localement)
           const exists = comments.value.some(
-            (c) => (c._id || c.id) === (newComment._id || newComment.id)
+            (c) => (c._id || c.id) === (newComment._id || newComment.id),
           );
           if (!exists && newComment._id) {
             // Create new array for reactivity
@@ -492,12 +526,13 @@ watch(
         case "comment:updated": {
           const updatedComment = data?.comment || data;
           const index = comments.value.findIndex(
-            (c) => (c._id || c.id) === (updatedComment._id || updatedComment.id)
+            (c) =>
+              (c._id || c.id) === (updatedComment._id || updatedComment.id),
           );
           if (index !== -1) {
             // Create new array for reactivity
-            comments.value = comments.value.map((c, i) => 
-              i === index ? updatedComment : c
+            comments.value = comments.value.map((c, i) =>
+              i === index ? updatedComment : c,
             );
             console.log("📨 Commentaire mis à jour via WebSocket");
           }
@@ -507,7 +542,7 @@ watch(
           const deletedId = data?._id || data?.id;
           if (deletedId) {
             comments.value = comments.value.filter(
-              (c) => (c._id || c.id) !== deletedId
+              (c) => (c._id || c.id) !== deletedId,
             );
             console.log("📨 Commentaire supprimé via WebSocket");
           }
@@ -516,7 +551,7 @@ watch(
       }
     });
   },
-  { deep: true }
+  { deep: true },
 );
 
 const currentUserId = computed(() => authUser.value?._id || authUser.value?.id);
@@ -538,7 +573,7 @@ const images = computed(() => {
     imgs.push(
       typeof observation.value.imageUrl === "string"
         ? observation.value.imageUrl
-        : getImageUrl(observation.value.imageUrl)
+        : getImageUrl(observation.value.imageUrl),
     );
   }
 
@@ -571,14 +606,14 @@ const typeBadgeVariant = computed(() => {
  */
 const getTypeTooltipContent = (type) => {
   if (!type) return "Type d'observation non spécifié";
-  
+
   const typeUpper = type.toUpperCase();
   const typeData = OBSERVATION_TYPES[typeUpper];
-  
+
   if (typeData) {
     return typeData.label;
   }
-  
+
   // Fallback for common types not in the constant
   const fallbacks = {
     UFO: "Objet Volant Non Identifié",
@@ -587,7 +622,7 @@ const getTypeTooltipContent = (type) => {
     PAN: "Phénomène Aérien Non Identifié",
     UAP: "Unidentified Aerial Phenomenon",
   };
-  
+
   return fallbacks[typeUpper] || getObservationLabel(typeUpper);
 };
 
@@ -598,14 +633,14 @@ const getTypeTooltipContent = (type) => {
  */
 const getTypeIcon = (type) => {
   if (!type) return "👁️";
-  
+
   const typeUpper = type.toUpperCase();
   const typeData = OBSERVATION_TYPES[typeUpper];
-  
+
   if (typeData?.icon) {
     return typeData.icon;
   }
-  
+
   // Fallback icons for common types
   const fallbackIcons = {
     UFO: "🛸",
@@ -614,7 +649,7 @@ const getTypeIcon = (type) => {
     PAN: "🛸",
     UAP: "🛸",
   };
-  
+
   return fallbackIcons[typeUpper] || "👁️";
 };
 
@@ -659,7 +694,7 @@ watch(
       // Si le hash est supprimé, remonter en haut
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
-  }
+  },
 );
 
 const fetchObservation = async () => {
@@ -678,15 +713,15 @@ const submitComment = async (text) => {
     // L'ajout local est géré par le WebSocket (comment:created)
     await commentStore.addComment(route.params.id, text);
     toast.success("Commentaire ajouté");
-    
+
     // Scroll vers le bas après l'ajout du commentaire
     await nextTick();
     // Trouve le conteneur scrollable (le <main> dans AppLayout)
-    const scrollContainer = document.querySelector('main.overflow-y-auto');
+    const scrollContainer = document.querySelector("main.overflow-y-auto");
     if (scrollContainer) {
       scrollContainer.scrollTo({
         top: scrollContainer.scrollHeight,
-        behavior: 'smooth'
+        behavior: "smooth",
       });
     }
   } catch {
@@ -701,7 +736,7 @@ const deleteComment = async (comment) => {
     // La suppression locale est gérée par le WebSocket (comment:deleted)
     await commentStore.removeComment(
       route.params.id,
-      comment._id || comment.id
+      comment._id || comment.id,
     );
     toast.success("Commentaire supprimé");
   } catch {
@@ -721,6 +756,27 @@ const openFullscreen = (index) => {
 const closeFullscreen = () => {
   showFullscreenGallery.value = false;
 };
+
+const handleKeydown = (e) => {
+  if (!showFullscreenGallery.value) return;
+
+  if (e.key === "Escape") {
+    closeFullscreen();
+  } else if (e.key === "ArrowLeft") {
+    if (fullscreenIndex.value > 0) fullscreenIndex.value--;
+  } else if (e.key === "ArrowRight") {
+    if (fullscreenIndex.value < images.value.length - 1)
+      fullscreenIndex.value++;
+  }
+};
+
+onMounted(() => {
+  window.addEventListener("keydown", handleKeydown);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("keydown", handleKeydown);
+});
 
 const shareObservation = async () => {
   showMenu.value = false;
@@ -787,7 +843,7 @@ const goBack = () => {
   backdrop-filter: blur(18px) saturate(140%);
   -webkit-backdrop-filter: blur(18px) saturate(140%);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 
+  box-shadow:
     0 10px 40px rgba(2, 6, 23, 0.5),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
@@ -850,7 +906,7 @@ const goBack = () => {
 
 /* Subtle grid pattern for map preview */
 .bg-grid-pattern {
-  background-image: 
+  background-image:
     linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
   background-size: 20px 20px;
@@ -880,11 +936,7 @@ const goBack = () => {
   right: 0;
   height: 60px;
   pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.01),
-    transparent
-  );
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), transparent);
   border-radius: inherit;
 }
 
@@ -1032,7 +1084,8 @@ const goBack = () => {
 
 /* Subtle glow animation for interactive elements */
 @keyframes subtle-pulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
   }
   50% {
