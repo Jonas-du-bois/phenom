@@ -269,98 +269,103 @@ class ObservationService {
    * @returns {Object} Global statistics
    */
   async getStatistics() {
-    const [
-      totalSightings,
-      credibilityStats,
-      strangenessStats,
-      durationStats,
-      topCountries,
-      observerTypeDistribution,
-      ufoShapeDistribution,
-      phenomenaDistribution,
-      sightingsWithCoordinates,
-      sightingsWithImages
-    ] = await Promise.all([
-      Observation.countDocuments(),
-      Observation.aggregate([
-        {
-          $group: {
-            _id: null,
-            min: { $min: '$credibility' },
-            max: { $max: '$credibility' },
-            avg: { $avg: '$credibility' }
-          }
+    // OPTIMIZATION: Use $facet to execute all aggregations in a single database query
+    // This significantly reduces round-trips to the database compared to Promise.all with 10 separate queries.
+    const [stats] = await Observation.aggregate([
+      {
+        $facet: {
+          totalSightings: [{ $count: 'count' }],
+          credibilityStats: [
+            {
+              $group: {
+                _id: null,
+                min: { $min: '$credibility' },
+                max: { $max: '$credibility' },
+                avg: { $avg: '$credibility' }
+              }
+            }
+          ],
+          strangenessStats: [
+            {
+              $group: {
+                _id: null,
+                min: { $min: '$strangeness' },
+                max: { $max: '$strangeness' },
+                avg: { $avg: '$strangeness' }
+              }
+            }
+          ],
+          durationStats: [
+            { $match: { duration: { $gt: 0 } } },
+            {
+              $group: {
+                _id: null,
+                min: { $min: '$duration' },
+                max: { $max: '$duration' },
+                avg: { $avg: '$duration' }
+              }
+            }
+          ],
+          topCountries: [
+            { $group: { _id: '$country', count: { $sum: 1 } } },
+            { $sort: { count: -1 } },
+            { $limit: 10 },
+            { $project: { country: '$_id', count: 1, _id: 0 } }
+          ],
+          observerTypeDistribution: [
+            { $unwind: '$observerTypes' },
+            { $group: { _id: '$observerTypes', count: { $sum: 1 } } },
+            { $project: { type: '$_id', count: 1, _id: 0 } }
+          ],
+          ufoShapeDistribution: [
+            { $unwind: '$ufoShapes' },
+            { $group: { _id: '$ufoShapes', count: { $sum: 1 } } },
+            { $project: { shape: '$_id', count: 1, _id: 0 } }
+          ],
+          phenomenaDistribution: [
+            { $unwind: '$phenomena' },
+            { $group: { _id: '$phenomena', count: { $sum: 1 } } },
+            { $project: { phenomenon: '$_id', count: 1, _id: 0 } }
+          ],
+          sightingsWithCoordinates: [
+            { $match: { 'coordinates.lat': { $exists: true, $ne: null } } },
+            { $count: 'count' }
+          ],
+          sightingsWithImages: [
+            { $match: { images: { $exists: true, $not: { $size: 0 } } } },
+            { $count: 'count' }
+          ]
         }
-      ]),
-      Observation.aggregate([
-        {
-          $group: {
-            _id: null,
-            min: { $min: '$strangeness' },
-            max: { $max: '$strangeness' },
-            avg: { $avg: '$strangeness' }
-          }
-        }
-      ]),
-      Observation.aggregate([
-        { $match: { duration: { $gt: 0 } } },
-        {
-          $group: {
-            _id: null,
-            min: { $min: '$duration' },
-            max: { $max: '$duration' },
-            avg: { $avg: '$duration' }
-          }
-        }
-      ]),
-      Observation.aggregate([
-        { $group: { _id: '$country', count: { $sum: 1 } } },
-        { $sort: { count: -1 } },
-        { $limit: 10 },
-        { $project: { country: '$_id', count: 1, _id: 0 } }
-      ]),
-      Observation.aggregate([
-        { $unwind: '$observerTypes' },
-        { $group: { _id: '$observerTypes', count: { $sum: 1 } } },
-        { $project: { type: '$_id', count: 1, _id: 0 } }
-      ]),
-      Observation.aggregate([
-        { $unwind: '$ufoShapes' },
-        { $group: { _id: '$ufoShapes', count: { $sum: 1 } } },
-        { $project: { shape: '$_id', count: 1, _id: 0 } }
-      ]),
-      Observation.aggregate([
-        { $unwind: '$phenomena' },
-        { $group: { _id: '$phenomena', count: { $sum: 1 } } },
-        { $project: { phenomenon: '$_id', count: 1, _id: 0 } }
-      ]),
-      Observation.countDocuments({
-        'coordinates.lat': { $exists: true, $ne: null }
-      }),
-      Observation.countDocuments({
-        images: { $exists: true, $not: { $size: 0 } }
-      })
+      }
     ]);
 
-    const credStats = credibilityStats[0] || { min: 0, max: 15, avg: 0 };
-    const strangeStats = strangenessStats[0] || { min: 0, max: 10, avg: 0 };
-    const durStats = durationStats[0] || { min: 0, max: 0, avg: 0 };
+    // Process results from $facet (arrays)
+    const totalSightings = stats.totalSightings[0]?.count || 0;
+
+    const credStats = stats.credibilityStats[0] || { min: 0, max: 15, avg: 0 };
+    const strangeStats = stats.strangenessStats[0] || { min: 0, max: 10, avg: 0 };
+    const durStats = stats.durationStats[0] || { min: 0, max: 0, avg: 0 };
+
+    const topCountries = stats.topCountries;
 
     // Convert distributions to objects
     const observerTypeDist = {};
-    observerTypeDistribution.forEach((item) => {
+    stats.observerTypeDistribution.forEach((item) => {
       observerTypeDist[item.type] = item.count;
     });
 
     const ufoShapeDist = {};
-    ufoShapeDistribution.forEach((item) => {
+    stats.ufoShapeDistribution.forEach((item) => {
       ufoShapeDist[item.shape] = item.count;
     });
 
     const phenomenaDist = {};
-    phenomenaDistribution.forEach((item) => {
+    stats.phenomenaDistribution.forEach((item) => {
       phenomenaDist[item.phenomenon] = item.count;
     });
+
+    const sightingsWithCoordinates = stats.sightingsWithCoordinates[0]?.count || 0;
+    const sightingsWithImages = stats.sightingsWithImages[0]?.count || 0;
 
     return {
       totalSightings,
