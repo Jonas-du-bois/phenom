@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals';
 import Observation from '../src/models/Observation.js';
+import Comment from '../src/models/Comment.js';
 import observationService from '../src/services/observation.service.js';
 
 describe('ObservationService Unit Tests', () => {
@@ -17,6 +18,9 @@ describe('ObservationService Unit Tests', () => {
 
       const aggregateSpy = jest.spyOn(Observation, 'aggregate').mockResolvedValue(mockObservations);
       const populateSpy = jest.spyOn(Observation, 'populate').mockResolvedValue(mockObservations);
+      const commentAggregateSpy = jest.spyOn(Comment, 'aggregate').mockResolvedValue([
+        { _id: '1', count: 2 }
+      ]);
 
       const lat = 48.8566;
       const lng = 2.3522;
@@ -47,9 +51,13 @@ describe('ObservationService Unit Tests', () => {
       // Verify populate is called
       expect(populateSpy).toHaveBeenCalledWith(mockObservations, expect.any(Array));
 
+      // Verify comment aggregation is called
+      expect(commentAggregateSpy).toHaveBeenCalled();
+
       // Verify result
       expect(result).toBe(mockObservations);
       expect(result[0].distance).toBe(5);
+      expect(result[0].commentsCount).toBe(2);
     });
   });
 });

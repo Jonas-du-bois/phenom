@@ -6,6 +6,7 @@ import Observation, {
   PHENOMENA,
   LOCALE_TYPES
 } from '../models/Observation.js';
+import Comment from '../models/Comment.js';
 
 import { publishObservationEvent } from '../config/websocket.js';
 
@@ -35,13 +36,28 @@ class ObservationService {
     const [sightings, total] = await Promise.all([
       Observation.find()
         .populate('userId', 'name email avatar')
-        .populate('commentsCount')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean({ virtuals: true }),
       Observation.countDocuments()
     ]);
+
+    // OPTIMIZATION: Manually aggregate comment counts to avoid N+1 queries
+    const observationIds = sightings.map((s) => s._id);
+    const commentCounts = await Comment.aggregate([
+      { $match: { observationId: { $in: observationIds } } },
+      { $group: { _id: '$observationId', count: { $sum: 1 } } }
+    ]);
+
+    const countMap = {};
+    commentCounts.forEach((c) => {
+      countMap[c._id.toString()] = c.count;
+    });
+
+    sightings.forEach((s) => {
+      s.commentsCount = countMap[s._id.toString()] || 0;
+    });
 
     const totalPages = Math.ceil(total / limit);
 
@@ -211,13 +227,28 @@ class ObservationService {
     const [sightings, total] = await Promise.all([
       Observation.find(query)
         .populate('userId', 'name email avatar')
-        .populate('commentsCount')
         .sort({ createdAt: -1 })
         .skip(offset)
         .limit(limit)
         .lean({ virtuals: true }),
       Observation.countDocuments(query)
     ]);
+
+    // OPTIMIZATION: Manually aggregate comment counts to avoid N+1 queries
+    const observationIds = sightings.map((s) => s._id);
+    const commentCounts = await Comment.aggregate([
+      { $match: { observationId: { $in: observationIds } } },
+      { $group: { _id: '$observationId', count: { $sum: 1 } } }
+    ]);
+
+    const countMap = {};
+    commentCounts.forEach((c) => {
+      countMap[c._id.toString()] = c.count;
+    });
+
+    sightings.forEach((s) => {
+      s.commentsCount = countMap[s._id.toString()] || 0;
+    });
 
     // Calculate page info
     const currentPage = Math.floor(offset / limit) + 1;
@@ -678,9 +709,24 @@ class ObservationService {
 
     // Populate fields manually since aggregate returns plain objects
     await Observation.populate(observations, [
-      { path: 'userId', select: 'name email avatar' },
-      { path: 'commentsCount' }
+      { path: 'userId', select: 'name email avatar' }
     ]);
+
+    // OPTIMIZATION: Manually aggregate comment counts to avoid N+1 queries
+    const observationIds = observations.map((s) => s._id);
+    const commentCounts = await Comment.aggregate([
+      { $match: { observationId: { $in: observationIds } } },
+      { $group: { _id: '$observationId', count: { $sum: 1 } } }
+    ]);
+
+    const countMap = {};
+    commentCounts.forEach((c) => {
+      countMap[c._id.toString()] = c.count;
+    });
+
+    observations.forEach((s) => {
+      s.commentsCount = countMap[s._id.toString()] || 0;
+    });
 
     return observations;
   }
