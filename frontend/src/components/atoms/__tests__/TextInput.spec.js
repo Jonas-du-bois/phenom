@@ -43,4 +43,40 @@ describe('TextInput', () => {
     expect(id).toBeDefined()
     expect(label.attributes('for')).toBe(id)
   })
+
+  it('sets aria-invalid and aria-describedby when error is present', () => {
+    const wrapper = mount(TextInput, {
+      props: {
+        label: 'Test Label',
+        id: 'test-error-id',
+        error: 'Test Error'
+      }
+    })
+
+    const input = wrapper.find('input')
+    const errorMessage = wrapper.find('p[role="alert"]')
+
+    expect(input.attributes('aria-invalid')).toBe('true')
+    expect(input.attributes('aria-describedby')).toBe('test-error-id-error')
+
+    expect(errorMessage.exists()).toBe(true)
+    expect(errorMessage.attributes('id')).toBe('test-error-id-error')
+    expect(errorMessage.text()).toBe('Test Error')
+  })
+
+  it('does not set aria attributes when no error is present', () => {
+    const wrapper = mount(TextInput, {
+      props: {
+        label: 'Test Label',
+        id: 'test-no-error-id'
+      }
+    })
+
+    const input = wrapper.find('input')
+    const errorMessage = wrapper.find('p[role="alert"]')
+
+    expect(input.attributes('aria-invalid')).toBe('false')
+    expect(input.attributes('aria-describedby')).toBeUndefined()
+    expect(errorMessage.exists()).toBe(false)
+  })
 })
