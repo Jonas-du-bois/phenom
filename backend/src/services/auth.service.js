@@ -123,7 +123,6 @@ class AuthService {
 
     // TODO: Send email with token
     // For now, return token in response (development only)
-    console.log(`🔐 Reset Token for ${email}: ${resetToken}`);
 
     return {
       message: 'If this email exists, a reset link has been sent',

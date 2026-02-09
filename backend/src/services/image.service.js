@@ -116,11 +116,6 @@ Important:
   async callGeminiApi(prompt) {
     const apiKey = process.env.GEMINI_API_KEY;
 
-    console.log(
-      '🔑 GEMINI_API_KEY configurée:',
-      apiKey ? `Oui (${apiKey.substring(0, 10)}...)` : 'NON!'
-    );
-
     if (!apiKey) {
       throw new Error(
         'GEMINI_API_KEY non configurée dans les variables d\'environnement'
@@ -131,6 +126,7 @@ Important:
       'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent';
 
     console.log('🤖 Appel API Gemini pour génération d\'image...');
+    // Log only the first 200 chars of the prompt to avoid filling logs
     console.log('📝 Prompt:', prompt.substring(0, 200) + '...');
     console.log('🌐 Endpoint:', endpoint);
 
