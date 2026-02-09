@@ -12,3 +12,8 @@
 **Vulnerability:** The `createObservation` endpoint passed `req.body` directly to `Observation.create`, allowing users to inject an `images` array with arbitrary `publicId`s. Deleting the observation then deleted the referenced images from Cloudinary, leading to an IDOR vulnerability where an attacker could delete any image.
 **Learning:** Mongoose `create` accepts all fields in the schema unless explicitly filtered. `express-validator` validates input but does not strip extra fields by default (unless `matchedData` is used).
 **Prevention:** Explicitly destructure and exclude sensitive or managed fields (like `images`, `userId`) from `req.body` before passing to service layer, or use strict DTOs.
+
+## 2026-02-09 - Sensitive Information Disclosure in Logs
+**Vulnerability:** The authentication middleware (`auth.js`) and other services logged full or partial sensitive data (JWT tokens, user emails, API keys, reset tokens) to `console.log` for debugging purposes. This exposes credentials and PII in production logs (CWE-532).
+**Learning:** Developers often leave "temporary" debug logs that print entire objects or tokens. "Partial" redaction (printing first 30 chars) is often insufficient for security and still leaks data.
+**Prevention:** Remove all `console.log` statements containing sensitive data before merging. Use a logger with redaction capabilities or enforce strict linting rules against `console.log` in production code. Ensure errors are logged without sensitive context.
