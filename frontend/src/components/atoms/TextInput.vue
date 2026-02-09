@@ -156,6 +156,8 @@ const handleInput = (e) => {
         :disabled="disabled"
         :required="required"
         :autocomplete="autocomplete"
+        :aria-invalid="!!error"
+        :aria-describedby="error ? `${inputId}-error` : undefined"
         :class="[
           'w-full py-3 bg-white/5 border text-white',
           'placeholder:text-white/40',
@@ -182,7 +184,12 @@ const handleInput = (e) => {
     </div>
 
     <!-- Error Message (conditional) -->
-    <p v-if="error" class="mt-2 text-xs text-red-500">
+    <p
+      v-if="error"
+      :id="`${inputId}-error`"
+      class="mt-2 text-xs text-red-500"
+      role="alert"
+    >
       {{ error }}
     </p>
   </div>
