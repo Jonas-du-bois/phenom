@@ -221,7 +221,7 @@ export const OBSERVATION_TYPE_OPTIONS = Object.entries(OBSERVATION_TYPES).map(
     description: data.description,
     color: data.color,
     icon: data.icon,
-  })
+  }),
 );
 
 // ============================================================================

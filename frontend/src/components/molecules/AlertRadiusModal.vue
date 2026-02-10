@@ -111,7 +111,7 @@ watch(
   () => props.value,
   (v) => {
     localValue.value = v;
-  }
+  },
 );
 
 // Emit update event when local value changes (v-model support)

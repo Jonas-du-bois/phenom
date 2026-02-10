@@ -107,7 +107,7 @@ const handleInput = (e) => {
  */
 const formattedDuration = computed(() => {
   const seconds = props.modelValue;
-  
+
   // Less than a minute: show seconds only
   if (seconds < 60) {
     return `${seconds}s`;

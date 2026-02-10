@@ -64,7 +64,7 @@ export const useFilterStore = defineStore("filter", () => {
       value: t.code,
       label: t.label,
       icon: t.icon,
-    }))
+    })),
   );
 
   /** UFO shape options for dropdowns */
@@ -74,7 +74,7 @@ export const useFilterStore = defineStore("filter", () => {
       label: s.label,
       icon: s.icon,
       color: s.color,
-    }))
+    })),
   );
 
   /** Phenomena options for dropdowns */
@@ -85,17 +85,17 @@ export const useFilterStore = defineStore("filter", () => {
       icon: p.icon,
       color: p.color,
       category: p.category,
-    }))
+    })),
   );
 
   /** Locale type options for dropdowns */
   const localeOptions = computed(() =>
-    LOCALE_TYPES.map((l) => ({ value: l.code, label: l.label, icon: l.icon }))
+    LOCALE_TYPES.map((l) => ({ value: l.code, label: l.label, icon: l.icon })),
   );
 
   /** Country options for dropdowns */
   const countryOptions = computed(() =>
-    countries.value.map((c) => ({ value: c, label: c }))
+    countries.value.map((c) => ({ value: c, label: c })),
   );
 
   /** Year range based on available data */

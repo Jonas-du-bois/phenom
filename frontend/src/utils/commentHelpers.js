@@ -166,7 +166,7 @@ export const calculateCommentStats = (comments) => {
   // Average length
   const totalLength = comments.reduce(
     (sum, comment) => sum + (comment.content?.length || 0),
-    0
+    0,
   );
   stats.avgLength = Math.round(totalLength / comments.length);
 

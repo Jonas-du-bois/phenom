@@ -36,7 +36,11 @@ import "./style.css";
 (function () {
   if (typeof EventTarget !== "undefined") {
     const originalAddEventListener = EventTarget.prototype.addEventListener;
-    EventTarget.prototype.addEventListener = function (type, listener, options) {
+    EventTarget.prototype.addEventListener = function (
+      type,
+      listener,
+      options,
+    ) {
       // Make touch events passive by default (unless explicitly set)
       if (type === "touchstart" || type === "touchmove" || type === "wheel") {
         if (typeof options === "boolean") {
@@ -90,7 +94,7 @@ try {
         ws.disconnect();
       }
     },
-    { immediate: true } // Run immediately on app start
+    { immediate: true }, // Run immediately on app start
   );
 } catch (e) {
   // WebSocket is optional - app works without it

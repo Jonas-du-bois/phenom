@@ -92,7 +92,7 @@ const tooltipStyle = ref({});
  */
 const toggle = async () => {
   isVisible.value = !isVisible.value;
-  
+
   if (isVisible.value) {
     await nextTick();
     calculatePosition();
@@ -121,16 +121,17 @@ const calculatePosition = () => {
   if (props.position === "auto") {
     const spaceAbove = triggerRect.top;
     const spaceBelow = viewportHeight - triggerRect.bottom;
-    computedPosition.value = spaceBelow >= tooltipRect.height + 12 || spaceBelow > spaceAbove 
-      ? "bottom" 
-      : "top";
+    computedPosition.value =
+      spaceBelow >= tooltipRect.height + 12 || spaceBelow > spaceAbove
+        ? "bottom"
+        : "top";
   } else {
     computedPosition.value = props.position;
   }
 
   // Calculate horizontal centering with viewport bounds
-  let left = triggerRect.left + (triggerRect.width / 2) - (tooltipRect.width / 2);
-  
+  let left = triggerRect.left + triggerRect.width / 2 - tooltipRect.width / 2;
+
   // Keep tooltip within viewport horizontally
   const padding = 12;
   if (left < padding) {
@@ -258,7 +259,7 @@ const arrowPositionClass = computed(() => {
   min-width: 120px;
   padding: 12px 16px;
   border-radius: 1rem;
-  
+
   /* Liquid glass effect - EXACT same values as navbar */
   background: linear-gradient(
     135deg,
@@ -317,7 +318,7 @@ const arrowPositionClass = computed(() => {
   height: 12px;
   left: 50%;
   transform: translateX(-50%) rotate(45deg);
-  
+
   /* Match tooltip background exactly */
   background: linear-gradient(
     135deg,

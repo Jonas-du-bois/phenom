@@ -74,15 +74,15 @@ watch(
   wsMessages,
   (msgs) => {
     if (!msgs || msgs.length === 0) return;
-    
+
     // Process all messages, not just the last one
     msgs.forEach((message) => {
       // WebSocket messages are wrapped: { channel, data: { type, data: { comment, observationId } } }
       if (message.channel !== "comments") return;
-      
+
       const payload = message.data;
       if (!payload?.type?.startsWith("comment:")) return;
-      
+
       const eventObservationId = payload.data?.observationId;
       if (eventObservationId !== props.observation._id) return;
 
@@ -105,7 +105,7 @@ watch(
           if (idx !== -1) {
             // Create new array for reactivity
             comments.value = comments.value.map((c, i) =>
-              i === idx ? comment : c
+              i === idx ? comment : c,
             );
           }
         }
@@ -120,7 +120,7 @@ watch(
       }
     });
   },
-  { deep: true }
+  { deep: true },
 );
 
 // ============================================================================
@@ -133,7 +133,7 @@ watch(
 const relativeDate = computed(() => {
   return formatRelativeTime(
     props.observation.createdAt || props.observation.date,
-    true
+    true,
   );
 });
 
@@ -357,8 +357,13 @@ const goToComments = () => {
        Clickable article that emits 'click' event with observation data
        ======================================================================== -->
   <article
-    class="bg-[#000000] border-b border-white/10 rounded-lg"
+    class="bg-[#000000] border-b border-white/10 rounded-lg focus-visible:ring-2 focus-visible:ring-[#00F0FF] focus-visible:outline-none cursor-pointer"
     @click="emit('click', observation)"
+    @keydown.enter="emit('click', observation)"
+    @keydown.space.prevent="emit('click', observation)"
+    tabindex="0"
+    role="button"
+    :aria-label="`Observation de ${userName} à ${city}`"
   >
     <!-- ======================================================================
          HEADER SECTION - User avatar, name, location and date
@@ -513,6 +518,15 @@ const goToComments = () => {
       <button
         class="flex items-center gap-1 text-xs text-white/40 hover:text-[#00F0FF] transition-colors relative"
         @click.stop="toggleComments"
+        @keydown.enter.stop
+        @keydown.space.stop
+        :aria-expanded="showComments"
+        :aria-controls="`comments-section-${observation._id}`"
+        :aria-label="
+          showComments
+            ? 'Masquer les commentaires'
+            : `Afficher ${commentCount} commentaires`
+        "
       >
         <!-- Comment bubble icon -->
         <svg
@@ -547,6 +561,7 @@ const goToComments = () => {
       <Transition name="slide">
         <div
           v-if="showComments"
+          :id="`comments-section-${observation._id}`"
           class="mt-3 space-y-3"
           @click="stopPropagation"
         >
@@ -558,10 +573,7 @@ const goToComments = () => {
           </div>
 
           <!-- Comments list (scrollable, max height) -->
-          <div
-            v-else-if="comments.length > 0"
-            class="max-h-60 overflow-y-auto"
-          >
+          <div v-else-if="comments.length > 0" class="max-h-60 overflow-y-auto">
             <!-- Individual comment item -->
             <div
               v-for="comment in comments"
@@ -585,7 +597,9 @@ const goToComments = () => {
                   }}</span>
                 </div>
                 <!-- Comment text content -->
-                <p class="text-sm text-white/70 break-words">{{ comment.text }}</p>
+                <p class="text-sm text-white/70 break-words">
+                  {{ comment.text }}
+                </p>
               </div>
             </div>
           </div>
@@ -634,6 +648,9 @@ const goToComments = () => {
       <button
         class="flex items-center gap-2 px-4 py-2 text-white/50 hover:text-[#00F0FF] transition-colors touch-target"
         @click.stop="goToComments"
+        @keydown.enter.stop
+        @keydown.space.stop
+        aria-label="Commenter cette observation"
       >
         <svg
           class="w-5 h-5"
@@ -651,6 +668,9 @@ const goToComments = () => {
       <button
         class="flex items-center gap-2 px-4 py-2 text-white/50 hover:text-[#00F0FF] transition-colors touch-target relative group"
         @click.stop="handleShare"
+        @keydown.enter.stop
+        @keydown.space.stop
+        aria-label="Partager cette observation"
       >
         <svg
           class="w-5 h-5"

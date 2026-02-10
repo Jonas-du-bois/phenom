@@ -105,9 +105,9 @@ const variantClasses = {
  * Square dimensions for each size
  */
 const sizeClasses = {
-  sm: "w-8 h-8",    // 32px
-  md: "w-10 h-10",  // 40px
-  lg: "w-12 h-12",  // 48px
+  sm: "w-8 h-8", // 32px
+  md: "w-10 h-10", // 40px
+  lg: "w-12 h-12", // 48px
 };
 </script>
 
@@ -129,7 +129,7 @@ const sizeClasses = {
       sizeClasses[size],
       {
         'opacity-50 cursor-not-allowed': disabled,
-        'pointer-events-none': loading
+        'pointer-events-none': loading,
       },
     ]"
     @click="handleClick"

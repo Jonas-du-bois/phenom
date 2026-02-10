@@ -52,7 +52,7 @@ export function useErrorHandler() {
         case 404:
           console.error(
             "404 - Ressource non trouvée:",
-            err.response.config.url
+            err.response.config.url,
           );
           if (redirectOn404) {
             router.push({ name: "not-found" });

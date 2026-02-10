@@ -87,27 +87,36 @@ export function useWebSocket() {
       connected.value = true;
       error.value = null;
       reconnectAttempts.value = 0;
-      console.log("✅ WebSocket connected with WSClient", token ? "(authenticated)" : "(anonymous)");
+      console.log(
+        "✅ WebSocket connected with WSClient",
+        token ? "(authenticated)" : "(anonymous)",
+      );
 
       // Subscribe to channels with callbacks
       await ws.value.sub("observations", (data) => {
         console.log("📨 Message observations:", data);
         // Create new array reference for Vue reactivity
-        messages.value = [...messages.value, {
-          channel: "observations",
-          data,
-          receivedAt: new Date().toISOString(),
-        }];
+        messages.value = [
+          ...messages.value,
+          {
+            channel: "observations",
+            data,
+            receivedAt: new Date().toISOString(),
+          },
+        ];
       });
 
       await ws.value.sub("comments", (data) => {
         console.log("📨 Message comments:", data);
         // Create new array reference for Vue reactivity
-        messages.value = [...messages.value, {
-          channel: "comments",
-          data,
-          receivedAt: new Date().toISOString(),
-        }];
+        messages.value = [
+          ...messages.value,
+          {
+            channel: "comments",
+            data,
+            receivedAt: new Date().toISOString(),
+          },
+        ];
       });
 
       console.log("✅ Subscribed to channels: observations, comments");
@@ -116,14 +125,14 @@ export function useWebSocket() {
       connected.value = false;
       console.error("❌ WebSocket connection error:", err);
       console.error(
-        `⚠️ Verify that the backend server is accessible at ${WS_URL}`
+        `⚠️ Verify that the backend server is accessible at ${WS_URL}`,
       );
 
       // Automatic reconnection attempt
       if (reconnectAttempts.value < maxReconnectAttempts) {
         reconnectAttempts.value++;
         console.log(
-          `🔄 Reconnection (${reconnectAttempts.value}/${maxReconnectAttempts}) in ${reconnectDelay / 1000}s...`
+          `🔄 Reconnection (${reconnectAttempts.value}/${maxReconnectAttempts}) in ${reconnectDelay / 1000}s...`,
         );
         setTimeout(() => connect(token), reconnectDelay);
       } else {

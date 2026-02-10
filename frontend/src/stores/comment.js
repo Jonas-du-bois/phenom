@@ -55,7 +55,7 @@ export const useCommentStore = defineStore("comment", () => {
     try {
       const response = await commentService.getByObservation(
         observationId,
-        params
+        params,
       );
       const fetchedComments =
         response.data?.comments || response.comments || response.data || [];
@@ -114,7 +114,7 @@ export const useCommentStore = defineStore("comment", () => {
       if (commentsByObservation.value[observationId]) {
         commentsByObservation.value[observationId] =
           commentsByObservation.value[observationId].filter(
-            (c) => c._id !== commentId
+            (c) => c._id !== commentId,
           );
       }
     } catch (err) {

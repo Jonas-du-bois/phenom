@@ -20,7 +20,7 @@ export function useComments() {
   const totalComments = computed(() => {
     return Object.values(commentsByObservation.value).reduce(
       (sum, comments) => sum + comments.length,
-      0
+      0,
     );
   });
 
@@ -37,7 +37,7 @@ export function useComments() {
 
       const response = await commentService.getByObservation(
         observationId,
-        params
+        params,
       );
 
       // Handle different API response structures
@@ -54,13 +54,13 @@ export function useComments() {
 
       console.log(
         `✅ Commentaires chargés pour ${observationId}:`,
-        comments.length
+        comments.length,
       );
       return comments;
     } catch (err) {
       console.error(
         `❌ Erreur lors du chargement des commentaires pour ${observationId}:`,
-        err
+        err,
       );
       error.value = err.response?.data?.message || err.message;
       commentsByObservation.value[observationId] = [];
@@ -78,7 +78,7 @@ export function useComments() {
    */
   const loadCommentsForObservations = async (
     observationIds,
-    params = { limit: 100 }
+    params = { limit: 100 },
   ) => {
     for (const id of observationIds) {
       await loadComments(id, params);
@@ -133,7 +133,7 @@ export function useComments() {
       if (observationId && commentsByObservation.value[observationId]) {
         commentsByObservation.value[observationId] =
           commentsByObservation.value[observationId].filter(
-            (c) => c._id !== commentId
+            (c) => c._id !== commentId,
           );
       }
 
@@ -160,7 +160,7 @@ export function useComments() {
 
     // Check if comment doesn't already exist
     const exists = commentsByObservation.value[observationId].some(
-      (c) => c._id === comment._id
+      (c) => c._id === comment._id,
     );
     if (!exists) {
       commentsByObservation.value[observationId].push(comment);

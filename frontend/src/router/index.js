@@ -16,7 +16,10 @@
  */
 
 import { createRouter, createWebHistory } from "vue-router";
-import { saveScrollPosition, restoreScrollPosition } from "@/composables/usePageTransition";
+import {
+  saveScrollPosition,
+  restoreScrollPosition,
+} from "@/composables/usePageTransition";
 
 // ============================================================================
 // AUTHENTICATION HELPERS
@@ -233,7 +236,7 @@ router.beforeEach((to, from, next) => {
     const getDepth = (path) => path?.split("/").filter(Boolean).length || 0;
     const toDepth = getDepth(to.path);
     const fromDepth = getDepth(from.path);
-    
+
     // Going deeper: save current scroll position
     if (toDepth > fromDepth) {
       saveScrollPosition(from.path);
@@ -296,7 +299,7 @@ router.afterEach((to, from) => {
   const toDepth = getDepth(to.path);
   const fromDepth = getDepth(from?.path);
   const isGoingBack = from?.path && fromDepth > toDepth;
-  
+
   // After transition completes, handle scroll
   setTimeout(() => {
     if (isGoingBack) {

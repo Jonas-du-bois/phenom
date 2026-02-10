@@ -20,7 +20,7 @@ export const commentService = {
   async getByObservation(observationId, params = {}) {
     const response = await apiClient.get(
       `/observations/${observationId}/comments`,
-      { params }
+      { params },
     );
     return response.data;
   },
@@ -37,7 +37,7 @@ export const commentService = {
     const body = typeof data === "string" ? { text: data } : data;
     const response = await apiClient.post(
       `/observations/${observationId}/comments`,
-      body
+      body,
     );
     return response.data;
   },

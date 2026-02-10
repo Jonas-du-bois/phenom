@@ -343,7 +343,7 @@ export const cleanExpiredCache = () => {
   try {
     const keys = Object.keys(localStorage);
     const cacheKeys = keys.filter((k) =>
-      k.startsWith(STORAGE_KEYS.CACHE_PREFIX)
+      k.startsWith(STORAGE_KEYS.CACHE_PREFIX),
     );
 
     cacheKeys.forEach((cacheKey) => {
@@ -364,7 +364,7 @@ export const clearAllCache = () => {
   try {
     const keys = Object.keys(localStorage);
     const cacheKeys = keys.filter((k) =>
-      k.startsWith(STORAGE_KEYS.CACHE_PREFIX)
+      k.startsWith(STORAGE_KEYS.CACHE_PREFIX),
     );
     cacheKeys.forEach((key) => removeItem(key));
   } catch (error) {

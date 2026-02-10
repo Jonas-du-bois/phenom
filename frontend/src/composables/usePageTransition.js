@@ -64,10 +64,10 @@ const scrollPositions = new Map();
  */
 export const saveScrollPosition = (path) => {
   if (!path) return;
-  
+
   const main = document.querySelector("main");
   let position;
-  
+
   if (main && main.scrollTop > 0) {
     // Scroll is on the main element
     position = { x: main.scrollLeft, y: main.scrollTop, target: "main" };
@@ -76,13 +76,13 @@ export const saveScrollPosition = (path) => {
     position = { x: window.scrollX, y: window.scrollY, target: "window" };
   } else {
     // Check main anyway (might be at 0)
-    position = { 
-      x: main?.scrollLeft || 0, 
-      y: main?.scrollTop || 0, 
-      target: main ? "main" : "window" 
+    position = {
+      x: main?.scrollLeft || 0,
+      y: main?.scrollTop || 0,
+      target: main ? "main" : "window",
     };
   }
-  
+
   scrollPositions.set(path, position);
   console.log("[Scroll] Saved position for", path, position);
 };
@@ -108,7 +108,7 @@ export const restoreScrollPosition = (path) => {
     console.log("[Scroll] No saved position for", path);
     return;
   }
-  
+
   // Wait for DOM to update after transition
   requestAnimationFrame(() => {
     setTimeout(() => {
@@ -219,13 +219,13 @@ export function usePageTransition() {
     (to, from) => {
       const toDepth = getRouteDepth(to);
       const fromDepth = getRouteDepth(from);
-      
+
       // Mark if we're going back (for scroll restoration in router)
       isGoingBack.value = fromDepth > toDepth;
-      
+
       transitionName.value = determineTransition(to, from);
       previousPath.value = from;
-    }
+    },
   );
 
   // ============================================================================
@@ -238,7 +238,7 @@ export function usePageTransition() {
 
     /** Previous route path */
     previousPath,
-    
+
     /** Whether we're navigating back */
     isGoingBack,
 
@@ -250,7 +250,7 @@ export function usePageTransition() {
 
     /** Utility to manually determine transition */
     determineTransition,
-    
+
     /** Scroll position utilities */
     saveScrollPosition,
     getScrollPosition,

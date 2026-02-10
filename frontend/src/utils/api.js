@@ -106,7 +106,8 @@ apiClient.interceptors.response.use(
       if (PUBLIC_ROUTES.some((r) => originalRequest.url?.includes(r))) {
         // Show error toast for failed login/signup
         const toast = await getToast();
-        const errorMsg = error.response?.data?.message || "Erreur d'authentification";
+        const errorMsg =
+          error.response?.data?.message || "Erreur d'authentification";
         toast.error(errorMsg);
         return Promise.reject(error);
       }
@@ -161,10 +162,10 @@ apiClient.interceptors.response.use(
       const toast = await getToast();
       const status = error.response.status;
       const errorData = error.response.data;
-      
+
       // Extract error message from various formats
       let errorMessage = "Une erreur est survenue";
-      
+
       if (errorData?.message) {
         errorMessage = errorData.message;
       } else if (errorData?.error) {
@@ -193,7 +194,7 @@ apiClient.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default apiClient;

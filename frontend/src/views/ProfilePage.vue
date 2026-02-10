@@ -244,7 +244,10 @@
 
           <!-- Map -->
           <template v-else-if="activeTab === 'map'">
-            <div v-if="userObservationsList.length === 0" class="text-center py-8">
+            <div
+              v-if="userObservationsList.length === 0"
+              class="text-center py-8"
+            >
               <EmptyState
                 icon="map"
                 title="Aucune observation à afficher"
@@ -259,8 +262,8 @@
               v-else
               class="profile-map-container rounded-2xl overflow-hidden relative z-0 border border-white/10"
             >
-              <ObservationMap 
-                :observations="userObservationsList" 
+              <ObservationMap
+                :observations="userObservationsList"
                 :zoom="5"
                 :show-zoom-controls="false"
                 :show-popup="false"
@@ -268,17 +271,25 @@
                 compact
               />
               <!-- Custom badge overlay for profile -->
-              <div 
+              <div
                 class="absolute top-3 left-3 z-[1000] backdrop-blur-xl bg-[#12151C]/80 px-3 py-2 rounded-xl border border-white/10 shadow-lg"
               >
                 <div class="flex items-center gap-2">
                   <div class="relative">
                     <div class="w-2 h-2 bg-[#00F0FF] rounded-full"></div>
-                    <div class="absolute inset-0 w-2 h-2 bg-[#00F0FF] rounded-full animate-ping opacity-75"></div>
+                    <div
+                      class="absolute inset-0 w-2 h-2 bg-[#00F0FF] rounded-full animate-ping opacity-75"
+                    ></div>
                   </div>
                   <span class="text-sm font-medium">
-                    <span class="font-bold text-[#00F0FF]">{{ userObservationsList.length }}</span>
-                    <span class="text-white/60 ml-1 text-xs">{{ userObservationsList.length > 1 ? 'observations' : 'observation' }}</span>
+                    <span class="font-bold text-[#00F0FF]">{{
+                      userObservationsList.length
+                    }}</span>
+                    <span class="text-white/60 ml-1 text-xs">{{
+                      userObservationsList.length > 1
+                        ? "observations"
+                        : "observation"
+                    }}</span>
                   </span>
                 </div>
               </div>
@@ -339,7 +350,7 @@ const averageCredibility = computed(() => {
   if (!userObservationsList.value.length) return "0";
   const sum = userObservationsList.value.reduce(
     (acc, o) => acc + (o.credibility || o.credibilityScore || 0),
-    0
+    0,
   );
   return (sum / userObservationsList.value.length).toFixed(1);
 });
@@ -358,7 +369,7 @@ watch(
   () => route.params.userId,
   () => {
     fetchProfile();
-  }
+  },
 );
 
 const fetchProfile = async () => {
@@ -412,7 +423,7 @@ const fetchProfile = async () => {
         await observationStore.fetchObservations({ limit: 50 });
         const id = userId;
         userObservationsList.value = observationStore.observations.filter(
-          (o) => (o.user?._id || o.user?.id || o.user) === id
+          (o) => (o.user?._id || o.user?.id || o.user) === id,
         );
         stats.value.observations = userObservationsList.value.length;
       } catch (e) {
@@ -449,8 +460,8 @@ const formatDate = (date) => {
   height: calc(100vh - 28rem);
   min-height: 300px;
   max-height: 500px;
-  background: #080A0E;
-  box-shadow: 
+  background: #080a0e;
+  box-shadow:
     0 4px 24px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }

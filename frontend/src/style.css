@@ -652,8 +652,9 @@ video {
 /* Page Transition - Default (subtle fade + scale) */
 .page-enter-active,
 .page-leave-active {
-  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Lower z-index for leaving page to prevent fixed elements overlap */
@@ -680,8 +681,9 @@ video {
 /* Page Slide Forward (entering deeper into app) */
 .page-slide-forward-enter-active,
 .page-slide-forward-leave-active {
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Lower z-index for leaving page */
@@ -708,8 +710,9 @@ video {
 /* Page Slide Back (going back in navigation) */
 .page-slide-back-enter-active,
 .page-slide-back-leave-active {
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Lower z-index for leaving page */

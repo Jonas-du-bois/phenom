@@ -68,7 +68,7 @@ export const getImageUrl = (imageData, options = {}) => {
 export const loadImagesForObservation = async (observation) => {
   // Plus rien à faire, les URLs sont déjà publiques
   console.log(
-    `📸 ${observation.images?.length || 0} images Cloudinary pour observation ${observation._id}`
+    `📸 ${observation.images?.length || 0} images Cloudinary pour observation ${observation._id}`,
   );
 };
 
@@ -87,7 +87,7 @@ export const loadImagesForObservation = async (observation) => {
 export const getPlaceholderImage = (
   text = "Image",
   width = 400,
-  height = 300
+  height = 300,
 ) => {
   return `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><rect width="${width}" height="${height}" fill="%23e5e7eb"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="14" fill="%239ca3af">${encodeURIComponent(text)}</text></svg>`;
 };

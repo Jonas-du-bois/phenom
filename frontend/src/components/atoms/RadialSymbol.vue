@@ -74,17 +74,17 @@ const rayPaths = computed(() => {
   const paths = [];
   const centerX = props.size / 2;
   const centerY = props.size / 2;
-  const innerRadius = props.size * 0.15;  // Start 15% from center
-  const outerRadius = props.size * 0.45;  // End 45% from center
+  const innerRadius = props.size * 0.15; // Start 15% from center
+  const outerRadius = props.size * 0.45; // End 45% from center
 
   for (let i = 0; i < props.rays; i++) {
     // Calculate angle for this ray (starting from top, going clockwise)
     const angle = (i * 2 * Math.PI) / props.rays - Math.PI / 2;
-    
+
     // Calculate start point (on inner circle)
     const x1 = centerX + innerRadius * Math.cos(angle);
     const y1 = centerY + innerRadius * Math.sin(angle);
-    
+
     // Calculate end point (on outer radius)
     const x2 = centerX + outerRadius * Math.cos(angle);
     const y2 = centerY + outerRadius * Math.sin(angle);

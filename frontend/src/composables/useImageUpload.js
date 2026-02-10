@@ -98,17 +98,17 @@ export function useImageUpload(options = {}) {
           {
             onUploadProgress: (progressEvent) => {
               uploadProgress.value = Math.round(
-                (progressEvent.loaded * 100) / progressEvent.total
+                (progressEvent.loaded * 100) / progressEvent.total,
               );
             },
-          }
+          },
         );
       } else {
         // Generic upload
         response = await imageService.upload(file.value, {
           onUploadProgress: (progressEvent) => {
             uploadProgress.value = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total
+              (progressEvent.loaded * 100) / progressEvent.total,
             );
           },
         });

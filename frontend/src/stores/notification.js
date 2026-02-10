@@ -48,7 +48,7 @@ export const useNotificationStore = defineStore("notification", () => {
   /** Sorted notifications (newest first) */
   const sortedNotifications = computed(() => {
     return [...notifications.value].sort(
-      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
     );
   });
 
@@ -81,7 +81,12 @@ export const useNotificationStore = defineStore("notification", () => {
    * @param {Object} options - { page, limit, unreadOnly, refresh }
    */
   const fetchNotifications = async (options = {}) => {
-    const { page = 1, limit = 50, unreadOnly = false, refresh = false } = options;
+    const {
+      page = 1,
+      limit = 50,
+      unreadOnly = false,
+      refresh = false,
+    } = options;
 
     // Skip if recently fetched (within 30 seconds) unless forced refresh
     if (
@@ -105,7 +110,7 @@ export const useNotificationStore = defineStore("notification", () => {
 
       const response = await fetch(
         `${API_BASE}/api/v1/notifications?${params}`,
-        { headers: getAuthHeaders() }
+        { headers: getAuthHeaders() },
       );
 
       if (!response.ok) {
@@ -122,7 +127,8 @@ export const useNotificationStore = defineStore("notification", () => {
         lastFetched.value = Date.now();
       }
     } catch (err) {
-      error.value = err.message || "Erreur lors du chargement des notifications";
+      error.value =
+        err.message || "Erreur lors du chargement des notifications";
       console.error("Fetch notifications error:", err);
     } finally {
       loading.value = false;
@@ -136,7 +142,7 @@ export const useNotificationStore = defineStore("notification", () => {
     try {
       const response = await fetch(
         `${API_BASE}/api/v1/notifications/unread-count`,
-        { headers: getAuthHeaders() }
+        { headers: getAuthHeaders() },
       );
 
       if (response.ok) {
@@ -156,7 +162,9 @@ export const useNotificationStore = defineStore("notification", () => {
    */
   const markAsRead = async (notificationId) => {
     // Optimistic update
-    const notification = notifications.value.find((n) => n.id === notificationId);
+    const notification = notifications.value.find(
+      (n) => n.id === notificationId,
+    );
     if (notification && !notification.read) {
       notification.read = true;
       notification.viewedAt = new Date().toISOString();
@@ -169,7 +177,7 @@ export const useNotificationStore = defineStore("notification", () => {
         {
           method: "PATCH",
           headers: getAuthHeaders(),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -207,7 +215,7 @@ export const useNotificationStore = defineStore("notification", () => {
         {
           method: "POST",
           headers: getAuthHeaders(),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -246,7 +254,7 @@ export const useNotificationStore = defineStore("notification", () => {
         {
           method: "DELETE",
           headers: getAuthHeaders(),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -275,13 +283,10 @@ export const useNotificationStore = defineStore("notification", () => {
     total.value = Math.max(0, total.value - readCount);
 
     try {
-      const response = await fetch(
-        `${API_BASE}/api/v1/notifications/read`,
-        {
-          method: "DELETE",
-          headers: getAuthHeaders(),
-        }
-      );
+      const response = await fetch(`${API_BASE}/api/v1/notifications/read`, {
+        method: "DELETE",
+        headers: getAuthHeaders(),
+      });
 
       if (!response.ok) {
         // Revert on failure
@@ -303,7 +308,7 @@ export const useNotificationStore = defineStore("notification", () => {
   const addFromWebSocket = (notification) => {
     // Check if already exists
     const exists = notifications.value.some(
-      (n) => n.id === notification.id || n.id === notification._id
+      (n) => n.id === notification.id || n.id === notification._id,
     );
 
     if (!exists) {

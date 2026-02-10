@@ -23,7 +23,7 @@ export const imageService = {
     const response = await apiClient.post(
       `/observations/${observationId}/images`,
       formData,
-      { headers: { "Content-Type": "multipart/form-data" } }
+      { headers: { "Content-Type": "multipart/form-data" } },
     );
     return response.data;
   },
@@ -36,7 +36,7 @@ export const imageService = {
    */
   async list(observationId) {
     const response = await apiClient.get(
-      `/observations/${observationId}/images`
+      `/observations/${observationId}/images`,
     );
     return response.data;
   },
@@ -51,7 +51,7 @@ export const imageService = {
     // URL encode the public ID (may contain slashes)
     const encodedId = encodeURIComponent(publicId);
     const response = await apiClient.delete(
-      `/observations/${observationId}/images/${encodedId}`
+      `/observations/${observationId}/images/${encodedId}`,
     );
     return response.data;
   },

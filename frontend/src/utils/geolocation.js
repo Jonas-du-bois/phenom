@@ -76,7 +76,7 @@ export const getCurrentPosition = (options = {}) => {
 
         reject(new Error(errorMessage));
       },
-      mergedOptions
+      mergedOptions,
     );
   });
 };
@@ -115,7 +115,7 @@ export const watchPosition = (onSuccess, onError, options = {}) => {
         onError(new Error(getGeolocationErrorMessage(error)));
       }
     },
-    mergedOptions
+    mergedOptions,
   );
 };
 

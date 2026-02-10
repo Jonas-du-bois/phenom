@@ -238,13 +238,13 @@ const props = defineProps({
 const controlsTopOffset = computed(() =>
   props.compact
     ? "calc(1rem + env(safe-area-inset-top, 0px))"
-    : "calc(5.5rem + env(safe-area-inset-top, 0px))"
+    : "calc(5.5rem + env(safe-area-inset-top, 0px))",
 );
 
 const badgeTopOffset = computed(() =>
   props.compact
     ? "calc(1rem + env(safe-area-inset-top, 0px))"
-    : "calc(6rem + env(safe-area-inset-top, 0px))"
+    : "calc(6rem + env(safe-area-inset-top, 0px))",
 );
 
 const emit = defineEmits(["bounds-change", "marker-click"]);
@@ -285,7 +285,7 @@ watch(
       updateMarkers();
     }
   },
-  { deep: true }
+  { deep: true },
 );
 
 const initMap = async () => {
