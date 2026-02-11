@@ -108,11 +108,19 @@ class ImageController {
         return errorResponse(res, 'Non autorisé', 403);
       }
 
+      // Verify that the image exists in the observation
+      const imageIndex = observation.images.findIndex(
+        (img) => img.publicId === publicId
+      );
+
+      if (imageIndex === -1) {
+        return notFoundResponse(res, 'Image non trouvée');
+      }
+
       await imageService.deleteImage(publicId);
 
-      observation.images = observation.images.filter(
-        (img) => img.publicId !== publicId
-      );
+      // Remove the image from the array using splice since we have the index
+      observation.images.splice(imageIndex, 1);
       await observation.save();
 
       // Publish a WebSocket event to notify that the observation was updated (image deleted)

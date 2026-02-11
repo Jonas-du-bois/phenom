@@ -17,3 +17,8 @@
 **Vulnerability:** The authentication middleware (`auth.js`) and other services logged full or partial sensitive data (JWT tokens, user emails, API keys, reset tokens) to `console.log` for debugging purposes. This exposes credentials and PII in production logs (CWE-532).
 **Learning:** Developers often leave "temporary" debug logs that print entire objects or tokens. "Partial" redaction (printing first 30 chars) is often insufficient for security and still leaks data.
 **Prevention:** Remove all `console.log` statements containing sensitive data before merging. Use a logger with redaction capabilities or enforce strict linting rules against `console.log` in production code. Ensure errors are logged without sensitive context.
+
+## 2026-03-05 - IDOR in Image Deletion
+**Vulnerability:** `ImageController.deleteImage` allowed deleting any image from Cloudinary by manipulating the `publicId` parameter, even if the image did not belong to the user's observation. The controller only verified ownership of the observation, not the image itself.
+**Learning:** Verifying ownership of the parent resource (observation) is insufficient for operations on child resources (images) identified by separate IDs if those IDs are used directly in external service calls.
+**Prevention:** Always verify that the target child resource ID exists within the parent resource's collection before performing operations on it.
