@@ -38,7 +38,7 @@ export const OBSERVER_TYPES = [
 
 // Hash map for O(1) lookup by code
 const OBSERVER_TYPES_MAP = Object.fromEntries(
-  OBSERVER_TYPES.map((t) => [t.code, t])
+  OBSERVER_TYPES.map((t) => [t.code, t]),
 );
 
 /** Array of all observer type codes */

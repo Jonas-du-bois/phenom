@@ -87,7 +87,7 @@ const percentage = computed(() => (props.value / 10) * 100);
 const gaugeColor = computed(() => {
   if (props.value >= 7) return "#a855f7"; // Purple - very strange
   if (props.value >= 4) return "#00F0FF"; // Cyan - moderate
-  return "#22c55e";                        // Green - low strangeness
+  return "#22c55e"; // Green - low strangeness
 });
 
 // =============================================================================
@@ -124,9 +124,9 @@ const offset = computed(
       :style="{ width: `${dim.outer + 8}px`, height: `${dim.outer + 8}px` }"
     >
       <!-- SVG Gauge (rotated -90deg so arc starts from top) -->
-      <svg 
-        :width="dim.outer" 
-        :height="dim.outer" 
+      <svg
+        :width="dim.outer"
+        :height="dim.outer"
         class="-rotate-90 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
       >
         <!-- Background Circle (track) -->
@@ -159,8 +159,17 @@ const offset = computed(
         class="absolute inset-0 flex flex-col items-center justify-center font-light leading-none"
       >
         <div class="flex items-baseline gap-0.5">
-          <span :style="{ fontSize: dim.text, color: gaugeColor }" class="font-semibold">{{ value }}</span>
-          <span v-if="showMaxValue" :style="{ fontSize: dim.smallText }" class="text-white/40">/10</span>
+          <span
+            :style="{ fontSize: dim.text, color: gaugeColor }"
+            class="font-semibold"
+            >{{ value }}</span
+          >
+          <span
+            v-if="showMaxValue"
+            :style="{ fontSize: dim.smallText }"
+            class="text-white/40"
+            >/10</span
+          >
         </div>
       </div>
     </div>
@@ -180,7 +189,7 @@ const offset = computed(
   background: rgba(255, 255, 255, 0.01);
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 
+  box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.1),
     inset 0 0.5px 0 rgba(255, 255, 255, 0.03);
 }

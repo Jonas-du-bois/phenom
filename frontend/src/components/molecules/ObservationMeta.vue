@@ -22,7 +22,10 @@ import GlassTooltip from "../atoms/GlassTooltip.vue";
 import CredibilityGauge from "../atoms/CredibilityGauge.vue";
 import StrangenessGauge from "../atoms/StrangenessGauge.vue";
 import { getUfoShapeByCode, getUfoShapeLabel } from "@/constants/ufoShapes";
-import { getObserverTypeByCode, getObserverTypeLabel } from "@/constants/observerTypes";
+import {
+  getObserverTypeByCode,
+  getObserverTypeLabel,
+} from "@/constants/observerTypes";
 import { PHENOMENA } from "@/constants/phenomena";
 
 // ============================================================================
@@ -95,7 +98,7 @@ const getObserverIcon = (code) => {
  * @returns {string} Full French label
  */
 const getPhenomenonTooltip = (code) => {
-  const phenomenon = PHENOMENA.find(p => p.code === code);
+  const phenomenon = PHENOMENA.find((p) => p.code === code);
   return phenomenon?.label || code;
 };
 
@@ -105,7 +108,7 @@ const getPhenomenonTooltip = (code) => {
  * @returns {string} Emoji icon
  */
 const getPhenomenonIcon = (code) => {
-  const phenomenon = PHENOMENA.find(p => p.code === code);
+  const phenomenon = PHENOMENA.find((p) => p.code === code);
   return phenomenon?.icon || "✨";
 };
 

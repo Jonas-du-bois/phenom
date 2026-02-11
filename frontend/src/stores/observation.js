@@ -43,7 +43,7 @@ export const useObservationStore = defineStore("observation", () => {
 
   /** Filter observations that have images */
   const observationsWithImages = computed(() =>
-    observations.value.filter((o) => o.images?.length > 0)
+    observations.value.filter((o) => o.images?.length > 0),
   );
 
   // ==========================================================================
@@ -400,7 +400,12 @@ export const useObservationStore = defineStore("observation", () => {
    */
   const updateObservation = async (id, data) => {
     loading.value = true;
-    console.log("📝 Store updateObservation called with ID:", id, "Data:", data);
+    console.log(
+      "📝 Store updateObservation called with ID:",
+      id,
+      "Data:",
+      data,
+    );
     try {
       const response = await observationService.update(id, data);
       console.log("✅ Update response:", response);
@@ -438,7 +443,7 @@ export const useObservationStore = defineStore("observation", () => {
 
       const response = await observationService.addImages(
         observationId,
-        formData
+        formData,
       );
       const updated = response.data || response;
 
@@ -452,7 +457,7 @@ export const useObservationStore = defineStore("observation", () => {
       }
 
       const idx = observations.value.findIndex(
-        (o) => o._id === observationId || o.id === observationId
+        (o) => o._id === observationId || o.id === observationId,
       );
       if (idx !== -1) {
         observations.value[idx] = { ...observations.value[idx], ...updated };
@@ -487,7 +492,7 @@ export const useObservationStore = defineStore("observation", () => {
       }
 
       const idx = observations.value.findIndex(
-        (o) => o._id === observationId || o.id === observationId
+        (o) => o._id === observationId || o.id === observationId,
       );
       if (idx !== -1) {
         observations.value[idx] = { ...observations.value[idx], ...updated };

@@ -64,7 +64,7 @@ export function useGeolocation(options = {}) {
           enableHighAccuracy,
           timeout,
           maximumAge,
-        }
+        },
       );
     });
   };
@@ -104,7 +104,7 @@ export function useGeolocation(options = {}) {
         enableHighAccuracy,
         timeout,
         maximumAge: 0, // Always fresh position in watch mode
-      }
+      },
     );
   };
 
@@ -136,7 +136,7 @@ export function useGeolocation(options = {}) {
           headers: {
             "Accept-Language": "fr",
           },
-        }
+        },
       );
 
       if (!response.ok) {

@@ -113,7 +113,7 @@ const circumference = computed(() => 2 * Math.PI * (dim.value.inner / 2));
 // Calculate stroke-dashoffset for progress arc
 // (how much of the circle to "hide")
 const offset = computed(
-  () => circumference.value - (percentage.value / 100) * circumference.value
+  () => circumference.value - (percentage.value / 100) * circumference.value,
 );
 </script>
 

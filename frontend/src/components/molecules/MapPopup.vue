@@ -169,14 +169,21 @@ const formattedDate = computed(() => {
 
 <style scoped>
 .liquid-glass-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.06),
+    rgba(255, 255, 255, 0.02)
+  );
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow:
     0 10px 30px rgba(0, 0, 0, 0.45),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(18px) saturate(140%);
   -webkit-backdrop-filter: blur(18px) saturate(140%);
-  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease,
+    border-color 200ms ease;
 }
 
 .liquid-glass-card:hover {
@@ -193,7 +200,11 @@ const formattedDate = computed(() => {
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(circle at 20% 20%, rgba(0, 240, 255, 0.12), transparent 35%),
+    radial-gradient(
+      circle at 20% 20%,
+      rgba(0, 240, 255, 0.12),
+      transparent 35%
+    ),
     radial-gradient(circle at 80% 0%, rgba(168, 85, 247, 0.12), transparent 32%);
   mix-blend-mode: screen;
 }
@@ -203,6 +214,10 @@ const formattedDate = computed(() => {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0));
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.04),
+    rgba(255, 255, 255, 0)
+  );
 }
 </style>

@@ -177,7 +177,7 @@ const query = ref(props.modelValue);
 const isFocused = ref(false);
 
 const showSuggestions = computed(
-  () => isFocused.value && query.value.length >= 2
+  () => isFocused.value && query.value.length >= 2,
 );
 const showRecent = computed(() => isFocused.value && !query.value);
 
@@ -185,7 +185,7 @@ watch(
   () => props.modelValue,
   (val) => {
     query.value = val;
-  }
+  },
 );
 
 const handleInput = () => {

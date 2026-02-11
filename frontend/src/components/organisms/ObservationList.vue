@@ -252,7 +252,7 @@ const setupObserver = () => {
         }, 200);
       }
     },
-    { threshold: 0.1, rootMargin: "200px 0px" }
+    { threshold: 0.1, rootMargin: "200px 0px" },
   );
 
   try {

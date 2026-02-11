@@ -225,7 +225,7 @@ watch(
   (f) => {
     if (f) readFile(f);
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 // Watch for src prop changes and use directly
@@ -234,7 +234,7 @@ watch(
   (s) => {
     if (s) imgSrc.value = s;
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 // ============================================================================
@@ -263,7 +263,7 @@ const confirm = async () => {
 
     // Convert canvas to blob
     const blob = await new Promise((resolve) =>
-      canvas.toBlob(resolve, "image/png", 0.95)
+      canvas.toBlob(resolve, "image/png", 0.95),
     );
 
     confirming.value = false;

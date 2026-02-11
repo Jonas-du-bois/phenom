@@ -58,15 +58,15 @@ export function useFilters() {
   // Computed
   const hasFilters = computed(() =>
     Object.values(activeFilters.value).some(
-      (v) => v !== null && v !== undefined && v !== ""
-    )
+      (v) => v !== null && v !== undefined && v !== "",
+    ),
   );
 
   const activeFilterCount = computed(
     () =>
       Object.values(activeFilters.value).filter(
-        (v) => v !== null && v !== undefined && v !== ""
-      ).length
+        (v) => v !== null && v !== undefined && v !== "",
+      ).length,
   );
 
   const activeFiltersSummary = computed(() => {
@@ -106,8 +106,8 @@ export function useFilters() {
     try {
       const cleanFilters = Object.fromEntries(
         Object.entries(formFilters.value).filter(
-          ([, v]) => v !== null && v !== undefined && v !== ""
-        )
+          ([, v]) => v !== null && v !== undefined && v !== "",
+        ),
       );
       activeFilters.value = { ...formFilters.value };
       await observationStore.fetchObservations(cleanFilters);

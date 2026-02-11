@@ -161,7 +161,7 @@ const alertCount = ref(0);
 
 // Récupérer les recherches récentes depuis le localStorage
 const recentSearches = ref(
-  JSON.parse(localStorage.getItem("recentSearches") || "[]")
+  JSON.parse(localStorage.getItem("recentSearches") || "[]"),
 );
 const searchSuggestions = ref([]);
 
@@ -273,22 +273,22 @@ const removeFilter = (key) => {
   if (key.startsWith("shape-")) {
     const shape = key.replace("shape-", "");
     filters.value.ufoShapes = filters.value.ufoShapes.filter(
-      (s) => s !== shape
+      (s) => s !== shape,
     );
   } else if (key.startsWith("phenomenon-")) {
     const phenomenon = key.replace("phenomenon-", "");
     filters.value.phenomena = filters.value.phenomena.filter(
-      (p) => p !== phenomenon
+      (p) => p !== phenomenon,
     );
   } else if (key.startsWith("observer-")) {
     const observerType = key.replace("observer-", "");
     filters.value.observerTypes = filters.value.observerTypes.filter(
-      (o) => o !== observerType
+      (o) => o !== observerType,
     );
   } else if (key.startsWith("country-")) {
     const country = key.replace("country-", "");
     filters.value.countries = filters.value.countries.filter(
-      (c) => c !== country
+      (c) => c !== country,
     );
   } else if (key === "credibility") {
     filters.value.minCredibility = 0;

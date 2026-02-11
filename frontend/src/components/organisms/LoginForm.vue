@@ -154,7 +154,9 @@
           @click="showPassword = !showPassword"
           class="text-white/40 hover:text-white/60"
           :aria-label="
-            showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'
+            showPassword
+              ? 'Masquer le mot de passe'
+              : 'Afficher le mot de passe'
           "
         >
           <svg
@@ -315,7 +317,7 @@ watch(
       if (newVal.password) errors.password = newVal.password;
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const handleSubmit = () => {

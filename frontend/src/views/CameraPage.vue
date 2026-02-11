@@ -362,7 +362,7 @@ const capturePhoto = () => {
       capturing.value = false;
     },
     "image/jpeg",
-    0.9
+    0.9,
   );
 };
 
@@ -420,7 +420,7 @@ const handleSubmit = async (data) => {
       console.error(
         "Création observation: réponse invalide",
         newObs,
-        observationStore.error
+        observationStore.error,
       );
       throw new Error("Réponse de création invalide");
     }
@@ -439,7 +439,7 @@ const handleSubmit = async (data) => {
       try {
         await observationStore.uploadObservationImages(
           newObs._id || newObs.id,
-          mediaFile
+          mediaFile,
         );
       } catch (err) {
         // ignore upload error here; store.error will contain message

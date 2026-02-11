@@ -1951,7 +1951,7 @@ function getGeolocation() {
       enableHighAccuracy: true,
       timeout: 10000,
       maximumAge: 0,
-    }
+    },
   );
 }
 
@@ -2018,7 +2018,7 @@ function resetObservationFilters() {
 async function getObservations() {
   try {
     const response = await observationService.getAll(
-      observationForms.value.list
+      observationForms.value.list,
     );
     results.value.observations = response;
   } catch (error) {
@@ -2123,7 +2123,7 @@ async function createObservation() {
 
       await imageService.uploadToObservation(
         observationId,
-        observationForms.value.create.imageFile
+        observationForms.value.create.imageFile,
       );
     }
 
@@ -2162,7 +2162,7 @@ async function createObservation() {
 async function getOneObservation() {
   try {
     const response = await observationService.getById(
-      observationForms.value.getOne.id
+      observationForms.value.getOne.id,
     );
     results.value.oneObservation = response;
   } catch (error) {
@@ -2226,7 +2226,7 @@ async function updateObservation() {
 async function deleteObservation() {
   try {
     const response = await observationService.delete(
-      observationForms.value.delete.id
+      observationForms.value.delete.id,
     );
     results.value.deleteObservation = response;
   } catch (error) {
@@ -2241,7 +2241,7 @@ async function generateAiImageForObservation() {
   try {
     aiImageLoading.value = true;
     const response = await observationService.generateAiImage(
-      observationForms.value.generateAi.id
+      observationForms.value.generateAi.id,
     );
     results.value.generateAiImage = response;
   } catch (error) {
@@ -2260,7 +2260,7 @@ async function getComments() {
     const params = { page, limit };
     const response = await commentService.getByObservation(
       observationId,
-      params
+      params,
     );
     results.value.comments = response;
   } catch (error) {
@@ -2326,7 +2326,7 @@ async function updateUserRole() {
 async function deleteObservationAdmin() {
   try {
     const response = await adminService.deleteObservation(
-      adminForms.value.deleteObservation.id
+      adminForms.value.deleteObservation.id,
     );
     results.value.deleteObservationAdmin = response;
   } catch (error) {
@@ -2339,7 +2339,7 @@ async function deleteObservationAdmin() {
 async function deleteCommentAdmin() {
   try {
     const response = await adminService.deleteComment(
-      adminForms.value.deleteComment.id
+      adminForms.value.deleteComment.id,
     );
     results.value.deleteCommentAdmin = response;
   } catch (error) {
@@ -2352,7 +2352,7 @@ async function deleteCommentAdmin() {
 async function getUserDetails() {
   try {
     const response = await adminService.getUserDetails(
-      adminForms.value.userDetails.id
+      adminForms.value.userDetails.id,
     );
     results.value.userDetails = response;
   } catch (error) {

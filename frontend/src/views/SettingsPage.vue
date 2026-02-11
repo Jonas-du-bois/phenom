@@ -608,7 +608,7 @@ async function subscribeToPush() {
     // Try to fetch public key from backend at runtime (useful when app is deployed without rebuild)
     try {
       const resp = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL || ""}/api/v1/push/public-key`
+        `${import.meta.env.VITE_API_BASE_URL || ""}/api/v1/push/public-key`,
       );
       if (resp && resp.ok) {
         const json = await resp.json();
@@ -621,10 +621,10 @@ async function subscribeToPush() {
 
   if (!effectiveVapid || effectiveVapid.trim() === "") {
     alert(
-      "Clé VAPID publique manquante : configurez VITE_VAPID_PUBLIC ou définissez VAPID_PUBLIC_KEY côté serveur"
+      "Clé VAPID publique manquante : configurez VITE_VAPID_PUBLIC ou définissez VAPID_PUBLIC_KEY côté serveur",
     );
     console.error(
-      "VAPID public key is missing (frontend env and backend fallback empty)"
+      "VAPID public key is missing (frontend env and backend fallback empty)",
     );
     return null;
   }
@@ -653,7 +653,7 @@ async function subscribeToPush() {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ subscription: sub }),
-      }
+      },
     );
 
     return sub;
@@ -677,7 +677,7 @@ async function unsubscribeFromPush(subscription) {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ endpoint }),
-      }
+      },
     );
     await subscription.unsubscribe();
   } catch (err) {
@@ -701,7 +701,7 @@ watch(
         // empty catch block: ignore error
       }
     }
-  }
+  },
 );
 
 // Push subscription state + last location check
@@ -733,7 +733,7 @@ async function checkSubscription() {
   // load last location check from localStorage
   try {
     lastLocationCheck.value = localStorage.getItem(
-      "phenom_last_location_check"
+      "phenom_last_location_check",
     );
   } catch (e) {
     lastLocationCheck.value = null;
@@ -759,7 +759,7 @@ async function handleUnsubscribe() {
 function refreshLastLocationCheck() {
   try {
     lastLocationCheck.value = localStorage.getItem(
-      "phenom_last_location_check"
+      "phenom_last_location_check",
     );
   } catch (e) {
     lastLocationCheck.value = null;
@@ -878,14 +878,18 @@ const onChangePasswordConfirm = async (payload) => {
     return;
   }
   try {
-    await userStore.changePassword({ currentPassword, newPassword, confirmPassword });
+    await userStore.changePassword({
+      currentPassword,
+      newPassword,
+      confirmPassword,
+    });
     showChangePasswordModal.value = false;
     alert("Mot de passe changé");
   } catch (err) {
     alert(
       err?.response?.data?.message ||
         err?.message ||
-        "Erreur changement mot de passe"
+        "Erreur changement mot de passe",
     );
   }
 };
@@ -920,7 +924,7 @@ const handleLogout = async () => {
 const confirmDeleteAccount = () => {
   if (
     confirm(
-      "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible."
+      "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.",
     )
   ) {
     // TODO: Delete account via API

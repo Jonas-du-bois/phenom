@@ -44,7 +44,7 @@ export const filterObservationsByType = (observations, types) => {
 export const filterObservationsByTags = (
   observations,
   tags,
-  matchAll = false
+  matchAll = false,
 ) => {
   if (!tags || tags.length === 0) return observations;
 
@@ -86,7 +86,7 @@ export const filterObservationsByDate = (observations, startDate, endDate) => {
 export const filterObservationsByProximity = (
   observations,
   center,
-  radiusKm
+  radiusKm,
 ) => {
   if (!center || !center.latitude || !center.longitude) return observations;
 
@@ -111,7 +111,7 @@ export const filterObservationsByProximity = (
         center.latitude,
         center.longitude,
         lat,
-        lng
+        lng,
       );
       return { ...obs, distance };
     })
@@ -172,7 +172,7 @@ export const groupObservationsByUser = (observations) => {
 export const sortObservations = (
   observations,
   field = "createdAt",
-  order = "desc"
+  order = "desc",
 ) => {
   return [...observations].sort((a, b) => {
     let aVal = a[field];
@@ -234,7 +234,7 @@ export const calculateObservationStats = (observations) => {
     total: observations.length,
     withImages: observations.filter((obs) => obs.images?.length > 0).length,
     withoutImages: observations.filter(
-      (obs) => !obs.images || obs.images.length === 0
+      (obs) => !obs.images || obs.images.length === 0,
     ).length,
     byType: {},
     tagCloud: {},
@@ -259,7 +259,7 @@ export const calculateObservationStats = (observations) => {
   if (stats.total > 0) {
     const totalImages = observations.reduce(
       (sum, obs) => sum + (obs.images?.length || 0),
-      0
+      0,
     );
     stats.avgImagesPerObservation = (totalImages / stats.total).toFixed(2);
   }
@@ -267,7 +267,7 @@ export const calculateObservationStats = (observations) => {
   // Date range
   if (observations.length > 0) {
     const dates = observations.map((obs) =>
-      new Date(obs.date || obs.createdAt).getTime()
+      new Date(obs.date || obs.createdAt).getTime(),
     );
     stats.dateRange.oldest = new Date(Math.min(...dates));
     stats.dateRange.newest = new Date(Math.max(...dates));
@@ -335,7 +335,7 @@ export const extractUniqueTags = (observations) => {
 export const findSimilarObservations = (
   observation,
   allObservations,
-  maxResults = 5
+  maxResults = 5,
 ) => {
   return allObservations
     .filter((obs) => obs._id !== observation._id)
@@ -347,7 +347,7 @@ export const findSimilarObservations = (
 
       // Tags en commun (+1 point par tag)
       const commonTags = (obs.tags || []).filter((tag) =>
-        (observation.tags || []).includes(tag)
+        (observation.tags || []).includes(tag),
       );
       score += commonTags.length;
 

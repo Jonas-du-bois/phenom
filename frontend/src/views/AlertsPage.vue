@@ -380,7 +380,7 @@ const sendLocationToBackend = async () => {
           lng: userLocation.value.lng,
           radiusKm: alertRadius.value,
         }),
-      }
+      },
     );
 
     if (response.ok) {
@@ -402,7 +402,7 @@ const sendLocationToBackend = async () => {
   try {
     localStorage.setItem(
       "phenom_last_location_check",
-      new Date().toISOString()
+      new Date().toISOString(),
     );
   } catch (e) {
     // empty catch block: ignore error
@@ -432,7 +432,7 @@ const getCurrentLocation = () => {
     },
     (error) => {
       console.error("Location error:", error);
-    }
+    },
   );
 };
 

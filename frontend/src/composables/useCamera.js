@@ -160,7 +160,7 @@ export function useCamera() {
           }
         },
         "image/jpeg",
-        options.quality || 0.9
+        options.quality || 0.9,
       );
     });
   };
@@ -226,8 +226,8 @@ export function useCamera() {
                   });
                 };
                 reader.readAsDataURL(file);
-              })
-          )
+              }),
+          ),
         ).then(resolve);
       };
 

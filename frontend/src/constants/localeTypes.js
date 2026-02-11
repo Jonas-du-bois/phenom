@@ -39,7 +39,7 @@ export const LOCALE_TYPES = [
 
 // Hash map for O(1) lookup by code
 const LOCALE_TYPES_MAP = Object.fromEntries(
-  LOCALE_TYPES.map((l) => [l.code, l])
+  LOCALE_TYPES.map((l) => [l.code, l]),
 );
 
 /** Array of all locale type codes */

@@ -291,7 +291,9 @@ const props = defineProps({
   /** Initial filter values to populate the form */
   initialFilters: {
     type: Object,
-    default: () => ({ /* empty object for default */ }),
+    default: () => ({
+      /* empty object for default */
+    }),
   },
 });
 
@@ -362,7 +364,7 @@ watch(
   (newFilters) => {
     Object.assign(filters, { ...defaultFilters, ...newFilters });
   },
-  { immediate: true, deep: true }
+  { immediate: true, deep: true },
 );
 
 // ============================================================================
@@ -485,7 +487,7 @@ watch(
     if (!props.isOpen) return; // Skip if panel is closed
     emit("apply", { ...newVal });
   },
-  { deep: true }
+  { deep: true },
 );
 
 // ============================================================================

@@ -69,9 +69,7 @@
         paddingTop: hasContentPadding
           ? 'calc(4.5rem + env(safe-area-inset-top, 0px))'
           : undefined,
-        paddingBottom: showTabBar
-          ? '4.5rem'
-          : undefined,
+        paddingBottom: showTabBar ? '4.5rem' : undefined,
       }"
     >
       <!-- Default slot for page content -->
@@ -208,25 +206,24 @@ defineProps({
 onMounted(() => {
   document.documentElement.style.setProperty(
     "--sat",
-    "env(safe-area-inset-top)"
+    "env(safe-area-inset-top)",
   );
   document.documentElement.style.setProperty(
     "--sab",
-    "env(safe-area-inset-bottom)"
+    "env(safe-area-inset-bottom)",
   );
   document.documentElement.style.setProperty(
     "--sal",
-    "env(safe-area-inset-left)"
+    "env(safe-area-inset-left)",
   );
   document.documentElement.style.setProperty(
     "--sar",
-    "env(safe-area-inset-right)"
+    "env(safe-area-inset-right)",
   );
 });
 </script>
 
 <style scoped>
-
 /* =============================================================================
    APP LAYOUT STYLES
    ============================================================================= */
@@ -249,7 +246,7 @@ onMounted(() => {
 .liquid-glass-toast {
   position: relative;
   overflow: hidden;
-  box-shadow: 
+  box-shadow:
     0 8px 32px 0 rgba(0, 0, 0, 0.37),
     inset 0 1px 1px 0 rgba(255, 255, 255, 0.1);
 }

@@ -51,9 +51,7 @@
 
     <div class="map-page h-screen relative">
       <!-- Map (full screen, passes under both navbars) -->
-      <div 
-        class="absolute inset-0 overflow-hidden z-0"
-      >
+      <div class="absolute inset-0 overflow-hidden z-0">
         <ObservationMap
           ref="mapRef"
           :observations="mapObservations"
@@ -150,7 +148,7 @@ onMounted(async () => {
       () => {
         // empty error callback: ignore geolocation error
       },
-      { timeout: 5000 }
+      { timeout: 5000 },
     );
   }
 
@@ -185,7 +183,6 @@ const handleBoundsChange = (bounds) => {
     fetchMapObservations();
   }, 250);
 };
-
 
 const applyFilters = (newFilters) => {
   filters.value = { ...newFilters };

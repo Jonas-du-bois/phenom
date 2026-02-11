@@ -79,7 +79,7 @@ export const observationService = {
     const response = await apiClient.post(
       `/observations/${observationId}/images`,
       formData,
-      { headers: { "Content-Type": "multipart/form-data" } }
+      { headers: { "Content-Type": "multipart/form-data" } },
     );
     return response.data;
   },
@@ -118,7 +118,7 @@ export const observationService = {
    */
   async generateAiImage(observationId) {
     const response = await apiClient.post(
-      `/observations/${observationId}/generate-ai-image`
+      `/observations/${observationId}/generate-ai-image`,
     );
     return response.data;
   },

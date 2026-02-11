@@ -94,7 +94,10 @@ export const useAuthStore = defineStore("auth", () => {
       saveUserData(userData);
 
       // Send auth data to service worker for background tasks
-      sendToServiceWorker("STORE_AUTH", { token: accessToken, userId: userData._id });
+      sendToServiceWorker("STORE_AUTH", {
+        token: accessToken,
+        userId: userData._id,
+      });
 
       return { success: true };
     } catch (err) {
@@ -124,7 +127,10 @@ export const useAuthStore = defineStore("auth", () => {
       saveUserData(newUser);
 
       // Send auth data to service worker for background tasks
-      sendToServiceWorker("STORE_AUTH", { token: accessToken, userId: newUser._id });
+      sendToServiceWorker("STORE_AUTH", {
+        token: accessToken,
+        userId: newUser._id,
+      });
 
       return { success: true };
     } catch (err) {
@@ -164,7 +170,10 @@ export const useAuthStore = defineStore("auth", () => {
       saveUserData(response.data);
 
       // Update service worker with current auth
-      sendToServiceWorker("STORE_AUTH", { token: token.value, userId: response.data._id });
+      sendToServiceWorker("STORE_AUTH", {
+        token: token.value,
+        userId: response.data._id,
+      });
 
       return user.value;
     } catch (err) {

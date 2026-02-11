@@ -392,7 +392,9 @@ defineOptions({ name: "ObservationForm" });
 const props = defineProps({
   initialData: {
     type: Object,
-    default: () => ({ /* empty object for default */ }),
+    default: () => ({
+      /* empty object for default */
+    }),
   },
   submitting: {
     type: Boolean,
@@ -495,7 +497,7 @@ watch(
       }
     }
   },
-  { deep: true }
+  { deep: true },
 );
 
 const isValid = computed(() => {
@@ -618,7 +620,7 @@ const getCurrentLocation = async () => {
 
     try {
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${position.coords.latitude}&lon=${position.coords.longitude}&format=json`
+        `https://nominatim.openstreetmap.org/reverse?lat=${position.coords.latitude}&lon=${position.coords.longitude}&format=json`,
       );
       const data = await response.json();
       if (data.display_name) {
