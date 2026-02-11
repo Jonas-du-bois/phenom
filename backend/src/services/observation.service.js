@@ -33,6 +33,8 @@ class ObservationService {
     const limit = Math.min(500, Math.max(1, parseInt(perPage)));
     const skip = (pageNum - 1) * limit;
 
+    // OPTIMIZATION: Use estimatedDocumentCount() instead of countDocuments() for total count
+    // estimatedDocumentCount() uses collection metadata (O(1)) instead of scanning the index (O(N))
     const [sightings, total] = await Promise.all([
       Observation.find()
         .populate('userId', 'name email avatar')
@@ -40,7 +42,7 @@ class ObservationService {
         .skip(skip)
         .limit(limit)
         .lean({ virtuals: true }),
-      Observation.countDocuments()
+      Observation.estimatedDocumentCount()
     ]);
 
     // OPTIMIZATION: Manually aggregate comment counts to avoid N+1 queries
@@ -224,6 +226,13 @@ class ObservationService {
       query.images = { $exists: true, $not: { $size: 0 } };
     }
 
+    // OPTIMIZATION: Use estimatedDocumentCount() for empty queries (no filters)
+    // estimatedDocumentCount() uses collection metadata (O(1)) instead of scanning the index (O(N))
+    const countPromise =
+      Object.keys(query).length === 0
+        ? Observation.estimatedDocumentCount()
+        : Observation.countDocuments(query);
+
     const [sightings, total] = await Promise.all([
       Observation.find(query)
         .populate('userId', 'name email avatar')
@@ -231,7 +240,7 @@ class ObservationService {
         .skip(offset)
         .limit(limit)
         .lean({ virtuals: true }),
-      Observation.countDocuments(query)
+      countPromise
     ]);
 
     // OPTIMIZATION: Manually aggregate comment counts to avoid N+1 queries
