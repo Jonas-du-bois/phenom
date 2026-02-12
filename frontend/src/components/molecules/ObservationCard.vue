@@ -357,7 +357,7 @@ const goToComments = () => {
        Clickable article that emits 'click' event with observation data
        ======================================================================== -->
   <article
-    class="bg-[#000000] border-b border-white/10 rounded-lg focus-visible:ring-2 focus-visible:ring-[#00F0FF] focus-visible:outline-none cursor-pointer"
+    class="group relative bg-[#000000] border border-white/10 rounded-lg focus-visible:ring-2 focus-visible:ring-[#00F0FF] focus-visible:outline-none cursor-pointer transition-all duration-300 ease-out hover:border-[#00F0FF]/40 hover:shadow-[0_4px_20px_-4px_rgba(0,240,255,0.15)] hover:-translate-y-1 active:scale-[0.99] active:duration-100"
     @click="emit('click', observation)"
     @keydown.enter="emit('click', observation)"
     @keydown.space.prevent="emit('click', observation)"
@@ -418,7 +418,7 @@ const goToComments = () => {
       <img
         :src="mainImage"
         :alt="observation.description"
-        class="w-full h-full object-cover"
+        class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
         loading="lazy"
       />
 
