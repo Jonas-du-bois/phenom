@@ -1,17 +1,17 @@
 <!--
   ============================================================================
-  LoadingSpinner.vue - Loading Indicator Component
+  LoadingSpinner.vue - Radar Loading Indicator
   ============================================================================
   
   PURPOSE:
-  An animated spinning loader to indicate loading/processing states.
-  Uses a circular SVG with a spinning animation.
+  A thematic "Radar Sweep" animation to replace the generic spinner.
+  Injects "Phenom" personality (mysterious, tech) into loading states.
 
   FEATURES:
-  - Multiple sizes: sm, md, lg, xl
-  - Color options: cyan (brand), white
-  - Smooth CSS animation
-  - Lightweight SVG-based
+  - Radar Sweep: Rotating conic gradient
+  - Crosshairs: Subtle grid lines for scope effect
+  - Pulsing Core: Central blip indicating activity
+  - Size & Color props: Fully compatible with previous usage
 
   USAGE EXAMPLES:
   <LoadingSpinner />
@@ -26,7 +26,7 @@
 
 <script setup>
 /**
- * LoadingSpinner - Loading Indicator Component
+ * LoadingSpinner - Radar Loading Indicator
  * Design System: Phenom Search
  */
 
@@ -35,8 +35,7 @@ defineOptions({ name: "LoadingSpinner" });
 // =============================================================================
 // PROPS DEFINITION
 // =============================================================================
-// eslint-disable-next-line no-unused-vars
-const props = defineProps({
+defineProps({
   // Size variant
   size: {
     type: String,
@@ -63,7 +62,7 @@ const sizeClasses = {
   xl: "w-16 h-16", // 64px - full page loading
 };
 
-// Color classes
+// Color classes (Text color for currentColor usage)
 const colorClasses = {
   cyan: "text-[#00F0FF]", // Brand color
   white: "text-white", // For dark backgrounds
@@ -72,29 +71,50 @@ const colorClasses = {
 
 <template>
   <!-- 
-    Animated Spinner SVG
-    - animate-spin: Tailwind's rotation animation
-    - Two-part design: faded track circle + solid arc
+    Radar Loader Container
+    - relative: Positioning context
+    - overflow-hidden: Contains the radar sweep
+    - rounded-full: Circular shape
   -->
-  <svg
-    :class="['animate-spin', sizeClasses[size], colorClasses[color]]"
-    viewBox="0 0 24 24"
-    fill="none"
+  <div
+    :class="[
+      'relative rounded-full overflow-hidden flex items-center justify-center select-none',
+      sizeClasses[size],
+      colorClasses[color]
+    ]"
+    role="status"
+    aria-label="Chargement..."
   >
-    <!-- Background track circle (25% opacity) -->
-    <circle
-      class="opacity-25"
-      cx="12"
-      cy="12"
-      r="10"
-      stroke="currentColor"
-      stroke-width="4"
-    />
-    <!-- Spinning arc (75% opacity) -->
-    <path
-      class="opacity-75"
-      fill="currentColor"
-      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-    />
-  </svg>
+    <!--
+      Radar Sweep (Conic Gradient)
+      - animate-spin: Rotates the sweep
+      - opacity-40: Semi-transparent
+    -->
+    <div
+      class="absolute inset-0 animate-spin origin-center opacity-40"
+      style="background: conic-gradient(from 180deg, transparent 50%, currentColor 100%);"
+    ></div>
+
+    <!--
+      Crosshairs
+      - opacity-20: Subtle grid lines
+    -->
+    <div class="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none">
+      <div class="w-full h-[1px] bg-current"></div>
+      <div class="h-full w-[1px] bg-current absolute"></div>
+    </div>
+
+    <!--
+      Central Blip (Pulsing Dot)
+      - animate-pulse: Gentle pulsing effect
+      - w-1/4 h-1/4: Proportional size
+    -->
+    <div class="w-1/4 h-1/4 bg-current rounded-full animate-pulse shadow-[0_0_8px_currentColor] z-10"></div>
+
+    <!--
+      Outer Ring Border
+      - opacity-30: Subtle boundary
+    -->
+    <div class="absolute inset-0 rounded-full border border-current opacity-30 pointer-events-none"></div>
+  </div>
 </template>
