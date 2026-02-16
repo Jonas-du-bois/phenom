@@ -183,7 +183,9 @@ const mainImage = computed(() => {
   if (images.length > 0) {
     const first = images[0];
     // Support both string URL and object { url } format
-    return typeof first === "string" ? first : getImageUrl(first);
+    return typeof first === "string"
+      ? first
+      : getImageUrl(first, { width: 800, height: 600, crop: "fill" });
   }
   return null;
 });
