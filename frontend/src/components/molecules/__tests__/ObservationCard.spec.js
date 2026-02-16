@@ -41,8 +41,12 @@ vi.mock("@/utils/formatters", () => ({
 }));
 
 // Mock image helpers
+const mocks = vi.hoisted(() => ({
+  getImageUrl: vi.fn((url) => (typeof url === "string" ? url : url.url)),
+}));
+
 vi.mock("@/utils/imageHelpers", () => ({
-  getImageUrl: (url) => url,
+  getImageUrl: mocks.getImageUrl,
 }));
 
 describe("ObservationCard", () => {
@@ -166,6 +170,29 @@ describe("ObservationCard", () => {
     );
     expect(shareButton.attributes("aria-label")).toBe(
       "Partager cette observation",
+    );
+  });
+
+  it("requests optimized image for objects", () => {
+    const observationWithImageObj = {
+      ...mockObservation,
+      images: [{ url: "https://example.com/image.jpg", publicId: "123" }],
+    };
+
+    mount(ObservationCard, {
+      props: {
+        observation: observationWithImageObj,
+      },
+    });
+
+    // Check if getImageUrl was called with optimization options
+    expect(mocks.getImageUrl).toHaveBeenCalledWith(
+      expect.objectContaining({ url: "https://example.com/image.jpg" }),
+      expect.objectContaining({
+        width: 800,
+        height: 600,
+        crop: "fill",
+      }),
     );
   });
 });
