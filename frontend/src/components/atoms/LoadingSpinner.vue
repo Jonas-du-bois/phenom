@@ -80,7 +80,7 @@ const colorClasses = {
     :class="[
       'relative rounded-full overflow-hidden flex items-center justify-center select-none',
       sizeClasses[size],
-      colorClasses[color]
+      colorClasses[color],
     ]"
     role="status"
     aria-label="Chargement..."
@@ -92,14 +92,22 @@ const colorClasses = {
     -->
     <div
       class="absolute inset-0 animate-spin origin-center opacity-40"
-      style="background: conic-gradient(from 180deg, transparent 50%, currentColor 100%);"
+      style="
+        background: conic-gradient(
+          from 180deg,
+          transparent 50%,
+          currentColor 100%
+        );
+      "
     ></div>
 
     <!--
       Crosshairs
       - opacity-20: Subtle grid lines
     -->
-    <div class="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none">
+    <div
+      class="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none"
+    >
       <div class="w-full h-[1px] bg-current"></div>
       <div class="h-full w-[1px] bg-current absolute"></div>
     </div>
@@ -109,12 +117,16 @@ const colorClasses = {
       - animate-pulse: Gentle pulsing effect
       - w-1/4 h-1/4: Proportional size
     -->
-    <div class="w-1/4 h-1/4 bg-current rounded-full animate-pulse shadow-[0_0_8px_currentColor] z-10"></div>
+    <div
+      class="w-1/4 h-1/4 bg-current rounded-full animate-pulse shadow-[0_0_8px_currentColor] z-10"
+    ></div>
 
     <!--
       Outer Ring Border
       - opacity-30: Subtle boundary
     -->
-    <div class="absolute inset-0 rounded-full border border-current opacity-30 pointer-events-none"></div>
+    <div
+      class="absolute inset-0 rounded-full border border-current opacity-30 pointer-events-none"
+    ></div>
   </div>
 </template>

@@ -43,7 +43,7 @@
  * GlassTooltip - Liquid Glass Tooltip Component
  * Design System: Phenom Search - Liquid Glass Style
  */
-import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
+import { ref, computed, onMounted, onUnmounted, nextTick, useId } from "vue";
 
 defineOptions({ name: "GlassTooltip" });
 
@@ -82,6 +82,7 @@ const triggerRef = ref(null);
 const tooltipRef = ref(null);
 const computedPosition = ref("bottom");
 const tooltipStyle = ref({});
+const tooltipId = useId();
 
 // =============================================================================
 // METHODS
@@ -207,7 +208,14 @@ const arrowPositionClass = computed(() => {
     <div
       ref="triggerRef"
       class="glass-tooltip-trigger cursor-pointer"
+      role="button"
+      tabindex="0"
+      aria-haspopup="true"
+      :aria-controls="tooltipId"
+      :aria-expanded="isVisible"
       @click.stop="toggle"
+      @keydown.enter.prevent="toggle"
+      @keydown.space.prevent="toggle"
       @mouseenter="showOnHover && (isVisible = true)"
       @mouseleave="showOnHover && (isVisible = false)"
     >
@@ -219,10 +227,12 @@ const arrowPositionClass = computed(() => {
       <Transition name="glass-tooltip">
         <div
           v-if="isVisible"
+          :id="tooltipId"
           ref="tooltipRef"
           class="glass-tooltip"
           :class="arrowPositionClass"
           :style="tooltipStyle"
+          role="tooltip"
           @click.stop
         >
           <!-- Tooltip content -->
