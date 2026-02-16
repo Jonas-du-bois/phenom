@@ -22,3 +22,8 @@
 **Vulnerability:** `ImageController.deleteImage` allowed deleting any image from Cloudinary by manipulating the `publicId` parameter, even if the image did not belong to the user's observation. The controller only verified ownership of the observation, not the image itself.
 **Learning:** Verifying ownership of the parent resource (observation) is insufficient for operations on child resources (images) identified by separate IDs if those IDs are used directly in external service calls.
 **Prevention:** Always verify that the target child resource ID exists within the parent resource's collection before performing operations on it.
+
+## 2026-06-15 - Regression: IDOR via Mass Assignment in Observation Creation
+**Vulnerability:** The fix for the IDOR vulnerability in `createObservation` (documented 2026-02-08) was found to be missing, and the regression test `security_image_injection.test.js` was absent. This allowed `images` to be injected again.
+**Learning:** Security fixes must be accompanied by persistent regression tests that run in CI. If a test file is deleted or not committed, the regression can go unnoticed.
+**Prevention:** Ensure regression tests are part of the repository and run automatically. Re-applied the fix to exclude `images` from `req.body` in `createObservation`.
