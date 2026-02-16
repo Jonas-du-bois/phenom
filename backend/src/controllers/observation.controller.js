@@ -52,7 +52,9 @@ class ObservationController {
    * - The generated image will be marked with source: 'ai' in the response
    */
   createObservation = asyncHandler(async (req, res) => {
-    const { generateAiImage, ...observationData } = req.body;
+    // SECURITY: Exclude 'images' from req.body to prevent Mass Assignment/IDOR vulnerability.
+    // Images must be uploaded via the dedicated endpoint /observations/:id/images
+    const { generateAiImage, images, ...observationData } = req.body;
 
     // Create the observation
     let observation = await observationService.createObservation(
