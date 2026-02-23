@@ -37,11 +37,12 @@ class ObservationService {
     // estimatedDocumentCount() uses collection metadata (O(1)) instead of scanning the index (O(N))
     const [sightings, total] = await Promise.all([
       Observation.find()
-        .populate('userId', 'name email avatar')
+        .select('-locationPoint -__v -updatedAt -images.publicId -images.size -images.format -images.width -images.height -images.uploadedAt')
+        .populate('userId', 'name avatar')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .lean({ virtuals: true }),
+        .lean(),
       Observation.estimatedDocumentCount()
     ]);
 
@@ -235,11 +236,12 @@ class ObservationService {
 
     const [sightings, total] = await Promise.all([
       Observation.find(query)
-        .populate('userId', 'name email avatar')
+        .select('-locationPoint -__v -updatedAt -images.publicId -images.size -images.format -images.width -images.height -images.uploadedAt')
+        .populate('userId', 'name avatar')
         .sort({ createdAt: -1 })
         .skip(offset)
         .limit(limit)
-        .lean({ virtuals: true }),
+        .lean(),
       countPromise
     ]);
 

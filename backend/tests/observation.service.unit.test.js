@@ -69,6 +69,7 @@ describe('ObservationService Unit Tests', () => {
     it('should use estimatedDocumentCount when no filters are provided (empty query)', async () => {
       // Mock find chain
       const mockFind = {
+        select: jest.fn().mockReturnThis(),
         populate: jest.fn().mockReturnThis(),
         sort: jest.fn().mockReturnThis(),
         skip: jest.fn().mockReturnThis(),
@@ -96,6 +97,7 @@ describe('ObservationService Unit Tests', () => {
     it('should use countDocuments when filters are provided', async () => {
       // Mock find chain
       const mockFind = {
+        select: jest.fn().mockReturnThis(),
         populate: jest.fn().mockReturnThis(),
         sort: jest.fn().mockReturnThis(),
         skip: jest.fn().mockReturnThis(),
@@ -125,6 +127,7 @@ describe('ObservationService Unit Tests', () => {
     it('should use estimatedDocumentCount for total count', async () => {
       // Mock find chain
       const mockFind = {
+        select: jest.fn().mockReturnThis(),
         populate: jest.fn().mockReturnThis(),
         sort: jest.fn().mockReturnThis(),
         skip: jest.fn().mockReturnThis(),
