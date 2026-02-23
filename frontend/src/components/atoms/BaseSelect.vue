@@ -28,6 +28,7 @@
   - error: Error message to display
   - disabled: Whether the select is disabled
   - required: Whether selection is required
+  - id: Optional ID for the select element
 
   EVENTS:
   - update:modelValue: Emitted when selection changes (v-model)
@@ -39,6 +40,7 @@
  * BaseSelect - Dropdown Select Component
  * Design System: Phenom Search
  */
+import { computed, useId } from "vue";
 
 defineOptions({ name: "BaseSelect" });
 
@@ -82,12 +84,21 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  // Input ID (optional, will be generated if missing)
+  id: {
+    type: String,
+    default: "",
+  },
 });
 
 // =============================================================================
 // EVENTS
 // =============================================================================
 const emit = defineEmits(["update:modelValue"]);
+
+// Generate a unique ID if not provided
+const uniqueId = useId();
+const selectId = computed(() => props.id || uniqueId);
 
 /**
  * Handle select change and emit new value
@@ -102,6 +113,7 @@ const handleChange = (e) => {
     <!-- Label -->
     <label
       v-if="label"
+      :for="selectId"
       class="block mb-2 text-xs uppercase tracking-wider text-white/60"
     >
       {{ label }}
@@ -112,9 +124,12 @@ const handleChange = (e) => {
     <div class="relative">
       <!-- Native Select Element -->
       <select
+        :id="selectId"
         :value="modelValue"
         :disabled="disabled"
         :required="required"
+        :aria-invalid="!!error"
+        :aria-describedby="error ? `${selectId}-error` : undefined"
         :class="[
           'w-full py-3 px-4 pr-10 bg-white/5 border text-white',
           'appearance-none cursor-pointer',
@@ -157,7 +172,7 @@ const handleChange = (e) => {
     </div>
 
     <!-- Error Message (conditional) -->
-    <p v-if="error" class="mt-2 text-xs text-red-500">
+    <p v-if="error" :id="`${selectId}-error`" class="mt-2 text-xs text-red-500">
       {{ error }}
     </p>
   </div>
