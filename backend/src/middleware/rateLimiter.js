@@ -7,7 +7,9 @@ import rateLimit from 'express-rate-limit';
 export const generalLimiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
   max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
-  skip: () => process.env.NODE_ENV === 'test', // Disable in test mode
+  skip: () =>
+    process.env.NODE_ENV === 'test' &&
+    process.env.ENABLE_RATE_LIMIT_TEST !== 'true', // Disable in test mode unless explicitly enabled
   message: {
     success: false,
     error: 'Trop de requêtes, veuillez réessayer plus tard'
@@ -24,11 +26,33 @@ export const authLimiter = rateLimit({
   windowMs: parseInt(process.env.AUTH_RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes by default
   max: parseInt(process.env.AUTH_RATE_LIMIT_MAX) || 20, // 20 max attempts by default
   skipSuccessfulRequests: true,
-  skip: () => process.env.NODE_ENV === 'test', // Disable in test mode
+  skip: () =>
+    process.env.NODE_ENV === 'test' &&
+    process.env.ENABLE_RATE_LIMIT_TEST !== 'true', // Disable in test mode unless explicitly enabled
   message: {
     success: false,
     error: 'Trop de tentatives de connexion, veuillez réessayer plus tard'
   }
+});
+
+/**
+ * Strict rate limiter for token refresh
+ * Prevents token generation abuse
+ */
+export const refreshTokenLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // 20 requests per IP
+  skipSuccessfulRequests: false, // Count successful requests too
+  skip: () =>
+    process.env.NODE_ENV === 'test' &&
+    process.env.ENABLE_RATE_LIMIT_TEST !== 'true',
+  message: {
+    success: false,
+    error:
+      'Trop de tentatives de rafraîchissement, veuillez réessayer plus tard'
+  },
+  standardHeaders: true,
+  legacyHeaders: false
 });
 
 /**
@@ -38,6 +62,9 @@ export const authLimiter = rateLimit({
 export const createLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 20, // 20 max creations per hour
+  skip: () =>
+    process.env.NODE_ENV === 'test' &&
+    process.env.ENABLE_RATE_LIMIT_TEST !== 'true',
   message: {
     success: false,
     error: 'Limite de création atteinte, veuillez réessayer plus tard'

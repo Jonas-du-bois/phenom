@@ -13,7 +13,10 @@ import {
   forgotPasswordValidation,
   resetPasswordValidation
 } from '../validators/auth.validator.js';
-import { authLimiter } from '../middleware/rateLimiter.js';
+import {
+  authLimiter,
+  refreshTokenLimiter
+} from '../middleware/rateLimiter.js';
 
 const router = express.Router();
 
@@ -273,8 +276,18 @@ router.get('/me', authenticate, authController.getProfile);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
+ *       429:
+ *         description: Too many refresh attempts
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
-router.post('/refresh-token', authController.refreshToken);
+router.post(
+  '/refresh-token',
+  refreshTokenLimiter,
+  authController.refreshToken
+);
 
 /**
  * @swagger
