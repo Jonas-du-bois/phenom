@@ -130,7 +130,7 @@ const sizeClasses = {
     <button
       v-if="removable"
       type="button"
-      class="ml-1 hover:text-white transition-colors"
+      class="ml-1 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#00F0FF] rounded-full"
       aria-label="Remove"
       @click.stop="emit('remove')"
     >
