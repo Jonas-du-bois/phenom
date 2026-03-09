@@ -1,3 +1,3 @@
-## 2024-05-22 - GlassTooltip Accessibility
-**Learning:** Tooltips wrapping non-interactive elements (like badges) create accessibility traps. Using `tabindex="0"`, `role="button"`, and proper ARIA attributes (`aria-expanded`, `aria-controls` with `useId`) transforms them into accessible toggles.
-**Action:** Always verify keyboard interaction for "hover-only" UI components and ensure they have a focusable trigger with proper semantics.
+## 2024-05-19 - Missing Keyboard Focus Styles on Custom UI Controls
+**Learning:** Atomic custom UI components (like BaseButton, IconButton, BaseToggle) that override native button styling often drop native focus rings but forget to replace them. This creates a critical accessibility issue where keyboard users cannot see which element is currently focused.
+**Action:** Always ensure that custom interactive components include explicit `focus-visible` styling (e.g., using Tailwind classes like `focus-visible:ring-2 focus-visible:ring-[#00F0FF] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent`) to restore keyboard navigation visibility without forcing ugly focus rings on mouse users. Avoid hardcoding offset colors (like `focus-visible:ring-offset-black`) to ensure they work on different backgrounds.
