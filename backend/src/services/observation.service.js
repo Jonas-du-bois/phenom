@@ -41,7 +41,7 @@ class ObservationService {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .lean({ virtuals: true }),
+        .lean(),
       Observation.estimatedDocumentCount()
     ]);
 
@@ -59,6 +59,14 @@ class ObservationService {
 
     sightings.forEach((s) => {
       s.commentsCount = countMap[s._id.toString()] || 0;
+
+      // Manually map virtuals previously handled by mongoose
+      s.id = s._id.toString();
+      s.hasCoordinates = !!(s.coordinates && s.coordinates.lat !== undefined && s.coordinates.lng !== undefined);
+      s.hasImages = !!(s.images && s.images.length > 0);
+      s.imageUrls = s.images ? s.images.map(img => img.url) : [];
+
+      delete s.__v;
     });
 
     const totalPages = Math.ceil(total / limit);
@@ -239,7 +247,7 @@ class ObservationService {
         .sort({ createdAt: -1 })
         .skip(offset)
         .limit(limit)
-        .lean({ virtuals: true }),
+        .lean(),
       countPromise
     ]);
 
@@ -257,6 +265,14 @@ class ObservationService {
 
     sightings.forEach((s) => {
       s.commentsCount = countMap[s._id.toString()] || 0;
+
+      // Manually map virtuals previously handled by mongoose
+      s.id = s._id.toString();
+      s.hasCoordinates = !!(s.coordinates && s.coordinates.lat !== undefined && s.coordinates.lng !== undefined);
+      s.hasImages = !!(s.images && s.images.length > 0);
+      s.imageUrls = s.images ? s.images.map(img => img.url) : [];
+
+      delete s.__v;
     });
 
     // Calculate page info
