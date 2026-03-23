@@ -123,7 +123,7 @@ const sizeClasses = {
     :aria-label="ariaLabel"
     :class="[
       'inline-flex items-center justify-center',
-      'transition-all duration-200',
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00F0FF] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent transition-all duration-200',
       'touch-target',
       variantClasses[variant],
       sizeClasses[size],
