@@ -75,6 +75,8 @@ class AdminService {
    * @returns {Object} Statistics
    */
   async getStats() {
+    // OPTIMIZATION: Use estimatedDocumentCount() instead of countDocuments() for total counts on empty queries.
+    // estimatedDocumentCount() is O(1) whereas countDocuments() scans the index which is O(N).
     const [
       totalUsers,
       totalObservations,
@@ -82,9 +84,9 @@ class AdminService {
       recentObservations,
       topContributors
     ] = await Promise.all([
-      User.countDocuments(),
-      Observation.countDocuments(),
-      Comment.countDocuments(),
+      User.estimatedDocumentCount(),
+      Observation.estimatedDocumentCount(),
+      Comment.estimatedDocumentCount(),
       Observation.find()
         .sort({ createdAt: -1 })
         .limit(5)
