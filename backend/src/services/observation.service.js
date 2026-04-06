@@ -37,11 +37,12 @@ class ObservationService {
     // estimatedDocumentCount() uses collection metadata (O(1)) instead of scanning the index (O(N))
     const [sightings, total] = await Promise.all([
       Observation.find()
+        .select('-locationPoint -__v -updatedAt -images.size -images.format -images.width -images.height -images.uploadedAt -images.source')
         .populate('userId', 'name email avatar')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .lean({ virtuals: true }),
+        .lean(),
       Observation.estimatedDocumentCount()
     ]);
 
@@ -57,8 +58,15 @@ class ObservationService {
       countMap[c._id.toString()] = c.count;
     });
 
+    // OPTIMIZATION: Mongoose's .lean({ virtuals: true }) is notoriously slow and CPU intensive.
+    // By replacing it with .lean() and manually mapping the required virtual properties in an O(N) loop,
+    // we bypass the overhead of Mongoose instantiation for each document, significantly improving list query performance.
     sightings.forEach((s) => {
       s.commentsCount = countMap[s._id.toString()] || 0;
+      s.id = s._id.toString();
+      s.hasCoordinates = !!(s.coordinates && s.coordinates.lat !== undefined && s.coordinates.lng !== undefined);
+      s.hasImages = !!(s.images && s.images.length > 0);
+      s.imageUrls = s.images ? s.images.map(img => img.url) : [];
     });
 
     const totalPages = Math.ceil(total / limit);
@@ -235,11 +243,12 @@ class ObservationService {
 
     const [sightings, total] = await Promise.all([
       Observation.find(query)
+        .select('-locationPoint -__v -updatedAt -images.size -images.format -images.width -images.height -images.uploadedAt -images.source')
         .populate('userId', 'name email avatar')
         .sort({ createdAt: -1 })
         .skip(offset)
         .limit(limit)
-        .lean({ virtuals: true }),
+        .lean(),
       countPromise
     ]);
 
@@ -255,8 +264,15 @@ class ObservationService {
       countMap[c._id.toString()] = c.count;
     });
 
+    // OPTIMIZATION: Mongoose's .lean({ virtuals: true }) is notoriously slow and CPU intensive.
+    // By replacing it with .lean() and manually mapping the required virtual properties in an O(N) loop,
+    // we bypass the overhead of Mongoose instantiation for each document, significantly improving list query performance.
     sightings.forEach((s) => {
       s.commentsCount = countMap[s._id.toString()] || 0;
+      s.id = s._id.toString();
+      s.hasCoordinates = !!(s.coordinates && s.coordinates.lat !== undefined && s.coordinates.lng !== undefined);
+      s.hasImages = !!(s.images && s.images.length > 0);
+      s.imageUrls = s.images ? s.images.map(img => img.url) : [];
     });
 
     // Calculate page info
@@ -711,7 +727,20 @@ class ObservationService {
           distanceMultiplier: 0.001 // Convert meters to km
         }
       },
-      { $limit: maxResults }
+      { $limit: maxResults },
+      {
+        $project: {
+          locationPoint: 0,
+          __v: 0,
+          updatedAt: 0,
+          'images.size': 0,
+          'images.format': 0,
+          'images.width': 0,
+          'images.height': 0,
+          'images.uploadedAt': 0,
+          'images.source': 0
+        }
+      }
     ];
 
     const observations = await Observation.aggregate(pipeline);
@@ -733,8 +762,15 @@ class ObservationService {
       countMap[c._id.toString()] = c.count;
     });
 
+    // OPTIMIZATION: Manually map virtual properties on aggregate results.
+    // This provides the same list query performance benefits as replacing .lean({ virtuals: true }),
+    // avoiding expensive instantiation overhead and returning minimal payloads.
     observations.forEach((s) => {
       s.commentsCount = countMap[s._id.toString()] || 0;
+      s.id = s._id.toString();
+      s.hasCoordinates = !!(s.coordinates && s.coordinates.lat !== undefined && s.coordinates.lng !== undefined);
+      s.hasImages = !!(s.images && s.images.length > 0);
+      s.imageUrls = s.images ? s.images.map(img => img.url) : [];
     });
 
     return observations;
