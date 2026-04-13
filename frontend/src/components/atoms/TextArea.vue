@@ -42,7 +42,7 @@
 -->
 
 <script setup>
-import { computed } from "vue";
+import { computed, useId } from "vue";
 
 /**
  * TextArea - Multi-line Text Input Component
@@ -105,12 +105,21 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  // Input ID (optional, will be generated if missing)
+  id: {
+    type: String,
+    default: "",
+  },
 });
 
 // =============================================================================
 // EVENTS
 // =============================================================================
 const emit = defineEmits(["update:modelValue", "blur", "focus"]);
+
+// Generate a unique ID if not provided
+const uniqueId = useId();
+const inputId = computed(() => props.id || uniqueId);
 
 /**
  * Handle input and emit new value
@@ -132,6 +141,7 @@ const charCount = computed(() => props.modelValue?.length || 0);
     <!-- Label (optional) -->
     <label
       v-if="label"
+      :for="inputId"
       class="block mb-2 text-xs uppercase tracking-wider text-white/60"
     >
       {{ label }}
@@ -140,6 +150,7 @@ const charCount = computed(() => props.modelValue?.length || 0);
 
     <!-- Textarea Element -->
     <textarea
+      :id="inputId"
       :value="modelValue"
       :placeholder="placeholder"
       :disabled="disabled"
@@ -147,6 +158,8 @@ const charCount = computed(() => props.modelValue?.length || 0);
       :rows="rows"
       :maxlength="maxlength"
       :minlength="minlength"
+      :aria-invalid="!!error"
+      :aria-describedby="error ? `${inputId}-error` : undefined"
       :class="[
         'w-full px-4 py-3 bg-white/5 border text-white resize-none',
         'placeholder:text-white/40',
@@ -163,7 +176,12 @@ const charCount = computed(() => props.modelValue?.length || 0);
     <!-- Footer: Error message and character count -->
     <div class="flex items-center justify-between mt-2">
       <!-- Error Message -->
-      <p v-if="error" class="text-xs text-red-500">
+      <p
+        v-if="error"
+        :id="`${inputId}-error`"
+        class="text-xs text-red-500"
+        role="alert"
+      >
         {{ error }}
       </p>
       <span v-else />
