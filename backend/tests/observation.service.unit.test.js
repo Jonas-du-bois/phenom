@@ -73,6 +73,7 @@ describe('ObservationService Unit Tests', () => {
         sort: jest.fn().mockReturnThis(),
         skip: jest.fn().mockReturnThis(),
         limit: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
         lean: jest.fn().mockResolvedValue([])
       };
       const findSpy = jest.spyOn(Observation, 'find').mockReturnValue(mockFind);
@@ -100,6 +101,7 @@ describe('ObservationService Unit Tests', () => {
         sort: jest.fn().mockReturnThis(),
         skip: jest.fn().mockReturnThis(),
         limit: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
         lean: jest.fn().mockResolvedValue([])
       };
       const findSpy = jest.spyOn(Observation, 'find').mockReturnValue(mockFind);
@@ -129,6 +131,7 @@ describe('ObservationService Unit Tests', () => {
         sort: jest.fn().mockReturnThis(),
         skip: jest.fn().mockReturnThis(),
         limit: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
         lean: jest.fn().mockResolvedValue([])
       };
       const findSpy = jest.spyOn(Observation, 'find').mockReturnValue(mockFind);
