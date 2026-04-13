@@ -44,7 +44,7 @@
  * DurationInput - Duration Input Component (Seconds)
  * Design System: Phenom Search
  */
-import { computed } from "vue";
+import { computed, useId } from "vue";
 
 defineOptions({ name: "DurationInput" });
 
@@ -82,12 +82,21 @@ const props = defineProps({
     type: Number,
     default: 86400,
   },
+  // Input ID (optional, will be generated if missing)
+  id: {
+    type: String,
+    default: "",
+  },
 });
 
 // =============================================================================
 // EVENTS
 // =============================================================================
 const emit = defineEmits(["update:modelValue"]);
+
+// Generate a unique ID if not provided
+const uniqueId = useId();
+const inputId = computed(() => props.id || uniqueId);
 
 /**
  * Handle input and clamp value between 0 and max
@@ -139,6 +148,7 @@ const formattedDuration = computed(() => {
     <!-- Label (optional) -->
     <label
       v-if="label"
+      :for="inputId"
       class="block mb-2 text-xs uppercase tracking-wider text-white/60"
     >
       {{ label }}
@@ -150,6 +160,7 @@ const formattedDuration = computed(() => {
       <!-- Number Input for raw seconds -->
       <div class="relative flex-1">
         <input
+          :id="inputId"
           type="number"
           :value="modelValue"
           :disabled="disabled"
@@ -157,6 +168,8 @@ const formattedDuration = computed(() => {
           min="0"
           :max="max"
           placeholder="0"
+          :aria-invalid="!!error"
+          :aria-describedby="error ? `${inputId}-error` : undefined"
           :class="[
             'w-full py-3 px-4 pr-12 bg-white/5 border text-white',
             'focus:outline-none focus:border-[#00F0FF] focus:ring-1 focus:ring-[#00F0FF]/20',
@@ -184,7 +197,12 @@ const formattedDuration = computed(() => {
     </div>
 
     <!-- Error Message (conditional) -->
-    <p v-if="error" class="mt-2 text-xs text-red-500">
+    <p
+      v-if="error"
+      :id="`${inputId}-error`"
+      class="mt-2 text-xs text-red-500"
+      role="alert"
+    >
       {{ error }}
     </p>
   </div>
