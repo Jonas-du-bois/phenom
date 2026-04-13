@@ -239,7 +239,10 @@ class ObservationService {
         .sort({ createdAt: -1 })
         .skip(offset)
         .limit(limit)
-        .lean({ virtuals: true }),
+        // OPTIMIZATION: Use .lean() without virtuals to avoid heavy database-driver level processing overhead
+        // Also exclude large unused fields like locationPoint and unused image metadata to optimize payload
+        .select('-locationPoint -__v -updatedAt -images.size -images.format -images.width -images.height -images.uploadedAt -images.publicId -images.source')
+        .lean(),
       countPromise
     ]);
 
@@ -257,6 +260,12 @@ class ObservationService {
 
     sightings.forEach((s) => {
       s.commentsCount = countMap[s._id.toString()] || 0;
+
+      // OPTIMIZATION: Manually map necessary virtual properties directly rather than relying on Mongoose virtual computation
+      s.hasCoordinates = !!(s.coordinates && s.coordinates.lat !== undefined && s.coordinates.lng !== undefined);
+      s.hasImages = !!(s.images && s.images.length > 0);
+      s.imageUrls = s.images ? s.images.map(img => img.url) : [];
+      s.id = s._id.toString(); // Transform _id to id for backwards compatibility
     });
 
     // Calculate page info
@@ -711,7 +720,22 @@ class ObservationService {
           distanceMultiplier: 0.001 // Convert meters to km
         }
       },
-      { $limit: maxResults }
+      { $limit: maxResults },
+      // OPTIMIZATION: explicitly project to exclude unused or heavy fields just like in getObservations
+      {
+        $project: {
+          locationPoint: 0,
+          __v: 0,
+          updatedAt: 0,
+          'images.size': 0,
+          'images.format': 0,
+          'images.width': 0,
+          'images.height': 0,
+          'images.uploadedAt': 0,
+          'images.publicId': 0,
+          'images.source': 0
+        }
+      }
     ];
 
     const observations = await Observation.aggregate(pipeline);
@@ -735,6 +759,12 @@ class ObservationService {
 
     observations.forEach((s) => {
       s.commentsCount = countMap[s._id.toString()] || 0;
+
+      // OPTIMIZATION: Manually map necessary virtual properties
+      s.hasCoordinates = !!(s.coordinates && s.coordinates.lat !== undefined && s.coordinates.lng !== undefined);
+      s.hasImages = !!(s.images && s.images.length > 0);
+      s.imageUrls = s.images ? s.images.map(img => img.url) : [];
+      s.id = s._id.toString();
     });
 
     return observations;
