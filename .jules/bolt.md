@@ -5,3 +5,7 @@
 ## 2026-02-07 - [Aggregation vs Find Virtuals]
 **Learning:** Replacing `find().lean({ virtuals: true })` with `aggregate()` for performance improvements (like `$geoNear`) strips Mongoose virtuals from the result.
 **Action:** Explicitly populate necessary fields or manually compute critical virtuals in the aggregation pipeline or post-processing if frontend relies on them.
+
+## 2026-02-08 - [Hydrating Virtuals Overhead]
+**Learning:** Using `.lean({ virtuals: true })` on large list queries introduces significant performance overhead by forcing Mongoose to instantiate and hydrate virtual fields for every returned document.
+**Action:** Always use `.lean()` without virtuals for list endpoints, and manually compute or map critical virtual properties via object iteration. Explicitly cast boolean fields (e.g., using `!!`) and avoid deleting the underlying `_id` field if internal logic relies on it.
