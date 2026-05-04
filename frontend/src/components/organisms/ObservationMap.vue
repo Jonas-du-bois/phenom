@@ -48,6 +48,7 @@
       >
         <button
           @click="zoomIn"
+          aria-label="Zoom in"
           class="w-10 h-10 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/5 transition-colors"
         >
           <svg
@@ -67,6 +68,7 @@
         <div class="h-px bg-white/10" />
         <button
           @click="zoomOut"
+          aria-label="Zoom out"
           class="w-10 h-10 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/5 transition-colors"
         >
           <svg
@@ -88,6 +90,7 @@
       <!-- Location button -->
       <button
         @click="centerOnUser"
+        aria-label="Center map on your location"
         class="w-10 h-10 bg-[#12151C] rounded-xl flex items-center justify-center text-white/70 hover:text-[#00F0FF] shadow-lg border border-white/10 transition-colors"
         :class="{ 'text-[#00F0FF]': isFollowingUser }"
       >
@@ -117,6 +120,7 @@
       <!-- Layer toggle -->
       <button
         @click="toggleLayer"
+        aria-label="Toggle map layer"
         class="w-10 h-10 bg-[#12151C] rounded-xl flex items-center justify-center text-white/70 hover:text-white shadow-lg border border-white/10 transition-colors"
       >
         <svg
