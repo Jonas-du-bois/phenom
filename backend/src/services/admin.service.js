@@ -34,6 +34,12 @@ class AdminService {
       ];
     }
 
+    // OPTIMIZATION: Use estimatedDocumentCount() for empty queries
+    const countPromise =
+      Object.keys(query).length === 0
+        ? User.estimatedDocumentCount()
+        : User.countDocuments(query);
+
     const [users, total] = await Promise.all([
       User.find(query)
         .select('-password')
@@ -41,7 +47,7 @@ class AdminService {
         .skip(skip)
         .limit(limit)
         .lean(),
-      User.countDocuments(query)
+      countPromise
     ]);
 
     return {
@@ -82,9 +88,9 @@ class AdminService {
       recentObservations,
       topContributors
     ] = await Promise.all([
-      User.countDocuments(),
-      Observation.countDocuments(),
-      Comment.countDocuments(),
+      User.estimatedDocumentCount(),
+      Observation.estimatedDocumentCount(),
+      Comment.estimatedDocumentCount(),
       Observation.find()
         .sort({ createdAt: -1 })
         .limit(5)
@@ -220,6 +226,12 @@ class AdminService {
     const order = filters.order === 'asc' ? 1 : -1;
     const sortOptions = { [sortBy]: order };
 
+    // OPTIMIZATION: Use estimatedDocumentCount() for empty queries
+    const countPromise =
+      Object.keys(query).length === 0
+        ? Observation.estimatedDocumentCount()
+        : Observation.countDocuments(query);
+
     const [observations, total] = await Promise.all([
       Observation.find(query)
         .populate('userId', 'name email avatar')
@@ -227,7 +239,7 @@ class AdminService {
         .skip(skip)
         .limit(limit)
         .lean(),
-      Observation.countDocuments(query)
+      countPromise
     ]);
 
     return {
@@ -260,6 +272,12 @@ class AdminService {
       query.observationId = filters.observationId;
     }
 
+    // OPTIMIZATION: Use estimatedDocumentCount() for empty queries
+    const countPromise =
+      Object.keys(query).length === 0
+        ? Comment.estimatedDocumentCount()
+        : Comment.countDocuments(query);
+
     const [comments, total] = await Promise.all([
       Comment.find(query)
         .populate('userId', 'name email avatar')
@@ -268,7 +286,7 @@ class AdminService {
         .skip(skip)
         .limit(limit)
         .lean(),
-      Comment.countDocuments(query)
+      countPromise
     ]);
 
     return {
