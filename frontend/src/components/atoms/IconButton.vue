@@ -125,6 +125,7 @@ const sizeClasses = {
       'inline-flex items-center justify-center',
       'transition-all duration-200',
       'touch-target',
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00F0FF] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
       variantClasses[variant],
       sizeClasses[size],
       {
