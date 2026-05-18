@@ -41,9 +41,18 @@ class ObservationService {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .lean({ virtuals: true }),
+        .select('-__v -updatedAt -locationPoint -images.size -images.format -images.width -images.height')
+        .lean(),
       Observation.estimatedDocumentCount()
     ]);
+
+    // OPTIMIZATION: Manually map virtual fields to avoid performance overhead of .lean({ virtuals: true })
+    sightings.forEach(s => {
+      s.hasCoordinates = !!(s.coordinates && s.coordinates.lat !== undefined && s.coordinates.lng !== undefined);
+      s.hasImages = !!(s.images && s.images.length > 0);
+      s.imageUrls = s.images ? s.images.map(img => img.url) : [];
+      s.id = s._id.toString();
+    });
 
     // OPTIMIZATION: Manually aggregate comment counts to avoid N+1 queries
     const observationIds = sightings.map((s) => s._id);
@@ -239,9 +248,18 @@ class ObservationService {
         .sort({ createdAt: -1 })
         .skip(offset)
         .limit(limit)
-        .lean({ virtuals: true }),
+        .select('-__v -updatedAt -locationPoint -images.size -images.format -images.width -images.height')
+        .lean(),
       countPromise
     ]);
+
+    // OPTIMIZATION: Manually map virtual fields to avoid performance overhead of .lean({ virtuals: true })
+    sightings.forEach(s => {
+      s.hasCoordinates = !!(s.coordinates && s.coordinates.lat !== undefined && s.coordinates.lng !== undefined);
+      s.hasImages = !!(s.images && s.images.length > 0);
+      s.imageUrls = s.images ? s.images.map(img => img.url) : [];
+      s.id = s._id.toString();
+    });
 
     // OPTIMIZATION: Manually aggregate comment counts to avoid N+1 queries
     const observationIds = sightings.map((s) => s._id);
