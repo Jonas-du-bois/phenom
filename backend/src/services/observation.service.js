@@ -37,11 +37,12 @@ class ObservationService {
     // estimatedDocumentCount() uses collection metadata (O(1)) instead of scanning the index (O(N))
     const [sightings, total] = await Promise.all([
       Observation.find()
+        .select('-locationPoint -__v -updatedAt -images.size -images.format -images.width -images.height')
         .populate('userId', 'name email avatar')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .lean({ virtuals: true }),
+        .lean(),
       Observation.estimatedDocumentCount()
     ]);
 
@@ -59,6 +60,11 @@ class ObservationService {
 
     sightings.forEach((s) => {
       s.commentsCount = countMap[s._id.toString()] || 0;
+      // Manually map virtuals for performance (avoiding lean({ virtuals: true }))
+      s.hasCoordinates = !!(s.coordinates && s.coordinates.lat !== undefined && s.coordinates.lng !== undefined);
+      s.hasImages = !!(s.images && s.images.length > 0);
+      s.imageUrls = s.images ? s.images.map(img => img.url) : [];
+      s.id = s._id.toString();
     });
 
     const totalPages = Math.ceil(total / limit);
@@ -235,11 +241,12 @@ class ObservationService {
 
     const [sightings, total] = await Promise.all([
       Observation.find(query)
+        .select('-locationPoint -__v -updatedAt -images.size -images.format -images.width -images.height')
         .populate('userId', 'name email avatar')
         .sort({ createdAt: -1 })
         .skip(offset)
         .limit(limit)
-        .lean({ virtuals: true }),
+        .lean(),
       countPromise
     ]);
 
@@ -257,6 +264,11 @@ class ObservationService {
 
     sightings.forEach((s) => {
       s.commentsCount = countMap[s._id.toString()] || 0;
+      // Manually map virtuals for performance (avoiding lean({ virtuals: true }))
+      s.hasCoordinates = !!(s.coordinates && s.coordinates.lat !== undefined && s.coordinates.lng !== undefined);
+      s.hasImages = !!(s.images && s.images.length > 0);
+      s.imageUrls = s.images ? s.images.map(img => img.url) : [];
+      s.id = s._id.toString();
     });
 
     // Calculate page info
