@@ -27,3 +27,7 @@
 **Vulnerability:** The fix for the IDOR vulnerability in `createObservation` (documented 2026-02-08) was found to be missing, and the regression test `security_image_injection.test.js` was absent. This allowed `images` to be injected again.
 **Learning:** Security fixes must be accompanied by persistent regression tests that run in CI. If a test file is deleted or not committed, the regression can go unnoticed.
 **Prevention:** Ensure regression tests are part of the repository and run automatically. Re-applied the fix to exclude `images` from `req.body` in `createObservation`.
+## 2024-10-24 - MongoDB $regex ReDoS / NoSQL Injection via unescaped string
+**Vulnerability:** In `admin.service.js`, user search queries were passed directly to `$regex` without escaping special regex characters, enabling ReDoS and potentially NoSQL Injection depending on the structure of the attacker's query.
+**Learning:** `express-mongo-sanitize` only strips object keys starting with `$`, not the actual values that will be used within a `$regex` operator.
+**Prevention:** Always use `escapeRegex` utility (which escapes regex metadata chars `.*+?^${}()|[]\`) when taking user input and placing it inside `$regex` Mongoose queries.
