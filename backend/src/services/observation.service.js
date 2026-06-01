@@ -41,7 +41,10 @@ class ObservationService {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .lean({ virtuals: true }),
+        // OPTIMIZATION: Exclude large unused fields to reduce payload size.
+        // Removed { virtuals: true } from .lean() for better performance; virtuals are mapped manually below.
+        .select('-locationPoint -__v -updatedAt -images.size -images.format -images.width -images.height')
+        .lean(),
       Observation.estimatedDocumentCount()
     ]);
 
@@ -58,6 +61,10 @@ class ObservationService {
     });
 
     sightings.forEach((s) => {
+      s.id = s._id.toString();
+      s.hasCoordinates = !!(s.coordinates && s.coordinates.lat !== undefined && s.coordinates.lng !== undefined);
+      s.hasImages = !!(s.images && s.images.length > 0);
+      s.imageUrls = s.images ? s.images.map((img) => img.url) : [];
       s.commentsCount = countMap[s._id.toString()] || 0;
     });
 
@@ -239,7 +246,8 @@ class ObservationService {
         .sort({ createdAt: -1 })
         .skip(offset)
         .limit(limit)
-        .lean({ virtuals: true }),
+        .select('-locationPoint -__v -updatedAt -images.size -images.format -images.width -images.height')
+        .lean(),
       countPromise
     ]);
 
@@ -256,6 +264,10 @@ class ObservationService {
     });
 
     sightings.forEach((s) => {
+      s.id = s._id.toString();
+      s.hasCoordinates = !!(s.coordinates && s.coordinates.lat !== undefined && s.coordinates.lng !== undefined);
+      s.hasImages = !!(s.images && s.images.length > 0);
+      s.imageUrls = s.images ? s.images.map((img) => img.url) : [];
       s.commentsCount = countMap[s._id.toString()] || 0;
     });
 
@@ -711,7 +723,20 @@ class ObservationService {
           distanceMultiplier: 0.001 // Convert meters to km
         }
       },
-      { $limit: maxResults }
+      { $limit: maxResults },
+      {
+        // OPTIMIZATION: Append $project stage to exclude large unused fields (like locationPoint, images metadata)
+        // to minimize data transfer overhead and memory usage.
+        $project: {
+          locationPoint: 0,
+          __v: 0,
+          updatedAt: 0,
+          'images.size': 0,
+          'images.format': 0,
+          'images.width': 0,
+          'images.height': 0
+        }
+      }
     ];
 
     const observations = await Observation.aggregate(pipeline);
@@ -734,6 +759,10 @@ class ObservationService {
     });
 
     observations.forEach((s) => {
+      s.id = s._id.toString();
+      s.hasCoordinates = !!(s.coordinates && s.coordinates.lat !== undefined && s.coordinates.lng !== undefined);
+      s.hasImages = !!(s.images && s.images.length > 0);
+      s.imageUrls = s.images ? s.images.map((img) => img.url) : [];
       s.commentsCount = countMap[s._id.toString()] || 0;
     });
 

@@ -49,6 +49,17 @@ describe('ObservationService Unit Tests', () => {
         }),
         expect.objectContaining({
             $limit: 20
+        }),
+        expect.objectContaining({
+          $project: {
+            locationPoint: 0,
+            __v: 0,
+            updatedAt: 0,
+            'images.size': 0,
+            'images.format': 0,
+            'images.width': 0,
+            'images.height': 0
+          }
         })
       ]));
 
@@ -73,6 +84,7 @@ describe('ObservationService Unit Tests', () => {
         sort: jest.fn().mockReturnThis(),
         skip: jest.fn().mockReturnThis(),
         limit: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
         lean: jest.fn().mockResolvedValue([])
       };
       const findSpy = jest.spyOn(Observation, 'find').mockReturnValue(mockFind);
@@ -100,6 +112,7 @@ describe('ObservationService Unit Tests', () => {
         sort: jest.fn().mockReturnThis(),
         skip: jest.fn().mockReturnThis(),
         limit: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
         lean: jest.fn().mockResolvedValue([])
       };
       const findSpy = jest.spyOn(Observation, 'find').mockReturnValue(mockFind);
@@ -129,6 +142,7 @@ describe('ObservationService Unit Tests', () => {
         sort: jest.fn().mockReturnThis(),
         skip: jest.fn().mockReturnThis(),
         limit: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
         lean: jest.fn().mockResolvedValue([])
       };
       const findSpy = jest.spyOn(Observation, 'find').mockReturnValue(mockFind);
