@@ -5,6 +5,7 @@ import {
   getPaginationParams,
   createPaginationMeta
 } from '../utils/pagination.js';
+import { escapeRegex } from '../utils/sanitize.js';
 
 /**
  * @file admin.service.js
@@ -28,9 +29,10 @@ class AdminService {
 
     // Search filter
     if (filters.search) {
+      const sanitizedSearch = escapeRegex(filters.search);
       query.$or = [
-        { name: { $regex: filters.search, $options: 'i' } },
-        { email: { $regex: filters.search, $options: 'i' } }
+        { name: { $regex: sanitizedSearch, $options: 'i' } },
+        { email: { $regex: sanitizedSearch, $options: 'i' } }
       ];
     }
 
