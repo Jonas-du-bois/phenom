@@ -37,11 +37,12 @@ class ObservationService {
     // estimatedDocumentCount() uses collection metadata (O(1)) instead of scanning the index (O(N))
     const [sightings, total] = await Promise.all([
       Observation.find()
+        .select('-locationPoint -__v -updatedAt -images.size -images.format -images.width -images.height')
         .populate('userId', 'name email avatar')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .lean({ virtuals: true }),
+        .lean(),
       Observation.estimatedDocumentCount()
     ]);
 
@@ -59,6 +60,10 @@ class ObservationService {
 
     sightings.forEach((s) => {
       s.commentsCount = countMap[s._id.toString()] || 0;
+      s.id = s._id.toString();
+      s.hasCoordinates = !!(s.coordinates && s.coordinates.lat !== undefined && s.coordinates.lng !== undefined);
+      s.hasImages = !!(s.images && s.images.length > 0);
+      s.imageUrls = s.images ? s.images.map(img => img.url) : [];
     });
 
     const totalPages = Math.ceil(total / limit);
@@ -235,11 +240,12 @@ class ObservationService {
 
     const [sightings, total] = await Promise.all([
       Observation.find(query)
+        .select('-locationPoint -__v -updatedAt -images.size -images.format -images.width -images.height')
         .populate('userId', 'name email avatar')
         .sort({ createdAt: -1 })
         .skip(offset)
         .limit(limit)
-        .lean({ virtuals: true }),
+        .lean(),
       countPromise
     ]);
 
@@ -257,6 +263,10 @@ class ObservationService {
 
     sightings.forEach((s) => {
       s.commentsCount = countMap[s._id.toString()] || 0;
+      s.id = s._id.toString();
+      s.hasCoordinates = !!(s.coordinates && s.coordinates.lat !== undefined && s.coordinates.lng !== undefined);
+      s.hasImages = !!(s.images && s.images.length > 0);
+      s.imageUrls = s.images ? s.images.map(img => img.url) : [];
     });
 
     // Calculate page info
@@ -711,7 +721,8 @@ class ObservationService {
           distanceMultiplier: 0.001 // Convert meters to km
         }
       },
-      { $limit: maxResults }
+      { $limit: maxResults },
+      { $project: { locationPoint: 0, __v: 0, updatedAt: 0, 'images.size': 0, 'images.format': 0, 'images.width': 0, 'images.height': 0 } }
     ];
 
     const observations = await Observation.aggregate(pipeline);
@@ -735,6 +746,10 @@ class ObservationService {
 
     observations.forEach((s) => {
       s.commentsCount = countMap[s._id.toString()] || 0;
+      s.id = s._id.toString();
+      s.hasCoordinates = !!(s.coordinates && s.coordinates.lat !== undefined && s.coordinates.lng !== undefined);
+      s.hasImages = !!(s.images && s.images.length > 0);
+      s.imageUrls = s.images ? s.images.map(img => img.url) : [];
     });
 
     return observations;
