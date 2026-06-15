@@ -195,7 +195,7 @@ const handleClickOutside = () => {
           <!-- Remove button for each chip -->
           <button
             type="button"
-            class="hover:text-white transition-colors"
+            class="hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00F0FF] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
             @click.stop="removeOption(opt.value)"
           >
             <svg
@@ -231,7 +231,7 @@ const handleClickOutside = () => {
           :class="[
             'w-full px-4 py-3 text-left text-sm text-white/70',
             'hover:bg-white/5 hover:text-[#00F0FF]',
-            'transition-colors',
+            'transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00F0FF] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
             { 'opacity-50 cursor-not-allowed': !canAddMore },
           ]"
           @click="toggleOption(option.value)"

@@ -172,7 +172,7 @@ const emit = defineEmits(["action"]);
     <!-- Action Button (optional) -->
     <button
       v-if="showAction"
-      class="mt-6 px-4 py-2 border border-white/20 text-white/60 text-sm uppercase tracking-wider hover:text-[#00F0FF] hover:border-[#00F0FF] transition-colors"
+      class="mt-6 px-4 py-2 border border-white/20 text-white/60 text-sm uppercase tracking-wider hover:text-[#00F0FF] hover:border-[#00F0FF] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00F0FF] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
       @click="emit('action')"
     >
       {{ actionLabel }}

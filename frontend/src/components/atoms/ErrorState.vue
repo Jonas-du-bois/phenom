@@ -94,7 +94,7 @@ const emit = defineEmits(["retry"]);
     <!-- Retry Button (optional) -->
     <button
       v-if="showRetry"
-      class="px-6 py-3 bg-[#00F0FF] text-black text-sm font-medium uppercase tracking-wider hover:bg-[#00D0DF] transition-colors"
+      class="px-6 py-3 bg-[#00F0FF] text-black text-sm font-medium uppercase tracking-wider hover:bg-[#00D0DF] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00F0FF] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
       @click="emit('retry')"
     >
       Retry
