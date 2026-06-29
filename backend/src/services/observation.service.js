@@ -41,9 +41,12 @@ class ObservationService {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .lean({ virtuals: true }),
+        .lean(),
       Observation.estimatedDocumentCount()
     ]);
+
+    // OPTIMIZATION: Manually map virtual fields from lean() query to avoid Mongoose overhead
+    Observation.mapVirtuals(sightings);
 
     // OPTIMIZATION: Manually aggregate comment counts to avoid N+1 queries
     const observationIds = sightings.map((s) => s._id);
@@ -239,9 +242,12 @@ class ObservationService {
         .sort({ createdAt: -1 })
         .skip(offset)
         .limit(limit)
-        .lean({ virtuals: true }),
+        .lean(),
       countPromise
     ]);
+
+    // OPTIMIZATION: Manually map virtual fields from lean() query to avoid Mongoose overhead
+    Observation.mapVirtuals(sightings);
 
     // OPTIMIZATION: Manually aggregate comment counts to avoid N+1 queries
     const observationIds = sightings.map((s) => s._id);

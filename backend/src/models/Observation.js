@@ -333,6 +333,40 @@ observationSchema.virtual('imageUrls').get(function () {
   return this.images ? this.images.map(img => img.url) : [];
 });
 
+/**
+ * Static method to manually map virtual fields for performance.
+ * Use this on arrays of lean() results instead of using lean({ virtuals: true }).
+ * @param {Array|Object} docs - Array of raw lean documents or single document
+ * @returns {Array|Object} Documents with virtual fields mapped
+ */
+observationSchema.statics.mapVirtuals = function (docs) {
+  const isArray = Array.isArray(docs);
+  const items = isArray ? docs : [docs];
+
+  items.forEach(doc => {
+    if (!doc) return;
+
+    // id
+    if (doc._id) {
+      doc.id = doc._id.toString();
+    }
+
+    // hasCoordinates
+    doc.hasCoordinates = !!(doc.coordinates && doc.coordinates.lat !== undefined && doc.coordinates.lng !== undefined);
+
+    // hasImages
+    doc.hasImages = !!(doc.images && doc.images.length > 0);
+
+    // imageUrls
+    doc.imageUrls = doc.images ? doc.images.map(img => img.url) : [];
+
+    // Clean up
+    delete doc.__v;
+  });
+
+  return isArray ? items : items[0];
+};
+
 // Transform _id to id for Phenom Search compatibility
 observationSchema.set('toJSON', {
   virtuals: true,
