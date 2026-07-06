@@ -5,3 +5,6 @@
 ## 2026-02-07 - [Aggregation vs Find Virtuals]
 **Learning:** Replacing `find().lean({ virtuals: true })` with `aggregate()` for performance improvements (like `$geoNear`) strips Mongoose virtuals from the result.
 **Action:** Explicitly populate necessary fields or manually compute critical virtuals in the aggregation pipeline or post-processing if frontend relies on them.
+## 2026-02-08 - [countDocuments vs estimatedDocumentCount]
+**Learning:** Using `countDocuments()` triggers an O(N) collection scan which can be slow for large datasets, particularly when computing general stats or listing all items without filters.
+**Action:** Replace `countDocuments()` with `estimatedDocumentCount()` for calculating overall totals or empty queries, since it relies on O(1) metadata.
