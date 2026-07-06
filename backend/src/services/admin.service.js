@@ -34,6 +34,13 @@ class AdminService {
       ];
     }
 
+    // OPTIMIZATION: Use estimatedDocumentCount() for empty queries (no filters)
+    // estimatedDocumentCount() uses collection metadata (O(1)) instead of scanning the index (O(N))
+    const countPromise =
+      Object.keys(query).length === 0
+        ? User.estimatedDocumentCount()
+        : User.countDocuments(query);
+
     const [users, total] = await Promise.all([
       User.find(query)
         .select('-password')
@@ -41,7 +48,7 @@ class AdminService {
         .skip(skip)
         .limit(limit)
         .lean(),
-      User.countDocuments(query)
+      countPromise
     ]);
 
     return {
@@ -75,6 +82,8 @@ class AdminService {
    * @returns {Object} Statistics
    */
   async getStats() {
+    // OPTIMIZATION: Use estimatedDocumentCount() instead of countDocuments() for total counts
+    // estimatedDocumentCount() uses collection metadata (O(1)) instead of scanning the index (O(N))
     const [
       totalUsers,
       totalObservations,
@@ -82,9 +91,9 @@ class AdminService {
       recentObservations,
       topContributors
     ] = await Promise.all([
-      User.countDocuments(),
-      Observation.countDocuments(),
-      Comment.countDocuments(),
+      User.estimatedDocumentCount(),
+      Observation.estimatedDocumentCount(),
+      Comment.estimatedDocumentCount(),
       Observation.find()
         .sort({ createdAt: -1 })
         .limit(5)
@@ -158,9 +167,8 @@ class AdminService {
     // Delete all associated images on Cloudinary
     try {
       const imageService = (await import('./image.service.js')).default;
-      const deletedImages = await imageService.deleteAllImagesForObservation(
-        observationId
-      );
+      const deletedImages =
+        await imageService.deleteAllImagesForObservation(observationId);
       console.log(
         `✅ [Admin] ${deletedImages} image(s) supprimée(s) de Cloudinary`
       );
