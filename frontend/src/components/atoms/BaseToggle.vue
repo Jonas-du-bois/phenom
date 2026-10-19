@@ -99,6 +99,7 @@ const toggle = () => {
       :disabled="disabled"
       :class="[
         'relative w-11 h-6 rounded-full transition-colors duration-200',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00F0FF] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
         modelValue ? 'bg-[#00F0FF]' : 'bg-white/20',
       ]"
       @click="toggle"
