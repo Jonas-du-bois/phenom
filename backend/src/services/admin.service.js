@@ -82,9 +82,10 @@ class AdminService {
       recentObservations,
       topContributors
     ] = await Promise.all([
-      User.countDocuments(),
-      Observation.countDocuments(),
-      Comment.countDocuments(),
+      // OPTIMIZATION: Use estimatedDocumentCount() instead of countDocuments() for O(1) performance
+      User.estimatedDocumentCount(),
+      Observation.estimatedDocumentCount(),
+      Comment.estimatedDocumentCount(),
       Observation.find()
         .sort({ createdAt: -1 })
         .limit(5)
