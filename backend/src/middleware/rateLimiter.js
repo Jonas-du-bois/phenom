@@ -43,3 +43,18 @@ export const createLimiter = rateLimit({
     error: 'Limite de création atteinte, veuillez réessayer plus tard'
   }
 });
+
+/**
+ * Rate limiter for refresh tokens
+ * Prevents abuse of token refreshing endpoints
+ */
+export const refreshLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 50, // 50 max refresh token attempts per hour
+  skipSuccessfulRequests: false,
+  skip: () => process.env.NODE_ENV === 'test', // Disable in test mode
+  message: {
+    success: false,
+    error: 'Trop de tentatives de rafraîchissement de jeton, veuillez réessayer plus tard'
+  }
+});

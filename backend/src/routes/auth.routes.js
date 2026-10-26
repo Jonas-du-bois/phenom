@@ -7,13 +7,13 @@ import express from 'express';
 import authController from '../controllers/auth.controller.js';
 import { authenticate } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
+import { authLimiter, refreshLimiter } from '../middleware/rateLimiter.js';
 import {
   signupValidation,
   loginValidation,
   forgotPasswordValidation,
   resetPasswordValidation
 } from '../validators/auth.validator.js';
-import { authLimiter } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
 
@@ -274,7 +274,7 @@ router.get('/me', authenticate, authController.getProfile);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/refresh-token', authController.refreshToken);
+router.post('/refresh-token', refreshLimiter, authController.refreshToken);
 
 /**
  * @swagger
