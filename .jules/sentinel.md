@@ -27,3 +27,7 @@
 **Vulnerability:** The fix for the IDOR vulnerability in `createObservation` (documented 2026-02-08) was found to be missing, and the regression test `security_image_injection.test.js` was absent. This allowed `images` to be injected again.
 **Learning:** Security fixes must be accompanied by persistent regression tests that run in CI. If a test file is deleted or not committed, the regression can go unnoticed.
 **Prevention:** Ensure regression tests are part of the repository and run automatically. Re-applied the fix to exclude `images` from `req.body` in `createObservation`.
+## 2026-10-26 - Missing Rate Limiter on Token Refresh Endpoint
+**Vulnerability:** The `/api/v1/auth/refresh-token` endpoint lacked specific rate limiting, making it vulnerable to abuse and potential denial-of-service.
+**Learning:** Authentication endpoints are prime targets. While login and signup were protected by `authLimiter`, the refresh token endpoint was overlooked. This highlights the need to systematically review all authentication-related routes for rate limiting.
+**Prevention:** Always apply targeted rate limiters (e.g., `refreshLimiter`) to all endpoints that manage authentication tokens or sensitive operations, not just the initial login/signup routes.
