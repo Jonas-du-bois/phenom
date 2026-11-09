@@ -27,3 +27,8 @@
 **Vulnerability:** The fix for the IDOR vulnerability in `createObservation` (documented 2026-02-08) was found to be missing, and the regression test `security_image_injection.test.js` was absent. This allowed `images` to be injected again.
 **Learning:** Security fixes must be accompanied by persistent regression tests that run in CI. If a test file is deleted or not committed, the regression can go unnoticed.
 **Prevention:** Ensure regression tests are part of the repository and run automatically. Re-applied the fix to exclude `images` from `req.body` in `createObservation`.
+
+## 2026-06-25 - Regex Injection in Admin Service Search
+**Vulnerability:** User input was passed directly to MongoDB `$regex` operator in `AdminService.getUsers`, allowing for Regex Injection and potential ReDoS (Regular Expression Denial of Service).
+**Learning:** Similar to the previous vulnerability in `ObservationService`, developers must remember that `express-mongo-sanitize` does not protect against `$regex` value injection. Any user input used in a `$regex` search must be manually escaped.
+**Prevention:** Always escape user input using the `escapeRegex` utility before embedding it in a regular expression construction. Added a regression test `security_admin_search.test.js` to ensure the fix remains in place.
