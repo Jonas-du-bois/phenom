@@ -41,7 +41,11 @@ class AdminService {
         .skip(skip)
         .limit(limit)
         .lean(),
-      User.countDocuments(query)
+      // OPTIMIZATION: Use estimatedDocumentCount() for empty queries (no filters)
+      // estimatedDocumentCount() uses collection metadata (O(1)) instead of scanning the index (O(N))
+      Object.keys(query).length === 0
+        ? User.estimatedDocumentCount()
+        : User.countDocuments(query)
     ]);
 
     return {
@@ -75,6 +79,8 @@ class AdminService {
    * @returns {Object} Statistics
    */
   async getStats() {
+    // OPTIMIZATION: Use estimatedDocumentCount() instead of countDocuments() for total counts
+    // estimatedDocumentCount() uses collection metadata (O(1)) instead of scanning the index (O(N))
     const [
       totalUsers,
       totalObservations,
@@ -82,9 +88,9 @@ class AdminService {
       recentObservations,
       topContributors
     ] = await Promise.all([
-      User.countDocuments(),
-      Observation.countDocuments(),
-      Comment.countDocuments(),
+      User.estimatedDocumentCount(),
+      Observation.estimatedDocumentCount(),
+      Comment.estimatedDocumentCount(),
       Observation.find()
         .sort({ createdAt: -1 })
         .limit(5)
@@ -227,7 +233,10 @@ class AdminService {
         .skip(skip)
         .limit(limit)
         .lean(),
-      Observation.countDocuments(query)
+      // OPTIMIZATION: Use estimatedDocumentCount() for empty queries (no filters)
+      Object.keys(query).length === 0
+        ? Observation.estimatedDocumentCount()
+        : Observation.countDocuments(query)
     ]);
 
     return {
@@ -268,7 +277,10 @@ class AdminService {
         .skip(skip)
         .limit(limit)
         .lean(),
-      Comment.countDocuments(query)
+      // OPTIMIZATION: Use estimatedDocumentCount() for empty queries (no filters)
+      Object.keys(query).length === 0
+        ? Comment.estimatedDocumentCount()
+        : Comment.countDocuments(query)
     ]);
 
     return {
